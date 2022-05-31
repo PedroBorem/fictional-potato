@@ -50,3 +50,14 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# esp build files
+build/
+sdkconfig.old
+sdkconfig
+
+# eclipse project
+.cproject
+.project
+.orig
+
