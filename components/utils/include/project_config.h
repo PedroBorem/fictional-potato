@@ -8,8 +8,10 @@
 #ifndef COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_
 #define COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_
 
+/* Configuration include*/
 #include "sdkconfig.h"
 
+/* C base */
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -25,8 +27,7 @@
 #include "freertos/timers.h"
 
 /* include components */
-#include <inttypes.h>
-#include "esp_log.h"
+#include "log.h"
 
 /* include ESP32 modules */
 #include "esp_err.h"
