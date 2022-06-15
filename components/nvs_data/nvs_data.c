@@ -27,6 +27,7 @@
  *
  */
 
+#define NVS_DATA_TAG	"nvs_data"
 
 /* Private definitions */
 
@@ -50,12 +51,17 @@ esp_err_t nvs_data_init(void)
 		err = nvs_open( NVS_LABEL_CONFIG, NVS_READWRITE, &handle );
 		if( (err != ESP_OK) || (handle == (nvs_handle_t)NULL) )
 		{
+			ESP_LOGE( NVS_DATA_TAG, "%s,failed to open label : %s", __func__, NVS_LABEL_CONFIG);
 			err = ESP_FAIL;
 		}
 
 		nvs_close( handle );
 		handle = (nvs_handle_t)NULL;
 		//TODO: initialize for scheduling and history
+	}
+	else
+	{
+		ESP_LOGE( NVS_DATA_TAG, "%s, failed to initialize flash", __func__);
 	}
 
 	ESP_ERROR_CHECK( err );

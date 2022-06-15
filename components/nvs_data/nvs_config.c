@@ -23,7 +23,9 @@
 
 esp_err_t nvs_config_init(void)
 {
-	esp_err_t err = ESP_FAIL;
+	esp_err_t err = ESP_OK;
+
+	// TODO: set default configuration
 
 	return err;
 }
@@ -45,6 +47,8 @@ esp_err_t nvs_config_get(pivot_config* out_config, size_t* config_length)
 
 	return err;
 }
+
+//TODO : show configurations
 
 
 /**@}*/ 	//nvs_data
