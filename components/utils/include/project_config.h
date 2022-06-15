@@ -36,4 +36,28 @@
  * compiler warnings about unused variables. */
 #define UNUSED(x)               (void)(sizeof(x))
 
+
+/* Public definitions ******************************************************/
+
+/* pivot configuration states */
+typedef enum
+{
+	PIVOT_ON = 1,
+	PIVOT_OFF = 2,
+	PIVOT_ADVANCE = 3,
+	PIVOT_REVERSE = 4,
+	PIVOT_DRY = 5,
+	PIVOT_WET = 6
+}pivot_states;
+
+/* pivot configuration parameters */
+typedef	struct
+{
+	uint8_t power_state;	// PIVOT_ON or PIVOT_OFF
+	uint8_t advance_mode;	// PIVOT_ADVANCE or PIVOT_REVERSE
+	uint8_t watering_state;	// PIVOT_DRY or PIVOT_WET
+	uint8_t percentimeter;	// Value from 0 to 100
+}pivot_config;
+
+
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */
