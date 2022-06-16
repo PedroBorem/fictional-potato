@@ -19,5 +19,7 @@ esp_err_t nvs_config_set(pivot_config config, size_t config_length);
 
 esp_err_t nvs_config_get(pivot_config* out_config, size_t* config_length);
 
+void nvs_config_show_current(void);
+
 
 #endif /* COMPONENTS_NVS_DATA_INCLUDE_NVS_CONFIG_H_ */
