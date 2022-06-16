@@ -66,17 +66,17 @@ bool data_app_init(data_app_callback app_callback)
 		err = nvs_config_init();
 		if(err == ESP_OK)
 		{
-			xReturn = xTaskCreate(&data_app_task,
+			xQueue_data_app = xQueueCreate(DATA_APP_SIZE_QUEUE, sizeof(data_app_request));
+			if(xQueue_data_app != NULL)
+			{
+				xReturn = xTaskCreate(&data_app_task,
 									DATA_APP_TASK_NAME,
 									DATA_APP_STACK_SIZE,
 									NULL,
 									DATA_APP_TASK_PRIORITY,
 									&xTask_data_app);
 
-			if(xReturn == pdPASS || xTask_data_app != NULL)
-			{
-				xQueue_data_app = xQueueCreate(DATA_APP_SIZE_QUEUE, sizeof(data_app_request));
-				if(xQueue_data_app != NULL)
+				if(xReturn == pdPASS || xTask_data_app != NULL)
 				{
 					ret = true;
 				}
@@ -92,9 +92,10 @@ bool data_app_init(data_app_callback app_callback)
 		}
 	}
 
-	if(data_app_call != NULL && ret == true)
+	if(app_callback != NULL && ret == true)
 	{
 		data_app_call = app_callback;
+		LOG_DATA( DATA_APP_TAG, "%s, data application started successfully", __func__);
 	}
 	else
 	{
@@ -154,6 +155,10 @@ bool data_app_load_config(pivot_config* config_out, size_t* config_length)
 	return ret;
 }
 
+void data_app_show_config(void)
+{
+	nvs_config_show_current();
+}
 
 void data_app_task(void* arg)
 {

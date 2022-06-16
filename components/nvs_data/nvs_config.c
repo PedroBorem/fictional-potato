@@ -46,6 +46,14 @@ esp_err_t nvs_config_init(void)
 		{
 			err = nvs_config_get(&pivot_current_config, &pivot_config_length);
 		}
+		else
+		{
+			ESP_LOGE( NVS_CONFIG_TAG, "%s,failed to apply default settings", __func__);
+		}
+	}
+	else if(err != ESP_OK)
+	{
+		ESP_LOGE( NVS_CONFIG_TAG, "%s,failed to apply default settings, error getting data", __func__);
 	}
 
 	return err;
@@ -77,7 +85,7 @@ esp_err_t nvs_config_get(pivot_config* out_config, size_t* config_length)
 
 void nvs_config_show_current(void)
 {
-	LOG_DATA(NVS_CONFIG_TAG, "\n ------ NVS Current Config ------");
+	LOG_DATA(NVS_CONFIG_TAG, "\------ NVS Current Config ------");
 	LOG_DATA(NVS_CONFIG_TAG, " Power state: %d", pivot_current_config.power_state);
 	LOG_DATA(NVS_CONFIG_TAG, " Advance mode: %d", pivot_current_config.advance_mode);
 	LOG_DATA(NVS_CONFIG_TAG, " Watering state: %d", pivot_current_config.watering_state);

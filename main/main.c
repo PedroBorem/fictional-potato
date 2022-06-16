@@ -17,7 +17,7 @@ static void app_main_call(app_call_states state);
 void app_main(void)
 {
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
-	assert(app_init);
+	assert(app_init());
 
 #ifndef REMOVE_THIS
 	uint8_t percent = 0;
@@ -31,9 +31,10 @@ void app_main(void)
 		config.percentimeter = percent;
 		percent = (rand()%100);
 
+		vTaskDelay(pdMS_TO_TICKS(1000));
 		data_app_save_config(config, sizeof(config));
-
-
+		vTaskDelay(pdMS_TO_TICKS(1000));
+		data_app_show_config();
 
 #else
 
@@ -49,7 +50,7 @@ static bool app_init(void)
 {
 	bool ret = true;
 
-	ret &= data_app_init(app_main_call);
+	ret &= data_app_init(&app_main_call);
 
 	return ret;
 }
@@ -60,7 +61,8 @@ static void app_main_call(app_call_states state)
 	{
 		case CALL_LOAD_CONFIG:
 		{
-			// notify give main task
+			// TODO: notify give main task
+
 			break;
 		}
 	}

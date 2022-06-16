@@ -93,15 +93,36 @@ esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_val
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
+	size_t required_size = 0;
 
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
 	if (err == ESP_OK)
 	{
-		err = nvs_get_blob(handle, key, out_value, length);
+
+		err = nvs_get_blob(handle, key, NULL, &required_size);
 		if(err == ESP_OK)
 		{
-			err = nvs_commit(handle);
+			uint32_t* run_time = malloc(required_size + sizeof(uint32_t));
+			err = nvs_get_blob(handle, key, run_time, &required_size);
+			if(err == ESP_OK)
+			{
+				memcpy(length, &required_size, sizeof(required_size));
+				memcpy(out_value, (uint8_t*)run_time, required_size);
+			}
+			else
+			{
+				ESP_LOGE( NVS_DATA_TAG, "%s,failed to get configuration", __func__);
+			}
+			free(run_time);
 		}
+		else
+		{
+			ESP_LOGE( NVS_DATA_TAG, "%s,failed to get configuration, invalid length", __func__);
+		}
+	}
+	else
+	{
+		ESP_LOGE( NVS_DATA_TAG, "%s,failed to open label : %s", __func__, label_name);
 	}
 
 	nvs_close(handle);
