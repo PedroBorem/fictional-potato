@@ -5,6 +5,11 @@
  *      Author: brunolima
  */
 
+/**
+ * @file data_app.c
+ * @brief data app
+*/
+
 /* Self include */
 #include "data_app.h"
 
@@ -12,41 +17,54 @@
 #include "nvs_data.h"
 #include "nvs_config.h"
 
-/**
- * @file data_app.c
- * @brief data app
-*/
+/**\addtogroup main
+ * @{
+ *
+ */
 
+/**\addtogroup data_app
+ * @{
+ *
+ */
+
+/* Private definitions ------------------------------------------- */
 #define DATA_APP_TAG			"data_app"
 #define DATA_APP_SIZE_QUEUE		10
 
+/**
+ *	Request types sent to the control queue
+ *
+ */
 typedef enum
 {
-	DATA_APP_SAVE_CONFIG = 0,
-	DATA_APP_LOAD_CONFIG = 1
+	DATA_APP_SAVE_CONFIG = 0,	/*!< Request to save a configuration*/
+	DATA_APP_LOAD_CONFIG = 1	/*!< Request to read a configuration*/
 }data_app_request_type;
 
-
+/**
+ *	Structure sent to the control queue
+ *
+ */
 typedef struct
 {
-	data_app_request_type request_type;
+	data_app_request_type request_type; /*!< Request types sent to the control queue*/
 	union
 	{
-		pivot_config config_in;
-		pivot_config* config_out;
+		pivot_config config_in;	 		/*!< If a write is requested, an input buffer is passed*/
+		pivot_config* config_out;		/*!< If a read is requested, a configuration pointer is passed*/
 		//TODO: added scheduling and history
 	};
 	union
 	{
-		size_t config_size_in;
-		size_t * config_size_out;
+		size_t config_size_in;			 /*!< A value containing the size of the content to be recorded is passed*/
+		size_t * config_size_out;		 /*!< A pointer to receive the size of the content read*/
 	};
-
 }data_app_request;
 
+/* Private variables  -------------------------------------------- */
 data_app_callback data_app_call = NULL;
 
-/* freertos variables */
+//FreeRTOS variables
 TaskHandle_t xTask_data_app = NULL;
 QueueHandle_t xQueue_data_app = NULL;
 
@@ -160,6 +178,10 @@ void data_app_show_config(void)
 	nvs_config_show_current();
 }
 
+/**
+ * @brief 	Central memory application task. Manage queues for access to NVS
+ * @param	arg - [in]: task argument (default NULL)
+ */
 void data_app_task(void* arg)
 {
 	data_app_request data_queue_receive = {};
@@ -187,7 +209,7 @@ void data_app_task(void* arg)
 					{
 						ESP_LOGE( DATA_APP_TAG, "%s, failed to get settings", __func__);
 					}
-					// TODO : call pointer function.
+
 					if(data_app_call != NULL)
 					{
 						data_app_call(CALL_LOAD_CONFIG);
@@ -204,4 +226,7 @@ void data_app_task(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(20));
 	}
 }
+
+/**@}*/ 	//data_app
+/** @}*/	//main
 

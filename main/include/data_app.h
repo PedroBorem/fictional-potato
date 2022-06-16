@@ -8,17 +8,55 @@
 #ifndef MAIN_INCLUDE_DATA_APP_H_
 #define MAIN_INCLUDE_DATA_APP_H_
 
+/**
+ * @file data_app.h
+ * @date June 15, 2022
+ * @brief data application
+*/
 
 #include "project_config.h"
 
-/*
- * @brief: function used with callback in load configuration.
- * */
+/**
+ * @brief: function used with return to main application class
+ *
+ */
 typedef void (*data_app_callback)(app_call_states state);
 
+/**
+ * @brief	start all memory modules
+ * @param	app_callback - [in]: function used with return to main application class
+ * @return
+ * 	- true: success
+ * 	- false: fail to initialize
+ */
 bool data_app_init(data_app_callback app_callback);
+
+/**
+ * @brief	sends the queue a request to save a new configuration
+ * @param	config_in - [in]: pivot configuration structure
+ * @param	config_length - [in]: structure size
+ * @return
+ * 	- true: success
+ * 	- false: fail to save
+ */
 bool data_app_save_config(pivot_config config_in, size_t config_length);
+
+/**
+ * @brief	sends the queue a request to load a configuration
+ * @param	config_out - [out]: pivot configuration structure
+ * @param	config_length - [out]: structure size
+ * @return
+ * 	- true: success
+ * 	- false: fail to save
+ */
 bool data_app_load_config(pivot_config* config_out, size_t* config_length);
+
+/**
+ * @brief	show configuration content in memory
+ *
+ * propagation of the nvs_config_show_current method
+ *
+ */
 void data_app_show_config(void);
 
 #endif /* MAIN_INCLUDE_DATA_APP_H_ */

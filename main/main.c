@@ -8,6 +8,11 @@
 /* Applications include */
 #include "data_app.h"
 
+/**\addtogroup main
+ * @{
+ *
+ */
+
 #define MAIN_TAG "main"
 
 
@@ -67,3 +72,5 @@ static void app_main_call(app_call_states state)
 		}
 	}
 }
+
+/** @}*/	//main

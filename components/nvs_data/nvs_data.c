@@ -27,11 +27,11 @@
  *
  */
 
+/* Private definitions ------------------------------------------- */
 #define NVS_DATA_TAG	"nvs_data"
 
-/* Private definitions */
 
-
+/* Public method implementation ---------------------------------- */
 esp_err_t nvs_data_init(void)
 {
 	esp_err_t err = ESP_FAIL;
@@ -130,7 +130,6 @@ esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_val
 
 	return err;
 }
-
 
 /**@}*/ 	//nvs_data
 /** @}*/	//components

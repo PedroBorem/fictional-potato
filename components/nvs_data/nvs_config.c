@@ -22,9 +22,11 @@
  *
  */
 
+/* Private definitions ------------------------------------------- */
 #define NVS_CONFIG_TAG				"nvs_config"
 #define NVS_DEFAULT_PERCENTIMETER 	(0)
 
+/* Private variables --------------------------------------------- */
 static pivot_config pivot_current_config = {};
 static size_t pivot_config_length = 0;
 
@@ -32,7 +34,7 @@ esp_err_t nvs_config_init(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	pivot_config pivot_default_config = {PIVOT_OFF,
+	pivot_config pivot_default_config ={PIVOT_OFF,
 										PIVOT_ADVANCE,
 										PIVOT_DRY,
 										NVS_DEFAULT_PERCENTIMETER};
@@ -49,11 +51,13 @@ esp_err_t nvs_config_init(void)
 		else
 		{
 			ESP_LOGE( NVS_CONFIG_TAG, "%s,failed to apply default settings", __func__);
+			err = ESP_FAIL;
 		}
 	}
 	else if(err != ESP_OK)
 	{
 		ESP_LOGE( NVS_CONFIG_TAG, "%s,failed to apply default settings, error getting data", __func__);
+		err = ESP_FAIL;
 	}
 
 	return err;
@@ -61,7 +65,7 @@ esp_err_t nvs_config_init(void)
 
 esp_err_t nvs_config_set(pivot_config config, size_t config_length)
 {
-	esp_err_t err = ESP_FAIL;
+	esp_err_t err;
 
 	err = nvs_data_set(NVS_LABEL_CONFIG, NVS_KEY_CONFIG, (uint8_t*)&config, config_length);
 
@@ -69,6 +73,10 @@ esp_err_t nvs_config_set(pivot_config config, size_t config_length)
 	{
 		memcpy(&pivot_current_config, &config, sizeof(pivot_current_config));
 		nvs_config_show_current();
+	}
+	else
+	{
+		err = ESP_FAIL;
 	}
 
 	return err;
