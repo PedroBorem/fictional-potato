@@ -114,6 +114,7 @@ bool data_app_init(data_app_callback app_callback)
 	{
 		data_app_call = app_callback;
 		LOG_DATA( DATA_APP_TAG, "%s, data application started successfully", __func__);
+		data_app_show_config();
 	}
 	else
 	{

@@ -30,6 +30,7 @@ void app_main(void)
 
 	while (1)
 	{
+		vTaskDelay(pdMS_TO_TICKS(5000));
 		config.power_state = PIVOT_ON;
 		config.advance_mode = PIVOT_ADVANCE;
 		config.watering_state = PIVOT_DRY;
@@ -39,7 +40,6 @@ void app_main(void)
 		vTaskDelay(pdMS_TO_TICKS(1000));
 		data_app_save_config(config, sizeof(config));
 		vTaskDelay(pdMS_TO_TICKS(1000));
-		data_app_show_config();
 
 #else
 
