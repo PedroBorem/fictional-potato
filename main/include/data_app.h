@@ -11,7 +11,7 @@
 /**
  * @file data_app.h
  * @date June 15, 2022
- * @brief data application
+ * @brief memory control application
 */
 
 #include "project_config.h"

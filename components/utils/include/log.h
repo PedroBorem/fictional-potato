@@ -12,15 +12,30 @@
 #include <inttypes.h>
 #include "esp_log.h"
 
+/**
+ * @file log.h
+ * @date June 15, 2022
+ * @brief creating customizable logs
+*/
+
 #define LOG_COLOR_WHITE   "37"
 
-/* Communication logs */
+/**
+ *	Communication logs
+ *
+ */
 #define LOG_COMM(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_CYAN) tag, __VA_ARGS__)
 
-/* Data logs */
+/**
+ *	Data logs
+ *
+ */
 #define LOG_DATA(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_WHITE) tag, __VA_ARGS__)
 
-/* Actuation logs */
+/**
+ *	Actuation logs
+ *
+ */
 #define LOG_ACTUATION(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_PURPLE) tag, __VA_ARGS__)
 
 #endif /* COMPONENTS_UTILS_INCLUDE_LOG_H_ */

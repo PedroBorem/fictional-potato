@@ -11,7 +11,7 @@
 /**
  * @file project_config.h
  * @date June 15, 2022
- * @brief general project settings and settings
+ * @brief general project settings
 */
 
 /* Configuration include*/
@@ -80,11 +80,20 @@ typedef	struct __attribute__((__packed__))
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;
 
-/* FreeRTOS allocated definitions ******************************************/
-/* data tasks */
+/**\addtogroup FreeRTOS
+ * @{
+ *
+ */
+
+/**\addtogroup Task_Definitions
+ * @{
+ *
+ */
 #define DATA_APP_TASK_NAME				"data app task"
 #define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
 #define DATA_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
+/**@}*/ 	//FreeRTOS
+/** @}*/	//Task_Definitions
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */

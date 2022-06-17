@@ -11,7 +11,7 @@
 /**
  * @file nvs_data.h
  * @date June 15, 2022
- * @brief nvs data
+ * @brief class for direct access to flash memory (NVS)
 */
 
 #include "project_config.h"

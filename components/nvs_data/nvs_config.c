@@ -5,6 +5,12 @@
  *      Author: brunolima
  */
 
+/**
+ * @file nvs_config.c
+ * @date June 15, 2022
+ * @brief nvs pivot configuration
+*/
+
 /* Self include */
 #include "nvs_config.h"
 
@@ -30,6 +36,10 @@
 static pivot_config pivot_current_config = {};
 static size_t pivot_config_length = 0;
 
+/* Private methods declarations ---------------------------------- */
+static bool nvs_config_validate(pivot_config config);
+
+/* Public methods ------------------------------------------------ */
 esp_err_t nvs_config_init(void)
 {
 	esp_err_t err = ESP_FAIL;
@@ -65,18 +75,20 @@ esp_err_t nvs_config_init(void)
 
 esp_err_t nvs_config_set(pivot_config config, size_t config_length)
 {
-	esp_err_t err;
+	esp_err_t err = ESP_FAIL ;
 
-	err = nvs_data_set(NVS_LABEL_CONFIG, NVS_KEY_CONFIG, (uint8_t*)&config, config_length);
-
-	if(err == ESP_OK)
+	if(nvs_config_validate(config) && config_length > 0 )
 	{
-		memcpy(&pivot_current_config, &config, sizeof(pivot_current_config));
-		nvs_config_show_current();
-	}
-	else
-	{
-		err = ESP_FAIL;
+		err = nvs_data_set(NVS_LABEL_CONFIG, NVS_KEY_CONFIG, (uint8_t*)&config, config_length);
+		if(err == ESP_OK)
+		{
+			memcpy(&pivot_current_config, &config, sizeof(pivot_current_config));
+			nvs_config_show_current();
+		}
+		else
+		{
+			ESP_LOGE( NVS_CONFIG_TAG, "%s, failed to write to memory", __func__);
+		}
 	}
 
 	return err;
@@ -93,12 +105,39 @@ esp_err_t nvs_config_get(pivot_config* out_config, size_t* config_length)
 
 void nvs_config_show_current(void)
 {
-	LOG_DATA(NVS_CONFIG_TAG, "\------ NVS Current Config ------");
+	LOG_DATA(NVS_CONFIG_TAG, "");
+	LOG_DATA(NVS_CONFIG_TAG, " ------ NVS Current Config ------");
 	LOG_DATA(NVS_CONFIG_TAG, " Power state: %d", pivot_current_config.power_state);
 	LOG_DATA(NVS_CONFIG_TAG, " Advance mode: %d", pivot_current_config.advance_mode);
 	LOG_DATA(NVS_CONFIG_TAG, " Watering state: %d", pivot_current_config.watering_state);
 	LOG_DATA(NVS_CONFIG_TAG, " Percentimeter %.3d %%", pivot_current_config.percentimeter);
 	LOG_DATA(NVS_CONFIG_TAG, " --------------------------------\n");
+}
+
+/* Private methods ----------------------------------------------- */
+/**
+ * @brief	configuration buffer validation
+ * @param	config - [in]: pivot configuration structure
+ * @return
+ * 	- true: configuration is correct
+ * 	- false: configuration is incorrect
+ */
+static bool nvs_config_validate(pivot_config config)
+{
+	bool ret = false;
+	if((config.power_state == PIVOT_ON || config.power_state == PIVOT_OFF)
+		&&(config.advance_mode == PIVOT_ADVANCE || config.advance_mode == PIVOT_REVERSE)
+		&&(config.watering_state == PIVOT_DRY || config.watering_state == PIVOT_WET)
+		&&(config.percentimeter <= 100))
+	{
+		ret = true;
+	}
+	else
+	{
+		ESP_LOGE( NVS_CONFIG_TAG, "%s, invalid configuration", __func__);
+	}
+
+	return ret;
 }
 
 /**@}*/ 	//nvs_data

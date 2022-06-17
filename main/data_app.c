@@ -7,7 +7,8 @@
 
 /**
  * @file data_app.c
- * @brief data app
+ * @date June 15, 2022
+ * @brief memory control application
 */
 
 /* Self include */
@@ -178,7 +179,7 @@ void data_app_show_config(void)
 {
 	nvs_config_show_current();
 }
-
+/* Private methods ----------------------------------------------- */
 /**
  * @brief 	Central memory application task. Manage queues for access to NVS
  * @param	arg - [in]: task argument (default NULL)
@@ -199,7 +200,11 @@ void data_app_task(void* arg)
 					err = nvs_config_set(data_queue_receive.config_in, data_queue_receive.config_size_in);
 					if(err == ESP_OK)
 					{
-						//TODO: nvs_config print
+						LOG_DATA(DATA_APP_TAG, "configuration applied successfully");
+					}
+					else
+					{
+						ESP_LOGE(DATA_APP_TAG, "%s, failed to set configuration", __func__);
 					}
 					break;
 				}
@@ -208,7 +213,7 @@ void data_app_task(void* arg)
 					err = nvs_config_get(data_queue_receive.config_out, data_queue_receive.config_size_out);
 					if(err != ESP_OK)
 					{
-						ESP_LOGE( DATA_APP_TAG, "%s, failed to get settings", __func__);
+						ESP_LOGE(DATA_APP_TAG, "%s, failed to get settings", __func__);
 					}
 
 					if(data_app_call != NULL)

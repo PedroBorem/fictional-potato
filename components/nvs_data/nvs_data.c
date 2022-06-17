@@ -7,7 +7,7 @@
 
 /**
  * @file nvs_data.c
- * @brief nvs data
+ * @brief class for direct access to flash memory (NVS)
 */
 
 /* Self include */
