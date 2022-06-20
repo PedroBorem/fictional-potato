@@ -34,31 +34,10 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-#ifndef REMOVE_THIS
-	uint8_t percent = 0;
-	pivot_config config = {};
-
 	while (1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(5000));
-		config.power_state = PIVOT_ON;
-		config.advance_mode = PIVOT_ADVANCE;
-		config.watering_state = PIVOT_DRY;
-		config.percentimeter = percent;
-		percent = (rand()%100);
-
 		vTaskDelay(pdMS_TO_TICKS(1000));
-		data_app_save_config(config, sizeof(config));
-		vTaskDelay(pdMS_TO_TICKS(1000));
-
-#else
-
-	while (1)
-	{
-#endif
-
-        vTaskDelay(pdMS_TO_TICKS(1000));
-    }
+	}
 }
 
 /**

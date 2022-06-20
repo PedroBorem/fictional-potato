@@ -58,7 +58,7 @@ typedef struct
 	union
 	{
 		size_t config_size_in;			 /*!< A value containing the size of the content to be recorded is passed*/
-		size_t * config_size_out;		 /*!< A pointer to receive the size of the content read*/
+		size_t* config_size_out;		 /*!< A pointer to receive the size of the content read*/
 	};
 }data_app_request;
 

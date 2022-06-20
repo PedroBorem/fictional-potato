@@ -62,8 +62,8 @@ typedef enum
 {
 	PIVOT_ON = 1,			/*!< Pivot on*/
 	PIVOT_OFF = 2,			/*!< Pivot off*/
-	PIVOT_ADVANCE = 3,		/*!< Pivot in advanced mode*/
-	PIVOT_REVERSE = 4,		/*!< Pivot in reverse mode*/
+	PIVOT_CW = 3,			/*!< Pivot in ClockWise mode (advanced)*/
+	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
 	PIVOT_DRY = 5,			/*!< Irrigation off*/
 	PIVOT_WET = 6			/*!< Irrigation on*/
 }pivot_states;
@@ -75,7 +75,7 @@ typedef enum
 typedef	struct __attribute__((__packed__))
 {
 	uint8_t power_state;	/*!< PIVOT_ON or PIVOT_OFF*/
-	uint8_t advance_mode;	/*!< PIVOT_ADVANCE or PIVOT_REVERSE*/
+	uint8_t rotation;	/*!< PIVOT_ADVANCE or PIVOT_REVERSE*/
 	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;

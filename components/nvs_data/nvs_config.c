@@ -45,7 +45,7 @@ esp_err_t nvs_config_init(void)
 	esp_err_t err = ESP_FAIL;
 
 	pivot_config pivot_default_config ={PIVOT_OFF,
-										PIVOT_ADVANCE,
+										PIVOT_CW,
 										PIVOT_DRY,
 										NVS_DEFAULT_PERCENTIMETER};
 
@@ -108,7 +108,7 @@ void nvs_config_show_current(void)
 	LOG_DATA(NVS_CONFIG_TAG, "");
 	LOG_DATA(NVS_CONFIG_TAG, " ------ NVS Current Config ------");
 	LOG_DATA(NVS_CONFIG_TAG, " Power state: %d", pivot_current_config.power_state);
-	LOG_DATA(NVS_CONFIG_TAG, " Advance mode: %d", pivot_current_config.advance_mode);
+	LOG_DATA(NVS_CONFIG_TAG, " Advance mode: %d", pivot_current_config.rotation);
 	LOG_DATA(NVS_CONFIG_TAG, " Watering state: %d", pivot_current_config.watering_state);
 	LOG_DATA(NVS_CONFIG_TAG, " Percentimeter %.3d %%", pivot_current_config.percentimeter);
 	LOG_DATA(NVS_CONFIG_TAG, " --------------------------------\n");
@@ -126,7 +126,7 @@ static bool nvs_config_validate(pivot_config config)
 {
 	bool ret = false;
 	if((config.power_state == PIVOT_ON || config.power_state == PIVOT_OFF)
-		&&(config.advance_mode == PIVOT_ADVANCE || config.advance_mode == PIVOT_REVERSE)
+		&&(config.rotation == PIVOT_CW || config.rotation == PIVOT_CCW)
 		&&(config.watering_state == PIVOT_DRY || config.watering_state == PIVOT_WET)
 		&&(config.percentimeter <= 100))
 	{
