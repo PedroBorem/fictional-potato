@@ -35,3 +35,7 @@ They are not used or needed when building with CMake and idf.py.
 
 Esp idf version [v4.4.1](https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/get-started/index.html)
 eclipse [plugin](https://github.com/espressif/idf-eclipse-plugin)
+
+## Tools
+idf.py set-target esp32s2
+idf.py set-target esp32
