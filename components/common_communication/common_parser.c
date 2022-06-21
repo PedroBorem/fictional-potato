@@ -5,10 +5,26 @@
  *      Author: brunolima
  */
 
+/**
+ * @file common_parser.c
+ * @date June 21, 2022
+ * @brief parse and convert incoming and outgoing messages
+*/
+
+/* Self include */
 #include "common_parser.h"
 
-/// 451-65
+/**\addtogroup components
+ * @{
+ *
+ */
 
+/**\addtogroup common_parser
+ * @{
+ *
+ */
+
+/* Private definitions ------------------------------------------- */
 #define	COMMON_PARSER_POWER_POSITION				(2)
 #define	COMMON_PARSER_ROTATION_POSITION				(0)
 #define	COMMON_PARSER_WATERING_POSITION				(1)
@@ -16,7 +32,9 @@
 
 #define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
-esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config *config_out)
+
+/* Public methods ------------------------------------------------ */
+esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config* config_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
 	pivot_config config = {};
@@ -43,12 +61,19 @@ esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config *con
 	return err;
 }
 
-esp_err_t common_parser_status_to_string(pivot_config config_in, char* string_out)
+esp_err_t common_parser_status_to_string(const pivot_config config_in, char* string_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
-	char* sting_out = malloc(sizeof(int));
+	char string_converted[8] = "";
+
+	sprintf(&string_converted[COMMON_PARSER_ROTATION_POSITION], "%d", config_in.rotation);
+	sprintf(&string_converted[COMMON_PARSER_WATERING_POSITION], "%d", config_in.watering_state);
+	sprintf(&string_converted[COMMON_PARSER_POWER_POSITION], "%d", config_in.power_state);
+
+	string_converted[3] = '-';
+	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", config_in.percentimeter);
+	memcpy(string_out, string_converted, sizeof(string_converted) - 1);
 
 	return err;
 }
-
 

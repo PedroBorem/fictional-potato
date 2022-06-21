@@ -10,8 +10,8 @@
 
 #include "project_config.h"
 
+esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config* config_out);
 
-esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config *config_out);
 esp_err_t common_parser_status_to_string(const pivot_config config_in, char* string_out);
 
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */

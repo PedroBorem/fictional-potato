@@ -55,7 +55,7 @@ QueueHandle_t rf_uart_queue = NULL;
 /* Private function prototype ------------------------------------ */
 static void rf_uart_event_task(void* arg);
 
-/* Private methods ----------------------------------------------- */
+/* Public methods ------------------------------------------------ */
 esp_err_t rf_uart_init(void)
 {
 	esp_err_t err = ESP_FAIL;
