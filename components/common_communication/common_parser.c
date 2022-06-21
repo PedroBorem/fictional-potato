@@ -34,7 +34,7 @@
 
 
 /* Public methods ------------------------------------------------ */
-esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config* config_out)
+esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* config_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
 	pivot_config config = {};
@@ -61,7 +61,15 @@ esp_err_t common_parser_string_to_status(const char* sting_in, pivot_config* con
 	return err;
 }
 
-esp_err_t common_parser_status_to_string(const pivot_config config_in, char* string_out)
+
+esp_err_t common_parser_string_to_gnss(const char* sting_in, uint8_t* angle, time_t* timestamp)
+{
+	esp_err_t err = ESP_ERR_INVALID_ARG;
+
+	return err;
+}
+
+esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
 	char string_converted[8] = "";
@@ -74,6 +82,7 @@ esp_err_t common_parser_status_to_string(const pivot_config config_in, char* str
 	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", config_in.percentimeter);
 	memcpy(string_out, string_converted, sizeof(string_converted) - 1);
 
+	//TODO: added angle and timestamp
 	return err;
 }
 
