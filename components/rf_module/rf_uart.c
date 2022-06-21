@@ -105,17 +105,17 @@ esp_err_t rf_uart_send_event(char* event, size_t event_size)
 /* Private methods ----------------------------------------------- */
 static void rf_uart_event_task(void* arg)
 {
-	uart_event_t event;
-	size_t buffered_size;
+	uart_event_t event = {};
+	size_t buffered_size = 0;
 	uint8_t* dtmp = (uint8_t*) malloc(RF_UART_BUF_SIZE);
 
 	while(1)
 	{
 		//Waiting for UART event.
-		if(xQueueReceive(rf_uart_queue, (void * )&event, (portTickType)portMAX_DELAY))
+		if(xQueueReceive(rf_uart_queue, (void*)&event, (portTickType)portMAX_DELAY))
 		{
 			bzero(dtmp, RF_UART_BUF_SIZE);
-			ESP_LOGI(RF_UART_TAG, "uart[%d] event:", RF_UART_NUM);
+			LOG_COMM(RF_UART_TAG, "uart[%d] event:", RF_UART_NUM);
 
 			switch(event.type)
 			{
@@ -125,9 +125,9 @@ static void rf_uart_event_task(void* arg)
 					/*We'd better handler data event fast, there would be much more data events than
 					other types of events. If we take too much time on data event, the queue might
 					be full.*/
-					ESP_LOGI(RF_UART_TAG, "[UART DATA]: %d", event.size);
+					LOG_COMM(RF_UART_TAG, "[UART DATA]: %d", event.size);
 					uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					ESP_LOGI(RF_UART_TAG, "[DATA EVT]:");
+					LOG_COMM(RF_UART_TAG, "[DATA EVT]:");
 					uart_write_bytes(RF_UART_NUM, (const char*) dtmp, event.size);
 					break;
 				}
@@ -155,19 +155,19 @@ static void rf_uart_event_task(void* arg)
 				case UART_BREAK:
 				{
 					//Event of UART RX break detected
-					ESP_LOGI(RF_UART_TAG, "uart rx break");
+					LOG_COMM(RF_UART_TAG, "uart rx break");
 					break;
 				}
 				case UART_PARITY_ERR:
 				{
 					//Event of UART parity check error
-					ESP_LOGI(RF_UART_TAG, "uart parity error");
+					ESP_LOGE(RF_UART_TAG, "%s, uart parity error", __func__);
 					break;
 				}
 				case UART_FRAME_ERR:
 				{
 					//Event of UART frame error
-					ESP_LOGI(RF_UART_TAG, "uart frame error");
+					ESP_LOGE(RF_UART_TAG, "%s, uart frame error", __func__);
 					break;
 				}
 				case UART_PATTERN_DET:
@@ -175,7 +175,7 @@ static void rf_uart_event_task(void* arg)
 					//UART_PATTERN_DET
 					uart_get_buffered_data_len(RF_UART_NUM, &buffered_size);
 					int pos = uart_pattern_pop_pos(RF_UART_NUM);
-					ESP_LOGI(RF_UART_TAG, "[UART PATTERN DETECTED] pos: %d, buffered size: %d", pos, buffered_size);
+					LOG_COMM(RF_UART_TAG, "[UART PATTERN DETECTED] pos: %d, buffered size: %d", pos, buffered_size);
 					if (pos == -1)
 					{
 						// There used to be a UART_PATTERN_DET event, but the pattern position queue is full so that it can not
@@ -189,15 +189,15 @@ static void rf_uart_event_task(void* arg)
 						uint8_t pat[PATTERN_CHR_NUM + 1];
 						memset(pat, 0, sizeof(pat));
 						uart_read_bytes(RF_UART_NUM, pat, PATTERN_CHR_NUM, 100 / portTICK_PERIOD_MS);
-						ESP_LOGI(RF_UART_TAG, "read data: %s", dtmp);
-						ESP_LOGI(RF_UART_TAG, "read pat : %s", pat);
+						LOG_COMM(RF_UART_TAG, "read data: %s", dtmp);
+						LOG_COMM(RF_UART_TAG, "read pat : %s", pat);
 					}
 					break;
 				}
 				default:
 				{
 					//Others
-					ESP_LOGI(RF_UART_TAG, "uart event type: %d", event.type);
+					ESP_LOGW(RF_UART_TAG, "uart event type: %d", event.type);
 					break;
 				}
 			}
