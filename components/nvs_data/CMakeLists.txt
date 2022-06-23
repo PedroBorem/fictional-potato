@@ -3,5 +3,5 @@ idf_component_register(	SRCS
 							"nvs_config.c"
 						INCLUDE_DIRS 
                    			"include"
-                   		PRIV_REQUIRES main utils )
+                   		PRIV_REQUIRES main utils common_communication )
                    		

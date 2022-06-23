@@ -16,6 +16,7 @@
 
 /* UART include */
 #include "driver/uart.h"
+#include "driver/gpio.h"
 
 /**\addtogroup components
  * @{
@@ -27,42 +28,30 @@
  *
  */
 
-
 /* Private definitions ------------------------------------------- */
 #define RF_UART_TAG		"rf_uart"
 
-/**
- * This example shows how to use the UART driver to handle special UART events.
- *
- * It also reads data from UART0 directly, and echoes it to console.
- *
- * - Port: UART0
- * - Receive (Rx) buffer: on
- * - Transmit (Tx) buffer: off
- * - Flow control: off
- * - Event queue: on
- * - Pin assignment: TxD (default), RxD (default)
- */
-
 #define RF_UART_NUM 		UART_NUM_2
-#define PATTERN_CHR_NUM    	(3)         /*!< Set the number of consecutive and identical characters received by receiver which defines a UART pattern*/
+#define RF_UART_TX_NUM 		GPIO_NUM_17
+#define RF_UART_RX_NUM		GPIO_NUM_16
 
 #define RF_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
-rf_uart_callback rf_callback = NULL;
-QueueHandle_t rf_uart_queue = NULL;
+static rf_uart_callback rf_callback = NULL;
+static QueueHandle_t rf_uart_queue = NULL;
 
 /* Private function prototype ------------------------------------ */
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(rf_uart_callback callback)
+esp_err_t rf_uart_init(const rf_uart_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
+	BaseType_t xReturn = pdPASS;
 
 	// Configure parameters of an UART driver, communication pins and install the driver
-	uart_config_t uart_config = {
+	const uart_config_t uart_config = {
 		.baud_rate =	9600,
 		.data_bits =	UART_DATA_8_BITS,
 		.parity =		UART_PARITY_DISABLE,
@@ -78,28 +67,36 @@ esp_err_t rf_uart_init(rf_uart_callback callback)
 		uart_param_config(RF_UART_NUM, &uart_config);
 
 		//Set UART pins (using UART0 default pins ie no changes.)
-		err = uart_set_pin(RF_UART_NUM, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+		err = uart_set_pin(RF_UART_NUM, RF_UART_TX_NUM, RF_UART_RX_NUM, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 		if(err == ESP_OK)
 		{
 			//Create a task to handler UART event from ISR
-			xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
-
-			if(callback != NULL)
+			xReturn = xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+			if(callback != NULL && xReturn == pdPASS)
 			{
 				rf_callback = callback;
 			}
 			else
 			{
 				err = ESP_ERR_INVALID_ARG;
+				ESP_LOGE(RF_UART_TAG, "%s, invalid argument", __func__);
 			}
 		}
+		else
+		{
+			ESP_LOGE(RF_UART_TAG, "%s, failed to configure UART pin", __func__);
+		}
+	}
+	else
+	{
+		ESP_LOGE(RF_UART_TAG, "%s, failed to install UART driver", __func__);
 	}
 
 	return err;
 }
 
 
-esp_err_t rf_uart_send_event(char* event, size_t event_size)
+esp_err_t rf_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
@@ -112,6 +109,10 @@ esp_err_t rf_uart_send_event(char* event, size_t event_size)
 }
 
 /* Private methods ----------------------------------------------- */
+/**
+ * @brief 	UART reception task
+ * @param	arg[in] : task argument (default NULL)
+ */
 static void rf_uart_event_task(void* arg)
 {
 	uart_event_t event = {};

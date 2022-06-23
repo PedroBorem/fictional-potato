@@ -23,7 +23,7 @@
  * 	- true: success
  * 	- false: fail to initialize
  */
-bool data_app_init(app_callback callback);
+bool data_app_init(const app_callback callback);
 
 /**
  * @brief	sends the queue a request to save a new configuration

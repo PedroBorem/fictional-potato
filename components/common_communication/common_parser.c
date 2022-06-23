@@ -25,13 +25,59 @@
  */
 
 /* Private definitions ------------------------------------------- */
+/**
+ *	Power attribute position in string (in/out)
+ *
+ */
 #define	COMMON_PARSER_POWER_POSITION				(2)
+
+/**
+ *	Rotation attribute position in string (in/out)
+ *
+ */
 #define	COMMON_PARSER_ROTATION_POSITION				(0)
+
+/**
+ *	Watering attribute position in string (in/out)
+ *
+ */
 #define	COMMON_PARSER_WATERING_POSITION				(1)
+
+/**
+ *	Percentimeter attribute position in string (in/out)
+ *
+ */
 #define	COMMON_PARSER_PERCENTIMETER_POSITION		(4)
 
-#define COMMOM_PARSER_ELEMENT_NUMBER				(4)
+/**
+ *	Angle attribute output buffer size
+ *
+ */
+#define COMMON_PARSER_ANGLE_SIZE					(6)
 
+/**
+ *	Angle attribute position in string (in/out)
+ *
+ */
+#define	COMMON_PARSER_ANGLE_POSITION				(3)
+
+/**
+ *	Timestamp attribute output buffer size
+ *
+ */
+#define COMMON_PARSER_TIMESTAMP_SIZE				(11)
+
+/**
+ *	Timestamp attribute position in string (in/out)
+ *
+ */
+#define COMMON_PARSER_TIMESTAMP_POSITION			(1)
+
+/**
+ *	Number of elements in a configuration string
+ *
+ */
+#define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
 /* Public methods ------------------------------------------------ */
 esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* config_out)
@@ -66,14 +112,14 @@ esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, ti
 	esp_err_t err = ESP_OK;
 
 	// assistant buffers
-	char angle_out[6] = "";
-	char timestamp_out[11] = "";
+	char angle_out[COMMON_PARSER_ANGLE_SIZE] = "";
+	char timestamp_out[COMMON_PARSER_TIMESTAMP_SIZE] = "";
 	char search_timestamp[] = "#";
 	char* ptr = strstr(sting_in, search_timestamp);
 
 	// assistant accountant
 	uint8_t string_pos = 0;
-	uint8_t string_off_set = 3;
+	uint8_t string_off_set = COMMON_PARSER_ANGLE_POSITION;
 
 	// angle analyzer
 	for(string_pos = 0; string_pos < (sizeof(angle_out) - 1); string_pos++)
@@ -90,7 +136,7 @@ esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, ti
 	}
 
 	// time analyzer
-	string_off_set = 1;
+	string_off_set = COMMON_PARSER_TIMESTAMP_POSITION;
 	for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
 	{
 		if(ptr[(string_pos + string_off_set)] == '$')
@@ -125,3 +171,5 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 	return err;
 }
 
+/**@}*/ 	//common_parser
+/** @}*/	//components

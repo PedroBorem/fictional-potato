@@ -23,23 +23,24 @@
  *
  */
 
-/**\addtogroup rf_uart
+/**\addtogroup rf_module
  * @{
  *
  */
 
-
+/* Private variables  -------------------------------------------- */
 static uint16_t rf_angle = 0;
 static time_t rf_timestamp = 0;
 
+/* Private methods  ---------------------------------------------- */
+void rf_module_call(const char* buffer, size_t buffer_size);
 
-void rf_module_call(char* buffer, size_t buffer_size);
-
+/* Public methods ------------------------------------------------ */
 esp_err_t rf_module_init(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	rf_uart_init(rf_module_call);
+	err = rf_uart_init(rf_module_call);
 
 	return err;
 }
@@ -47,15 +48,13 @@ esp_err_t rf_module_init(void)
 esp_err_t rf_module_send_event(pivot_config config_in)
 {
 	esp_err_t err = ESP_FAIL;
-	char event[100] = "";
+	uint16_t degree = rf_module_get_angle();
+	time_t timestamp = rf_module_get_timestamp();
 
+	char event[50] = ""; //TODO adjust size
+	common_parser_status_to_string(config_in, degree, timestamp, event);
 
-	common_parser_status_to_string(	config_in,
-									rf_module_get_angle(),
-									rf_module_get_timestamp(),
-									event);
-
-	rf_uart_send_event(event, sizeof(event));
+	err = rf_uart_send_event(event, sizeof(event));
 
 	return err;
 }
@@ -70,21 +69,29 @@ time_t rf_module_get_timestamp(void)
 	return rf_timestamp;
 }
 
-/// callback;
-void rf_module_call(char* buffer, size_t buffer_size)
+/* Private methods ----------------------------------------------- */
+/**
+ * @brief 	Function is triggered when something arrives in the UART
+ * @param	buffer[in] : received content
+ * @param	buffer_size[in] : received content size
+ */
+void rf_module_call(const char* buffer, size_t buffer_size)
 {
-	esp_err_t err = ESP_FAIL;
+	esp_err_t err = ESP_OK;
 
+	// Configuration Pivot
 	pivot_config config = {};
+
+	// GPS variables
 	time_t timestamp = 0;
 	uint16_t angle = 0;
 
-	//GPS179.31-17:51:12#1655920272$‹
-	char search[] = "GPS";
+	const char search[] = "GPS";
 	char* ptr = strstr(buffer, search);
 
 	if(ptr != NULL)
 	{
+		// if the received message is GPS data
 		err = common_parser_string_to_gnss(ptr, &angle, &timestamp);
 		if(err == ESP_OK)
 		{
@@ -94,22 +101,25 @@ void rf_module_call(char* buffer, size_t buffer_size)
 	}
 	else
 	{
+		// if the received message is a configuration
 		common_parser_string_to_config(buffer, &config);
-		//joga pra cima para comm_app
+		RF_MODULO_NOTIFY_APP(config);
 	}
 }
+
+/* Public callback ----------------------------------------------- */
 
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void RF_MODULO_NOTIFY_APP(pivot_config config)
+__attribute__((weak)) void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
 {
-	UNUSED(config);
+	UNUSED(config_in);
 	return;
 }
 
-
-
+/**@}*/ 	//rf_module
+/** @}*/	//components
 
 
 

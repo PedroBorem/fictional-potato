@@ -73,7 +73,7 @@ static QueueHandle_t xQueue_data_app = NULL;
 void data_app_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-bool data_app_init(app_callback callback)
+bool data_app_init(const app_callback callback)
 {
 	bool ret = false;
 	BaseType_t xReturn = pdPASS;
