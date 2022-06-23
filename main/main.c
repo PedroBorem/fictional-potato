@@ -74,7 +74,9 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_NEW_CONGIG:
 		{
-
+			pivot_config config = {};
+			memcpy(&config, buffer, sizeof(config));
+			data_app_save_config(config, sizeof(config));
 			break;
 		}
 		default:

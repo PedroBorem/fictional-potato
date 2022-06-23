@@ -19,4 +19,7 @@ uint16_t rf_module_get_angle(void);
 time_t rf_module_get_timestamp(void);
 
 
+// Callback
+void RF_MODULO_NOTIFY_APP(pivot_config config);
+
 #endif /* COMPONENTS_RF_MODULE_INCLUDE_RF_MODULE_H_ */

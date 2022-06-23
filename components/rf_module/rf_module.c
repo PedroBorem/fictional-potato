@@ -99,6 +99,15 @@ void rf_module_call(char* buffer, size_t buffer_size)
 	}
 }
 
+/*
+ * This function must be implemented in the application of communication.
+ */
+__attribute__((weak)) void RF_MODULO_NOTIFY_APP(pivot_config config)
+{
+	UNUSED(config);
+	return;
+}
+
 
 
 
