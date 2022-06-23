@@ -32,6 +32,7 @@ esp_err_t rf_module_init(void)
 {
 	esp_err_t err = ESP_FAIL;
 
+	rf_uart_init();
 
 	return err;
 }

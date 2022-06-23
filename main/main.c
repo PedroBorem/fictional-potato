@@ -14,6 +14,8 @@
 /* Applications include */
 #include "data_app.h"
 
+#include "rf_module.h"
+
 /**\addtogroup main
  * @{
  *
@@ -34,9 +36,11 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
+	rf_module_init();
 	while (1)
 	{
 		vTaskDelay(pdMS_TO_TICKS(1000));
+		ESP_LOGI(MAIN_TAG,"starting the system ...");
 	}
 }
 

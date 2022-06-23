@@ -44,7 +44,7 @@
  * - Pin assignment: TxD (default), RxD (default)
  */
 
-#define RF_UART_NUM 		UART_NUM_0
+#define RF_UART_NUM 		UART_NUM_2
 #define PATTERN_CHR_NUM    	(3)         /*!< Set the number of consecutive and identical characters received by receiver which defines a UART pattern*/
 
 #define RF_UART_BUF_SIZE 	(1024)
@@ -62,7 +62,7 @@ esp_err_t rf_uart_init(void)
 
 	// Configure parameters of an UART driver, communication pins and install the driver
 	uart_config_t uart_config = {
-		.baud_rate =	115200,
+		.baud_rate =	9600,
 		.data_bits =	UART_DATA_8_BITS,
 		.parity =		UART_PARITY_DISABLE,
 		.stop_bits =	UART_STOP_BITS_1,
@@ -71,20 +71,28 @@ esp_err_t rf_uart_init(void)
 	};
 
 	// Install UART driver, and get the queue.
-	uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 2, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
-	uart_param_config(RF_UART_NUM, &uart_config);
+	err = uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 2, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
+	if(err == ESP_OK)
+	{
+		uart_param_config(RF_UART_NUM, &uart_config);
 
-    //Set UART pins (using UART0 default pins ie no changes.)
-    uart_set_pin(RF_UART_NUM, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+		//Set UART pins (using UART0 default pins ie no changes.)
+		err = uart_set_pin(RF_UART_NUM, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
+		if(err == ESP_OK)
+		{
+		    //Set uart pattern detect function.
+			err = uart_enable_pattern_det_baud_intr(RF_UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
 
-    //Set uart pattern detect function.
-    uart_enable_pattern_det_baud_intr(RF_UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
+			//Reset the pattern queue length to record at most 20 pattern positions.
+		    uart_pattern_queue_reset(RF_UART_NUM, 20);
 
-    //Reset the pattern queue length to record at most 20 pattern positions.
-    uart_pattern_queue_reset(RF_UART_NUM, 20);
-
-    //Create a task to handler UART event from ISR
-    xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+		    if(err == ESP_OK)
+		    {
+		    	//Create a task to handler UART event from ISR
+				xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+		    }
+		}
+	}
 
 	return err;
 }
@@ -125,10 +133,13 @@ static void rf_uart_event_task(void* arg)
 					/*We'd better handler data event fast, there would be much more data events than
 					other types of events. If we take too much time on data event, the queue might
 					be full.*/
-					LOG_COMM(RF_UART_TAG, "[UART DATA]: %d", event.size);
+
 					uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					LOG_COMM(RF_UART_TAG, "[DATA EVT]:");
-					uart_write_bytes(RF_UART_NUM, (const char*) dtmp, event.size);
+					LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
+					LOG_COMM(RF_UART_TAG, "data : %s", dtmp);
+					ESP_LOGW(RF_UART_TAG, "aaaaaaaaaaaaaaaaa");
+					//uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
+					//uart_write_bytes(RF_UART_NUM, (const char*) dtmp, event.size);
 					break;
 				}
 				case UART_FIFO_OVF:
