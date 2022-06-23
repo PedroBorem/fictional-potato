@@ -61,21 +61,57 @@ esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* con
 	return err;
 }
 
-
 esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, time_t* timestamp)
 {
-	esp_err_t err = ESP_ERR_INVALID_ARG;
+	esp_err_t err = ESP_OK;
 
-	//GPS179.31-17:51:12#1655920272$‹/
+	// assistant buffers
+	char angle_out[6] = "";
+	char timestamp_out[11] = "";
+	char search_timestamp[] = "#";
+	char* ptr = strstr(sting_in, search_timestamp);
 
+	// assistant accountant
+	uint8_t string_pos = 0;
+	uint8_t string_off_set = 3;
 
+	// angle analyzer
+	for(string_pos = 0; string_pos < (sizeof(angle_out) - 1); string_pos++)
+	{
+		if(sting_in[(string_pos + string_off_set)] == '.')
+		{
+			string_pos = (string_pos - 1);
+			string_off_set = (string_off_set + 1);
+		}
+		else
+		{
+			angle_out[string_pos] = sting_in[(string_pos + string_off_set)];
+		}
+	}
+
+	// time analyzer
+	string_off_set = 1;
+	for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
+	{
+		if(ptr[(string_pos + string_off_set)] == '$')
+		{
+			break;
+		}
+		else
+		{
+			timestamp_out[string_pos] = ptr[(string_pos + string_off_set)];
+		}
+	}
+
+	sscanf(angle_out, "%d", (int*)angle);
+	sscanf(timestamp_out, "%d", (int*)timestamp);
 
 	return err;
 }
 
 esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
-	esp_err_t err = ESP_ERR_INVALID_ARG;
+	esp_err_t err = ESP_OK;
 	char string_converted[8] = "";
 
 	sprintf(&string_converted[COMMON_PARSER_ROTATION_POSITION], "%d", config_in.rotation);
@@ -84,9 +120,8 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 
 	string_converted[3] = '-';
 	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", config_in.percentimeter);
-	memcpy(string_out, string_converted, sizeof(string_converted) - 1);
+	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
-	//TODO: added angle and timestamp
 	return err;
 }
 

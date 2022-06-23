@@ -97,8 +97,6 @@ void rf_module_call(char* buffer, size_t buffer_size)
 		common_parser_string_to_config(buffer, &config);
 		//joga pra cima para comm_app
 	}
-
-	//converte oque chegou e manda para cima.
 }
 
 
