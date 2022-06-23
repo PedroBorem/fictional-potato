@@ -50,13 +50,14 @@
 #define RF_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
+rf_uart_callback rf_callback = NULL;
 QueueHandle_t rf_uart_queue = NULL;
 
 /* Private function prototype ------------------------------------ */
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(void)
+esp_err_t rf_uart_init(rf_uart_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 
@@ -80,17 +81,17 @@ esp_err_t rf_uart_init(void)
 		err = uart_set_pin(RF_UART_NUM, 17, 16, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
 		if(err == ESP_OK)
 		{
-		    //Set uart pattern detect function.
-			err = uart_enable_pattern_det_baud_intr(RF_UART_NUM, '+', PATTERN_CHR_NUM, 9, 0, 0);
+			//Create a task to handler UART event from ISR
+			xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
 
-			//Reset the pattern queue length to record at most 20 pattern positions.
-		    uart_pattern_queue_reset(RF_UART_NUM, 20);
-
-		    if(err == ESP_OK)
-		    {
-		    	//Create a task to handler UART event from ISR
-				xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
-		    }
+			if(callback != NULL)
+			{
+				rf_callback = callback;
+			}
+			else
+			{
+				err = ESP_ERR_INVALID_ARG;
+			}
 		}
 	}
 
@@ -114,7 +115,6 @@ esp_err_t rf_uart_send_event(char* event, size_t event_size)
 static void rf_uart_event_task(void* arg)
 {
 	uart_event_t event = {};
-	size_t buffered_size = 0;
 	uint8_t* dtmp = (uint8_t*) malloc(RF_UART_BUF_SIZE);
 
 	while(1)
@@ -130,85 +130,65 @@ static void rf_uart_event_task(void* arg)
 				case UART_DATA:
 				{
 					//Event of UART receving data
-					/*We'd better handler data event fast, there would be much more data events than
-					other types of events. If we take too much time on data event, the queue might
-					be full.*/
-
 					uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
 					LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
 					LOG_COMM(RF_UART_TAG, "data : %s", dtmp);
-					ESP_LOGW(RF_UART_TAG, "aaaaaaaaaaaaaaaaa");
-					//uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					//uart_write_bytes(RF_UART_NUM, (const char*) dtmp, event.size);
+
+					rf_callback((char*)dtmp, event.size);
+
 					break;
 				}
 				case UART_FIFO_OVF:
 				{
 					//Event of HW FIFO overflow detected
 					ESP_LOGW(RF_UART_TAG, "hw fifo overflow");
-					// If fifo overflow happened, you should consider adding flow control for your application.
-					// The ISR has already reset the rx FIFO,
-					// As an example, we directly flush the rx buffer here in order to read more data.
 					uart_flush_input(RF_UART_NUM);
 					xQueueReset(rf_uart_queue);
+
 					break;
 				}
 				case UART_BUFFER_FULL:
 				{
 					//Event of UART ring buffer full
 					ESP_LOGW(RF_UART_TAG, "ring buffer full");
-					// If buffer full happened, you should consider encreasing your buffer size
-					// As an example, we directly flush the rx buffer here in order to read more data.
 					uart_flush_input(RF_UART_NUM);
 					xQueueReset(rf_uart_queue);
+
 					break;
 				}
 				case UART_BREAK:
 				{
 					//Event of UART RX break detected
-					LOG_COMM(RF_UART_TAG, "uart rx break");
+					LOG_COMM(RF_UART_TAG, "UART RX break");
+
 					break;
 				}
 				case UART_PARITY_ERR:
 				{
 					//Event of UART parity check error
-					ESP_LOGE(RF_UART_TAG, "%s, uart parity error", __func__);
+					ESP_LOGE(RF_UART_TAG, "%s, UART parity error", __func__);
+
 					break;
 				}
 				case UART_FRAME_ERR:
 				{
 					//Event of UART frame error
-					ESP_LOGE(RF_UART_TAG, "%s, uart frame error", __func__);
+					ESP_LOGE(RF_UART_TAG, "%s, UART frame error", __func__);
+
 					break;
 				}
 				case UART_PATTERN_DET:
 				{
-					//UART_PATTERN_DET
-					uart_get_buffered_data_len(RF_UART_NUM, &buffered_size);
-					int pos = uart_pattern_pop_pos(RF_UART_NUM);
-					LOG_COMM(RF_UART_TAG, "[UART PATTERN DETECTED] pos: %d, buffered size: %d", pos, buffered_size);
-					if (pos == -1)
-					{
-						// There used to be a UART_PATTERN_DET event, but the pattern position queue is full so that it can not
-						// record the position. We should set a larger queue size.
-						// As an example, we directly flush the rx buffer here.
-						uart_flush_input(RF_UART_NUM);
-					}
-					else
-					{
-						uart_read_bytes(RF_UART_NUM, dtmp, pos, 100 / portTICK_PERIOD_MS);
-						uint8_t pat[PATTERN_CHR_NUM + 1];
-						memset(pat, 0, sizeof(pat));
-						uart_read_bytes(RF_UART_NUM, pat, PATTERN_CHR_NUM, 100 / portTICK_PERIOD_MS);
-						LOG_COMM(RF_UART_TAG, "read data: %s", dtmp);
-						LOG_COMM(RF_UART_TAG, "read pat : %s", pat);
-					}
+					//Event of UART frame error
+					ESP_LOGW(RF_UART_TAG, "%s, UART pattern", __func__);
+
 					break;
 				}
 				default:
 				{
 					//Others
-					ESP_LOGW(RF_UART_TAG, "uart event type: %d", event.type);
+					ESP_LOGW(RF_UART_TAG, "UART event type: %d", event.type);
+
 					break;
 				}
 			}

@@ -25,7 +25,7 @@
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
-static void app_main_call(app_call_states state);
+static void app_main_call(app_call_states state, void* buffer);
 
 /**
  * @brief	main class
@@ -63,13 +63,18 @@ static bool app_init(void)
  * @brief	callback from secondary applications to the main
  * @param	state - [in]: reason why a callback was triggered
  */
-static void app_main_call(app_call_states state)
+static void app_main_call(app_call_states state, void* buffer)
 {
 	switch(state)
 	{
 		case CALL_LOAD_CONFIG:
 		{
 			// TODO: notify give main task
+			break;
+		}
+		case CALL_NEW_CONGIG:
+		{
+
 			break;
 		}
 		default:

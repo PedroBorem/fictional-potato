@@ -28,11 +28,18 @@
  *
  */
 
+
+static uint16_t rf_angle = 0;
+static time_t rf_timestamp = 0;
+
+
+void rf_module_call(char* buffer, size_t buffer_size);
+
 esp_err_t rf_module_init(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	rf_uart_init();
+	rf_uart_init(rf_module_call);
 
 	return err;
 }
@@ -53,25 +60,44 @@ esp_err_t rf_module_send_event(pivot_config config_in)
 	return err;
 }
 
-
 uint16_t rf_module_get_angle(void)
 {
-	uint16_t angle = 180;
-
-	return angle;
+	return rf_angle;
 }
 
 time_t rf_module_get_timestamp(void)
 {
-	time_t timestamp = 100000;
-
-	return timestamp;
+	return rf_timestamp;
 }
-
 
 /// callback;
 void rf_module_call(char* buffer, size_t buffer_size)
 {
+	esp_err_t err = ESP_FAIL;
+
+	pivot_config config = {};
+	time_t timestamp = 0;
+	uint16_t angle = 0;
+
+	//GPS179.31-17:51:12#1655920272$‹
+	char search[] = "GPS";
+	char* ptr = strstr(buffer, search);
+
+	if(ptr != NULL)
+	{
+		err = common_parser_string_to_gnss(ptr, &angle, &timestamp);
+		if(err == ESP_OK)
+		{
+			rf_angle = angle;
+			rf_timestamp = timestamp;
+		}
+	}
+	else
+	{
+		common_parser_string_to_config(buffer, &config);
+		//joga pra cima para comm_app
+	}
+
 	//converte oque chegou e manda para cima.
 }
 

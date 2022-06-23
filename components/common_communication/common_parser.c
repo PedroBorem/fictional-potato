@@ -62,9 +62,13 @@ esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* con
 }
 
 
-esp_err_t common_parser_string_to_gnss(const char* sting_in, uint8_t* angle, time_t* timestamp)
+esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, time_t* timestamp)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
+
+	//GPS179.31-17:51:12#1655920272$‹/
+
+
 
 	return err;
 }

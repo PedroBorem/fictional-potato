@@ -12,7 +12,14 @@
 #include "project_config.h"
 
 
-esp_err_t rf_uart_init(void);
+/**
+ * @brief:
+ *
+ */
+typedef void (*rf_uart_callback)(char* buffer, size_t buffer_size);
+
+
+esp_err_t rf_uart_init(rf_uart_callback callback);
 
 esp_err_t rf_uart_send_event(char* event, size_t event_size);
 

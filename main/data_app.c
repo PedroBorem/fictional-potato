@@ -63,17 +63,17 @@ typedef struct
 }data_app_request;
 
 /* Private variables  -------------------------------------------- */
-data_app_callback data_app_call = NULL;
+static app_callback data_app_call = NULL;
 
 //FreeRTOS variables
-TaskHandle_t xTask_data_app = NULL;
-QueueHandle_t xQueue_data_app = NULL;
+static TaskHandle_t xTask_data_app = NULL;
+static QueueHandle_t xQueue_data_app = NULL;
 
 /* Private function prototype ------------------------------------ */
 void data_app_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-bool data_app_init(data_app_callback app_callback)
+bool data_app_init(app_callback callback)
 {
 	bool ret = false;
 	BaseType_t xReturn = pdPASS;
@@ -111,9 +111,9 @@ bool data_app_init(data_app_callback app_callback)
 		}
 	}
 
-	if(app_callback != NULL && ret == true)
+	if(callback != NULL && ret == true)
 	{
-		data_app_call = app_callback;
+		data_app_call = callback;
 		LOG_DATA( DATA_APP_TAG, "%s, data application started successfully", __func__);
 		data_app_show_config();
 	}
@@ -218,7 +218,7 @@ void data_app_task(void* arg)
 
 					if(data_app_call != NULL)
 					{
-						data_app_call(CALL_LOAD_CONFIG);
+						data_app_call(CALL_LOAD_CONFIG, NULL);
 					}
 					break;
 				}
