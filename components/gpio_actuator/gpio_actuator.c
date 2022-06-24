@@ -59,10 +59,45 @@ esp_err_t gpio_actuator_set(pivot_config config)
 {
 	esp_err_t err = ESP_FAIL;
 
-	//setar cada relé de acordo
-	//criar task de timer do percentimetro
+	if(config.power_state == PIVOT_OFF)
+	{
+		gpio_actuator_shutdown();
+		err = ESP_OK;
+		return err;
+	}
+	else if(config.power_state == PIVOT_ON)
+	{
+		gpio_set_level(PIN_ON, SYS_ENABLE);
+		gpio_set_level(PIN_AUX, SYS_ENABLE);
+		if(config.rotation == PIVOT_CW)
+		{
+			gpio_set_level(PIN_CW, SYS_ENABLE);
+			gpio_set_level(PIN_CCW, SYS_DISABLE);
+		}
+		else if(config.rotation == PIVOT_CCW)
+		{
+			gpio_set_level(PIN_CW, SYS_DISABLE);
+			gpio_set_level(PIN_CCW, SYS_ENABLE);
+		}
+		gpio_set_level(PIN_ON, SYS_DISABLE);
+		//criar task de timer do percentimetro
+	}
 
 	return err;
+}
+
+void gpio_actuator_shutdown(void)
+{
+
+	gpio_set_level(PIN_OFF, SYS_ENABLE);
+	gpio_set_level(PIN_AUX, SYS_DISABLE);
+	gpio_set_level(PIN_CW, SYS_DISABLE);
+	gpio_set_level(PIN_CCW, SYS_DISABLE);
+	gpio_set_level(PIN_WATERING, SYS_DISABLE);
+	gpio_set_level(PIN_PERC_AUX, SYS_DISABLE);
+	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
+	//delay
+	gpio_set_level(PIN_OFF, SYS_DISABLE);
 }
 
 

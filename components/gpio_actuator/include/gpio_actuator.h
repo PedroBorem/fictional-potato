@@ -15,6 +15,9 @@
 */
 #include "project_config.h"
 
+#define SYS_ENABLE			0
+#define SYS_DISABLE			1
+
 /* Pinout references*/
 /* GPIO Outputs */
 #define PIN_ON       	3	//Main system relay off
@@ -68,5 +71,6 @@ esp_err_t gpio_actuator_init(void);
  * 	- ESP_FAIL: fail to initialize
  */
 esp_err_t gpio_actuator_set(pivot_config config);
+void gpio_actuator_shutdown(void);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */

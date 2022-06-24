@@ -75,7 +75,7 @@ typedef enum
 typedef	struct __attribute__((__packed__))
 {
 	uint8_t power_state;	/*!< PIVOT_ON or PIVOT_OFF*/
-	uint8_t rotation;	/*!< PIVOT_ADVANCE or PIVOT_REVERSE*/
+	uint8_t rotation;		/*!< PIVOT_CW or PIVOT_CCW*/
 	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;
