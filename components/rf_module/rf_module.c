@@ -27,6 +27,8 @@
  * @{
  *
  */
+/* Private definitions-------------------------------------------- */
+#define	RF_MODULE_TAG	"rf_module"
 
 /* Private variables  -------------------------------------------- */
 static uint16_t rf_angle = 0;
@@ -97,13 +99,27 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 		{
 			rf_angle = angle;
 			rf_timestamp = timestamp;
+
+			LOG_COMM(RF_MODULE_TAG, "angle : %d", rf_angle);
+			LOG_COMM(RF_MODULE_TAG, "timestamp : %lld\n", (long long int)rf_timestamp);
+		}
+		else
+		{
+			ESP_LOGE(RF_MODULE_TAG, "%s, GPS invalid format", __func__);
 		}
 	}
 	else
 	{
 		// if the received message is a configuration
-		common_parser_string_to_config(buffer, &config);
-		RF_MODULO_NOTIFY_APP(config);
+		err = common_parser_string_to_config(buffer, &config);
+		if(err == ESP_OK)
+		{
+			RF_MODULO_NOTIFY_APP(config);
+		}
+		else
+		{
+			ESP_LOGE(RF_MODULE_TAG, "%s, invalid configuration", __func__);
+		}
 	}
 }
 
