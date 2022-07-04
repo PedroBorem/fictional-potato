@@ -13,6 +13,7 @@
 
 /* Applications include */
 #include "data_app.h"
+#include "gpio_actuator.h"
 
 /**\addtogroup main
  * @{
@@ -33,6 +34,16 @@ void app_main(void)
 {
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
+
+	/*---------------GPIO test--------------*/
+	pivot_config pivot_test;
+	pivot_test.power_state = PIVOT_ON;
+	pivot_test.rotation = PIVOT_CW;
+	pivot_test.watering_state = PIVOT_WET;
+	pivot_test.percentimeter = 50;
+
+	gpio_actuator_set(pivot_test);
+	/*--------------------------------------*/
 
 	while (1)
 	{

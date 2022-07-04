@@ -27,6 +27,10 @@
  *
  */
 
+/* Global variables ---------------------------------------------- */
+xTimerHandle perc_timer_handleOn;
+xTimerHandle perc_timer_handleOff;
+
 /* Public methods ------------------------------------------------ */
 esp_err_t gpio_actuator_init()
 {
@@ -50,6 +54,8 @@ esp_err_t gpio_actuator_init()
 	io_conf_in.pull_up_en = 1;
     gpio_config(&io_conf_in);
 
+
+
     err = ESP_OK;
 
 	return err;
@@ -58,6 +64,23 @@ esp_err_t gpio_actuator_init()
 esp_err_t gpio_actuator_set(pivot_config config)
 {
 	esp_err_t err = ESP_FAIL;
+	int perc_sec;
+
+	perc_sec = config.percentimeter*(PERC_FULL_CYCLE/100)*1000;
+
+	perc_timer_handleOn = xTimerCreate(
+		      "percTimerON", /* name */
+		      pdMS_TO_TICKS(perc_sec), /* period/time */
+		      pdFALSE, /* auto reload */
+		      (void*)0, /* timer ID */
+			  vPercTimerOnExpire); /* callback */
+
+	perc_timer_handleOff = xTimerCreate(
+		      "percTimerOff", /* name */
+		      pdMS_TO_TICKS((PERC_FULL_CYCLE-perc_sec)), /* period/time */
+		      pdFALSE, /* auto reload */
+		      (void*)0, /* timer ID */
+			  vPercTimerOffExpire); /* callback */
 
 	if(config.power_state == PIVOT_OFF)
 	{
@@ -80,7 +103,23 @@ esp_err_t gpio_actuator_set(pivot_config config)
 			gpio_set_level(PIN_CCW, SYS_ENABLE);
 		}
 		gpio_set_level(PIN_ON, SYS_DISABLE);
-		//criar task de timer do percentimetro
+
+		if(config.percentimeter > 0 && config.percentimeter < 100)
+		{
+			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
+			gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
+			xTimerReset(perc_timer_handleOn, 0);
+		}
+		else if(config.percentimeter == 0)
+		{
+			gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
+			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
+		}
+		else if(config.percentimeter == 100)
+		{
+			gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
+			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
+		}
 	}
 
 	return err;
@@ -100,4 +139,12 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(PIN_OFF, SYS_DISABLE);
 }
 
+void vPercTimerOnExpire(xTimerHandle pxTimer) {
+	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
+	xTimerReset(perc_timer_handleOff, 0);
+}
 
+void vPercTimerOffExpire(xTimerHandle pxTimer) {
+	gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
+	xTimerReset(perc_timer_handleOn, 0);
+}
