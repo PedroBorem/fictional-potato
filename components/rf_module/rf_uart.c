@@ -100,8 +100,11 @@ esp_err_t rf_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
+	LOG_COMM(RF_UART_TAG, "send : %s", event);
+
 	if(uart_write_bytes(RF_UART_NUM, event, event_size) != -1)
 	{
+		LOG_COMM(RF_UART_TAG, "OK");
 		err = ESP_OK;
 	}
 
@@ -130,13 +133,28 @@ static void rf_uart_event_task(void* arg)
 			{
 				case UART_DATA:
 				{
+					char* buff_in = (char*)malloc(event.size);
+					int aux = 0;
+
 					//Event of UART receving data
 					uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
 					LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
-					LOG_COMM(RF_UART_TAG, "data : %s", dtmp);
 
-					rf_callback((char*)dtmp, event.size);
+					for(int char_position = 0; char_position < event.size; char_position++)
+					{
+						// 0x7F = ASCII space
+						// 0x1A <= ASCII C^ values
+						if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+						{
+							buff_in[aux] = dtmp[char_position];
+							aux ++;
+						}
+					}
 
+					LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
+
+					rf_callback(buff_in, aux);
+					free(buff_in);
 					break;
 				}
 				case UART_FIFO_OVF:

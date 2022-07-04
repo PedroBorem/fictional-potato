@@ -63,6 +63,8 @@ static bool app_init(void)
  */
 static void app_main_call(app_call_states state,const void* buffer)
 {
+	bool ret = false;
+
 	switch(state)
 	{
 		case CALL_LOAD_CONFIG:
@@ -75,14 +77,27 @@ static void app_main_call(app_call_states state,const void* buffer)
 			pivot_config config = {};
 
 			memcpy(&config, buffer, sizeof(config));
-			data_app_save_config(config, sizeof(config));
+
+			ret = data_app_save_config(config, sizeof(config));
+			if(ret == true)
+			{
+				comm_app_send_event(config);
+			}
 
 			break;
 		}
-		case CALL_READ_STATUS:
+		case CALL_READ_STATUS: // if you receive 000-000
 		{
-			//000-000
-			// TODO: pedir para o sensor app o status.
+			// TODO: pedir para a leitura do o status.
+
+			// TODO : Remover esse valor simulado
+			pivot_config config_send = {};
+			config_send.power_state = PIVOT_ON;
+			config_send.rotation = PIVOT_CW;
+			config_send.watering_state = PIVOT_DRY;
+			config_send.percentimeter = 100;
+
+			comm_app_send_event(config_send);
 			break;
 		}
 		default:
