@@ -18,25 +18,25 @@
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
 
-#define PERC_FULL_CYCLE		10
+#define PERC_FULL_CYCLE		10000 //ms
 
 /* Pinout references*/
 /* GPIO Outputs */
-#define PIN_ON       	3	//Main system relay off
-#define PIN_OFF      	1	//Main system relay on
-#define PIN_AUX      	15	//System Auxiliar Relay
-#define PIN_CW       	0	//Direction Clockwise
-#define PIN_CCW      	22	//Direction Counter-Clockwise
-#define PIN_WATERING   	23	//Watering Relay
-#define PIN_PERC_AUX    2	//Auxiliar Relay for Percentimeter
-#define PIN_PERC_OUT    4	//Percentimeter
-#define PIN_PUMP        25	//Pump Relay
+#define PIN_ON       	GPIO_NUM_3	//Main system relay off
+#define PIN_OFF      	GPIO_NUM_1	//Main system relay on
+#define PIN_AUX      	GPIO_NUM_15	//System Auxiliar Relay
+#define PIN_CW       	GPIO_NUM_0	//Direction Clockwise
+#define PIN_CCW      	GPIO_NUM_22	//Direction Counter-Clockwise
+#define PIN_WATERING   	GPIO_NUM_23	//Watering Relay
+#define PIN_PERC_AUX    GPIO_NUM_2	//Auxiliar Relay for Percentimeter
+#define PIN_PERC_OUT    GPIO_NUM_4	//Percentimeter
+#define PIN_PUMP        GPIO_NUM_25	//Pump Relay
 
 /* GPIO Inputs */
-#define PIN_CW_IN       36 	//Clockwise Input
-#define PIN_CCW_IN      37	//Counter-Clockwise Input
-#define PIN_PRESS       38 	//?
-#define PIN_PERC_IN     39	//Percentimeter Read Input
+#define PIN_CW_IN       GPIO_NUM_36 	//Clockwise Input
+#define PIN_CCW_IN      GPIO_NUM_37	//Counter-Clockwise Input
+#define PIN_PRESS       GPIO_NUM_38 	//?
+#define PIN_PERC_IN     GPIO_NUM_39	//Percentimeter Read Input
 
 /* LoRA SPI */
 #define SCK 5
@@ -47,11 +47,8 @@
 #define DIO0 26
 
 /* Output Pins Group */
-#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_OFF) \
-							  | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) \
-							  | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) \
-							  | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) \
-							  | (1ULL<<PIN_PUMP))
+#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) | (1ULL<<PIN_PUMP))
+//(1ULL<<PIN_OFF) | this pin breaks uart for logs
 
 /* Input Pins Group */
 #define GPIO_INPUT_PIN_GROUP  ((1ULL<<PIN_CW_IN) | (1ULL<<PIN_CCW_IN) \

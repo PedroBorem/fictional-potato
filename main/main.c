@@ -14,7 +14,7 @@
 /* Applications include */
 #include "data_app.h"
 #include "gpio_actuator.h"
-
+#define MAIN_APP_TAG			"data_app"
 /**\addtogroup main
  * @{
  *
@@ -40,13 +40,18 @@ void app_main(void)
 	pivot_test.power_state = PIVOT_ON;
 	pivot_test.rotation = PIVOT_CW;
 	pivot_test.watering_state = PIVOT_WET;
-	pivot_test.percentimeter = 50;
+	pivot_test.percentimeter = 40;
+
+	gpio_actuator_init();
 
 	gpio_actuator_set(pivot_test);
 	/*--------------------------------------*/
 
+	ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
+
 	while (1)
 	{
+//		ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }

@@ -16,7 +16,7 @@
 
 /* GPIO include */
 #include "driver/gpio.h"
-
+#define ACTUATOR_TAG			"actuator_main"
 /**\addtogroup components
  * @{
  *
@@ -45,16 +45,14 @@ esp_err_t gpio_actuator_init()
 	io_conf_out.pull_up_en = 0;
     gpio_config(&io_conf_out);
 
-    //input configuration
-	gpio_config_t io_conf_in = {};
-	io_conf_in.intr_type = GPIO_INTR_DISABLE;
-	io_conf_in.mode = GPIO_MODE_INPUT;
-	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
-	io_conf_in.pull_down_en = 0;
-	io_conf_in.pull_up_en = 1;
-    gpio_config(&io_conf_in);
-
-
+//    //input configuration
+//	gpio_config_t io_conf_in = {};
+//	io_conf_in.intr_type = GPIO_INTR_DISABLE;
+//	io_conf_in.mode = GPIO_MODE_INPUT;
+//	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
+//	io_conf_in.pull_down_en = 0;
+//	io_conf_in.pull_up_en = 1;
+//    gpio_config(&io_conf_in);
 
     err = ESP_OK;
 
@@ -66,7 +64,9 @@ esp_err_t gpio_actuator_set(pivot_config config)
 	esp_err_t err = ESP_FAIL;
 	int perc_sec;
 
-	perc_sec = config.percentimeter*(PERC_FULL_CYCLE/100)*1000;
+	perc_sec = config.percentimeter*((PERC_FULL_CYCLE)/100);
+
+	ESP_LOGE(ACTUATOR_TAG, "%s, Perc sec: %d", __func__, perc_sec);
 
 	perc_timer_handleOn = xTimerCreate(
 		      "percTimerON", /* name */
@@ -108,7 +108,7 @@ esp_err_t gpio_actuator_set(pivot_config config)
 		{
 			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
 			gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
-			xTimerReset(perc_timer_handleOn, 0);
+			xTimerStart(perc_timer_handleOn, 0);
 		}
 		else if(config.percentimeter == 0)
 		{
@@ -141,10 +141,12 @@ void gpio_actuator_shutdown(void)
 
 void vPercTimerOnExpire(xTimerHandle pxTimer) {
 	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
-	xTimerReset(perc_timer_handleOff, 0);
+	xTimerStart(perc_timer_handleOff, 0);
+	ESP_LOGE(ACTUATOR_TAG, "%s, Timer On expired", __func__);
 }
 
 void vPercTimerOffExpire(xTimerHandle pxTimer) {
 	gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
-	xTimerReset(perc_timer_handleOn, 0);
+	xTimerStart(perc_timer_handleOn, 0);
+	ESP_LOGE(ACTUATOR_TAG, "%s, Timer Off expired", __func__);
 }
