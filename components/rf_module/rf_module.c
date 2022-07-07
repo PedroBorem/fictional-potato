@@ -53,7 +53,7 @@ esp_err_t rf_module_send_event(pivot_config config_in)
 	uint16_t degree = rf_module_get_angle();
 	time_t timestamp = rf_module_get_timestamp();
 
-	char event[50] = ""; //TODO adjust size
+	char event[50] = "";
 	common_parser_status_to_string(config_in, degree, timestamp, event);
 
 	err = rf_uart_send_event(event, sizeof(event));
@@ -136,20 +136,3 @@ __attribute__((weak)) void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
 
 /**@}*/ 	//rf_module
 /** @}*/	//components
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

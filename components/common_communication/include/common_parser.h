@@ -24,7 +24,7 @@
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* config_out);
+esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* config_out);
 
 /**
  * @brief	convert string to angle and timestamp variables
@@ -35,7 +35,7 @@ esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* con
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, time_t* timestamp);
+esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, time_t* timestamp);
 
 /**
  * @brief	convert configuration structure to string

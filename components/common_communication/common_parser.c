@@ -80,23 +80,23 @@
 #define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
 /* Public methods ------------------------------------------------ */
-esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* config_out)
+esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* config_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
 	pivot_config config = {};
 	char status;
 	int validate_ret = 0;
 
-	status = sting_in[COMMON_PARSER_POWER_POSITION];
+	status = string_in[COMMON_PARSER_POWER_POSITION];
 	validate_ret += sscanf(&status, "%d",(int*)&config.power_state);
 
-	status = sting_in[COMMON_PARSER_ROTATION_POSITION];
+	status = string_in[COMMON_PARSER_ROTATION_POSITION];
 	validate_ret += sscanf(&status, "%d",(int*)&config.rotation);
 
-	status = sting_in[COMMON_PARSER_WATERING_POSITION];
+	status = string_in[COMMON_PARSER_WATERING_POSITION];
 	validate_ret += sscanf(&status, "%d",(int*)&config.watering_state);
 
-	validate_ret += sscanf(&sting_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&config.percentimeter);
+	validate_ret += sscanf(&string_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&config.percentimeter);
 
 	if(validate_ret >= COMMOM_PARSER_ELEMENT_NUMBER)
 	{
@@ -107,7 +107,7 @@ esp_err_t common_parser_string_to_config(const char* sting_in, pivot_config* con
 	return err;
 }
 
-esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, time_t* timestamp)
+esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, time_t* timestamp)
 {
 	esp_err_t err = ESP_OK;
 
@@ -115,7 +115,7 @@ esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, ti
 	char angle_out[COMMON_PARSER_ANGLE_SIZE] = "";
 	char timestamp_out[COMMON_PARSER_TIMESTAMP_SIZE] = "";
 	char search_timestamp[] = "#";
-	char* ptr = strstr(sting_in, search_timestamp);
+	char* ptr = strstr(string_in, search_timestamp);
 
 	// assistant accountant
 	uint8_t string_pos = 0;
@@ -124,14 +124,14 @@ esp_err_t common_parser_string_to_gnss(const char* sting_in, uint16_t* angle, ti
 	// angle analyzer
 	for(string_pos = 0; string_pos < (sizeof(angle_out) - 1); string_pos++)
 	{
-		if(sting_in[(string_pos + string_off_set)] == '.')
+		if(string_in[(string_pos + string_off_set)] == '.')
 		{
 			string_pos = (string_pos - 1);
 			string_off_set = (string_off_set + 1);
 		}
 		else
 		{
-			angle_out[string_pos] = sting_in[(string_pos + string_off_set)];
+			angle_out[string_pos] = string_in[(string_pos + string_off_set)];
 		}
 	}
 
