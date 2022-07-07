@@ -113,13 +113,34 @@ esp_err_t gpio_actuator_set(pivot_config config)
 		else if(config.percentimeter == 0)
 		{
 			gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
-			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
+			gpio_set_level(PIN_PERC_AUX, SYS_DISABLE);
+
+			//kill percent timers if they exist
+			if(perc_timer_handleOn != 0)
+			{
+				xTimerDelete(perc_timer_handleOn,0);
+			}
+			if(perc_timer_handleOff != 0)
+			{
+				xTimerDelete(perc_timer_handleOff,0);
+			}
 		}
 		else if(config.percentimeter == 100)
 		{
 			gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
 			gpio_set_level(PIN_PERC_AUX, SYS_ENABLE);
 		}
+
+		if(config.watering_state == PIVOT_WET)
+		{
+			gpio_set_level(PIN_WATERING, SYS_ENABLE);
+		}
+		else if(config.watering_state == PIVOT_DRY)
+		{
+			gpio_set_level(PIN_WATERING, SYS_DISABLE);
+		}
+
+		gpio_set_level(PIN_ON, SYS_DISABLE);
 	}
 
 	return err;
@@ -137,6 +158,15 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
 	//delay
 	gpio_set_level(PIN_OFF, SYS_DISABLE);
+
+	if(perc_timer_handleOn != 0)
+	{
+		xTimerDelete(perc_timer_handleOn,0);
+	}
+	if(perc_timer_handleOff != 0)
+	{
+		xTimerDelete(perc_timer_handleOff,0);
+	}
 }
 
 void vPercTimerOnExpire(xTimerHandle pxTimer) {
