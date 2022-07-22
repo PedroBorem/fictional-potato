@@ -41,10 +41,10 @@ bool actuation_app_init(const app_callback callback)
 		actuation_app_call = callback;
 
 		BaseType_t xReturn = xTaskCreate(&actuation_app_task,
-								DATA_APP_TASK_NAME,
-								DATA_APP_STACK_SIZE, // modificar aqui os nomes
+								ACTUATION_APP_TASK_NAME,
+								ACTUATION_APP_STACK_SIZE, // modificar aqui os nomes
 								NULL,
-								DATA_APP_TASK_PRIORITY,
+								ACTUATION_APP_TASK_PRIORITY,
 								&xTask_actuation_app);
 
 		if(xReturn == pdPASS || xTask_actuation_app != NULL)

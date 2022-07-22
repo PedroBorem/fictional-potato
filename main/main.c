@@ -38,7 +38,7 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	data_app_load_config(app_config, sizeof(app_config));
+	data_app_load_config(&app_config, NULL);
 	//ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 	vTaskDelay(pdMS_TO_TICKS(1000));
 	actuation_app_set_config(app_config);
@@ -83,14 +83,14 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_NEW_CONFIG:
 		{
-			pivot_config config = {};
-			memcpy(&config, buffer, sizeof(config));
+			pivot_config new_config = {};
+			memcpy(&new_config, buffer, sizeof(new_config));
 
-			ret = data_app_save_config(config, sizeof(config));
+			ret = data_app_save_config(new_config, sizeof(new_config));
 			if(ret == true)
 			{
-				comm_app_send_event(config);
-				actuation_app_set_config(config);
+				comm_app_send_event(new_config);
+				actuation_app_set_config(new_config);
 			}
 
 			break;
@@ -99,7 +99,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 		{
 			pivot_config config_send = {};
 
-			actuation_app_get_config(config_send, sizeof(config_send));
+			actuation_app_get_config(&config_send, sizeof(config_send));
 			comm_app_send_event(config_send);
 
 			break;

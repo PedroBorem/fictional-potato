@@ -77,10 +77,10 @@ bool comm_app_init(const app_callback callback)
 		if(xQueue_comm_app != NULL)
 		{
 			xReturn = xTaskCreate(&comm_app_task,
-								DATA_APP_TASK_NAME,
-								DATA_APP_STACK_SIZE,
+								COMM_APP_TASK_NAME,
+								COMM_APP_STACK_SIZE,
 								NULL,
-								DATA_APP_TASK_PRIORITY,
+								COMM_APP_TASK_PRIORITY,
 								&xTask_comm_app);
 
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
