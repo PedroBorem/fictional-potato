@@ -101,6 +101,14 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
 #define DATA_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
+#define COMM_APP_TASK_NAME				"comm app task"
+#define COMM_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 2 )
+#define COMM_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+
+#define ACTUATION_APP_TASK_NAME			"actuation app task"
+#define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
+#define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions
 
