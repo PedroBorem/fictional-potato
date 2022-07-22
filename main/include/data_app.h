@@ -17,19 +17,13 @@
 #include "project_config.h"
 
 /**
- * @brief: function used with return to main application class
- *
- */
-typedef void (*data_app_callback)(app_call_states state);
-
-/**
  * @brief	start all memory modules
  * @param	app_callback - [in]: function used with return to main application class
  * @return
  * 	- true: success
  * 	- false: fail to initialize
  */
-bool data_app_init(data_app_callback app_callback);
+bool data_app_init(const app_callback callback);
 
 /**
  * @brief	sends the queue a request to save a new configuration

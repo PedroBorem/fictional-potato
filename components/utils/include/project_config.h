@@ -52,6 +52,8 @@
 typedef enum
 {
 	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
+	CALL_NEW_CONFIG	= 2,
+	CALL_READ_STATUS = 3
 }app_call_states;
 
 /**
@@ -80,6 +82,12 @@ typedef	struct __attribute__((__packed__))
 	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/ // @suppress("Type cannot be resolved")
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;
+
+/**
+ * @brief: function used with return to main application class
+ *
+ */
+typedef void (*app_callback)(app_call_states state, const void* buffer);
 
 /**\addtogroup FreeRTOS
  * @{

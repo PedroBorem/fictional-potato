@@ -13,10 +13,8 @@
 
 /* Applications include */
 #include "data_app.h"
-#include "gpio_actuator.h"
-#include "project_config.h"
+#include "comm_app.h"
 
-#define MAIN_APP_TAG			"data_app"
 /**\addtogroup main
  * @{
  *
@@ -24,11 +22,9 @@
 
 #define MAIN_TAG "main"
 
-#define ESP_INTR_FLAG_DEFAULT 0
-
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
-static void app_main_call(app_call_states state);
+static void app_main_call(app_call_states state,const void* buffer);
 
 /**
  * @brief	main class
@@ -39,32 +35,9 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	/*---------------GPIO test--------------*/
-	pivot_config pivot_test;
-	pivot_test.power_state = PIVOT_ON;
-	pivot_test.rotation = PIVOT_CW;
-	pivot_test.watering_state = PIVOT_WET;
-	pivot_test.percentimeter = 40;
-
-	gpio_actuator_init();
-	gpio_actuator_set(pivot_test);
-
-	/*--------------------------------------*/
-
-	ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
-
 	while (1)
 	{
-//		ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
-		vTaskDelay(pdMS_TO_TICKS(4000));
-//		printf("Calculated pos time %ld\n", posedge_perc);
-//		printf("Calculated neg time %ld\n", negedge_perc);
-		printf("Calculated perc time %d\n", perc_t_on);
-		pivot_config pivot_in = gpio_actuator_get();
-		printf("Config read power_state: %d\n", pivot_in.power_state);
-		printf("Config read rotation: %d\n", pivot_in.rotation);
-		printf("Config read watering state: %d\n", pivot_in.watering_state);
-		printf("Config read perc: %d\n", pivot_in.percentimeter);
+		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
 
@@ -79,6 +52,7 @@ static bool app_init(void)
 	bool ret = true;
 
 	ret &= data_app_init(&app_main_call);
+	ret &= comm_app_init(&app_main_call);
 
 	return ret;
 }
@@ -87,13 +61,43 @@ static bool app_init(void)
  * @brief	callback from secondary applications to the main
  * @param	state - [in]: reason why a callback was triggered
  */
-static void app_main_call(app_call_states state)
+static void app_main_call(app_call_states state,const void* buffer)
 {
+	bool ret = false;
+
 	switch(state)
 	{
 		case CALL_LOAD_CONFIG:
 		{
 			// TODO: notify give main task
+			break;
+		}
+		case CALL_NEW_CONFIG:
+		{
+			pivot_config config = {};
+
+			memcpy(&config, buffer, sizeof(config));
+
+			ret = data_app_save_config(config, sizeof(config));
+			if(ret == true)
+			{
+				comm_app_send_event(config);
+			}
+
+			break;
+		}
+		case CALL_READ_STATUS: // if you receive 000-000
+		{
+			// TODO: pedir para a leitura do o status.
+
+			// TODO : Remover esse valor simulado
+			pivot_config config_send = {};
+			config_send.power_state = PIVOT_ON;
+			config_send.rotation = PIVOT_CW;
+			config_send.watering_state = PIVOT_DRY;
+			config_send.percentimeter = 100;
+
+			comm_app_send_event(config_send);
 			break;
 		}
 		default:
