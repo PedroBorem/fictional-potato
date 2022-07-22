@@ -14,6 +14,13 @@
  * @brief board gpio macros
 */
 #include "project_config.h"
+#include "driver/gpio.h"
+#include <time.h>
+
+int perc_t_off;
+int perc_t_on;
+time_t posedge_perc;
+time_t negedge_perc;
 
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
@@ -35,8 +42,8 @@
 /* GPIO Inputs */
 #define PIN_CW_IN       GPIO_NUM_36 	//Clockwise Input
 #define PIN_CCW_IN      GPIO_NUM_37	//Counter-Clockwise Input
-#define PIN_PRESS       GPIO_NUM_38 	//?
-#define PIN_PERC_IN     GPIO_NUM_39	//Percentimeter Read Input
+#define PIN_PERC_IN     GPIO_NUM_38	//Percentimeter Read Input
+#define PIN_PRESS       GPIO_NUM_39 	//?
 
 /* LoRA SPI */
 #define SCK 5
@@ -51,8 +58,10 @@
 //(1ULL<<PIN_OFF) | this pin breaks uart for logs
 
 /* Input Pins Group */
-#define GPIO_INPUT_PIN_GROUP  ((1ULL<<PIN_CW_IN) | (1ULL<<PIN_CCW_IN) \
-							  | (1ULL<<PIN_PRESS) | (1ULL<<PIN_PERC_IN))
+#define GPIO_INPUT_PIN_GROUP  ((1ULL<<PIN_CW_IN) | (1ULL<<PIN_CCW_IN) | (1ULL<<PIN_PRESS))
+
+/* Int Pins Group */
+#define GPIO_INT_PERC     (1ULL<<PIN_PERC_IN)	//Percentimeter Read Input
 
 /* Public function prototypes ------------------------------------------- */
 /**

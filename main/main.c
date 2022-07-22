@@ -14,6 +14,8 @@
 /* Applications include */
 #include "data_app.h"
 #include "gpio_actuator.h"
+#include "project_config.h"
+
 #define MAIN_APP_TAG			"data_app"
 /**\addtogroup main
  * @{
@@ -21,6 +23,8 @@
  */
 
 #define MAIN_TAG "main"
+
+#define ESP_INTR_FLAG_DEFAULT 0
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
@@ -43,8 +47,8 @@ void app_main(void)
 	pivot_test.percentimeter = 40;
 
 	gpio_actuator_init();
-
 	gpio_actuator_set(pivot_test);
+
 	/*--------------------------------------*/
 
 	ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
@@ -52,7 +56,15 @@ void app_main(void)
 	while (1)
 	{
 //		ESP_LOGE(MAIN_APP_TAG, "%s, ALIVE", __func__);
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(4000));
+//		printf("Calculated pos time %ld\n", posedge_perc);
+//		printf("Calculated neg time %ld\n", negedge_perc);
+		printf("Calculated perc time %d\n", perc_t_on);
+		pivot_config pivot_in = gpio_actuator_get();
+		printf("Config read power_state: %d\n", pivot_in.power_state);
+		printf("Config read rotation: %d\n", pivot_in.rotation);
+		printf("Config read watering state: %d\n", pivot_in.watering_state);
+		printf("Config read perc: %d\n", pivot_in.percentimeter);
 	}
 }
 

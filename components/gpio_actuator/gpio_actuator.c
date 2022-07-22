@@ -17,6 +17,8 @@
 /* GPIO include */
 #include "driver/gpio.h"
 #define ACTUATOR_TAG			"actuator_main"
+
+#define ESP_INTR_FLAG_DEFAULT 0
 /**\addtogroup components
  * @{
  *
@@ -30,11 +32,47 @@
 /* Global variables ---------------------------------------------- */
 xTimerHandle perc_timer_handleOn;
 xTimerHandle perc_timer_handleOff;
+pivot_config config_in = {};
+int last_edge;
+int diff;
 
 /* Public methods ------------------------------------------------ */
+static void IRAM_ATTR gpio_isr_handler(void* arg)
+{
+	if(gpio_get_level(PIN_PERC_IN) == SYS_ENABLE){
+		posedge_perc = clock();
+	}
+	if(gpio_get_level(PIN_PERC_IN) == SYS_DISABLE){
+		negedge_perc = clock();
+
+		if(posedge_perc != 0 && negedge_perc != 0){
+			diff = (negedge_perc - posedge_perc);
+			if (diff != 0){
+				perc_t_on = diff / CLOCKS_PER_SEC;
+				config_in.percentimeter = perc_t_on;
+			}
+		}
+	}
+}
+
+void vPercTimerOnExpire(xTimerHandle pxTimer) {
+	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
+	xTimerStart(perc_timer_handleOff, 0);
+	ESP_LOGE(ACTUATOR_TAG, "%s, Timer On expired", __func__);
+}
+
+void vPercTimerOffExpire(xTimerHandle pxTimer) {
+	gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
+	xTimerStart(perc_timer_handleOn, 0);
+	ESP_LOGE(ACTUATOR_TAG, "%s, Timer Off expired", __func__);
+}
+
 esp_err_t gpio_actuator_init()
 {
 	esp_err_t err = ESP_FAIL;
+
+	perc_t_off = 0;
+	perc_t_on = 0;
 
 	//output configuration
 	gpio_config_t io_conf_out = {};
@@ -45,14 +83,32 @@ esp_err_t gpio_actuator_init()
 	io_conf_out.pull_up_en = 0;
     gpio_config(&io_conf_out);
 
-//    //input configuration
-//	gpio_config_t io_conf_in = {};
-//	io_conf_in.intr_type = GPIO_INTR_DISABLE;
-//	io_conf_in.mode = GPIO_MODE_INPUT;
-//	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
-//	io_conf_in.pull_down_en = 0;
-//	io_conf_in.pull_up_en = 1;
-//    gpio_config(&io_conf_in);
+    //input configuration
+	gpio_config_t io_conf_in = {};
+	io_conf_in.intr_type = GPIO_INTR_DISABLE;
+	io_conf_in.mode = GPIO_MODE_INPUT;
+	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
+	io_conf_in.pull_down_en = 0;
+	io_conf_in.pull_up_en = 1;
+    gpio_config(&io_conf_in);
+
+    //reader initial setup
+    config_in.power_state = PIVOT_UNKNOWN;
+    config_in.rotation = PIVOT_UNKNOWN;
+    config_in.watering_state = PIVOT_UNKNOWN;
+    config_in.percentimeter = PIVOT_UNKNOWN;
+
+    //percent reader interrupt setup
+	gpio_config_t io_conf_int = {};
+    io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
+    io_conf_int.pin_bit_mask = GPIO_INT_PERC;
+    io_conf_int.mode = GPIO_MODE_INPUT;
+    io_conf_int.pull_down_en = 0;
+    io_conf_int.pull_up_en = 1;
+    gpio_config(&io_conf_int);
+
+    gpio_install_isr_service(ESP_INTR_FLAG_DEFAULT);
+    gpio_isr_handler_add(PIN_PERC_IN, gpio_isr_handler, (void*) PIN_PERC_IN);
 
     err = ESP_OK;
 
@@ -146,6 +202,29 @@ esp_err_t gpio_actuator_set(pivot_config config)
 	return err;
 }
 
+pivot_config gpio_actuator_get(void)
+{
+	if(gpio_get_level(PIN_CW_IN) == SYS_ENABLE){
+		config_in.rotation = PIVOT_CW;
+		config_in.power_state = PIVOT_ON;
+	}
+	else if(gpio_get_level(PIN_CCW_IN) == SYS_ENABLE){
+		config_in.rotation = PIVOT_CCW;
+		config_in.power_state = PIVOT_ON;
+	}else{
+		config_in.power_state = PIVOT_OFF;
+		config_in.rotation = PIVOT_OFF;
+	}
+
+	if(gpio_get_level(PIN_PRESS) == SYS_ENABLE){
+		config_in.watering_state = PIVOT_WET;
+	}else if(gpio_get_level(PIN_PRESS == SYS_DISABLE)){
+		config_in.watering_state = PIVOT_DRY;
+	}
+
+	return config_in;
+}
+
 void gpio_actuator_shutdown(void)
 {
 
@@ -167,16 +246,4 @@ void gpio_actuator_shutdown(void)
 	{
 		xTimerDelete(perc_timer_handleOff,0);
 	}
-}
-
-void vPercTimerOnExpire(xTimerHandle pxTimer) {
-	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
-	xTimerStart(perc_timer_handleOff, 0);
-	ESP_LOGE(ACTUATOR_TAG, "%s, Timer On expired", __func__);
-}
-
-void vPercTimerOffExpire(xTimerHandle pxTimer) {
-	gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
-	xTimerStart(perc_timer_handleOn, 0);
-	ESP_LOGE(ACTUATOR_TAG, "%s, Timer Off expired", __func__);
 }
