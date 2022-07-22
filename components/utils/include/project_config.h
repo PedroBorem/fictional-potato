@@ -67,7 +67,8 @@ typedef enum
 	PIVOT_CW = 3,			/*!< Pivot in ClockWise mode (advanced)*/
 	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
 	PIVOT_DRY = 5,			/*!< Irrigation off*/
-	PIVOT_WET = 6			/*!< Irrigation on*/
+	PIVOT_WET = 6,			/*!< Irrigation on*/
+	PIVOT_UNKNOWN = 7	    /*!< Value not obtained yet*/
 }pivot_states;
 
 /**
@@ -77,8 +78,8 @@ typedef enum
 typedef	struct __attribute__((__packed__))
 {
 	uint8_t power_state;	/*!< PIVOT_ON or PIVOT_OFF*/
-	uint8_t rotation;	/*!< PIVOT_ADVANCE or PIVOT_REVERSE*/
-	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/
+	uint8_t rotation;		/*!< PIVOT_CW or PIVOT_CCW*/
+	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/ // @suppress("Type cannot be resolved")
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;
 
