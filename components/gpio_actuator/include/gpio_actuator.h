@@ -17,11 +17,6 @@
 #include "driver/gpio.h"
 #include <time.h>
 
-int perc_t_off;
-int perc_t_on;
-time_t posedge_perc;
-time_t negedge_perc;
-
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
 

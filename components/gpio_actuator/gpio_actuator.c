@@ -32,9 +32,15 @@
 /* Global variables ---------------------------------------------- */
 xTimerHandle perc_timer_handleOn;
 xTimerHandle perc_timer_handleOff;
-pivot_config config_in = {};
+static pivot_config pivot_config_read = {};
+
+
+time_t posedge_perc;
+time_t negedge_perc;
 int last_edge;
-int diff;
+int perc_diff_onoff;
+int perc_pct_on;
+int perc_sec_on;
 
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
@@ -42,14 +48,16 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	if(gpio_get_level(PIN_PERC_IN) == SYS_ENABLE){
 		posedge_perc = clock();
 	}
+
 	if(gpio_get_level(PIN_PERC_IN) == SYS_DISABLE){
 		negedge_perc = clock();
 
 		if(posedge_perc != 0 && negedge_perc != 0){
-			diff = (negedge_perc - posedge_perc);
-			if (diff != 0){
-				perc_t_on = diff / CLOCKS_PER_SEC;
-				config_in.percentimeter = perc_t_on;
+			perc_diff_onoff = (negedge_perc - posedge_perc);
+			if (perc_diff_onoff != 0){
+				perc_sec_on = diff / CLOCKS_PER_SEC;
+				perc_pct_on = (PERC_FULL_CYCLE * 10) / 6;
+				pivot_config_read.percentimeter = perc_pct_on;
 			}
 		}
 	}
@@ -201,24 +209,24 @@ esp_err_t gpio_actuator_set(pivot_config config)
 pivot_config gpio_actuator_get(void)
 {
 	if(gpio_get_level(PIN_CW_IN) == SYS_ENABLE){
-		config_in.rotation = PIVOT_CW;
-		config_in.power_state = PIVOT_ON;
+		pivot_config_read.rotation = PIVOT_CW;
+		pivot_config_read.power_state = PIVOT_ON;
 	}
 	else if(gpio_get_level(PIN_CCW_IN) == SYS_ENABLE){
-		config_in.rotation = PIVOT_CCW;
-		config_in.power_state = PIVOT_ON;
+		pivot_config_read.rotation = PIVOT_CCW;
+		pivot_config_read.power_state = PIVOT_ON;
 	}else{
-		config_in.power_state = PIVOT_OFF;
-		config_in.rotation = PIVOT_OFF;
+		pivot_config_read.power_state = PIVOT_OFF;
+		pivot_config_read.rotation = PIVOT_OFF;
 	}
 
 	if(gpio_get_level(PIN_PRESS) == SYS_ENABLE){
-		config_in.watering_state = PIVOT_WET;
+		pivot_config_read.watering_state = PIVOT_WET;
 	}else if(gpio_get_level(PIN_PRESS == SYS_DISABLE)){
-		config_in.watering_state = PIVOT_DRY;
+		pivot_config_read.watering_state = PIVOT_DRY;
 	}
 
-	return config_in;
+	return pivot_config_read;
 }
 
 void gpio_actuator_shutdown(void)
