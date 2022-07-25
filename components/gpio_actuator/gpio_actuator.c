@@ -92,12 +92,6 @@ esp_err_t gpio_actuator_init()
 	io_conf_in.pull_up_en = 1;
     gpio_config(&io_conf_in);
 
-    //reader initial setup
-    config_in.power_state = PIVOT_UNKNOWN;
-    config_in.rotation = PIVOT_UNKNOWN;
-    config_in.watering_state = PIVOT_UNKNOWN;
-    config_in.percentimeter = PIVOT_UNKNOWN;
-
     //percent reader interrupt setup
 	gpio_config_t io_conf_int = {};
     io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
@@ -124,6 +118,7 @@ esp_err_t gpio_actuator_set(pivot_config config)
 
 	ESP_LOGE(ACTUATOR_TAG, "%s, Perc sec: %d", __func__, perc_sec);
 
+	if(perc_sec != 0){
 	perc_timer_handleOn = xTimerCreate(
 		      "percTimerON", /* name */
 		      pdMS_TO_TICKS(perc_sec), /* period/time */
@@ -137,6 +132,7 @@ esp_err_t gpio_actuator_set(pivot_config config)
 		      pdFALSE, /* auto reload */
 		      (void*)0, /* timer ID */
 			  vPercTimerOffExpire); /* callback */
+	}
 
 	if(config.power_state == PIVOT_OFF)
 	{

@@ -25,7 +25,7 @@ time_t negedge_perc;
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
 
-#define PERC_FULL_CYCLE		10000 //ms
+#define PERC_FULL_CYCLE		60000 //ms
 
 /* Pinout references*/
 /* GPIO Outputs */
@@ -79,6 +79,9 @@ esp_err_t gpio_actuator_init(void);
  * 	- ESP_FAIL: fail to initialize
  */
 esp_err_t gpio_actuator_set(pivot_config config);
+
+
+pivot_config gpio_actuator_get(void);
 
 void gpio_actuator_shutdown(void);
 void vPercTimerOnExpire(xTimerHandle pxTimer);

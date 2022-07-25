@@ -34,13 +34,13 @@ static void app_main_call(app_call_states state,const void* buffer);
 void app_main(void)
 {
 	pivot_config app_config = {};
+	size_t app_config_length = 0;
 
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	data_app_load_config(&app_config, NULL);
-	//ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-	vTaskDelay(pdMS_TO_TICKS(1000));
+	data_app_load_config(&app_config, &app_config_length);
+	vTaskDelay(pdMS_TO_TICKS(2000));
 	actuation_app_set_config(app_config);
 
 	while (1)
@@ -59,9 +59,9 @@ static bool app_init(void)
 {
 	bool ret = true;
 
+	ret &= actuation_app_init(&app_main_call);
 	ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);
-	ret &= actuation_app_init(&app_main_call);
 
 	return ret;
 }
@@ -89,8 +89,8 @@ static void app_main_call(app_call_states state,const void* buffer)
 			ret = data_app_save_config(new_config, sizeof(new_config));
 			if(ret == true)
 			{
-				comm_app_send_event(new_config);
 				actuation_app_set_config(new_config);
+				comm_app_send_event(new_config);
 			}
 
 			break;

@@ -15,8 +15,7 @@
 #include "actuation_app.h"
 
 /* Components include */
-#include "rf_module.h"
-
+#include "gpio_actuator.h"
 
 /* Private definitions ------------------------------------------- */
 #define ACTUATION_APP_TAG			"actuation_app"
@@ -35,8 +34,10 @@ void actuation_app_task(void* arg);
 bool actuation_app_init(const app_callback callback)
 {
 	bool ret = false;
+	esp_err_t err = ESP_OK;
 
-	if(callback != NULL)
+	err = gpio_actuator_init();
+	if(callback != NULL && err == ESP_OK)
 	{
 		actuation_app_call = callback;
 
@@ -53,15 +54,13 @@ bool actuation_app_init(const app_callback callback)
 		}
 		else
 		{
-			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
+			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, ACTUATION_APP_TASK_NAME);
 		}
 	}
 	else
 	{
-
+		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid parameter", __func__);
 	}
-
-
 
 	return ret;
 }
@@ -69,18 +68,23 @@ bool actuation_app_init(const app_callback callback)
 void actuation_app_set_config(const pivot_config config_in)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
-
-	//TODO : set configuration
-
-	xTaskNotifyGive(xTask_actuation_app);
+	gpio_actuator_set(config_in);
+	//xTaskNotifyGive(xTask_actuation_app);
 }
 
 void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 {
+	pivot_config current_config = {};
+
 	if(config_size > 0 && config_out != NULL )
 	{
-		// TODO: LER AS CONFIGURAÇÕES ATUAIS
-		memcpy(&config_out, &actuation_config, config_size);
+		current_config = gpio_actuator_get();
+		printf("power_state %d\n", current_config.power_state);
+		printf("rotation %d\n", current_config.rotation);
+		printf("watering_state %d\n", current_config.watering_state);
+		printf("percentimeter %d\n", current_config.percentimeter);
+
+		memcpy(config_out, &current_config, config_size);
 	}
 }
 
@@ -94,7 +98,7 @@ void actuation_app_task(void* arg)
 
 	while(1)
 	{
-		// TODO: LER AS CONFIGURAÇÕES ATUAIS
+		current_config = gpio_actuator_get();
 
 		if(current_config.power_state != actuation_config.power_state)
 		{
@@ -117,7 +121,7 @@ void actuation_app_task(void* arg)
 		else if(current_config.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
 			|| (current_config.percentimeter + 10) < actuation_config.percentimeter )
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 61000) //double check (1 minute and 10 seconds)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 61000) //double check (1 minute and 1 second)
 			{
 				last_tick = xTaskGetTickCount();
 				actuation_app_call(CALL_NEW_CONFIG, &current_config);
