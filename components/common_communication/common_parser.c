@@ -53,13 +53,19 @@
  *	Angle attribute output buffer size
  *
  */
-#define COMMON_PARSER_ANGLE_SIZE					(6)
+#define COMMON_PARSER_ANGLE_SIZE					(4)
 
 /**
  *	Angle attribute position in string (in/out)
  *
  */
 #define	COMMON_PARSER_ANGLE_POSITION				(3)
+
+/**
+ *	Angle attribute position out string (in/out)
+ *
+ */
+#define	COMMON_PARSER_ANGLE_OUT_POSITION			(8)
 
 /**
  *	Timestamp attribute output buffer size
@@ -72,6 +78,12 @@
  *
  */
 #define COMMON_PARSER_TIMESTAMP_POSITION			(1)
+
+/**
+ *	Timestamp attribute position out string (in/out)
+ *
+ */
+#define COMMON_PARSER_TIMESTAMP_OUT_POSITION		(12)
 
 /**
  *	Number of elements in a configuration string
@@ -126,8 +138,7 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 	{
 		if(string_in[(string_pos + string_off_set)] == '.')
 		{
-			string_pos = (string_pos - 1);
-			string_off_set = (string_off_set + 1);
+			break;
 		}
 		else
 		{
@@ -158,7 +169,7 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_OK;
-	char string_converted[8] = "";
+	char string_converted[25] = "";
 
 	sprintf(&string_converted[COMMON_PARSER_ROTATION_POSITION], "%d", config_in.rotation);
 	sprintf(&string_converted[COMMON_PARSER_WATERING_POSITION], "%d", config_in.watering_state);
@@ -166,6 +177,13 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 
 	string_converted[3] = '-';
 	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", config_in.percentimeter);
+
+	string_converted[7] = '-';
+	sprintf(&string_converted[COMMON_PARSER_ANGLE_OUT_POSITION], "%d", angle);
+
+	string_converted[11] = '-';
+	sprintf(&string_converted[COMMON_PARSER_TIMESTAMP_OUT_POSITION], "%lld", (long long int)timestamp);
+
 	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
 	return err;
