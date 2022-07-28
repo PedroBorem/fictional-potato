@@ -17,14 +17,22 @@
 /* Components include */
 #include "gpio_actuator.h"
 
+/**\addtogroup main
+ * @{
+ *
+ */
+
+/**\addtogroup actuation_app
+ * @{
+ *
+ */
+
 /* Private definitions ------------------------------------------- */
 #define ACTUATION_APP_TAG			"actuation_app"
 
 /* Private variables  -------------------------------------------- */
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
-
-
 static pivot_config actuation_config = {};
 
 /* Private methods  ---------------------------------------------- */
@@ -89,6 +97,10 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 }
 
 /* Private methods ----------------------------------------------- */
+/**
+ * @brief 	Task responsible for monitoring possible changes in equipment status
+ * @param	arg - [in]: task argument (default NULL)
+ */
 void actuation_app_task(void* arg)
 {
 	pivot_config current_config = {};
@@ -137,3 +149,5 @@ void actuation_app_task(void* arg)
 	}
 }
 
+/**@}*/ 	//actuation_app
+/** @}*/	//main
