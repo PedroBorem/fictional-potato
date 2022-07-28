@@ -164,6 +164,18 @@ void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
 	{
 		comm_request.request_type = COMM_REQUEST_READ_STATUS;
 	}
+	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
+	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+	{
+		//	system default off
+		config_in.power_state = PIVOT_OFF;
+		config_in.rotation = PIVOT_CW;
+		config_in.watering_state = PIVOT_DRY;
+		config_in.percentimeter = 0;
+
+		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;
+		memcpy(&comm_request.input_config, &config_in, sizeof(comm_request.input_config));
+	}
 	else
 	{
 		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;

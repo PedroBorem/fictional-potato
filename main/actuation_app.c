@@ -53,15 +53,13 @@ bool actuation_app_init(const app_callback callback)
 		}
 		else
 		{
-			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
+			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, ACTUATION_APP_TASK_NAME);
 		}
 	}
 	else
 	{
-
+		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid argument", __func__);
 	}
-
-
 
 	return ret;
 }
