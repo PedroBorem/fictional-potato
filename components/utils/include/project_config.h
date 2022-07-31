@@ -110,6 +110,10 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
 #define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
 
+#define ACTUATOR_CHECK_TASK_NAME		"actuator check task"
+#define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
+#define ACTUATOR_CHECK_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
+
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions
 

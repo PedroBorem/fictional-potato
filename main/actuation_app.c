@@ -24,7 +24,6 @@
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
 
-
 static pivot_config actuation_config = {};
 
 /* Private methods  ---------------------------------------------- */
