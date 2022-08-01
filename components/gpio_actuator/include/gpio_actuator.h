@@ -20,7 +20,7 @@
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
 
-#define PERC_FULL_CYCLE		60000 //60 sec
+#define PERC_FULL_CYCLE		10000 //60 sec
 #define PRESSURE_TIMEOUT    10000 //10 sec
 /* Pinout references*/
 /* GPIO Outputs */
