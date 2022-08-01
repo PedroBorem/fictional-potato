@@ -17,13 +17,22 @@
 /* Components include */
 #include "gpio_actuator.h"
 
+/**\addtogroup main
+ * @{
+ *
+ */
+
+/**\addtogroup actuation_app
+ * @{
+ *
+ */
+
 /* Private definitions ------------------------------------------- */
 #define ACTUATION_APP_TAG			"actuation_app"
 
 /* Private variables  -------------------------------------------- */
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
-
 static pivot_config actuation_config = {};
 
 /* Private methods  ---------------------------------------------- */
@@ -58,7 +67,7 @@ bool actuation_app_init(const app_callback callback)
 	}
 	else
 	{
-		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid parameter", __func__);
+		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid argument", __func__);
 	}
 
 	return ret;
@@ -68,7 +77,7 @@ void actuation_app_set_config(const pivot_config config_in)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
 	gpio_actuator_set(config_in);
-	//xTaskNotifyGive(xTask_actuation_app);
+	xTaskNotifyGive(xTask_actuation_app);
 }
 
 void actuation_app_get_config(pivot_config* config_out, size_t config_size)
@@ -88,6 +97,10 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 }
 
 /* Private methods ----------------------------------------------- */
+/**
+ * @brief 	Task responsible for monitoring possible changes in equipment status
+ * @param	arg - [in]: task argument (default NULL)
+ */
 void actuation_app_task(void* arg)
 {
 	pivot_config current_config = {};
@@ -136,3 +149,5 @@ void actuation_app_task(void* arg)
 	}
 }
 
+/**@}*/ 	//actuation_app
+/** @}*/	//main
