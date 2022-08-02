@@ -77,7 +77,7 @@ void actuation_app_set_config(const pivot_config config_in)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
 	gpio_actuator_set(config_in);
-	xTaskNotifyGive(xTask_actuation_app);
+	//xTaskNotifyGive(xTask_actuation_app);
 }
 
 void actuation_app_get_config(pivot_config* config_out, size_t config_size)
@@ -130,6 +130,15 @@ void actuation_app_task(void* arg)
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
+		else if(current_config.rotation != actuation_config.rotation && current_config.rotation != PIVOT_UNKNOWN)
+		{
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000)  // double check (1 second)
+			{
+				last_tick = xTaskGetTickCount();
+				actuation_app_call(CALL_NEW_CONFIG, &current_config);
+				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+			}
+		}
 		else if(current_config.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
 			|| (current_config.percentimeter + 10) < actuation_config.percentimeter )
 		{
@@ -145,7 +154,7 @@ void actuation_app_task(void* arg)
 			last_tick = xTaskGetTickCount();
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(500));
+		vTaskDelay(pdMS_TO_TICKS(60000));
 	}
 }
 

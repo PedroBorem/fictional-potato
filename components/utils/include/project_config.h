@@ -68,7 +68,7 @@ typedef enum
 	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
 	PIVOT_DRY = 5,			/*!< Irrigation off*/
 	PIVOT_WET = 6,			/*!< Irrigation on*/
-	PIVOT_UNKNOWN = 7	    /*!< Value not obtained yet*/
+	PIVOT_UNKNOWN = 0	    /*!< Value not obtained yet*/
 }pivot_states;
 
 /**

@@ -41,8 +41,6 @@ void app_main(void)
 
 	data_app_load_config(&app_config, &app_config_length);
 	vTaskDelay(pdMS_TO_TICKS(2000));
-	app_config.watering_state = PIVOT_WET;
-
 	actuation_app_set_config(app_config);
 
 	while (1)
@@ -92,6 +90,10 @@ static void app_main_call(app_call_states state,const void* buffer)
 			if(ret == true)
 			{
 				actuation_app_set_config(new_config);
+				comm_app_send_event(new_config);
+			}
+			else if(new_config.rotation == PIVOT_UNKNOWN)
+			{
 				comm_app_send_event(new_config);
 			}
 
