@@ -29,7 +29,7 @@ bool actuation_app_init(const app_callback callback);
  * @brief	apply the configuration to the drives
  * @param	config_in - [in]: function used with return to main application class
  */
-void actuation_app_set_config(const pivot_config config_in);
+void actuation_app_set_config(const pivot_config config_in, bool alert_change);
 
 /**
  * @brief	read current status on IO ports

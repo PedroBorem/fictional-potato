@@ -21,7 +21,8 @@
 #define SYS_DISABLE			1
 
 #define PERC_FULL_CYCLE		60000 //60 sec
-#define PRESSURE_TIMEOUT    300000 //10 sec
+#define PRESSURE_TIMEOUT    300000 //5 min
+#define ONOFF_DELAY			2000
 /* Pinout references*/
 /* GPIO Outputs */
 #define PIN_ON       	GPIO_NUM_3	//Main system relay off
@@ -49,8 +50,7 @@
 #define DIO0 26
 
 /* Output Pins Group */
-#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) | (1ULL<<PIN_PUMP))
-//(1ULL<<PIN_OFF) | this pin breaks uart for logs
+#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_OFF) | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) | (1ULL<<PIN_PUMP))
 
 /* Input Pins Group */
 #define GPIO_INPUT_PIN_GROUP  ((1ULL<<PIN_CW_IN) | (1ULL<<PIN_CCW_IN) | (1ULL<<PIN_PRESS))

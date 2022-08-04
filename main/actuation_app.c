@@ -73,11 +73,23 @@ bool actuation_app_init(const app_callback callback)
 	return ret;
 }
 
-void actuation_app_set_config(const pivot_config config_in)
+void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
-	gpio_actuator_set(config_in);
-	//xTaskNotifyGive(xTask_actuation_app);
+
+	if(alert_change == false)
+	{
+		gpio_actuator_set(config_in);
+	}
+	else
+	{
+		ESP_LOGW(ACTUATION_APP_TAG,"alert, manual configuration !!");
+	}
+
+	if (eTaskGetState(xTask_actuation_app) != eSuspended)
+	{
+		xTaskNotifyGive(xTask_actuation_app);
+	}
 }
 
 void actuation_app_get_config(pivot_config* config_out, size_t config_size)
@@ -87,10 +99,10 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 	if(config_size > 0 && config_out != NULL )
 	{
 		current_config = gpio_actuator_get();
-		printf("power_state %d\n", current_config.power_state);
-		printf("rotation %d\n", current_config.rotation);
-		printf("watering_state %d\n", current_config.watering_state);
-		printf("percentimeter %d\n", current_config.percentimeter);
+		LOG_ACTUATION(ACTUATION_APP_TAG,"power_state %d", current_config.power_state);
+		LOG_ACTUATION(ACTUATION_APP_TAG,"rotation %d", current_config.rotation);
+		LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state %d", current_config.watering_state);
+		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_config.percentimeter);
 
 		memcpy(config_out, &current_config, config_size);
 	}
@@ -116,17 +128,32 @@ void actuation_app_task(void* arg)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000) // double check (1 second)
 			{
+				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
+				if(current_config.power_state == PIVOT_OFF)
+				{
+					gpio_actuator_shutdown();
+				}
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_NEW_CONFIG, &current_config);
+				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
 		else if(current_config.watering_state != actuation_config.watering_state)
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000)  // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 5000)  // double check (1 second)
 			{
+				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
+				if(current_config.watering_state == PIVOT_DRY)
+				{
+					gpio_actuator_shutdown();
+				}
+				else if(current_config.watering_state == PIVOT_WET)
+				{
+					actuation_config.watering_state = PIVOT_WET;
+//					gpio_actuator_set(actuation_config);
+				}
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_NEW_CONFIG, &current_config);
+				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -134,8 +161,9 @@ void actuation_app_task(void* arg)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000)  // double check (1 second)
 			{
+				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_NEW_CONFIG, &current_config);
+				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -144,8 +172,9 @@ void actuation_app_task(void* arg)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 61000) //double check (1 minute and 1 second)
 			{
+				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_NEW_CONFIG, &current_config);
+				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -154,7 +183,7 @@ void actuation_app_task(void* arg)
 			last_tick = xTaskGetTickCount();
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(60000));
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
 

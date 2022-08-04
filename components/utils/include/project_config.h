@@ -53,7 +53,8 @@ typedef enum
 {
 	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
 	CALL_NEW_CONFIG	= 2,
-	CALL_READ_STATUS = 3
+	CALL_READ_STATUS = 3,
+	CALL_MANUAL_PIVOT= 4
 }app_call_states;
 
 /**
@@ -68,6 +69,7 @@ typedef enum
 	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
 	PIVOT_DRY = 5,			/*!< Irrigation off*/
 	PIVOT_WET = 6,			/*!< Irrigation on*/
+	PIVOT_PRESSURIZING = 7,
 	PIVOT_UNKNOWN = 0	    /*!< Value not obtained yet*/
 }pivot_states;
 
@@ -107,7 +109,7 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define COMM_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 #define ACTUATION_APP_TASK_NAME			"actuation app task"
-#define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
+#define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 5 )
 #define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
 
 #define ACTUATOR_CHECK_TASK_NAME		"actuator check task"

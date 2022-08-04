@@ -186,9 +186,6 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 
 	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
-
-	ESP_LOGW("aaaa", "%s", string_out);
-
 	return err;
 }
 

@@ -16,7 +16,7 @@
 
 /* GPIO include */
 #include "driver/gpio.h"
-#define ACTUATOR_TAG			"actuator_main"
+#define ACTUATOR_TAG			"gpio_actuator"
 
 #define ESP_INTR_FLAG_DEFAULT 0
 /**\addtogroup components
@@ -30,8 +30,8 @@
  */
 
 /* Global variables ---------------------------------------------- */
-xTimerHandle perc_timer_handleOn;
-xTimerHandle perc_timer_handleOff;
+xTimerHandle perc_timer_handleOn = NULL;
+xTimerHandle perc_timer_handleOff = NULL;
 TaskHandle_t xTask_waitpressure = NULL;
 
 static pivot_config pivot_config_read = {};
@@ -44,6 +44,7 @@ int perc_diff_onoff = 0;
 int perc_pct_on = 0;
 int perc_sec_on = 0;
 int percent_watchdog = 0;
+bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
 
@@ -87,13 +88,13 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 void vPercTimerOnExpire(xTimerHandle pxTimer) {
 	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
 	xTimerStart(perc_timer_handleOff, 0);
-	ESP_LOGW(ACTUATOR_TAG, "%s, Timer On expired", __func__);
+	LOG_ACTUATION(ACTUATOR_TAG, "%s, Timer On expired", __func__);
 }
 
 void vPercTimerOffExpire(xTimerHandle pxTimer) {
 	gpio_set_level(PIN_PERC_OUT, SYS_ENABLE);
 	xTimerStart(perc_timer_handleOn, 0);
-	ESP_LOGW(ACTUATOR_TAG, "%s, Timer Off expired", __func__);
+	LOG_ACTUATION(ACTUATOR_TAG, "%s, Timer Off expired", __func__);
 }
 
 esp_err_t gpio_actuator_init()
@@ -159,7 +160,10 @@ pivot_config gpio_actuator_get(void)
 		pivot_config_read.rotation = PIVOT_UNKNOWN;
 	}
 
-	if(gpio_get_level(PIN_PRESS) == SYS_ENABLE){
+	if(pressurizing == true){
+		pivot_config_read.watering_state = PIVOT_PRESSURIZING;
+	}
+	else if(gpio_get_level(PIN_PRESS) == SYS_ENABLE){
 		pivot_config_read.watering_state = PIVOT_WET;
 	}else if(gpio_get_level(PIN_PRESS) == SYS_DISABLE){
 		pivot_config_read.watering_state = PIVOT_DRY;
@@ -187,16 +191,22 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(PIN_WATERING, SYS_DISABLE);
 	gpio_set_level(PIN_PERC_AUX, SYS_DISABLE);
 	gpio_set_level(PIN_PERC_OUT, SYS_DISABLE);
-	//delay
+
+	vTaskDelay(pdMS_TO_TICKS(ONOFF_DELAY)); //TODO: set param as configurable
+
 	gpio_set_level(PIN_OFF, SYS_DISABLE);
 
-	if(perc_timer_handleOn != 0)
+	if(perc_timer_handleOn != NULL)
 	{
-		xTimerDelete(perc_timer_handleOn,0);
+		xTimerStop(perc_timer_handleOn,portMAX_DELAY);
+		xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
+		perc_timer_handleOn = NULL;
 	}
-	if(perc_timer_handleOff != 0)
+	if(perc_timer_handleOff != NULL)
 	{
-		xTimerDelete(perc_timer_handleOff,0);
+		xTimerStop(perc_timer_handleOff,portMAX_DELAY);
+		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
+		perc_timer_handleOff = NULL;
 	}
 }
 
@@ -209,17 +219,19 @@ esp_err_t gpio_actuator_set(pivot_config config)
 
 	perc_sec = config.percentimeter*((PERC_FULL_CYCLE)/100);
 
-	ESP_LOGW(ACTUATOR_TAG, "%s, Perc sec: %d", __func__, perc_sec);
+	LOG_ACTUATION(ACTUATOR_TAG, "%s, Perc sec: %d", __func__, perc_sec);
 
 	if(config.power_state == PIVOT_ON){
 		if(config.rotation == PIVOT_CW)
 		{
 			gpio_set_level(PIN_CW, SYS_ENABLE);
+			gpio_set_level(PIN_AUX, SYS_ENABLE);
 			gpio_set_level(PIN_CCW, SYS_DISABLE);
 		}
 		else if(config.rotation == PIVOT_CCW)
 		{
 			gpio_set_level(PIN_CW, SYS_DISABLE);
+			gpio_set_level(PIN_AUX, SYS_ENABLE);
 			gpio_set_level(PIN_CCW, SYS_ENABLE);
 		}
 
@@ -284,7 +296,6 @@ esp_err_t gpio_actuator_set(pivot_config config)
 			gpio_set_level(PIN_WATERING, SYS_ENABLE);
 
 			if(xTask_waitpressure == NULL){
-				ESP_LOGW(ACTUATOR_TAG, "%s, Creating Task", __func__);
 				BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
 										ACTUATOR_CHECK_TASK_NAME,
 										ACTUATOR_CHECK_STACK_SIZE,
@@ -316,8 +327,7 @@ esp_err_t gpio_actuator_start(pivot_config config)
 	esp_err_t err = ESP_FAIL;
 
 	gpio_set_level(PIN_ON, SYS_ENABLE);
-	gpio_set_level(PIN_AUX, SYS_ENABLE);
-	vTaskDelay(pdMS_TO_TICKS(4000)); //TODO: set param as configurable
+	vTaskDelay(pdMS_TO_TICKS(ONOFF_DELAY)); //TODO: set param as configurable
 	gpio_set_level(PIN_ON, SYS_DISABLE);
 
 	return err;
@@ -327,16 +337,20 @@ void actuator_wait_pressure(void* arg)
 {
 	TickType_t check_start = xTaskGetTickCount();
 
+	pressurizing = true;
+
 	while(1)
 	{
-		ESP_LOGW(ACTUATOR_TAG,"%s, Result: %d",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
+		LOG_ACTUATION(ACTUATOR_TAG,"%s, Result: %d",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(PIN_PRESS) == SYS_ENABLE)
 		{
+			pressurizing = false;
 			gpio_actuator_start(task_config_set);
 			vTaskSuspend(NULL); //suspend own task
 			check_start = xTaskGetTickCount();
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > PRESSURE_TIMEOUT){ //TODO: set pressure timeout as configurable
+			pressurizing = false;
 			ESP_LOGE(ACTUATOR_TAG, "%s, Water Pressure timeout", __func__);
 			gpio_actuator_shutdown();
 			vTaskSuspend(NULL); //suspend own task
@@ -345,3 +359,5 @@ void actuator_wait_pressure(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
+/**@}*/ 	//actuator_app
+/** @}*/	//components
