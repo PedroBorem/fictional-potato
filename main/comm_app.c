@@ -16,6 +16,7 @@
 
 /* Components include */
 #include "rf_module.h"
+#include "gprs_module.h"
 
 /**\addtogroup main
  * @{
@@ -69,6 +70,7 @@ bool comm_app_init(const app_callback callback)
 	BaseType_t xReturn = pdPASS;
 
 	err = rf_module_init();
+	err &= gprs_module_init();
 	if(err == ESP_OK && callback != NULL )
 	{
 		comm_app_call = callback;
@@ -113,8 +115,9 @@ uint16_t comm_app_get_degree(void)
 
 void comm_app_send_event(pivot_config pivot_status)
 {
-	// TODO: send to four interfaces.
+	uint16_t degree = comm_app_get_degree();
 	rf_module_send_event(pivot_status);
+	gprs_module_send_event(pivot_status, degree);
 }
 
 /* Private methods ----------------------------------------------- */
@@ -154,8 +157,7 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-
-void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
+void MODULES_NOTIFY_APP(const pivot_config config_in)
 {
 	comm_app_request comm_request = {};
 
@@ -182,3 +184,14 @@ void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
 
 	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
 }
+
+void RF_MODULE_NOTIFY_APP(const pivot_config config_in)
+{
+	MODULES_NOTIFY_APP(config_in);
+}
+
+void GPRS_MODULE_NOTIFY_APP(const pivot_config config_in)
+{
+	MODULES_NOTIFY_APP(config_in);
+}
+
