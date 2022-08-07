@@ -77,10 +77,10 @@ bool comm_app_init(const app_callback callback)
 		if(xQueue_comm_app != NULL)
 		{
 			xReturn = xTaskCreate(&comm_app_task,
-								DATA_APP_TASK_NAME,
-								DATA_APP_STACK_SIZE,
+								COMM_APP_TASK_NAME,
+								COMM_APP_STACK_SIZE,
 								NULL,
-								DATA_APP_TASK_PRIORITY,
+								COMM_APP_TASK_PRIORITY,
 								&xTask_comm_app);
 
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
@@ -163,6 +163,16 @@ void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
 	{
 		comm_request.request_type = COMM_REQUEST_READ_STATUS;
+	}
+	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
+	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+	{
+		//	system default off
+		comm_request.input_config.power_state = PIVOT_OFF;
+		comm_request.input_config.rotation = PIVOT_CW;
+		comm_request.input_config.watering_state = PIVOT_DRY;
+		comm_request.input_config.percentimeter = 0;
+		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;
 	}
 	else
 	{

@@ -53,7 +53,8 @@ typedef enum
 {
 	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
 	CALL_NEW_CONFIG	= 2,
-	CALL_READ_STATUS = 3
+	CALL_READ_STATUS = 3,
+	CALL_MANUAL_PIVOT= 4
 }app_call_states;
 
 /**
@@ -67,7 +68,9 @@ typedef enum
 	PIVOT_CW = 3,			/*!< Pivot in ClockWise mode (advanced)*/
 	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
 	PIVOT_DRY = 5,			/*!< Irrigation off*/
-	PIVOT_WET = 6			/*!< Irrigation on*/
+	PIVOT_WET = 6,			/*!< Irrigation on*/
+	PIVOT_PRESSURIZING = 7,
+	PIVOT_UNKNOWN = 0	    /*!< Value not obtained yet*/
 }pivot_states;
 
 /**
@@ -77,8 +80,8 @@ typedef enum
 typedef	struct __attribute__((__packed__))
 {
 	uint8_t power_state;	/*!< PIVOT_ON or PIVOT_OFF*/
-	uint8_t rotation;	/*!< PIVOT_ADVANCE or PIVOT_REVERSE*/
-	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/
+	uint8_t rotation;		/*!< PIVOT_CW or PIVOT_CCW*/
+	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/ // @suppress("Type cannot be resolved")
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
 }pivot_config;
 
@@ -100,6 +103,18 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define DATA_APP_TASK_NAME				"data app task"
 #define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
 #define DATA_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+
+#define COMM_APP_TASK_NAME				"comm app task"
+#define COMM_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
+#define COMM_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+
+#define ACTUATION_APP_TASK_NAME			"actuation app task"
+#define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 5 )
+#define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
+
+#define ACTUATOR_CHECK_TASK_NAME		"actuator check task"
+#define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
+#define ACTUATOR_CHECK_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
 
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions
