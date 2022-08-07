@@ -33,15 +33,16 @@ static void app_main_call(app_call_states state,const void* buffer);
  */
 void app_main(void)
 {
-	pivot_config app_config = {};
-	size_t app_config_length = 0;
+	const pivot_config app_config_default = {
+			.power_state = PIVOT_OFF,
+			.rotation = PIVOT_CW,
+			.watering_state = PIVOT_DRY,
+			.percentimeter = 0};
 
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	data_app_load_config(&app_config, &app_config_length);
-	vTaskDelay(pdMS_TO_TICKS(2000));
-	actuation_app_set_config(app_config);
+	actuation_app_set_config(app_config_default, false);
 
 	while (1)
 	{
@@ -89,9 +90,23 @@ static void app_main_call(app_call_states state,const void* buffer)
 			ret = data_app_save_config(new_config, sizeof(new_config));
 			if(ret == true)
 			{
-				actuation_app_set_config(new_config);
+				actuation_app_set_config(new_config, false);
 				comm_app_send_event(new_config);
 			}
+			else if(new_config.rotation == PIVOT_UNKNOWN)
+			{
+				comm_app_send_event(new_config);
+			}
+
+			break;
+		}
+		case CALL_MANUAL_PIVOT:
+		{
+			pivot_config manual_config = {};
+			memcpy(&manual_config, buffer, sizeof(manual_config));
+
+			actuation_app_set_config(manual_config, true);
+			comm_app_send_event(manual_config);
 
 			break;
 		}

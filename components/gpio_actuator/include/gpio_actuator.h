@@ -17,16 +17,12 @@
 #include "driver/gpio.h"
 #include <time.h>
 
-int perc_t_off;
-int perc_t_on;
-time_t posedge_perc;
-time_t negedge_perc;
-
 #define SYS_ENABLE			0
 #define SYS_DISABLE			1
 
-#define PERC_FULL_CYCLE		60000 //ms
-
+#define PERC_FULL_CYCLE		60000 //60 sec
+#define PRESSURE_TIMEOUT    300000 //5 min
+#define ONOFF_DELAY			2000
 /* Pinout references*/
 /* GPIO Outputs */
 #define PIN_ON       	GPIO_NUM_3	//Main system relay off
@@ -40,10 +36,10 @@ time_t negedge_perc;
 #define PIN_PUMP        GPIO_NUM_25	//Pump Relay
 
 /* GPIO Inputs */
-#define PIN_CW_IN       GPIO_NUM_36 	//Clockwise Input
+#define PIN_CW_IN       GPIO_NUM_36 //Clockwise Input
 #define PIN_CCW_IN      GPIO_NUM_37	//Counter-Clockwise Input
 #define PIN_PERC_IN     GPIO_NUM_38	//Percentimeter Read Input
-#define PIN_PRESS       GPIO_NUM_39 	//?
+#define PIN_PRESS       GPIO_NUM_39 //Water pressure reading
 
 /* LoRA SPI */
 #define SCK 5
@@ -54,13 +50,12 @@ time_t negedge_perc;
 #define DIO0 26
 
 /* Output Pins Group */
-#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) | (1ULL<<PIN_PUMP))
-//(1ULL<<PIN_OFF) | this pin breaks uart for logs
+#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<PIN_ON) | (1ULL<<PIN_OFF) | (1ULL<<PIN_AUX) | (1ULL<<PIN_CW) | (1ULL<<PIN_CCW) | (1ULL<<PIN_WATERING) | (1ULL<<PIN_PERC_AUX) | (1ULL<<PIN_PERC_OUT) | (1ULL<<PIN_PUMP))
 
 /* Input Pins Group */
 #define GPIO_INPUT_PIN_GROUP  ((1ULL<<PIN_CW_IN) | (1ULL<<PIN_CCW_IN) | (1ULL<<PIN_PRESS))
 
-/* Int Pins Group */
+/* Interrupt Pins Group */
 #define GPIO_INT_PERC     (1ULL<<PIN_PERC_IN)	//Percentimeter Read Input
 
 /* Public function prototypes ------------------------------------------- */
@@ -80,11 +75,36 @@ esp_err_t gpio_actuator_init(void);
  */
 esp_err_t gpio_actuator_set(pivot_config config);
 
-
+/**
+ * @brief	Read actual pivot configuration.
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to initialize
+ */
 pivot_config gpio_actuator_get(void);
 
+/**
+ * @brief	Disables all relays.
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to initialize
+ */
 void gpio_actuator_shutdown(void);
+
+/**
+ * @brief	Perc On timer expiration callback.
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to initialize
+ */
 void vPercTimerOnExpire(xTimerHandle pxTimer);
+
+/**
+ * @brief	Perc Off timer expiration callback.
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to initialize
+ */
 void vPercTimerOffExpire(xTimerHandle pxTimer);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */

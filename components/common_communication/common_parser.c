@@ -176,10 +176,10 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 	sprintf(&string_converted[COMMON_PARSER_POWER_POSITION], "%d", config_in.power_state);
 
 	string_converted[3] = '-';
-	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", config_in.percentimeter);
+	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%03d", config_in.percentimeter);
 
 	string_converted[7] = '-';
-	sprintf(&string_converted[COMMON_PARSER_ANGLE_OUT_POSITION], "%d", angle);
+	sprintf(&string_converted[COMMON_PARSER_ANGLE_OUT_POSITION], "%03d", angle);
 
 	string_converted[11] = '-';
 	sprintf(&string_converted[COMMON_PARSER_TIMESTAMP_OUT_POSITION], "%lld", (long long int)timestamp);

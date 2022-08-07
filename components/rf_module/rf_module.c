@@ -53,8 +53,8 @@ esp_err_t rf_module_send_event(pivot_config config_in)
 	uint16_t degree = rf_module_get_angle();
 	time_t timestamp = rf_module_get_timestamp();
 
-	char event[50] = "";
-	common_parser_status_to_string(config_in, degree, timestamp, event);
+	char event[25] = "";
+	common_parser_status_to_string(config_in, timestamp, degree, event);
 
 	err = rf_uart_send_event(event, sizeof(event));
 
