@@ -17,6 +17,7 @@
 /* Components include */
 #include "rf_module.h"
 #include "gprs_module.h"
+#include "gprs_uart.h"
 
 /**\addtogroup main
  * @{
@@ -88,6 +89,8 @@ bool comm_app_init(const app_callback callback)
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
 			{
 				ret = true;
+				const char gprs_id[] = "{\"register\":\"True\",\"GPRS_ID\":\"TesteInatel_3\"}";
+				gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 			}
 			else
 			{

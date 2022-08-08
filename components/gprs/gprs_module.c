@@ -86,13 +86,13 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 	if(ptr_payload != NULL)
 	{
 		// if the received message is GPS data
-		err = common_parser_json_to_config(ptr_payload, &config);
+		err = common_parser_json_to_config(&ptr_payload[12], &config);
 		if(err == ESP_OK)
 		{
 			char* ptr_timestamp = strstr(buffer, search_timestamp);
 			if(ptr_timestamp != NULL)
 			{
-				err = common_parser_json_to_timestamp(ptr_timestamp, &timestamp);
+				err = common_parser_json_to_timestamp(&ptr_timestamp[12], &timestamp);
 				if(err == ESP_OK)
 				{
 					gprs_timestamp = timestamp;
@@ -100,10 +100,14 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 					GPRS_MODULE_NOTIFY_APP(config);
 				}
 			}
+			else
+			{
+				ESP_LOGE(GPRS_MODULE_TAG, "%s, Timestamp invalid format", __func__);
+			}
 		}
 		else
 		{
-			ESP_LOGE(GPRS_MODULE_TAG, "%s, GPS invalid format", __func__);
+			ESP_LOGE(GPRS_MODULE_TAG, "%s, GPRS invalid format", __func__);
 		}
 	}
 	else
