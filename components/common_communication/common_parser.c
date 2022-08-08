@@ -221,16 +221,15 @@ esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, 
 {
 	esp_err_t err = ESP_OK;
 
-	char string_converted[75] = "";
+	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_1\",\"payload\":\"";
 	char string_status[25] = "";
-	char string_base[65] = "{\"type\":\"status\",\"id\":\"TesteInatel_1\",\"payload\":\"";
 
 	common_parser_status_to_string(config_in, timestamp, angle, string_status);
 
-	strcat(strcpy(string_converted, string_base), string_status);
+	strcat(string_converted, string_status);
 
-	string_converted[69] = "\"";
-	string_converted[70] = "}";
+	string_converted[71] = '\"';
+	string_converted[72] = '}';
 
 	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
