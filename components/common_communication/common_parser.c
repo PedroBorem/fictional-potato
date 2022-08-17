@@ -189,5 +189,52 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 	return err;
 }
 
+esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timestamp)
+{
+	esp_err_t err = ESP_OK;
+
+	// assistant buffers
+	char timestamp_out[COMMON_PARSER_TIMESTAMP_SIZE] = "";
+
+	// assistant accountant
+	uint8_t string_pos = 0;
+
+	// angle analyzer
+	for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
+	{
+		if(string_in[(string_pos)] == '}')
+		{
+			break;
+		}
+		else
+		{
+			timestamp_out[string_pos] = string_in[(string_pos)];
+		}
+	}
+
+	sscanf(timestamp_out, "%d", (int*)timestamp);
+
+	return err;
+}
+
+esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
+{
+	esp_err_t err = ESP_OK;
+
+	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_3\",\"payload\":\"";
+	char string_status[25] = "";
+
+	common_parser_status_to_string(config_in, timestamp, angle, string_status);
+
+	strcat(string_converted, string_status);
+
+	string_converted[71] = '\"';
+	string_converted[72] = '}';
+
+	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
+
+	return err;
+}
+
 /**@}*/ 	//common_parser
 /** @}*/	//components

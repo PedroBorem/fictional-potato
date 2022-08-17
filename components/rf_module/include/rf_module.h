@@ -50,6 +50,6 @@ time_t rf_module_get_timestamp(void);
  * @brief	trigger callback to each status message received (write and read)
  * @param 	config_in[in]:  configuration structure
  */
-void RF_MODULO_NOTIFY_APP(const pivot_config config_in);
+void RF_MODULE_NOTIFY_APP(const pivot_config config_in);
 
 #endif /* COMPONENTS_RF_MODULE_INCLUDE_RF_MODULE_H_ */

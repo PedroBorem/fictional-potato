@@ -114,7 +114,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 		err = common_parser_string_to_config(buffer, &config);
 		if(err == ESP_OK)
 		{
-			RF_MODULO_NOTIFY_APP(config);
+			RF_MODULE_NOTIFY_APP(config);
 		}
 		else
 		{
@@ -128,7 +128,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void RF_MODULO_NOTIFY_APP(const pivot_config config_in)
+__attribute__((weak)) void RF_MODULE_NOTIFY_APP(const pivot_config config_in)
 {
 	UNUSED(config_in);
 	return;

@@ -16,6 +16,8 @@
 
 #include "project_config.h"
 
+#define common_parser_json_to_config(string_in,config_out) common_parser_string_to_config(string_in,config_out)
+
 /**
  * @brief	convert a string to a configuration structure
  * @param 	sting_in[in]: input string, format(xxx-xxx)
@@ -48,5 +50,10 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
  * 	- ESP_FAIL: fail
  */
 esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out);
+
+
+esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timestamp);
+
+esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out);
 
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */
