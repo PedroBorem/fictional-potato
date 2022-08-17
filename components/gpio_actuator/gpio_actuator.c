@@ -406,6 +406,7 @@ void actuator_wait_pressure(void* arg)
 	TickType_t check_start = xTaskGetTickCount();
 
 	pressurizing = true;
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
 
 	while(1)
 	{
@@ -419,6 +420,8 @@ void actuator_wait_pressure(void* arg)
 			vTaskSuspend(NULL); //suspend own task
 
 			//task resume
+			pressurizing = true;
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 			check_start = xTaskGetTickCount();
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
