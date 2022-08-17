@@ -33,7 +33,7 @@ static void app_main_call(app_call_states state,const void* buffer);
  */
 void app_main(void)
 {
-	const pivot_config app_config_default = {
+	 pivot_config app_config_default = {
 			.power_state = PIVOT_OFF,
 			.rotation = PIVOT_CW,
 			.watering_state = PIVOT_DRY,
@@ -42,7 +42,7 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	actuation_app_set_config(app_config_default, false);
+	//actuation_app_set_config(app_config_default, false);
 
 	while (1)
 	{

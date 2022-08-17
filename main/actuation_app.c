@@ -79,7 +79,7 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 
 	if(alert_change == false)
 	{
-		gpio_actuator_set(config_in);
+		gpio_actuator_set(config_in, false);
 	}
 	else
 	{
@@ -138,7 +138,8 @@ void actuation_app_task(void* arg)
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
-		else if(current_config.watering_state != actuation_config.watering_state)
+		else if((current_config.watering_state != actuation_config.watering_state)
+				&& (current_config.watering_state != PIVOT_PRESSURIZING))
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 5000)  // double check (1 second)
 			{
@@ -150,7 +151,7 @@ void actuation_app_task(void* arg)
 				else if(current_config.watering_state == PIVOT_WET)
 				{
 					actuation_config.watering_state = PIVOT_WET;
-//					gpio_actuator_set(actuation_config);
+					//gpio_actuator_set(actuation_config);
 				}
 				last_tick = xTaskGetTickCount();
 				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
