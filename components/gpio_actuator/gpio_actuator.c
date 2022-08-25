@@ -87,6 +87,8 @@ void actuator_wait_pressure(void* arg);
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
+	//taskENTER_CRITICAL(0);
+	//taskENTER_CRITICAL_FROM_ISR();
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
 	{
 		posedge_perc = clock();
@@ -109,6 +111,8 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	}
 
 	percent_watchdog = clock();
+	//taskEXIT_CRITICAL(0);
+	//taskEXIT_CRITICAL_FROM_ISR(0);
 }
 
 esp_err_t gpio_actuator_init()
@@ -171,8 +175,6 @@ esp_err_t gpio_actuator_init()
 
 	return err;
 }
-
-
 
 pivot_config gpio_actuator_get(void)
 {

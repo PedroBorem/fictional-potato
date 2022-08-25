@@ -184,7 +184,7 @@ esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp
 	string_converted[11] = '-';
 	sprintf(&string_converted[COMMON_PARSER_TIMESTAMP_OUT_POSITION], "%010lld", (long long int)timestamp);
 
-	string_converted[23] = "#";
+	string_converted[24] = "#";
 	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
 	return err;
