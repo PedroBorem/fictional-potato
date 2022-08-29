@@ -87,6 +87,8 @@ void actuator_wait_pressure(void* arg);
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
+	//taskENTER_CRITICAL(0);
+	//taskENTER_CRITICAL_FROM_ISR();
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
 	{
 		posedge_perc = clock();
@@ -109,6 +111,8 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	}
 
 	percent_watchdog = clock();
+	//taskEXIT_CRITICAL(0);
+	//taskEXIT_CRITICAL_FROM_ISR(0);
 }
 
 esp_err_t gpio_actuator_init()
@@ -132,8 +136,8 @@ esp_err_t gpio_actuator_init()
 	io_conf_in.intr_type = GPIO_INTR_DISABLE;
 	io_conf_in.mode = GPIO_MODE_INPUT;
 	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
-	io_conf_in.pull_down_en = 0;
-	io_conf_in.pull_up_en = 1;
+	io_conf_in.pull_down_en = GPIO_PULLDOWN_ENABLE;
+	io_conf_in.pull_up_en = GPIO_PULLDOWN_DISABLE;
     gpio_config(&io_conf_in);
 
     //percent reader interrupt setup
@@ -141,8 +145,8 @@ esp_err_t gpio_actuator_init()
     io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
     io_conf_int.pin_bit_mask = GPIO_INT_PERC;
     io_conf_int.mode = GPIO_MODE_INPUT;
-    io_conf_int.pull_down_en = 0;
-    io_conf_int.pull_up_en = 1;
+    io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    io_conf_int.pull_up_en = GPIO_PULLDOWN_DISABLE;
     gpio_config(&io_conf_int);
 
     err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
@@ -156,11 +160,21 @@ esp_err_t gpio_actuator_init()
     {
     	ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
     }
+    else
+    {
+    	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+    }
 
 	return err;
 }
-
-
 
 pivot_config gpio_actuator_get(void)
 {
@@ -235,14 +249,17 @@ void gpio_actuator_shutdown(void)
 		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
 		perc_timer_handleOff = NULL;
 	}
+
+	pivot_config_read.percentimeter = 0;
 }
 
-esp_err_t gpio_actuator_set(pivot_config config)
+esp_err_t gpio_actuator_set(pivot_config config, bool old_state_pressure)
 {
 	esp_err_t err = ESP_FAIL;
 	int perc_sec = 0;
 
-	task_config_set = config;
+	//task_config_set = config;
+	memcpy(&task_config_set, &config, sizeof(task_config_set));
 	perc_sec = config.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
@@ -341,6 +358,11 @@ esp_err_t gpio_actuator_set(pivot_config config)
 			}
 			else
 			{
+				if(old_state_pressure == true)
+				{
+					gpio_actuator_start(config);
+				}
+
 				vTaskResume(xTask_waitpressure);
 			}
 		}
@@ -386,6 +408,7 @@ void actuator_wait_pressure(void* arg)
 	TickType_t check_start = xTaskGetTickCount();
 
 	pressurizing = true;
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
 
 	while(1)
 	{
@@ -393,8 +416,14 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
 		{
 			pressurizing = false;
-			gpio_actuator_start(task_config_set);
+			gpio_actuator_set(task_config_set, true);
+
+			check_start = xTaskGetTickCount();
 			vTaskSuspend(NULL); //suspend own task
+
+			//task resume
+			pressurizing = true;
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 			check_start = xTaskGetTickCount();
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
@@ -402,7 +431,10 @@ void actuator_wait_pressure(void* arg)
 			pressurizing = false;
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Water Pressure timeout", __func__);
 			gpio_actuator_shutdown();
+			check_start = xTaskGetTickCount();
 			vTaskSuspend(NULL); //suspend own task
+
+			//task resume
 			check_start = xTaskGetTickCount();
 		}
 		vTaskDelay(pdMS_TO_TICKS(1000));

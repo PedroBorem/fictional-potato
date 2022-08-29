@@ -79,7 +79,7 @@ esp_err_t gpio_actuator_init(void);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to initialize
  */
-esp_err_t gpio_actuator_set(pivot_config config);
+esp_err_t gpio_actuator_set(pivot_config config, bool old_state_pressure);
 
 /**
  * @brief	Read actual pivot configuration.

@@ -33,16 +33,8 @@ static void app_main_call(app_call_states state,const void* buffer);
  */
 void app_main(void)
 {
-	const pivot_config app_config_default = {
-			.power_state = PIVOT_OFF,
-			.rotation = PIVOT_CW,
-			.watering_state = PIVOT_DRY,
-			.percentimeter = 0};
-
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
-
-	actuation_app_set_config(app_config_default, false);
 
 	while (1)
 	{
@@ -117,6 +109,24 @@ static void app_main_call(app_call_states state,const void* buffer)
 			actuation_app_get_config(&config_send, sizeof(config_send));
 			comm_app_send_event(config_send);
 
+			break;
+		}
+		case CALL_OFF_PIVOT:
+		{
+			pivot_config config_off = {
+			   .power_state = PIVOT_OFF,
+			   .rotation = PIVOT_CW,
+			   .watering_state = PIVOT_DRY,
+			   .percentimeter = 0
+			};
+
+			//set off configuration
+			actuation_app_set_config(config_off, false);
+			vTaskDelay(pdMS_TO_TICKS(2000));
+
+			//get current status
+			actuation_app_get_config(&config_off, sizeof(config_off));
+			comm_app_send_event(config_off);
 			break;
 		}
 		default:

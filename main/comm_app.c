@@ -40,7 +40,8 @@
 typedef enum
 {
 	COMM_REQUEST_NEW_CONFIG = 0, 	/*!< Request to save a new configuration*/
-	COMM_REQUEST_READ_STATUS = 1	/*!< Status read request*/
+	COMM_REQUEST_READ_STATUS = 1,	/*!< Status read request*/
+	COMM_REQUEST_PIVOT_OFF = 2
 }comm_app_request_type;
 
 /**
@@ -94,7 +95,7 @@ bool comm_app_init(const app_callback callback)
 			}
 			else
 			{
-				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
+				ESP_LOGE(COMM_APP_TAG, "%s, failed to create Testetask: %s", __func__, DATA_APP_TASK_NAME);
 			}
 		}
 		else
@@ -149,6 +150,11 @@ void comm_app_task(void* arg)
 					comm_app_call(CALL_READ_STATUS, NULL);
 					break;
 				}
+				case COMM_REQUEST_PIVOT_OFF:
+				{
+					comm_app_call(CALL_OFF_PIVOT, NULL);
+					break;
+				}
 			}
 		}
 
@@ -172,12 +178,7 @@ void MODULES_NOTIFY_APP(const pivot_config config_in)
 	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
 	{
-		//	system default off
-		comm_request.input_config.power_state = PIVOT_OFF;
-		comm_request.input_config.rotation = PIVOT_CW;
-		comm_request.input_config.watering_state = PIVOT_DRY;
-		comm_request.input_config.percentimeter = 0;
-		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;
+		comm_request.request_type = COMM_REQUEST_PIVOT_OFF;
 	}
 	else
 	{

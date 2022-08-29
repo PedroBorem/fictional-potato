@@ -79,7 +79,7 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 
 	if(alert_change == false)
 	{
-		gpio_actuator_set(config_in);
+		gpio_actuator_set(config_in, false);
 	}
 	else
 	{
@@ -124,9 +124,10 @@ void actuation_app_task(void* arg)
 	{
 		current_config = gpio_actuator_get();
 
-		if(current_config.power_state != actuation_config.power_state)
+		if((current_config.power_state != actuation_config.power_state)
+		&& (current_config.watering_state != PIVOT_PRESSURIZING))
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000) // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 3000) // double check (1 second)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
 				if(current_config.power_state == PIVOT_OFF)
@@ -138,9 +139,10 @@ void actuation_app_task(void* arg)
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
-		else if(current_config.watering_state != actuation_config.watering_state)
+		else if((current_config.watering_state != actuation_config.watering_state)
+				&& (current_config.watering_state != PIVOT_PRESSURIZING))
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 5000)  // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 30000)  // double check (1 second)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_config.watering_state == PIVOT_DRY)
@@ -150,7 +152,7 @@ void actuation_app_task(void* arg)
 				else if(current_config.watering_state == PIVOT_WET)
 				{
 					actuation_config.watering_state = PIVOT_WET;
-//					gpio_actuator_set(actuation_config);
+					//gpio_actuator_set(actuation_config);
 				}
 				last_tick = xTaskGetTickCount();
 				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
@@ -159,7 +161,7 @@ void actuation_app_task(void* arg)
 		}
 		else if(current_config.rotation != actuation_config.rotation && current_config.rotation != PIVOT_UNKNOWN)
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 1000)  // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 3000)  // double check (1 second)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
