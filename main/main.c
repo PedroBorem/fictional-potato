@@ -43,7 +43,7 @@ void app_main(void)
 	//assert(app_init());
 
 	// mock input
-	angles[0] = 120; //initial
+	angles[0] = 0; //initial
 	angles[1] = 180; //final
 
 	// create sectorization task
@@ -158,6 +158,7 @@ static void app_sectorization_task(void* arg)
 {
 	uint16_t angles[2] = {};
 	uint16_t current_angle = 0;
+	bool pump_is_on = false;
 	memcpy(angles, arg, sizeof(angles));
 
 	while(1)
@@ -165,13 +166,18 @@ static void app_sectorization_task(void* arg)
 		current_angle = comm_app_get_degree();
 		if(current_angle >= angles[0] && current_angle <= angles[1])
 		{
-			ESP_LOGI(MAIN_TAG,"Pump ON");
-			actuation_app_set_pump(true);
+			if(pump_is_on == false)
+			{
+				ESP_LOGI(MAIN_TAG,"Pump ON");
+				actuation_app_set_pump(true);
+				pump_is_on = true;
+			}
 		}
-		else
+		else if(pump_is_on == true)
 		{
 			ESP_LOGI(MAIN_TAG,"Pump OFF");
 			actuation_app_set_pump(false);
+			pump_is_on = false;
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(2000));
