@@ -108,6 +108,18 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 	}
 }
 
+void actuation_app_set_pump(bool pump_state)
+{
+	if(pump_state == true)
+	{
+		gpio_actuator_pump_on(); //power on
+	}
+	else
+	{
+		gpio_actuator_pump_off(); //power off
+	}
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Task responsible for monitoring possible changes in equipment status

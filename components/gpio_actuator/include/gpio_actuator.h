@@ -97,4 +97,10 @@ pivot_config gpio_actuator_get(void);
  */
 void gpio_actuator_shutdown(void);
 
+
+void gpio_actuator_pump_on(void);
+
+
+void gpio_actuator_pump_off(void);
+
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */

@@ -38,4 +38,6 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change);
  */
 void actuation_app_get_config(pivot_config* config_out, size_t config_size);
 
+void actuation_app_set_pump(bool pump_state);
+
 #endif /* MAIN_INCLUDE_ACTUATION_APP_H_ */

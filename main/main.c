@@ -40,11 +40,11 @@ void app_main(void)
 {
 	uint16_t angles[2] = {};
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
-	assert(app_init());
+	//assert(app_init());
 
 	// mock input
-	scanf("initial angle : %hd", &angles[0]);
-	scanf("final angle : %hd", &angles[1]);
+	angles[0] = 120; //initial
+	angles[1] = 180; //final
 
 	// create sectorization task
 	xTaskCreate(&app_sectorization_task,
@@ -156,7 +156,6 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 static void app_sectorization_task(void* arg)
 {
-
 	uint16_t angles[2] = {};
 	uint16_t current_angle = 0;
 	memcpy(angles, arg, sizeof(angles));
@@ -167,16 +166,15 @@ static void app_sectorization_task(void* arg)
 		if(current_angle >= angles[0] && current_angle <= angles[1])
 		{
 			ESP_LOGI(MAIN_TAG,"Pump ON");
-
-			//pump on
+			actuation_app_set_pump(true);
 		}
 		else
 		{
 			ESP_LOGI(MAIN_TAG,"Pump OFF");
-			// pump off
+			actuation_app_set_pump(false);
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
 

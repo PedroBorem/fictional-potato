@@ -171,86 +171,10 @@ esp_err_t gpio_actuator_init()
 		gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 		gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 		gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+		gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
     }
 
 	return err;
-}
-
-pivot_config gpio_actuator_get(void)
-{
-	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == GPIO_ACT_SYS_ENABLE)
-	{
-		pivot_config_read.rotation = PIVOT_CW;
-		pivot_config_read.power_state = PIVOT_ON;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_CCW_IN) == GPIO_ACT_SYS_ENABLE)
-	{
-		pivot_config_read.rotation = PIVOT_CCW;
-		pivot_config_read.power_state = PIVOT_ON;
-	}
-	else
-	{
-		pivot_config_read.power_state = PIVOT_OFF;
-		pivot_config_read.rotation = PIVOT_UNKNOWN;
-	}
-
-	if(pressurizing == true)
-	{
-		pivot_config_read.watering_state = PIVOT_PRESSURIZING;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
-	{
-		pivot_config_read.watering_state = PIVOT_WET;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_DISABLE)
-	{
-		pivot_config_read.watering_state = PIVOT_DRY;
-	}
-
-	if(((clock() - percent_watchdog)/CLOCKS_PER_SEC) > 70)
-	{
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
-		{
-			pivot_config_read.percentimeter = 100;
-		}
-		else if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
-		{
-			pivot_config_read.percentimeter = 0;
-		}
-	}
-
-	return pivot_config_read;
-}
-
-void gpio_actuator_shutdown(void)
-{
-	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-
-	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
-
-	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
-
-	if(perc_timer_handleOn != NULL)
-	{
-		xTimerStop(perc_timer_handleOn,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
-		perc_timer_handleOn = NULL;
-	}
-	if(perc_timer_handleOff != NULL)
-	{
-		xTimerStop(perc_timer_handleOff,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
-		perc_timer_handleOff = NULL;
-	}
-
-	pivot_config_read.percentimeter = 0;
 }
 
 esp_err_t gpio_actuator_set(pivot_config config, bool old_state_pressure)
@@ -337,33 +261,15 @@ esp_err_t gpio_actuator_set(pivot_config config, bool old_state_pressure)
 		if(config.watering_state == PIVOT_DRY)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+			gpio_actuator_pump_off();
 			gpio_actuator_start(config);
 		}
 		else if(config.watering_state == PIVOT_WET)
 		{
-			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-
-			if(xTask_waitpressure == NULL)
+			gpio_actuator_pump_on();
+			if(old_state_pressure == true && xTask_waitpressure != NULL)
 			{
-				BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
-										ACTUATOR_CHECK_TASK_NAME,
-										ACTUATOR_CHECK_STACK_SIZE,
-										NULL,
-										ACTUATOR_CHECK_TASK_PRIORITY,
-										&xTask_waitpressure);
-				if(xReturn != pdPASS || xTask_waitpressure == NULL)
-				{
-					ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
-				}
-			}
-			else
-			{
-				if(old_state_pressure == true)
-				{
-					gpio_actuator_start(config);
-				}
-
-				vTaskResume(xTask_waitpressure);
+				gpio_actuator_start(config);
 			}
 		}
 	}
@@ -375,6 +281,118 @@ esp_err_t gpio_actuator_set(pivot_config config, bool old_state_pressure)
 	err = ESP_OK;
 
 	return err;
+}
+
+pivot_config gpio_actuator_get(void)
+{
+	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == GPIO_ACT_SYS_ENABLE)
+	{
+		pivot_config_read.rotation = PIVOT_CW;
+		pivot_config_read.power_state = PIVOT_ON;
+	}
+	else if(gpio_get_level(GPIO_ACT_PIN_CCW_IN) == GPIO_ACT_SYS_ENABLE)
+	{
+		pivot_config_read.rotation = PIVOT_CCW;
+		pivot_config_read.power_state = PIVOT_ON;
+	}
+	else
+	{
+		pivot_config_read.power_state = PIVOT_OFF;
+		pivot_config_read.rotation = PIVOT_UNKNOWN;
+	}
+
+	if(pressurizing == true)
+	{
+		pivot_config_read.watering_state = PIVOT_PRESSURIZING;
+	}
+	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
+	{
+		pivot_config_read.watering_state = PIVOT_WET;
+	}
+	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_DISABLE)
+	{
+		pivot_config_read.watering_state = PIVOT_DRY;
+	}
+
+	if(((clock() - percent_watchdog)/CLOCKS_PER_SEC) > 70)
+	{
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
+		{
+			pivot_config_read.percentimeter = 100;
+		}
+		else if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
+		{
+			pivot_config_read.percentimeter = 0;
+		}
+	}
+
+	return pivot_config_read;
+}
+
+void gpio_actuator_shutdown(void)
+{
+	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+
+	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
+
+	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+
+	if(perc_timer_handleOn != NULL)
+	{
+		xTimerStop(perc_timer_handleOn,portMAX_DELAY);
+		xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
+		perc_timer_handleOn = NULL;
+	}
+	if(perc_timer_handleOff != NULL)
+	{
+		xTimerStop(perc_timer_handleOff,portMAX_DELAY);
+		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
+		perc_timer_handleOff = NULL;
+	}
+
+	pivot_config_read.percentimeter = 0;
+}
+
+void gpio_actuator_pump_on(void)
+{
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+
+	if(xTask_waitpressure == NULL)
+	{
+		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
+								ACTUATOR_CHECK_TASK_NAME,
+								ACTUATOR_CHECK_STACK_SIZE,
+								NULL,
+								ACTUATOR_CHECK_TASK_PRIORITY,
+								&xTask_waitpressure);
+		if(xReturn != pdPASS || xTask_waitpressure == NULL)
+		{
+			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+		}
+	}
+	else
+	{
+		vTaskResume(xTask_waitpressure);
+	}
+}
+
+void gpio_actuator_pump_off(void)
+{
+	if(xTask_waitpressure != NULL)
+	{
+		vTaskDelete(xTask_waitpressure);
+		pressurizing = true;
+		xTask_waitpressure = NULL;
+	}
+
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 }
 
 /* Private methods  ---------------------------------------------- */
@@ -423,7 +441,7 @@ void actuator_wait_pressure(void* arg)
 
 			//task resume
 			pressurizing = true;
-			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE); //TODO : pode dar erro aqui
 			check_start = xTaskGetTickCount();
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
