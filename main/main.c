@@ -23,9 +23,14 @@
 
 #define MAIN_TAG "main"
 
+/* Private variables ------------------------------------ */
+static TaskHandle_t xTask_app = NULL;
+
+
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
+static void app_sectorization_task(void* arg);
 
 /**
  * @brief	main class
@@ -33,8 +38,21 @@ static void app_main_call(app_call_states state,const void* buffer);
  */
 void app_main(void)
 {
+	uint16_t angles[2] = {};
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
+
+	// mock input
+	scanf("initial angle : %hd", &angles[0]);
+	scanf("final angle : %hd", &angles[1]);
+
+	// create sectorization task
+	xTaskCreate(&app_sectorization_task,
+				MAIN_APP_TASK_NAME,
+				MAIN_APP_STACK_SIZE,
+				angles,
+				MAIN_APP_TASK_PRIORITY,
+				&xTask_app);
 
 	while (1)
 	{
@@ -133,6 +151,32 @@ static void app_main_call(app_call_states state,const void* buffer)
 		{
 			break;
 		}
+	}
+}
+
+static void app_sectorization_task(void* arg)
+{
+
+	uint16_t angles[2] = {};
+	uint16_t current_angle = 0;
+	memcpy(angles, arg, sizeof(angles));
+
+	while(1)
+	{
+		current_angle = comm_app_get_degree();
+		if(current_angle >= angles[0] && current_angle <= angles[1])
+		{
+			ESP_LOGI(MAIN_TAG,"Pump ON");
+
+			//pump on
+		}
+		else
+		{
+			ESP_LOGI(MAIN_TAG,"Pump OFF");
+			// pump off
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
 
