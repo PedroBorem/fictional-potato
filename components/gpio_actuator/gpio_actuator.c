@@ -363,6 +363,7 @@ void gpio_actuator_shutdown(void)
 void gpio_actuator_pump_on(void)
 {
 	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 
 	if(xTask_waitpressure == NULL)
 	{
@@ -388,7 +389,6 @@ void gpio_actuator_pump_off(void)
 	if(xTask_waitpressure != NULL)
 	{
 		vTaskDelete(xTask_waitpressure);
-		pressurizing = true;
 		xTask_waitpressure = NULL;
 	}
 

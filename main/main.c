@@ -40,10 +40,10 @@ void app_main(void)
 {
 	uint16_t angles[2] = {};
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
-	//assert(app_init());
+	assert(app_init());
 
 	// mock input
-	angles[0] = 0; //initial
+	angles[0] = 25; //initial
 	angles[1] = 180; //final
 
 	// create sectorization task
@@ -71,7 +71,7 @@ static bool app_init(void)
 	bool ret = true;
 
 	ret &= actuation_app_init(&app_main_call);
-	ret &= data_app_init(&app_main_call);
+	//ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);
 
 	return ret;
