@@ -430,6 +430,7 @@ void actuator_wait_pressure(void* arg)
 			if(pump_state == true)
 			{
 				gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
+				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pump Enable",__func__);
 			}
 			gpio_actuator_start();
 			pressurizing = false;

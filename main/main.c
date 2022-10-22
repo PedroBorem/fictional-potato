@@ -42,6 +42,10 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
+	//const pivot_config config_in = {PIVOT_OFF, PIVOT_CW, PIVOT_DRY, 0};
+
+	//actuation_app_set_config(config, true);
+
 	// mock input
 	angles[0] = 25; //initial 1
 	angles[1] = 80; //final 1
@@ -159,7 +163,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 static void app_sectorization_task(void* arg)
 {
-	uint16_t angles[2] = {};
+	uint16_t angles[4] = {};
 	uint16_t current_angle = 0;
 	bool pump_is_on = false;
 	memcpy(angles, arg, sizeof(angles));
@@ -171,7 +175,7 @@ static void app_sectorization_task(void* arg)
 		{
 			if(pump_is_on == false)
 			{
-				ESP_LOGI(MAIN_TAG,"Pump ON");
+				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
 				actuation_app_set_pump(true);
 				pump_is_on = true;
 			}
@@ -180,7 +184,7 @@ static void app_sectorization_task(void* arg)
 		{
 			if(pump_is_on == false)
 			{
-				ESP_LOGI(MAIN_TAG,"Pump ON");
+				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
 				actuation_app_set_pump(true);
 				pump_is_on = true;
 			}

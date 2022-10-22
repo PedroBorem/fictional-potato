@@ -31,7 +31,7 @@
 #define	RF_MODULE_TAG	"rf_module"
 
 /* Private variables  -------------------------------------------- */
-static uint16_t rf_angle = 0;
+static uint16_t rf_angle = 0xFFFF;
 static time_t rf_timestamp = 0;
 
 /* Private methods  ---------------------------------------------- */
