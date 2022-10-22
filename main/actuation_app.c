@@ -79,7 +79,7 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 
 	if(alert_change == false)
 	{
-		gpio_actuator_set(config_in, false);
+		gpio_actuator_set(config_in);
 	}
 	else
 	{
