@@ -72,7 +72,7 @@ bool comm_app_init(const app_callback callback)
 	BaseType_t xReturn = pdPASS;
 
 	err = rf_module_init();
-	//err &= gprs_module_init();
+	err &= gprs_module_init();
 	if(err == ESP_OK && callback != NULL )
 	{
 		comm_app_call = callback;
@@ -90,8 +90,8 @@ bool comm_app_init(const app_callback callback)
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
 			{
 				ret = true;
-				//const char gprs_id[] = "{\"register\":\"True\",\"GPRS_ID\":\"TesteInatel_3\"}";
-				//gprs_uart_send_event(gprs_id, sizeof(gprs_id));
+				const char gprs_id[] = "{\"register\":\"True\",\"GPRS_ID\":\"TesteInatel_3\"}";
+				gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 			}
 			else
 			{
@@ -121,7 +121,7 @@ void comm_app_send_event(pivot_config pivot_status)
 {
 	uint16_t degree = comm_app_get_degree();
 	rf_module_send_event(pivot_status);
-	//gprs_module_send_event(pivot_status, degree);
+	gprs_module_send_event(pivot_status, degree);
 }
 
 /* Private methods ----------------------------------------------- */
