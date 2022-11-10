@@ -32,8 +32,8 @@
 #define RF_UART_TAG		"rf_uart"
 
 #define RF_UART_NUM 		UART_NUM_2
-#define RF_UART_TX_NUM 		GPIO_NUM_17
-#define RF_UART_RX_NUM		GPIO_NUM_16
+#define RF_UART_TX_NUM 		GPIO_NUM_43
+#define RF_UART_RX_NUM		GPIO_NUM_44
 
 #define RF_UART_BUF_SIZE 	(1024)
 
