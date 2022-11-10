@@ -30,9 +30,9 @@
 /* Private definitions ------------------------------------------- */
 #define GPRS_UART_TAG		"gprs"
 
-#define GPRS_UART_NUM 		UART_NUM_0
-#define GPRS_UART_TX_NUM 	GPIO_NUM_21
-#define GPRS_UART_RX_NUM	GPIO_NUM_13
+#define GPRS_UART_NUM 		UART_NUM_1
+#define GPRS_UART_TX_NUM 	GPIO_NUM_17
+#define GPRS_UART_RX_NUM	GPIO_NUM_18
 
 //#define GPRS_UART_NUM 		UART_NUM_2
 //#define GPRS_UART_TX_NUM 	GPIO_NUM_17
