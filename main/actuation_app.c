@@ -47,7 +47,6 @@ bool actuation_app_init(const app_callback callback)
 	err = gpio_actuator_init();
 	if(callback != NULL && err == ESP_OK)
 	{
-		gpio_actuator_shutdown();
 		actuation_app_call = callback;
 
 		BaseType_t xReturn = xTaskCreate(&actuation_app_task,
