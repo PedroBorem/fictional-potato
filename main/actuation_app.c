@@ -47,6 +47,7 @@ bool actuation_app_init(const app_callback callback)
 	err = gpio_actuator_init();
 	if(callback != NULL && err == ESP_OK)
 	{
+		gpio_actuator_shutdown();
 		actuation_app_call = callback;
 
 		BaseType_t xReturn = xTaskCreate(&actuation_app_task,
@@ -79,7 +80,7 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 
 	if(alert_change == false)
 	{
-		gpio_actuator_set(config_in, false);
+		gpio_actuator_set(config_in);
 	}
 	else
 	{
@@ -105,6 +106,18 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size)
 		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_config.percentimeter);
 
 		memcpy(config_out, &current_config, config_size);
+	}
+}
+
+void actuation_app_set_pump(bool pump_state)
+{
+	if(pump_state == true)
+	{
+		gpio_actuator_pump_on(); //power on
+	}
+	else
+	{
+		gpio_actuator_pump_off(); //power off
 	}
 }
 

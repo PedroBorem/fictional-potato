@@ -23,9 +23,14 @@
 
 #define MAIN_TAG "main"
 
+/* Private variables ------------------------------------ */
+static TaskHandle_t xTask_app = NULL;
+
+
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
+static void app_sectorization_task(void* arg);
 
 /**
  * @brief	main class
@@ -33,8 +38,28 @@ static void app_main_call(app_call_states state,const void* buffer);
  */
 void app_main(void)
 {
+	uint16_t angles[4] = {};
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
+
+	//const pivot_config config_in = {PIVOT_OFF, PIVOT_CW, PIVOT_DRY, 0};
+
+	//actuation_app_set_config(config, true);
+
+	// mock input
+	angles[0] = 25; //initial 1
+	angles[1] = 80; //final 1
+
+	angles[2] = 180; //initial 1
+	angles[3] = 250; //final 1
+
+	// create sectorization task
+	xTaskCreate(&app_sectorization_task,
+				MAIN_APP_TASK_NAME,
+				MAIN_APP_STACK_SIZE,
+				angles,
+				MAIN_APP_TASK_PRIORITY,
+				&xTask_app);
 
 	while (1)
 	{
@@ -133,6 +158,45 @@ static void app_main_call(app_call_states state,const void* buffer)
 		{
 			break;
 		}
+	}
+}
+
+static void app_sectorization_task(void* arg)
+{
+	uint16_t angles[4] = {};
+	uint16_t current_angle = 0;
+	bool pump_is_on = false;
+	memcpy(angles, arg, sizeof(angles));
+
+	while(1)
+	{
+		current_angle = comm_app_get_degree();
+		if(current_angle >= angles[0] && current_angle <= angles[1])
+		{
+			if(pump_is_on == false)
+			{
+				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
+				actuation_app_set_pump(true);
+				pump_is_on = true;
+			}
+		}
+		else if(current_angle >= angles[2] && current_angle <= angles[3])
+		{
+			if(pump_is_on == false)
+			{
+				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
+				actuation_app_set_pump(true);
+				pump_is_on = true;
+			}
+		}
+		else if(pump_is_on == true)
+		{
+			ESP_LOGI(MAIN_TAG,"Pump OFF");
+			actuation_app_set_pump(false);
+			pump_is_on = false;
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
 
