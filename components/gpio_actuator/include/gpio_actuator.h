@@ -32,7 +32,7 @@
 #define GPIO_ACT_PIN_ON       		GPIO_NUM_13	/*!< Main system relay off*/
 #define GPIO_ACT_PIN_OFF      		GPIO_NUM_12	/*!<Main system relay on*/
 #define GPIO_ACT_PIN_CW       		GPIO_NUM_11	/*!<Direction Clockwise*/
-#define GPIO_ACT_PIN_CCW      		GPIO_NUM_7  /*!<Direction Counter-Clockwise*/
+#define GPIO_ACT_PIN_CCW      		GPIO_NUM_10  /*!<Direction Counter-Clockwise*/
 #define GPIO_ACT_PIN_WATERING   	GPIO_NUM_9	/*!<Watering Relay*/
 #define GPIO_ACT_PIN_AUX      		GPIO_NUM_8	/*!<System Auxiliar Relay*/
 #define GPIO_ACT_PIN_PERC_AUX   	GPIO_NUM_16	/*!<Auxiliar Relay for Percentimeter*/
@@ -40,7 +40,7 @@
 #define GPIO_ACT_PIN_PUMP       	GPIO_NUM_14	/*!<Pump Relay*/
 
 /* GPIO Inputs */
-#define GPIO_ACT_PIN_CW_IN       	GPIO_NUM_10 /*!<Clockwise Input*/
+#define GPIO_ACT_PIN_CW_IN       	GPIO_NUM_7 /*!<Clockwise Input*/
 #define GPIO_ACT_PIN_CCW_IN      	GPIO_NUM_6	/*!<Counter-Clockwise Input*/
 #define GPIO_ACT_PIN_PERC_IN     	GPIO_NUM_5	/*!<Percentimeter Read Input*/
 #define GPIO_ACT_PIN_PRESS       	GPIO_NUM_4 /*!<Water pressure reading*/
