@@ -20,8 +20,8 @@
 /* include components */
 #include "driver/gpio.h"
 
-#define GPIO_ACT_SYS_ENABLE			0
-#define GPIO_ACT_SYS_DISABLE		1
+#define GPIO_ACT_SYS_ENABLE			1
+#define GPIO_ACT_SYS_DISABLE		0
 
 #define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec
 #define GPIO_ACT_PRESSURE_TIMEOUT    	300000 //5 min
@@ -29,21 +29,21 @@
 
 /* Pinout references*/
 /* GPIO Outputs */
-#define GPIO_ACT_PIN_ON       		GPIO_NUM_3	/*!< Main system relay off*/
-#define GPIO_ACT_PIN_OFF      		GPIO_NUM_1	/*!<Main system relay on*/
-#define GPIO_ACT_PIN_AUX      		GPIO_NUM_15	/*!<System Auxiliar Relay*/
-#define GPIO_ACT_PIN_CW       		GPIO_NUM_0	/*!<Direction Clockwise*/
-#define GPIO_ACT_PIN_CCW      		GPIO_NUM_22	/*!<Direction Counter-Clockwise*/
-#define GPIO_ACT_PIN_WATERING   	GPIO_NUM_23	/*!<Watering Relay*/
-#define GPIO_ACT_PIN_PERC_AUX   	GPIO_NUM_2	/*!<Auxiliar Relay for Percentimeter*/
-#define GPIO_ACT_PIN_PERC_OUT   	GPIO_NUM_4	/*!<Percentimeter*/
-#define GPIO_ACT_PIN_PUMP       	GPIO_NUM_25	/*!<Pump Relay*/
+#define GPIO_ACT_PIN_ON       		GPIO_NUM_13	/*!< Main system relay off*/
+#define GPIO_ACT_PIN_OFF      		GPIO_NUM_12	/*!<Main system relay on*/
+#define GPIO_ACT_PIN_CW       		GPIO_NUM_11	/*!<Direction Clockwise*/
+#define GPIO_ACT_PIN_CCW      		GPIO_NUM_10  /*!<Direction Counter-Clockwise*/
+#define GPIO_ACT_PIN_WATERING   	GPIO_NUM_9	/*!<Watering Relay*/
+#define GPIO_ACT_PIN_AUX      		GPIO_NUM_8	/*!<System Auxiliar Relay*/
+#define GPIO_ACT_PIN_PERC_AUX   	GPIO_NUM_16	/*!<Auxiliar Relay for Percentimeter*/
+#define GPIO_ACT_PIN_PERC_OUT   	GPIO_NUM_15	/*!<Percentimeter*/
+#define GPIO_ACT_PIN_PUMP       	GPIO_NUM_14	/*!<Pump Relay*/
 
 /* GPIO Inputs */
-#define GPIO_ACT_PIN_CW_IN       	GPIO_NUM_36 /*!<Clockwise Input*/
-#define GPIO_ACT_PIN_CCW_IN      	GPIO_NUM_37	/*!<Counter-Clockwise Input*/
-#define GPIO_ACT_PIN_PERC_IN     	GPIO_NUM_38	/*!<Percentimeter Read Input*/
-#define GPIO_ACT_PIN_PRESS       	GPIO_NUM_39 /*!<Water pressure reading*/
+#define GPIO_ACT_PIN_CW_IN       	GPIO_NUM_7 /*!<Clockwise Input*/
+#define GPIO_ACT_PIN_CCW_IN      	GPIO_NUM_6	/*!<Counter-Clockwise Input*/
+#define GPIO_ACT_PIN_PERC_IN     	GPIO_NUM_5	/*!<Percentimeter Read Input*/
+#define GPIO_ACT_PIN_PRESS       	GPIO_NUM_4 /*!<Water pressure reading*/
 
 /* Output Pins Group */
 #define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_ON)			\
