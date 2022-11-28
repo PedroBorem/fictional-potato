@@ -39,12 +39,6 @@ esp_err_t rf_module_send_event(pivot_config config_in);
  */
 uint16_t rf_module_get_angle(void);
 
-/**
- * @brief	get the timestamp in seconds
- * @return	timestamp: returns the timestamp obtained via RF
- */
-time_t rf_module_get_timestamp(void);
-
 /* Public Callback  ---------------------------------------------- */
 /**
  * @brief	trigger callback to each status message received (write and read)

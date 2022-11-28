@@ -15,6 +15,7 @@
 #include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
+#include "rtc_app.h"
 
 /**\addtogroup main
  * @{
@@ -77,6 +78,7 @@ static bool app_init(void)
 {
 	bool ret = true;
 
+	ret &= rtc_app_init();
 	ret &= actuation_app_init(&app_main_call);
 	ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);

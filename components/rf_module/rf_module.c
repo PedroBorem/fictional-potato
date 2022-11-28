@@ -17,6 +17,7 @@
 /* Components include */
 #include "rf_uart.h"
 #include "common_parser.h"
+#include "rtc_app.h"
 
 /**\addtogroup components
  * @{
@@ -32,7 +33,6 @@
 
 /* Private variables  -------------------------------------------- */
 static uint16_t rf_angle = 0xFFFF;
-static time_t rf_timestamp = 0;
 
 /* Private methods  ---------------------------------------------- */
 void rf_module_call(const char* buffer, size_t buffer_size);
@@ -51,7 +51,7 @@ esp_err_t rf_module_send_event(pivot_config config_in)
 {
 	esp_err_t err = ESP_FAIL;
 	uint16_t degree = rf_module_get_angle();
-	time_t timestamp = rf_module_get_timestamp();
+	time_t timestamp = rtc_app_get_timestamp();
 
 	char event[25] = "";
 	common_parser_status_to_string(config_in, timestamp, degree, event);
@@ -64,11 +64,6 @@ esp_err_t rf_module_send_event(pivot_config config_in)
 uint16_t rf_module_get_angle(void)
 {
 	return rf_angle;
-}
-
-time_t rf_module_get_timestamp(void)
-{
-	return rf_timestamp;
 }
 
 /* Private methods ----------------------------------------------- */
@@ -98,10 +93,10 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 		if(err == ESP_OK)
 		{
 			rf_angle = angle;
-			rf_timestamp = timestamp;
+			rtc_app_set_timestamp(timestamp);
 
 			LOG_COMM(RF_MODULE_TAG, "angle : %d", rf_angle);
-			LOG_COMM(RF_MODULE_TAG, "timestamp : %lld\n", (long long int)rf_timestamp);
+			LOG_COMM(RF_MODULE_TAG, "timestamp : %lld\n", (long long int)timestamp);
 		}
 		else
 		{
