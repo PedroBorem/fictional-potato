@@ -10,120 +10,73 @@
 
 #include <time.h>
 
-#define RTC_SDA_PIN	10	//change pins
-#define RTC_SCL_PIN	12	//change pins
+#define RTC_APP_TAG "rtc_app"
 
-static time_t calendar_to_timestamp(DS3231_Calendar_t calendar);
-static DS3231_Calendar_t timestamp_to_calendar(time_t timestamp);
+#define RTC_SDA_PIN	36
+#define RTC_SCL_PIN	37
+
+#define RTC_CONFIG_TIMEZONE
+
+static i2c_dev_t dev;
 
 bool rtc_app_init(void)
 {
-	bool ret = false;
-	esp_err_t err;
-
-	i2c_config_t i2c_config =
+	// Initialize RTC
+	if( ds3231_init_desc(&dev, I2C_NUM_1, RTC_SDA_PIN, RTC_SCL_PIN) == ESP_OK)
 	{
-		.mode = I2C_MODE_MASTER,
-		.sda_io_num = RTC_SDA_PIN,
-		.scl_io_num = RTC_SCL_PIN,
-		.sda_pullup_en = GPIO_PULLUP_ENABLE,
-		.scl_pullup_en = GPIO_PULLUP_ENABLE,
-		.master.clk_speed = 400000,
-	};
-
-	err = i2c_param_config(I2C_NUM_0, &i2c_config);
-	if(err == ESP_OK )
-	{
-		err = i2c_driver_install(I2C_NUM_0, I2C_MODE_MASTER, 0, 0, 0);
-		if(err == ESP_OK )
-		{
-			DS3231_Cfg_t ds3231_cfg = ds3231_create(I2C_NUM_0);
-			if(ds3231_cfg != NULL)
-			{
-				ret = true;
-			}
-
-			ds3231_delete(ds3231_cfg);
-		}
+		return true;
 	}
 
-	return ret;
+	return false;
 }
 
 bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	DS3231_Calendar_t calendar = timestamp_to_calendar(timestamp);
-	DS3231_Cfg_t ds3231_cfg = ds3231_create(I2C_NUM_0);
-	if(ds3231_cfg != NULL)
+	struct tm time = *localtime(&timestamp); //obs time + 1900
+	time.tm_year += 1900;
+
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_sec=%d",time.tm_sec);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_min=%d",time.tm_min);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_hour=%d",time.tm_hour);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_wday=%d",time.tm_wday);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mday=%d",time.tm_mday);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mon=%d",time.tm_mon);
+	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_year=%d",time.tm_year);
+
+	if (ds3231_set_time(&dev, &time) != ESP_OK)
 	{
-		esp_err_t res = ds3231_set_calendar(ds3231_cfg, &calendar, pdMS_TO_TICKS(10));
-		if(res == ESP_OK)
-		{
-			ret = true;
-		}
+		ESP_LOGE(RTC_APP_TAG, "Could not set time.");
+	}
+	else
+	{
+		ret = true;
+		ESP_LOGI(RTC_APP_TAG, "Set initial date time done");
 	}
 
-	ds3231_delete(ds3231_cfg);
 	return ret;
 }
 
 time_t rtc_app_get_timestamp(void)
 {
-	esp_err_t res = ESP_FAIL;
-	time_t time_ret = 0;
+	struct tm rtcinfo = {};
+	time_t timestamp_now = 0;
 
-	DS3231_Calendar_t calendar = {};
-	DS3231_Cfg_t ds3231_cfg = ds3231_create(I2C_NUM_0);
-
-	if(ds3231_cfg != NULL)
+	if (ds3231_get_time(&dev, &rtcinfo) != ESP_OK)
 	{
-		res = ds3231_get_calendar(ds3231_cfg, &calendar, pdMS_TO_TICKS(10));
-		if (res == ESP_OK)
-		{
-			time_ret = calendar_to_timestamp(calendar);
-		}
+		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+
+	}
+	else
+	{
+		ESP_LOGI(RTC_APP_TAG, "%04d-%02d-%02d %02d:%02d:%02d",
+			rtcinfo.tm_year, rtcinfo.tm_mon + 1,
+			rtcinfo.tm_mday, rtcinfo.tm_hour, rtcinfo.tm_min, rtcinfo.tm_sec);
+
+		timestamp_now = mktime(&rtcinfo);
 	}
 
-	ds3231_delete(ds3231_cfg);
-	return time_ret;
+	return timestamp_now;
 }
 
-static time_t calendar_to_timestamp(DS3231_Calendar_t calendar)
-{
-	time_t timestamp = 0;
-
-	struct tm tm_var = {
-			.tm_sec = calendar.seconds,
-			.tm_min = calendar.minutes,
-			.tm_hour = calendar.hour,
-			.tm_mday = calendar.day_of_month,
-			.tm_mon = calendar.month,
-			.tm_year = calendar.year,
-			.tm_wday = calendar.day_of_week,
-	};
-
-	timestamp = mktime(&tm_var);
-
-	return timestamp;
-}
-
-static DS3231_Calendar_t timestamp_to_calendar(time_t timestamp)
-{
-	struct tm tm_var = {};
-
-	tm_var = *localtime(&timestamp);
-
-	DS3231_Calendar_t calendar = {
-				.seconds = tm_var.tm_sec,
-				.minutes = tm_var.tm_min,
-				.hour = tm_var.tm_hour,
-				.day_of_month = tm_var.tm_mday,
-				.month = tm_var.tm_mon,
-				.year = tm_var.tm_year,
-				.day_of_week = tm_var.tm_wday,
-	};
-
-	return calendar;
-}

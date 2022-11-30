@@ -12,7 +12,6 @@
 */
 
 /* Applications include */
-#include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
 #include "rtc_app.h"
@@ -62,8 +61,10 @@ void app_main(void)
 				MAIN_APP_TASK_PRIORITY,
 				&xTask_app);
 
+	//rtc_app_set_timestamp(1669771020);
 	while (1)
 	{
+		//printf("%ld\n",rtc_app_get_timestamp());
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
@@ -79,8 +80,8 @@ static bool app_init(void)
 	bool ret = true;
 
 	ret &= rtc_app_init();
-	ret &= actuation_app_init(&app_main_call);
-	ret &= data_app_init(&app_main_call);
+	//ret &= actuation_app_init(&app_main_call);
+	//ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);
 
 	return ret;
@@ -106,7 +107,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			pivot_config new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
 
-			ret = data_app_save_config(new_config, sizeof(new_config));
+			ret = true; //data_app_save_config(new_config, sizeof(new_config));
 			if(ret == true)
 			{
 				actuation_app_set_config(new_config, false);
@@ -169,6 +170,9 @@ static void app_sectorization_task(void* arg)
 	uint16_t current_angle = 0;
 	bool pump_is_on = false;
 	memcpy(angles, arg, sizeof(angles));
+
+	rtc_app_set_timestamp(1669771020);
+	printf("%ld\n",rtc_app_get_timestamp());
 
 	while(1)
 	{
