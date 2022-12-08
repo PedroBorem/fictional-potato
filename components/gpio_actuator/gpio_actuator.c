@@ -333,7 +333,7 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
+	gpio_actuator_pump_off();
 
 	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
 
