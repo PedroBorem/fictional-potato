@@ -34,25 +34,29 @@ bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	struct tm time = *localtime(&timestamp); //obs time + 1900
-	time.tm_year += 1900;
-
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_sec=%d",time.tm_sec);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_min=%d",time.tm_min);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_hour=%d",time.tm_hour);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_wday=%d",time.tm_wday);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mday=%d",time.tm_mday);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mon=%d",time.tm_mon);
-	ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_year=%d",time.tm_year);
-
-	if (ds3231_set_time(&dev, &time) != ESP_OK)
+	if(timestamp > 1670123456) // date : 04/12/2022
 	{
-		ESP_LOGE(RTC_APP_TAG, "Could not set time.");
-	}
-	else
-	{
-		ret = true;
-		ESP_LOGI(RTC_APP_TAG, "Set initial date time done");
+		struct tm time = *localtime(&timestamp); //obs time + 1900
+		time.tm_year += 1900;
+		time.tm_mon += 1;
+
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_sec=%d",time.tm_sec);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_min=%d",time.tm_min);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_hour=%d",time.tm_hour);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_wday=%d",time.tm_wday);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mday=%d",time.tm_mday);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mon=%d",time.tm_mon);
+		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_year=%d",time.tm_year);
+
+		if (ds3231_set_time(&dev, &time) != ESP_OK)
+		{
+			ESP_LOGE(RTC_APP_TAG, "Could not set time.");
+		}
+		else
+		{
+			ret = true;
+			ESP_LOGI(RTC_APP_TAG, "Set initial date time done");
+		}
 	}
 
 	return ret;
@@ -60,7 +64,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 
 time_t rtc_app_get_timestamp(void)
 {
-	struct tm rtcinfo = {};
+	struct tm rtcinfo = {0};
 	time_t timestamp_now = 0;
 
 	if (ds3231_get_time(&dev, &rtcinfo) != ESP_OK)
@@ -70,11 +74,16 @@ time_t rtc_app_get_timestamp(void)
 	}
 	else
 	{
-		ESP_LOGI(RTC_APP_TAG, "%04d-%02d-%02d %02d:%02d:%02d",
-			rtcinfo.tm_year, rtcinfo.tm_mon + 1,
-			rtcinfo.tm_mday, rtcinfo.tm_hour, rtcinfo.tm_min, rtcinfo.tm_sec);
+		ESP_LOGI(RTC_APP_TAG, "%02d/%02d/%04d %02d:%02d:%02d",
+			rtcinfo.tm_mday, rtcinfo.tm_mon,
+			rtcinfo.tm_year, rtcinfo.tm_hour-3, rtcinfo.tm_min, rtcinfo.tm_sec);
+
+		rtcinfo.tm_year = rtcinfo.tm_year - 1900;
+		rtcinfo.tm_mon = rtcinfo.tm_mon - 1;
 
 		timestamp_now = mktime(&rtcinfo);
+
+		ESP_LOGI(RTC_APP_TAG, "timestamp %ld", timestamp_now);
 	}
 
 	return timestamp_now;

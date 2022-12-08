@@ -12,9 +12,10 @@
 */
 
 /* Applications include */
+#include "rtc_app.h"
+#include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
-#include "rtc_app.h"
 
 /**\addtogroup main
  * @{
@@ -42,8 +43,10 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
+	rtc_app_get_timestamp();
+
 	esp_reset_reason_t reset_cause = esp_reset_reason();
-	if(true)//(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
 		// critica de tempo
 		pivot_config current_config = {};
@@ -73,10 +76,8 @@ void app_main(void)
 				MAIN_APP_TASK_PRIORITY,
 				&xTask_app);
 
-	//rtc_app_set_timestamp(1670506088);
 	while (1)
 	{
-		printf("%ld\n",rtc_app_get_timestamp());
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
@@ -93,7 +94,7 @@ static bool app_init(void)
 
 	ret &= rtc_app_init();
 	ret &= actuation_app_init(&app_main_call);
-	//ret &= data_app_init(&app_main_call);
+	ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);
 
 	return ret;
@@ -119,7 +120,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			pivot_config new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
 
-			ret = true; //data_app_save_config(new_config, sizeof(new_config));
+			ret = data_app_save_config(new_config, sizeof(new_config));
 			if(ret == true)
 			{
 				actuation_app_set_config(new_config, false);
@@ -187,9 +188,6 @@ static void app_sectorization_task(void* arg)
 	uint16_t current_angle = 0;
 	bool pump_is_on = false;
 	memcpy(angles, arg, sizeof(angles));
-
-	//rtc_app_set_timestamp(1669771020);
-	//printf("%ld\n",rtc_app_get_timestamp());
 
 	while(1)
 	{
