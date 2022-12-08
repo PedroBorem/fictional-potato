@@ -30,6 +30,12 @@
 /* Private definitions ------------------------------------------- */
 #define ACTUATION_APP_TAG			"actuation_app"
 
+// manual config timeout
+#define ACTUATION_APP_POWER_TIME			3000	// 3 sec
+#define ACTUATION_APP_WATERING_TIME			30000	// 30 sec
+#define ACTUATION_APP_ROTATION_TIME			3000	// 3 sec
+#define ACTUATION_APP_PERCENTIMETER_TIME	61000	// 1 min and 10 sec
+
 /* Private variables  -------------------------------------------- */
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
@@ -139,7 +145,7 @@ void actuation_app_task(void* arg)
 		if((current_config.power_state != actuation_config.power_state)
 		&& (current_config.watering_state != PIVOT_PRESSURIZING))
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 3000) // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_POWER_TIME)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
 				if(current_config.power_state == PIVOT_OFF)
@@ -154,7 +160,7 @@ void actuation_app_task(void* arg)
 		else if((current_config.watering_state != actuation_config.watering_state)
 				&& (current_config.watering_state != PIVOT_PRESSURIZING))
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 30000)  // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_WATERING_TIME)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_config.watering_state == PIVOT_DRY)
@@ -173,7 +179,7 @@ void actuation_app_task(void* arg)
 		}
 		else if(current_config.rotation != actuation_config.rotation && current_config.rotation != PIVOT_UNKNOWN)
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 3000)  // double check (1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_ROTATION_TIME)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
@@ -184,7 +190,7 @@ void actuation_app_task(void* arg)
 		else if(current_config.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
 			|| (current_config.percentimeter + 10) < actuation_config.percentimeter )
 		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > 61000) //double check (1 minute and 1 second)
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_PERCENTIMETER_TIME)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
 				last_tick = xTaskGetTickCount();

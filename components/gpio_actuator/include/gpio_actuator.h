@@ -20,8 +20,8 @@
 /* include components */
 #include "driver/gpio.h"
 
-#define GPIO_ACT_SYS_ENABLE			1
-#define GPIO_ACT_SYS_DISABLE		0
+#define GPIO_ACT_SYS_ENABLE			0
+#define GPIO_ACT_SYS_DISABLE		1
 
 #define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec
 #define GPIO_ACT_PRESSURE_TIMEOUT    	300000 //5 min
