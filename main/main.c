@@ -42,9 +42,21 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	//const pivot_config config_in = {PIVOT_OFF, PIVOT_CW, PIVOT_DRY, 0};
+	esp_reset_reason_t reset_cause = esp_reset_reason();
+	if(true)//(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	{
+		// critica de tempo
+		pivot_config current_config = {};
+		size_t config_length = 0;
 
-	//actuation_app_set_config(config, true);
+		data_app_load_config(&current_config, &config_length);
+		vTaskDelay(pdMS_TO_TICKS(500));
+
+		if(current_config.power_state != PIVOT_OFF)
+		{
+			actuation_app_set_config(current_config, false);
+		}
+	}
 
 	// mock input
 	angles[0] = 25; //initial 1
@@ -138,20 +150,25 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_OFF_PIVOT:
 		{
-			pivot_config config_off = {
-			   .power_state = PIVOT_OFF,
-			   .rotation = PIVOT_CW,
-			   .watering_state = PIVOT_DRY,
-			   .percentimeter = 0
-			};
 
-			//set off configuration
-			actuation_app_set_config(config_off, false);
+			pivot_config current_config = {};
+			size_t config_length = 0;
+
+			data_app_load_config(&current_config, &config_length);
+			vTaskDelay(pdMS_TO_TICKS(500));
+
+			if(current_config.power_state != PIVOT_OFF)
+			{
+				current_config.power_state = PIVOT_OFF;
+				actuation_app_set_config(current_config, false);
+				data_app_save_config(current_config, sizeof(current_config));
+			}
+
 			vTaskDelay(pdMS_TO_TICKS(2000));
 
 			//get current status
-			actuation_app_get_config(&config_off, sizeof(config_off));
-			comm_app_send_event(config_off);
+			actuation_app_get_config(&current_config, sizeof(current_config));
+			comm_app_send_event(current_config);
 			break;
 		}
 		default:
