@@ -52,7 +52,6 @@ static int percent_watchdog = 0;
 
 //Pressurizing flag
 static bool pressurizing = false;
-static bool pump_state = false;
 
 /* Private methods declarations ---------------------------------- */
 /**
@@ -259,13 +258,13 @@ esp_err_t gpio_actuator_set(pivot_config config)
 		if(config.watering_state == PIVOT_DRY)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-			gpio_actuator_pressure_off();
+			gpio_actuator_pump_off();
 			gpio_actuator_start();
 		}
 		else if(config.watering_state == PIVOT_WET)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-			gpio_actuator_pressure_on();
+			gpio_actuator_pump_on();
 		}
 	}
 	else if(config.power_state == PIVOT_OFF)
@@ -334,7 +333,7 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
+	gpio_actuator_pump_off();
 
 	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
 
@@ -358,14 +357,12 @@ void gpio_actuator_shutdown(void)
 
 void gpio_actuator_pump_on(void)
 {
-	pump_state = true;
 	gpio_actuator_pressure_on();
 }
 
 void gpio_actuator_pump_off(void)
 {
-	pump_state = false;
-	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pressure_off();
 }
 
@@ -392,6 +389,8 @@ void gpio_actuator_pressure_on(void)
 
 void gpio_actuator_pressure_off(void)
 {
+	pressurizing = false;
+
 	if(xTask_waitpressure != NULL)
 	{
 		vTaskDelete(xTask_waitpressure);
@@ -436,11 +435,9 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %d",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
 		{
-			if(pump_state == true)
-			{
-				gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
-				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pump Enable",__func__);
-			}
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
+			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pump Enable",__func__);
+
 			gpio_actuator_start();
 			pressurizing = false;
 
