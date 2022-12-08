@@ -22,7 +22,7 @@ static i2c_dev_t dev;
 bool rtc_app_init(void)
 {
 	// Initialize RTC
-	if( ds3231_init_desc(&dev, I2C_NUM_1, RTC_SDA_PIN, RTC_SCL_PIN) == ESP_OK)
+	if( ds3231_init_desc(&dev, I2C_NUM_0, RTC_SDA_PIN, RTC_SCL_PIN) == ESP_OK)
 	{
 		return true;
 	}
