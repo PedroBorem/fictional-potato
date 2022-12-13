@@ -12,6 +12,7 @@
 */
 
 /* Applications include */
+#include "rtc_app.h"
 #include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
@@ -42,8 +43,10 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
+	rtc_app_get_timestamp();
+
 	esp_reset_reason_t reset_cause = esp_reset_reason();
-	if(true)//(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
 		// critica de tempo
 		pivot_config current_config = {};
@@ -89,6 +92,7 @@ static bool app_init(void)
 {
 	bool ret = true;
 
+	ret &= rtc_app_init();
 	ret &= actuation_app_init(&app_main_call);
 	ret &= data_app_init(&app_main_call);
 	ret &= comm_app_init(&app_main_call);

@@ -16,6 +16,7 @@
 /* Components include */
 #include "gprs_uart.h"
 #include "common_parser.h"
+#include "rtc_app.h"
 
 /**\addtogroup components
  * @{
@@ -30,7 +31,6 @@
 #define	GPRS_MODULE_TAG	"gprs_module"
 
 /* Private variables  -------------------------------------------- */
-static time_t gprs_timestamp = 0;
 
 /* Private methods  ---------------------------------------------- */
 void gprs_module_call(const char* buffer, size_t buffer_size);
@@ -48,7 +48,7 @@ esp_err_t gprs_module_init(void)
 esp_err_t gprs_module_send_event(pivot_config config_in, uint16_t degree)
 {
 	esp_err_t err = ESP_FAIL;
-	time_t timestamp = gprs_module_get_timestamp();
+	time_t timestamp = rtc_app_get_timestamp();
 
 	char event[75] = "";
 	common_parser_status_to_json(config_in, timestamp, degree, event);
@@ -56,11 +56,6 @@ esp_err_t gprs_module_send_event(pivot_config config_in, uint16_t degree)
 	err = gprs_uart_send_event(event, sizeof(event));
 
 	return err;
-}
-
-time_t gprs_module_get_timestamp(void)
-{
-	return gprs_timestamp;
 }
 
 /* Private methods ----------------------------------------------- */
@@ -95,8 +90,8 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 				err = common_parser_json_to_timestamp(&ptr_timestamp[12], &timestamp);
 				if(err == ESP_OK)
 				{
-					gprs_timestamp = timestamp;
-					LOG_COMM(GPRS_MODULE_TAG, "timestamp : %lld\n", (long long int)gprs_timestamp);
+					rtc_app_set_timestamp(timestamp);
+					LOG_COMM(GPRS_MODULE_TAG, "timestamp : %lld\n", (long long int)timestamp);
 					GPRS_MODULE_NOTIFY_APP(config);
 				}
 			}
