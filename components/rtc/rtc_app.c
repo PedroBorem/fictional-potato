@@ -8,8 +8,6 @@
 #include "rtc_app.h"
 #include "rtc_ds3231.h"
 
-#include <time.h>
-
 #define RTC_APP_TAG "rtc_app"
 
 #define RTC_SDA_PIN	36
@@ -88,4 +86,14 @@ time_t rtc_app_get_timestamp(void)
 
 	return timestamp_now;
 }
+
+void rtc_app_get_date_time(struct tm* rtcinfo)
+{
+	if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
+	{
+		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+	}
+}
+
+
 

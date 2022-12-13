@@ -101,9 +101,13 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
  * @{
  *
  */
-#define MAIN_APP_TASK_NAME				"main app task"
-#define MAIN_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
-#define MAIN_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
+#define MAIN_APP_TASK_1_NAME			"main sectorization task"
+#define MAIN_APP_STACK_1_SIZE			( configMINIMAL_STACK_SIZE * 4 )
+#define MAIN_APP_TASK_1_PRIORITY		( tskIDLE_PRIORITY + 4 )
+
+#define MAIN_APP_TASK_2_NAME			"main peak hours task"
+#define MAIN_APP_STACK_2_SIZE			( configMINIMAL_STACK_SIZE * 4 )
+#define MAIN_APP_TASK_2_PRIORITY		( tskIDLE_PRIORITY + 2 )
 
 #define DATA_APP_TASK_NAME				"data app task"
 #define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )

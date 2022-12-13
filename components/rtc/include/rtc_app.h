@@ -10,10 +10,14 @@
 
 #include "project_config.h"
 
+#include <time.h>
+
 bool rtc_app_init(void);
 
 bool rtc_app_set_timestamp(time_t timestamp);
 
 time_t rtc_app_get_timestamp(void);
+
+void rtc_app_get_date_time(struct tm* rtcinfo);
 
 #endif /* COMPONENTS_RTC_INCLUDE_RTC_APP_H_ */
