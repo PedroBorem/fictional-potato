@@ -125,6 +125,14 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 3 )
 #define ACTUATOR_CHECK_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
 
+#define GPRS_UART_TASK_NAME				"gprs uart task"
+#define GPRS_UART_STACK_SIZE			( configMINIMAL_STACK_SIZE * 4 )
+#define GPRS_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
+
+#define RF_UART_TASK_NAME				"rf uart task"
+#define RF_UART_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
+#define RF_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
+
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions
 

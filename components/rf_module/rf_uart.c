@@ -61,7 +61,7 @@ esp_err_t rf_uart_init(const rf_uart_callback callback)
 	};
 
 	// Install UART driver, and get the queue.
-	err = uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 2, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
+	err = uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 6, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
 	if(err == ESP_OK)
 	{
 		uart_param_config(RF_UART_NUM, &uart_config);
@@ -71,7 +71,13 @@ esp_err_t rf_uart_init(const rf_uart_callback callback)
 		if(err == ESP_OK)
 		{
 			//Create a task to handler UART event from ISR
-			xReturn = xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+			xReturn = xTaskCreate(rf_uart_event_task,
+								RF_UART_TASK_NAME,
+								RF_UART_STACK_SIZE,
+								NULL,
+								RF_UART_TASK_PRIORITY,
+								NULL);
+
 			if(callback != NULL && xReturn == pdPASS)
 			{
 				rf_callback = callback;
