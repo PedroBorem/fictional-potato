@@ -184,7 +184,7 @@ static void rf_uart_event_task(void* arg)
 				case UART_BREAK:
 				{
 					//Event of UART RX break detected
-					LOG_COMM(RF_UART_TAG, "UART RX break");
+					ESP_LOGD(RF_UART_TAG, "UART RX break");
 
 					break;
 				}
