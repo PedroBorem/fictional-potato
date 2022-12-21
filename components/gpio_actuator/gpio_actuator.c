@@ -43,8 +43,8 @@ static pivot_config pivot_config_read = {};
 static pivot_config task_config_set = {};
 
 //Percentimeter variables
-static time_t posedge_perc = 0;
-static time_t negedge_perc = 0;
+static TickType_t posedge_perc = 0;
+static TickType_t negedge_perc = 0;
 static int perc_diff_onoff = 0;
 static int perc_pct_on = 0;
 static int perc_sec_on = 0;
@@ -91,12 +91,12 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	//taskENTER_CRITICAL_FROM_ISR();
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
 	{
-		posedge_perc = clock();
+		posedge_perc = xTaskGetTickCount();
 	}
 
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
 	{
-		negedge_perc = clock();
+		negedge_perc = xTaskGetTickCount();
 
 		if(posedge_perc != 0 && negedge_perc != 0)
 		{

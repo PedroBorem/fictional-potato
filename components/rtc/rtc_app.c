@@ -74,7 +74,7 @@ time_t rtc_app_get_timestamp(void)
 	{
 		ESP_LOGI(RTC_APP_TAG, "%02d/%02d/%04d %02d:%02d:%02d",
 			rtcinfo.tm_mday, rtcinfo.tm_mon,
-			rtcinfo.tm_year, rtcinfo.tm_hour-3, rtcinfo.tm_min, rtcinfo.tm_sec);
+			rtcinfo.tm_year, rtcinfo.tm_hour, rtcinfo.tm_min, rtcinfo.tm_sec);
 
 		rtcinfo.tm_year = rtcinfo.tm_year - 1900;
 		rtcinfo.tm_mon = rtcinfo.tm_mon - 1;
