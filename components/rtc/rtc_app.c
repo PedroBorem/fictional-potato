@@ -15,7 +15,7 @@
 
 #define RTC_CONFIG_TIMEZONE
 
-static i2c_dev_t dev;
+static i2c_dev_t dev = {};
 
 bool rtc_app_init(void)
 {
@@ -89,7 +89,11 @@ time_t rtc_app_get_timestamp(void)
 
 void rtc_app_get_date_time(struct tm* rtcinfo)
 {
-	if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
+	if(rtcinfo == NULL || dev == NULL)
+	{
+		ESP_LOGE(RTC_APP_TAG, "pointers is null");
+	}
+	else if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
 	{
 		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
 	}

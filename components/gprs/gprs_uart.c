@@ -138,7 +138,7 @@ static void gprs_uart_event_task(void* arg)
 			{
 				case UART_DATA:
 				{
-					if(event.size < 3000) // 3 KB
+					if(event.size > 0 && event.size < 3000) // 3 KB
 					{
 						char* buff_in = (char*)malloc(event.size);
 						int aux = 0;
