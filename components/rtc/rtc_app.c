@@ -89,7 +89,7 @@ time_t rtc_app_get_timestamp(void)
 
 void rtc_app_get_date_time(struct tm* rtcinfo)
 {
-	if(rtcinfo == NULL || dev == NULL)
+	if(rtcinfo == NULL)
 	{
 		ESP_LOGE(RTC_APP_TAG, "pointers is null");
 	}
