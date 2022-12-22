@@ -43,12 +43,12 @@ static pivot_config pivot_config_read = {};
 static pivot_config task_config_set = {};
 
 //Percentimeter variables
-static TickType_t posedge_perc = 0;
-static TickType_t negedge_perc = 0;
+static clock_t posedge_perc = 0;
+static clock_t negedge_perc = 0;
+static clock_t percent_watchdog = 0;
 static int perc_diff_onoff = 0;
 static int perc_pct_on = 0;
 static int perc_sec_on = 0;
-static int percent_watchdog = 0;
 
 //Pressurizing flag
 static bool pressurizing = false;
@@ -91,20 +91,20 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	//taskENTER_CRITICAL_FROM_ISR();
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
 	{
-		posedge_perc = xTaskGetTickCount();
+		posedge_perc = clock();
 	}
 
 	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
 	{
-		negedge_perc = xTaskGetTickCount();
+		negedge_perc = clock();
 
 		if(posedge_perc != 0 && negedge_perc != 0)
 		{
 			perc_diff_onoff = (negedge_perc - posedge_perc);
 			if (perc_diff_onoff != 0)
 			{
-				perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
-				perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
+				perc_sec_on = (int)(perc_diff_onoff / CLOCKS_PER_SEC);
+				perc_pct_on = (int)(perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
 				pivot_config_read.percentimeter = perc_pct_on;
 			}
 		}

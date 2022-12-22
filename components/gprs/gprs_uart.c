@@ -138,28 +138,31 @@ static void gprs_uart_event_task(void* arg)
 			{
 				case UART_DATA:
 				{
-					char* buff_in = (char*)malloc(event.size);
-					int aux = 0;
-
-					//Event of UART receving data
-					uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
-
-					for(int char_position = 0; char_position < event.size; char_position++)
+					if(event.size < 3000) // 3 KB
 					{
-						// 0x7F = ASCII space
-						// 0x1A <= ASCII C^ values
-						if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+						char* buff_in = (char*)malloc(event.size);
+						int aux = 0;
+
+						//Event of UART receving data
+						uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
+						LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
+
+						for(int char_position = 0; char_position < event.size; char_position++)
 						{
-							buff_in[aux] = dtmp[char_position];
-							aux ++;
+							// 0x7F = ASCII space
+							// 0x1A <= ASCII C^ values
+							if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+							{
+								buff_in[aux] = dtmp[char_position];
+								aux ++;
+							}
 						}
+
+						LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
+
+						gprs_callback(buff_in, aux);
+						free(buff_in);
 					}
-
-					LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
-
-					gprs_callback(buff_in, aux);
-					free(buff_in);
 					break;
 				}
 				case UART_FIFO_OVF:

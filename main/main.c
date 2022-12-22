@@ -242,6 +242,8 @@ static void app_peak_hours_task(void* arg)
 	pivot_config current_config = {};
 	size_t config_length = 0;
 
+	eTaskState TaskState;
+
 	while(1)
 	{
 		rtc_app_get_date_time(&rtcinfo); // 1 h = 3600000 ms
@@ -250,18 +252,26 @@ static void app_peak_hours_task(void* arg)
 		{
 			diff_time = (MAIN_PEAK_HOUR_INIT - rtcinfo.tm_hour) * 3600000;
 		}
-		else if(rtcinfo.tm_hour > MAIN_PEAK_HOUR_END)
+		else if(rtcinfo.tm_hour > MAIN_PEAK_HOUR_END ||
+		(rtcinfo.tm_hour == MAIN_PEAK_HOUR_END && rtcinfo.tm_min > 0))
 		{
-			diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
-			if(alredy_off == true)
-			{
-				data_app_load_config(&current_config, &config_length);
-				vTaskDelay(pdMS_TO_TICKS(500));
-				actuation_app_set_config(current_config, false);
+				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
+				if(alredy_off == true)
+				{
+					data_app_load_config(&current_config, &config_length);
+					vTaskDelay(pdMS_TO_TICKS(500));
+					actuation_app_set_config(current_config, false);
 
-				alredy_off = false;
-				vTaskResume(xTask_sectorization_app);
-			}
+					alredy_off = false;
+
+					TaskState = eTaskGetState( xTask_sectorization_app );
+
+					if(TaskState == eSuspended
+					|| TaskState == eBlocked)
+					{
+						vTaskResume(xTask_sectorization_app);
+					}
+				}
 		}
 		else
 		{
@@ -275,7 +285,14 @@ static void app_peak_hours_task(void* arg)
 				actuation_app_set_config(current_config, false);
 
 				alredy_off = true;
-				vTaskSuspend(xTask_sectorization_app);
+
+				TaskState = eTaskGetState( xTask_sectorization_app );
+
+				if(TaskState == eRunning
+				|| TaskState == eReady)
+				{
+					vTaskSuspend(xTask_sectorization_app);
+				}
 			 }
 		}
 
