@@ -24,8 +24,8 @@
 
 #define MAIN_TAG "main"
 
-#define MAIN_PEAK_HOUR_INIT		17 // 17 hours
-#define MAIN_PEAK_HOUR_END		20 // 20 hours
+#define MAIN_PEAK_HOUR_INIT		19 // 17 hours
+#define MAIN_PEAK_HOUR_END		22 // 20 hours
 
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
@@ -278,11 +278,7 @@ static void app_peak_hours_task(void* arg)
 			 diff_time = (MAIN_PEAK_HOUR_END - MAIN_PEAK_HOUR_INIT) * 3600000;
 			 if(alredy_off == false)
 			 {
-				data_app_load_config(&current_config, &config_length);
-				vTaskDelay(pdMS_TO_TICKS(500));
-
-				current_config.power_state = PIVOT_OFF;
-				actuation_app_set_config(current_config, false);
+				actuation_app_shutdown();
 
 				alredy_off = true;
 

@@ -126,6 +126,11 @@ void actuation_app_set_pump(bool pump_state)
 	}
 }
 
+void actuation_app_shutdown(void)
+{
+	gpio_actuator_shutdown();
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Task responsible for monitoring possible changes in equipment status
@@ -203,7 +208,7 @@ void actuation_app_task(void* arg)
 			last_tick = xTaskGetTickCount();
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(2000));
+		vTaskDelay(pdMS_TO_TICKS(3000));
 	}
 }
 
