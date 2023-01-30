@@ -1,1 +1,153 @@
+<!doctype html>
+<html>
+
+    <head>
+        <!-- Metadados -->
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    
+        <!-- CSS -->
+        <link rel="stylesheet" type="text/css" href="index.css" media="screen">
+
+        <!-- Título da página (aparece na aba) -->
+        <title>Soil</title>
+    </head>
+
+    <body>  
+
+        <!-- Cabeçalho com título e subtítulo (ambos com css de id "titulo") -->
+        <div>
+            <h1 id="titulo">Configuração do Pivô</h1>
+            <br>
+        </div>
+
+        <!-- Início do formulário -->
+        <form>
+
+            <fieldset class="grupo">
+                <!-- Campo do nome com legenda "nome" e css de classe "campo" -->
+                <div class="campo">
+                    <label for="pivo_id"><strong>Pivô ID</strong></label>
+                    <input type="text" name="pivo_id" id="pivo_id" required>
+                </div>
+
+                <!-- Campo do sobrenome com legenda "sobrenome" e css de classe "campo" -->
+                <div class="campo">
+                    <label for="gprs_id"><strong>GPRS ID</strong></label>
+                    <input type="text" name="gprs_id" id="gprs_id" required>
+                </div>
+            </fieldset> 
+
+            <div class="campo">
+                <label><strong>Tipo de contatora</strong></label>
+                <label>
+                    <input type="radio" name="contatora" value="contatora_na" checked>NA
+                </label>
+                <label>
+                    <input type="radio" name="contatora" value="contatora_nf">NF
+                </label>
+            </div>
+
+            <div class="campo">
+                <label><strong>Tipo de Pressostato</strong></label>
+                <label>
+                    <input type="radio" name="pressostato" value="pressostato_na" checked>NA
+                </label>
+                <label>
+                    <input type="radio" name="pressostato" value="pressostato_nf">NF
+                </label>
+            </div>
+
+            <div class="campo">
+                <label for="press_delay"><strong>Tempo de pressurização</strong></label>
+                <select id="press_delay" required>
+                  <option selected disabled value="">segundos</option>
+                  <option>10</option>
+                  <option>20</option>
+                  <option>30</option>
+                  <option>40</option>
+                  <option>50</option>
+                  <option>60</option>
+                  <option>70</option>
+                  <option>80</option>
+                  <option>90</option>
+                  <option>100</option>
+                  <option>110</option>
+                  <option>120</option>
+                </select>
+            </div>
+
+          	<div class="campo">
+                <label for="ld_delay"><strong>Tempo de ligar/desligar</strong></label>
+                <select id="ld_delay" required>
+                  <option selected disabled value="">segundos</option>
+                  <option>10</option>
+                  <option>20</option>
+                  <option>30</option>
+                  <option>40</option>
+                  <option>50</option>
+                  <option>60</option>
+                  <option>70</option>
+                  <option>80</option>
+                  <option>90</option>
+                  <option>100</option>
+                  <option>110</option>
+                  <option>120</option>
+                </select>
+            </div>
+
+
+            <fieldset class="grupo">
+                <div id="hpico_check">
+                    <input type="checkbox" id="hpico" name="hpico">
+                    <label for="hpico"><strong>Habilitar Horário de Pico</strong></label>
+                </div>
+
+                <div>
+                	<input name="horario_inicial" id="number" type="number" min="0" max="24"/>
+                	<label for="horario_inicial">horário inicial</label>
+            	</div>
+                <div>
+                    <input name="horario_final" id="number" type="number" min="0" max="24"/>
+                    <label for="horario_final">horário final</label>
+                </div>
+            </fieldset>
+
+            <fieldset class="grupo">
+                <div id="setorizacao_check"><br>
+                    <input type="checkbox" id="setorizacao" name="setorizacao">
+                    <label for="setorizacao"><strong>Habilitar Setorização</strong></label>
+                </div>
+                <div id="setor_1">
+                	<br><strong>Setor 1</strong><br>
+                	<div>
+                    	<input name="angulo_1" id="number" type="number" min="0" max="360"/>
+                    	<label for="angulo_1">ângulo inicial</label>
+                	</div>
+                    <div>
+	                    <input name="angulo_2" id="number" type="number" min="0" max="360"/>
+	                    <label for="angulo_2">ângulo final</label>
+                    </div>
+                </div>
+                <div id="setor_2">
+                	<br><strong>Setor 2</strong><br>
+                	<div>
+                    	<input name="angulo_3" id="number" type="number" min="0" max="360"/>
+                    	<label for="angulo_3">ângulo inicial</label>
+                	</div>
+                    <div>
+	                    <input name="angulo_4" id="number" type="number" min="0" max="360"/>
+	                    <label for="angulo_4">ângulo final</label>
+                    </div>
+                </div>
+            </fieldset>
+
+            <!-- Botão para enviar o formulário -->
+            <button class="botao" type="submit" onsubmit="">Enviar configurações</button>            
+
+        </form>
+
+    </body>
+
+</html>
 
