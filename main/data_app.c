@@ -1,13 +1,13 @@
 /*
  * data_app.c
  *
- *  Created on: 15 de jun. de 2022
- *      Author: brunolima
+ *  Created on: 18 de set de 2022
+ *      Author: bruno
  */
 
 /**
  * @file data_app.c
- * @date June 15, 2022
+ * @date Set 18, 2022
  * @brief memory control application
 */
 
@@ -16,7 +16,9 @@
 
 /* NVS include */
 #include "nvs_data.h"
-#include "nvs_config.h"
+
+/* Project include */
+#include "esp_log.h"
 
 /**\addtogroup main
  * @{
@@ -29,210 +31,68 @@
  */
 
 /* Private definitions ------------------------------------------- */
+/**
+ * class log tag
+ *
+ */
 #define DATA_APP_TAG			"data_app"
-#define DATA_APP_SIZE_QUEUE		10
 
 /**
- *	Request types sent to the control queue
+ * NVS access key
  *
  */
-typedef enum
-{
-	DATA_APP_SAVE_CONFIG = 0,	/*!< Request to save a configuration*/
-	DATA_APP_LOAD_CONFIG = 1	/*!< Request to read a configuration*/
-}data_app_request_type;
-
-/**
- *	Structure sent to the control queue
- *
- */
-typedef struct
-{
-	data_app_request_type request_type; /*!< Request types sent to the control queue*/
-	union
-	{
-		pivot_config config_in;	 		/*!< If a write is requested, an input buffer is passed*/
-		pivot_config* config_out;		/*!< If a read is requested, a configuration pointer is passed*/
-		//TODO: added scheduling and history
-	};
-	union
-	{
-		size_t config_size_in;			 /*!< A value containing the size of the content to be recorded is passed*/
-		size_t* config_size_out;		 /*!< A pointer to receive the size of the content read*/
-	};
-}data_app_request;
-
-/* Private variables  -------------------------------------------- */
-static app_callback data_app_call = NULL;
-
-//FreeRTOS variables
-static TaskHandle_t xTask_data_app = NULL;
-static QueueHandle_t xQueue_data_app = NULL;
-
-/* Private function prototype ------------------------------------ */
-void data_app_task(void* arg);
+#define DATA_APP_NAMESPACE		"msf_app_data"
 
 /* Public methods ------------------------------------------------ */
-bool data_app_init(const app_callback callback)
+esp_err_t data_app_init(void)
 {
-	bool ret = false;
-	BaseType_t xReturn = pdPASS;
 	esp_err_t err = ESP_FAIL;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
 	{
-		err = nvs_config_init();
-		if(err == ESP_OK)
-		{
-			xQueue_data_app = xQueueCreate(DATA_APP_SIZE_QUEUE, sizeof(data_app_request));
-			if(xQueue_data_app != NULL)
-			{
-				xReturn = xTaskCreate(&data_app_task,
-									DATA_APP_TASK_NAME,
-									DATA_APP_STACK_SIZE,
-									NULL,
-									DATA_APP_TASK_PRIORITY,
-									&xTask_data_app);
-
-				if(xReturn == pdPASS || xTask_data_app != NULL)
-				{
-					ret = true;
-				}
-				else
-				{
-					ESP_LOGE( DATA_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
-				}
-			}
-			else
-			{
-				ESP_LOGE( DATA_APP_TAG, "%s, failed to create queue", __func__);
-			}
-		}
-	}
-
-	if(callback != NULL && ret == true)
-	{
-		data_app_call = callback;
-		LOG_DATA( DATA_APP_TAG, "%s, data application started successfully", __func__);
-		data_app_show_config();
+		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
 	}
 	else
 	{
 		ESP_LOGE( DATA_APP_TAG, "%s, failed to start data application", __func__);
 	}
 
+	return err;
+}
+
+esp_err_t data_app_save_config(const char* key, const void* value, size_t size)
+{
+	esp_err_t ret = ESP_FAIL;
+
+	if(key != NULL && value != NULL)
+	{
+		ret = nvs_data_set(DATA_APP_NAMESPACE, key, value, size);
+	}
+
 	return ret;
 }
 
-
-bool data_app_save_config(pivot_config config_in, size_t config_length)
+esp_err_t data_app_load_config(const char* key, void* out_value, size_t size)
 {
-	bool ret = false;
-	data_app_request data_queue_request = {};
+	esp_err_t ret = ESP_FAIL;
 
-	data_queue_request.request_type = DATA_APP_SAVE_CONFIG;
-	data_queue_request.config_size_in = config_length;
-
-	if(config_length > 0)
+	size_t required_size = nvs_data_get_size(DATA_APP_NAMESPACE, key);
+	if(size < required_size)
 	{
-		memcpy(&data_queue_request.config_in , &config_in , config_length);
-		if(xQueueSend(xQueue_data_app, &data_queue_request ,(TickType_t)20) == pdPASS)
-		{
-			ret = true;
-		}
-		else
-		{
-			ESP_LOGE( DATA_APP_TAG, "%s, failed to publish to queue", __func__);
-		}
+		ESP_LOGE( DATA_APP_TAG, "%s, buffer size smaller than label size", __func__);
 	}
 	else
 	{
-		ESP_LOGE( DATA_APP_TAG, "%s, invalid configuration length", __func__);
+		ret = nvs_data_get_blob(DATA_APP_NAMESPACE, key, out_value);
 	}
 
 	return ret;
 }
 
-bool data_app_load_config(pivot_config* config_out, size_t* config_length)
-{
-	bool ret = false;
-	data_app_request data_queue_request = {};
-
-	data_queue_request.request_type = DATA_APP_LOAD_CONFIG;
-	data_queue_request.config_size_out = config_length;
-	data_queue_request.config_out = config_out;
-
-	if(xQueueSend(xQueue_data_app, &data_queue_request ,(TickType_t)20) == pdPASS)
-	{
-		ret = true;
-	}
-	else
-	{
-		ESP_LOGE( DATA_APP_TAG, "%s, failed to publish to queue", __func__);
-	}
-
-	return ret;
-}
-
-void data_app_show_config(void)
-{
-	nvs_config_show_current();
-}
-/* Private methods ----------------------------------------------- */
-/**
- * @brief 	Central memory application task. Manage queues for access to NVS
- * @param	arg - [in]: task argument (default NULL)
- */
-void data_app_task(void* arg)
-{
-	data_app_request data_queue_receive = {};
-	esp_err_t err = ESP_FAIL;
-
-	while(1)
-	{
-		if(xQueueReceive(xQueue_data_app,&data_queue_receive, (TickType_t)100) == pdTRUE)
-		{
-			switch (data_queue_receive.request_type)
-			{
-				case DATA_APP_SAVE_CONFIG:
-				{
-					err = nvs_config_set(data_queue_receive.config_in, data_queue_receive.config_size_in);
-					if(err == ESP_OK)
-					{
-						LOG_DATA(DATA_APP_TAG, "configuration applied successfully");
-					}
-					else
-					{
-						ESP_LOGE(DATA_APP_TAG, "%s, failed to set configuration", __func__);
-					}
-					break;
-				}
-				case DATA_APP_LOAD_CONFIG:
-				{
-					err = nvs_config_get(data_queue_receive.config_out, data_queue_receive.config_size_out);
-					if(err != ESP_OK)
-					{
-						ESP_LOGE(DATA_APP_TAG, "%s, failed to get settings", __func__);
-					}
-
-					if(data_app_call != NULL)
-					{
-						data_app_call(CALL_LOAD_CONFIG, NULL);
-					}
-					break;
-				}
-				default:
-				{
-					break;
-				}
-			}
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(20));
-	}
+size_t data_app_get_data_size(const char* key){
+    return nvs_data_get_size(DATA_APP_NAMESPACE, key);
 }
 
 /**@}*/ 	//data_app
 /** @}*/	//main
-
