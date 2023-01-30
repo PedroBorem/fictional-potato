@@ -13,14 +13,14 @@
         <title>Soil</title>
     </head>
 
-    <body>  
-
-        <!-- Cabeçalho com título e subtítulo (ambos com css de id "titulo") -->
-        <div>
-            <h1 id="titulo">Configuração do Pivô</h1>
-            <br>
-        </div>
-
+    <body>
+     	<div>
+        	<img src='logo.png' width="35%" 
+     		height="30%" alt='Logo'>
+     		<font id="titulo"><b><br>Configuração do Pivô</b></font>
+        	<br><br>
+        </div>  
+    	
         <!-- Início do formulário -->
         <form>
 
@@ -98,13 +98,12 @@
 
 
             <fieldset class="grupo">
-                <div id="hpico_check">
+                <div id="check">
                     <input type="checkbox" id="hpico" name="hpico" onclick='processo_horario_pico(this.checked)'>
                     <label for="hpico"><strong>Habilitar Horário de Pico</strong></label>
                 </div>
-
-                <div id="hpico_valor" style="display: none;">
-                	<br>
+                
+                <div id="hpico_valor" style="display: none;"><br><br>
 		            <div>
 		            	<input name="horario_inicial" id="horario_inicial" type="number" min="0" max="24"/>
 		            	<label for="horario_inicial">horário inicial</label>
@@ -117,7 +116,7 @@
             </fieldset>
 
             <fieldset class="grupo">
-                <div id="setorizacao_check"><br>
+                <div id="check"><br>
                     <input type="checkbox" id="setorizacao" name="setorizacao" onclick='processo_setorizacao(this.checked)'>
                     <label for="setorizacao"><strong>Habilitar Setorização</strong></label>
                 </div>
