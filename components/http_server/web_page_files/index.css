@@ -26,7 +26,7 @@ fieldset {
 
 /* Elemento de tag <body> */
 body{
-    background-color: #F0F8FF;
+    background-color: #F5F5F5;
     font-family: sans-serif;
     font-size: 1em;
     color: #59429d;
@@ -92,7 +92,7 @@ fieldset.grupo .campo {
 /* Elemento de classe "botao" */
 .botao {
     font-size: 1.2em;
-    background: #9FC602;
+    background: #87A803;
     border: 0;
     margin-bottom: 1em;
     color: #ffffff;
@@ -100,7 +100,6 @@ fieldset.grupo .campo {
     box-shadow: 2px 2px 2px rgba(0,0,0,0.2);
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
     position: absolute;
-    top: 90%;
     left: 50%;
     margin-right: -50%;
     transform: translate(-50%, -50%)
@@ -108,7 +107,7 @@ fieldset.grupo .campo {
 
 /* Elemento de classe "botao" com o estado da pseudoclasse "hover" */
 .botao:hover {
-    background: #DBE6B0;
+    background: #B1BF78;
     box-shadow: inset 2px 2px 2px rgba(0,0,0,0.2);
     text-shadow: none;
 }
