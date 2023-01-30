@@ -492,48 +492,18 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 		ESP_LOGI(HTTP_API_TAG, "content %s", content);
 #endif
 
-		if(strcmp(req->uri, "/upload/") == 0)
+		/* Send a simple response */
+		const char resp[] = "Configuration received and applied !!!";
+		httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+
+		if(http_callback != NULL)
 		{
-			char filepath[FILE_PATH_MAX];
-			FILE *fd = NULL;
-
-			/* Skip leading "/upload" from URI to get filename */
-			/* Note sizeof() counts NULL termination hence the -1 */
-			const char *filename = http_get_path_from_uri(filepath, ((http_file_server_data *)req->user_ctx)->base_path,
-													 req->uri + sizeof("/upload") - 1, sizeof(filepath));
-
-			if (!filename) {
-				/* Respond with 500 Internal Server Error */
-				httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Filename too long");
-				return ESP_FAIL;
-			}
-
-			fd = fopen(filepath, "w");
-			if (!fd) {
-				ESP_LOGE(HTTP_API_TAG, "Failed to create file : %s", filepath);
-				/* Respond with 500 Internal Server Error */
-				httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Failed to create file");
-				return ESP_FAIL;
-			}
-
-			ESP_LOGI(HTTP_API_TAG, "Receiving file : %s...", filename);
-			fclose(fd);
+			http_callback(content);
+			err = ESP_OK;
 		}
 		else
 		{
-			/* Send a simple response */
-			const char resp[] = "Configuration received and applied !!!";
-			httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
-
-			if(http_callback != NULL)
-			{
-				http_callback(content);
-				err = ESP_OK;
-			}
-			else
-			{
-				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			}
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
 		}
     }
 
