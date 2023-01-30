@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/param.h>
 
 /* include FreeRTOS */
 #include "freertos/FreeRTOSConfig.h"
