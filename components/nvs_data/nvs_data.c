@@ -1,8 +1,8 @@
 /*
- * nvs.c
+ * nvs_data.c
  *
- *  Created on: 15 de jun. de 2022
- *      Author: brunolima
+ *  Created on: 18 de set de 2022
+ *      Author: bruno
  */
 
 /**
@@ -16,6 +16,10 @@
 /* NVS include */
 #include "nvs_flash.h"
 #include "nvs.h"
+
+/* common lib */
+#include "esp_log.h"
+#include "string.h"
 
 /**\addtogroup components
  * @{
@@ -35,7 +39,6 @@
 esp_err_t nvs_data_init(void)
 {
 	esp_err_t err = ESP_FAIL;
-	nvs_handle_t handle = (nvs_handle_t)NULL;
 
 	err = nvs_flash_init();
 	if (err == ESP_ERR_NVS_NO_FREE_PAGES || err == ESP_ERR_NVS_NEW_VERSION_FOUND)
@@ -46,50 +49,41 @@ esp_err_t nvs_data_init(void)
 		err = nvs_flash_init();
 	}
 
-	if (err == ESP_OK)
-	{
-		err = nvs_open( NVS_LABEL_CONFIG, NVS_READWRITE, &handle );
-		if( (err != ESP_OK) || (handle == (nvs_handle_t)NULL) )
-		{
-			ESP_LOGE( NVS_DATA_TAG, "%s,failed to open label : %s", __func__, NVS_LABEL_CONFIG);
-			err = ESP_FAIL;
-		}
-
-		nvs_close( handle );
-		handle = (nvs_handle_t)NULL;
-		//TODO: initialize for scheduling and history
-	}
-	else
-	{
-		ESP_LOGE( NVS_DATA_TAG, "%s, failed to initialize flash", __func__);
-	}
-
 	ESP_ERROR_CHECK( err );
 	return err;
 }
 
-esp_err_t nvs_data_set(const char* label_name, const char* key, const uint8_t* value, size_t length)
+esp_err_t nvs_data_set(const char* label_name, const char* key, const void* value, size_t length)
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
 
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
-	if (err == ESP_OK)
+	if( (err != ESP_OK) || (handle == (nvs_handle_t)NULL) )
+	{
+		ESP_LOGE( NVS_DATA_TAG, "%s,failed to open label : %s", __func__, label_name);
+		err = ESP_FAIL;
+	}
+	else if (err == ESP_OK)
 	{
 		err = nvs_set_blob(handle, key, value, length);
 		if(err == ESP_OK)
 		{
 			 err = nvs_commit(handle);
+			 ESP_LOGI(NVS_DATA_TAG, "%s, Saved successfully (%p)", __func__, value);
+		}
+		else
+		{
+			ESP_LOGE( NVS_DATA_TAG, "%s,failed to save (%p)", __func__, value);
 		}
 	}
 
 	nvs_close(handle);
-	handle = (nvs_handle_t)NULL;
 
 	return err;
 }
 
-esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_value, size_t *length)
+size_t nvs_data_get_size(const char* label_name, const char* key)
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
@@ -98,7 +92,27 @@ esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_val
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
 	if (err == ESP_OK)
 	{
+		err = nvs_get_blob(handle, key, NULL, &required_size);
+		if(err != ESP_OK)
+		{
+			required_size = 0;
+		}
+	}
 
+	nvs_close(handle);
+
+	return required_size;
+}
+
+esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* out_value)
+{
+	esp_err_t err = ESP_FAIL;
+	nvs_handle_t handle = (nvs_handle_t)NULL;
+	size_t required_size = 0;
+
+	err = nvs_open(label_name, NVS_READWRITE, &handle);
+	if (err == ESP_OK)
+	{
 		err = nvs_get_blob(handle, key, NULL, &required_size);
 		if(err == ESP_OK)
 		{
@@ -106,7 +120,6 @@ esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_val
 			err = nvs_get_blob(handle, key, run_time, &required_size);
 			if(err == ESP_OK)
 			{
-				memcpy(length, &required_size, sizeof(required_size));
 				memcpy(out_value, (uint8_t*)run_time, required_size);
 			}
 			else
@@ -126,7 +139,6 @@ esp_err_t nvs_data_get(const char* label_name, const char* key, uint8_t* out_val
 	}
 
 	nvs_close(handle);
-	handle = (nvs_handle_t)NULL;
 
 	return err;
 }

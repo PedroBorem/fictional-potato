@@ -1,8 +1,8 @@
 /*
  * data_app.h
  *
- *  Created on: 15 de jun. de 2022
- *      Author: brunolima
+ *  Created on: 18 de set de 2022
+ *      Author: bruno
  */
 
 #ifndef MAIN_INCLUDE_DATA_APP_H_
@@ -14,43 +14,48 @@
  * @brief memory control application
 */
 
-#include "project_config.h"
+#include "esp_err.h"
+
+/* Data app label names */
+#define DATA_LABEL_CONFIG	"label_config"
 
 /**
  * @brief	start all memory modules
- * @param	app_callback - [in]: function used with return to main application class
  * @return
- * 	- true: success
- * 	- false: fail to initialize
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to initialize
  */
-bool data_app_init(const app_callback callback);
+esp_err_t data_app_init(void);
 
 /**
  * @brief	sends the queue a request to save a new configuration
- * @param	config_in - [in]: pivot configuration structure
- * @param	config_length - [in]: structure size
+ * @param 	key - access key defined in project_config.h
+ * @param 	value - [in]: content you want to save in memory.
+ * @param 	size - [in]: size of content
  * @return
- * 	- true: success
- * 	- false: fail to save
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to save
  */
-bool data_app_save_config(pivot_config config_in, size_t config_length);
+esp_err_t data_app_save_config(const char* key, const void* value, size_t size);
 
 /**
- * @brief	sends the queue a request to load a configuration
- * @param	config_out - [out]: pivot configuration structure
- * @param	config_length - [out]: structure size
+ * @brief	sends the queue a request to load a configuration.
+ * @param 	key - access key defined in project_config.h
+ * @param 	out_value - [in]: return pointer with the value read from the label.
+ * @param 	size - [in]: size allocated for pointer(out_value).
  * @return
- * 	- true: success
- * 	- false: fail to save
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to save
  */
-bool data_app_load_config(pivot_config* config_out, size_t* config_length);
+esp_err_t data_app_load_config(const char* key, void* out_value, size_t size);
 
 /**
- * @brief	show configuration content in memory
- *
- * propagation of the nvs_config_show_current method
- *
+ * @brief Gets the data size for the informed key.
+ * @param 	key - access key defined in project_config.h
+ * @return
+ *  - 0: in case of errors
+ *  - Data size.
  */
-void data_app_show_config(void);
+size_t data_app_get_data_size(const char* key);
 
 #endif /* MAIN_INCLUDE_DATA_APP_H_ */
