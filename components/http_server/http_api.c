@@ -82,6 +82,7 @@ static char* http_config = NULL;
 
 /* Private function prototype ------------------------------------ */
 static esp_err_t http_index_html_get_handler(httpd_req_t *req);
+static esp_err_t http_index_css_get_handler(httpd_req_t *req);
 static esp_err_t http_favicon_get_handler(httpd_req_t *req);
 static esp_err_t http_logo_get_handler(httpd_req_t *req);
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath);
@@ -287,6 +288,25 @@ static esp_err_t http_index_html_get_handler(httpd_req_t *req)
 
 /**
  * @brief	Handler to respond with an icon file embedded in flash.
+ * Browsers expect to GET website css at URI /index.css.
+ * This can be overridden by uploading file with same name
+ * @param	req[in/out] - HTTP Request Data Structure.
+ * @return
+ *  - ESP_OK : get OK.
+ */
+static esp_err_t http_index_css_get_handler(httpd_req_t *req)
+{
+    extern const unsigned char favicon_css_start[] asm("_binary_index_css_start");
+    extern const unsigned char favicon_css_end[]   asm("_binary_index_css_end");
+    const size_t favicon_ico_size = (favicon_css_end - favicon_css_start);
+    httpd_resp_set_type(req, "text/css");
+    httpd_resp_send(req, (const char *)favicon_css_start, favicon_ico_size);
+    return ESP_OK;
+}
+
+
+/**
+ * @brief	Handler to respond with an icon file embedded in flash.
  * Browsers expect to GET website icon at URI /favicon.ico.
  * This can be overridden by uploading file with same name
  * @param	req[in/out] - HTTP Request Data Structure.
@@ -408,6 +428,10 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 				if (strcmp(filename, "/index.html") == 0)
 				{
 					err = http_index_html_get_handler(req);
+				}
+				if (strcmp(filename, "/index.css") == 0)
+				{
+					err = http_index_css_get_handler(req);
 				}
 				else if (strcmp(filename, "/favicon.ico") == 0)
 				{

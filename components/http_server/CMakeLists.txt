@@ -8,6 +8,7 @@ idf_component_register(	SRCS
                     		"web_page_files/favicon.ico"
                     		"web_page_files/logo.png" 
                     		"web_page_files/index.html"
+                    		"web_page_files/index.css"
                     	PRIV_REQUIRES 
                     		main 
                     		utils
