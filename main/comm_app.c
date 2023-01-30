@@ -18,6 +18,7 @@
 #include "rf_module.h"
 #include "gprs_module.h"
 #include "gprs_uart.h"
+#include "wifi_app.h"
 
 /**\addtogroup main
  * @{
@@ -73,6 +74,7 @@ bool comm_app_init(const app_callback callback)
 
 	err = rf_module_init();
 	err &= gprs_module_init();
+	err &= wifi_app_init();
 	if(err == ESP_OK && callback != NULL )
 	{
 		comm_app_call = callback;
