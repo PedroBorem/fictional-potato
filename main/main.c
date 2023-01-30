@@ -24,14 +24,18 @@
 
 #define MAIN_TAG "main"
 
-/* Private variables ------------------------------------ */
-static TaskHandle_t xTask_app = NULL;
+#define MAIN_PEAK_HOUR_INIT		19 // 17 hours
+#define MAIN_PEAK_HOUR_END		22 // 20 hours
 
+/* Private variables ------------------------------------ */
+static TaskHandle_t xTask_sectorization_app = NULL;
+static TaskHandle_t xTask_peak_hours_app = NULL;
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
 static void app_sectorization_task(void* arg);
+static void app_peak_hours_task(void* arg);
 
 /**
  * @brief	main class
@@ -70,11 +74,19 @@ void app_main(void)
 
 	// create sectorization task
 	xTaskCreate(&app_sectorization_task,
-				MAIN_APP_TASK_NAME,
-				MAIN_APP_STACK_SIZE,
+				MAIN_APP_TASK_1_NAME,
+				MAIN_APP_STACK_1_SIZE,
 				angles,
-				MAIN_APP_TASK_PRIORITY,
-				&xTask_app);
+				MAIN_APP_TASK_1_PRIORITY,
+				&xTask_sectorization_app);
+
+	// create peak hours task
+	xTaskCreate(&app_peak_hours_task,
+				MAIN_APP_TASK_2_NAME,
+				MAIN_APP_STACK_2_SIZE,
+				NULL,
+				MAIN_APP_TASK_2_PRIORITY,
+				&xTask_peak_hours_app);
 
 	while (1)
 	{
@@ -218,6 +230,69 @@ static void app_sectorization_task(void* arg)
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(2000));
+	}
+}
+
+static void app_peak_hours_task(void* arg)
+{
+	struct tm rtcinfo = {0};
+	time_t diff_time = 0;
+	bool alredy_off = false;
+
+	pivot_config current_config = {};
+	size_t config_length = 0;
+
+	eTaskState TaskState;
+
+	while(1)
+	{
+		rtc_app_get_date_time(&rtcinfo); // 1 h = 3600000 ms
+
+		if(rtcinfo.tm_hour < MAIN_PEAK_HOUR_INIT)
+		{
+			diff_time = (MAIN_PEAK_HOUR_INIT - rtcinfo.tm_hour) * 3600000;
+		}
+		else if(rtcinfo.tm_hour > MAIN_PEAK_HOUR_END ||
+		(rtcinfo.tm_hour == MAIN_PEAK_HOUR_END && rtcinfo.tm_min > 0))
+		{
+				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
+				if(alredy_off == true)
+				{
+					data_app_load_config(&current_config, &config_length);
+					vTaskDelay(pdMS_TO_TICKS(500));
+					actuation_app_set_config(current_config, false);
+
+					alredy_off = false;
+
+					TaskState = eTaskGetState( xTask_sectorization_app );
+
+					if(TaskState == eSuspended
+					|| TaskState == eBlocked)
+					{
+						vTaskResume(xTask_sectorization_app);
+					}
+				}
+		}
+		else
+		{
+			 diff_time = (MAIN_PEAK_HOUR_END - MAIN_PEAK_HOUR_INIT) * 3600000;
+			 if(alredy_off == false)
+			 {
+				actuation_app_shutdown();
+
+				alredy_off = true;
+
+				TaskState = eTaskGetState( xTask_sectorization_app );
+
+				if(TaskState == eRunning
+				|| TaskState == eReady)
+				{
+					vTaskSuspend(xTask_sectorization_app);
+				}
+			 }
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(diff_time));
 	}
 }
 

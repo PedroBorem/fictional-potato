@@ -90,7 +90,7 @@ bool comm_app_init(const app_callback callback)
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
 			{
 				ret = true;
-				const char gprs_id[] = "{\"register\":\"True\",\"GPRS_ID\":\"Helio_Gozzi_1\"}";
+				const char gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
 				gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 			}
 			else

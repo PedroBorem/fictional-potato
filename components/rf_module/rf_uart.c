@@ -61,7 +61,7 @@ esp_err_t rf_uart_init(const rf_uart_callback callback)
 	};
 
 	// Install UART driver, and get the queue.
-	err = uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 2, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
+	err = uart_driver_install(RF_UART_NUM, RF_UART_BUF_SIZE * 6, RF_UART_BUF_SIZE * 2, 20, &rf_uart_queue, 0);
 	if(err == ESP_OK)
 	{
 		uart_param_config(RF_UART_NUM, &uart_config);
@@ -71,7 +71,13 @@ esp_err_t rf_uart_init(const rf_uart_callback callback)
 		if(err == ESP_OK)
 		{
 			//Create a task to handler UART event from ISR
-			xReturn = xTaskCreate(rf_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+			xReturn = xTaskCreate(rf_uart_event_task,
+								RF_UART_TASK_NAME,
+								RF_UART_STACK_SIZE,
+								NULL,
+								RF_UART_TASK_PRIORITY,
+								NULL);
+
 			if(callback != NULL && xReturn == pdPASS)
 			{
 				rf_callback = callback;
@@ -133,28 +139,31 @@ static void rf_uart_event_task(void* arg)
 			{
 				case UART_DATA:
 				{
-					char* buff_in = (char*)malloc(event.size);
-					int aux = 0;
-
-					//Event of UART receving data
-					uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
-
-					for(int char_position = 0; char_position < event.size; char_position++)
+					if(event.size > 0 && event.size < 3000) // 3 KB
 					{
-						// 0x7F = ASCII space
-						// 0x1A <= ASCII C^ values
-						if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+						char* buff_in = (char*)malloc(event.size);
+						int aux = 0;
+
+						//Event of UART receving data
+						uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
+						LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
+
+						for(int char_position = 0; char_position < event.size; char_position++)
 						{
-							buff_in[aux] = dtmp[char_position];
-							aux ++;
+							// 0x7F = ASCII space
+							// 0x1A <= ASCII C^ values
+							if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+							{
+								buff_in[aux] = dtmp[char_position];
+								aux ++;
+							}
 						}
+
+						LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
+
+						rf_callback(buff_in, aux);
+						free(buff_in);
 					}
-
-					LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
-
-					rf_callback(buff_in, aux);
-					free(buff_in);
 					break;
 				}
 				case UART_FIFO_OVF:
@@ -178,7 +187,7 @@ static void rf_uart_event_task(void* arg)
 				case UART_BREAK:
 				{
 					//Event of UART RX break detected
-					LOG_COMM(RF_UART_TAG, "UART RX break");
+					ESP_LOGD(RF_UART_TAG, "UART RX break");
 
 					break;
 				}

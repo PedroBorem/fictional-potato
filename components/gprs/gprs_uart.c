@@ -34,11 +34,6 @@
 #define GPRS_UART_TX_NUM 	GPIO_NUM_17
 #define GPRS_UART_RX_NUM	GPIO_NUM_18
 
-//#define GPRS_UART_NUM 		UART_NUM_2
-//#define GPRS_UART_TX_NUM 	GPIO_NUM_17
-//#define GPRS_UART_RX_NUM	GPIO_NUM_16
-
-
 #define GPRS_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
@@ -65,7 +60,7 @@ esp_err_t gprs_uart_init(const gprs_uart_callback callback)
 	};
 
 	// Install UART driver, and get the queue.
-	err = uart_driver_install(GPRS_UART_NUM, GPRS_UART_BUF_SIZE * 2, GPRS_UART_BUF_SIZE * 2, 20, &gprs_uart_queue, 0);
+	err = uart_driver_install(GPRS_UART_NUM, GPRS_UART_BUF_SIZE * 6, GPRS_UART_BUF_SIZE * 2, 20, &gprs_uart_queue, 0);
 	if(err == ESP_OK)
 	{
 		uart_param_config(GPRS_UART_NUM, &uart_config);
@@ -75,7 +70,13 @@ esp_err_t gprs_uart_init(const gprs_uart_callback callback)
 		if(err == ESP_OK)
 		{
 			//Create a task to handler UART event from ISR
-			xReturn = xTaskCreate(gprs_uart_event_task, "uart_event_task", 2048, NULL, 12, NULL);
+			xReturn = xTaskCreate(gprs_uart_event_task,
+								GPRS_UART_TASK_NAME,
+								GPRS_UART_STACK_SIZE,
+								NULL,
+								GPRS_UART_TASK_PRIORITY,
+								NULL);
+
 			if(callback != NULL && xReturn == pdPASS)
 			{
 				gprs_callback = callback;
@@ -137,28 +138,31 @@ static void gprs_uart_event_task(void* arg)
 			{
 				case UART_DATA:
 				{
-					char* buff_in = (char*)malloc(event.size);
-					int aux = 0;
-
-					//Event of UART receving data
-					uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
-					LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
-
-					for(int char_position = 0; char_position < event.size; char_position++)
+					if(event.size > 0 && event.size < 3000) // 3 KB
 					{
-						// 0x7F = ASCII space
-						// 0x1A <= ASCII C^ values
-						if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+						char* buff_in = (char*)malloc(event.size);
+						int aux = 0;
+
+						//Event of UART receving data
+						uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
+						LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
+
+						for(int char_position = 0; char_position < event.size; char_position++)
 						{
-							buff_in[aux] = dtmp[char_position];
-							aux ++;
+							// 0x7F = ASCII space
+							// 0x1A <= ASCII C^ values
+							if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+							{
+								buff_in[aux] = dtmp[char_position];
+								aux ++;
+							}
 						}
+
+						LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
+
+						gprs_callback(buff_in, aux);
+						free(buff_in);
 					}
-
-					LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
-
-					gprs_callback(buff_in, aux);
-					free(buff_in);
 					break;
 				}
 				case UART_FIFO_OVF:

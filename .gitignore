@@ -60,6 +60,7 @@ sdkconfig
 .cproject
 .project
 .orig
+.metadata/
 
 # doxygen files
 _build

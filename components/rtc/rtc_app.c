@@ -8,8 +8,6 @@
 #include "rtc_app.h"
 #include "rtc_ds3231.h"
 
-#include <time.h>
-
 #define RTC_APP_TAG "rtc_app"
 
 #define RTC_SDA_PIN	36
@@ -17,7 +15,7 @@
 
 #define RTC_CONFIG_TIMEZONE
 
-static i2c_dev_t dev;
+static i2c_dev_t dev = {};
 
 bool rtc_app_init(void)
 {
@@ -76,7 +74,7 @@ time_t rtc_app_get_timestamp(void)
 	{
 		ESP_LOGI(RTC_APP_TAG, "%02d/%02d/%04d %02d:%02d:%02d",
 			rtcinfo.tm_mday, rtcinfo.tm_mon,
-			rtcinfo.tm_year, rtcinfo.tm_hour-3, rtcinfo.tm_min, rtcinfo.tm_sec);
+			rtcinfo.tm_year, rtcinfo.tm_hour, rtcinfo.tm_min, rtcinfo.tm_sec);
 
 		rtcinfo.tm_year = rtcinfo.tm_year - 1900;
 		rtcinfo.tm_mon = rtcinfo.tm_mon - 1;
@@ -88,4 +86,18 @@ time_t rtc_app_get_timestamp(void)
 
 	return timestamp_now;
 }
+
+void rtc_app_get_date_time(struct tm* rtcinfo)
+{
+	if(rtcinfo == NULL)
+	{
+		ESP_LOGE(RTC_APP_TAG, "pointers is null");
+	}
+	else if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
+	{
+		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+	}
+}
+
+
 

@@ -232,12 +232,16 @@ esp_err_t gpio_actuator_set(pivot_config config)
 			if(perc_timer_handleOn != 0)
 			{
 				xTimerDelete(perc_timer_handleOn,0);
+				negedge_perc = 0;
 			}
 
 			if(perc_timer_handleOff != 0)
 			{
 				xTimerDelete(perc_timer_handleOff,0);
+				posedge_perc = 0;
 			}
+
+			pivot_config_read.percentimeter = 0;
 		}
 		else if(config.percentimeter == 100)
 		{

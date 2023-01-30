@@ -40,4 +40,6 @@ void actuation_app_get_config(pivot_config* config_out, size_t config_size);
 
 void actuation_app_set_pump(bool pump_state);
 
+void actuation_app_shutdown(void);
+
 #endif /* MAIN_INCLUDE_ACTUATION_APP_H_ */
