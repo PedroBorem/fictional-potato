@@ -39,7 +39,7 @@
             </fieldset> 
 
             <div class="campo">
-                <label><strong>Tipo de contatora</strong></label>
+                <label><strong>Tipo de Contatora</strong></label>
                 <label>
                     <input type="radio" name="contatora" value="contatora_na" checked>NA
                 </label>
@@ -99,46 +99,52 @@
 
             <fieldset class="grupo">
                 <div id="hpico_check">
-                    <input type="checkbox" id="hpico" name="hpico">
+                    <input type="checkbox" id="hpico" name="hpico" onclick='processo_horario_pico(this.checked)'>
                     <label for="hpico"><strong>Habilitar Horário de Pico</strong></label>
                 </div>
 
-                <div>
-                	<input name="horario_inicial" id="number" type="number" min="0" max="24"/>
-                	<label for="horario_inicial">horário inicial</label>
-            	</div>
-                <div>
-                    <input name="horario_final" id="number" type="number" min="0" max="24"/>
-                    <label for="horario_final">horário final</label>
+                <div id="hpico_valor" style="display: none;">
+                	<br>
+		            <div>
+		            	<input name="horario_inicial" id="horario_inicial" type="number" min="0" max="24"/>
+		            	<label for="horario_inicial">horário inicial</label>
+		        	</div>
+		            <div>
+		                <input name="horario_final" id="horario_final" type="number" min="0" max="24"/>
+		                <label for="horario_final">horário final</label>
+		            </div>
                 </div>
             </fieldset>
 
             <fieldset class="grupo">
                 <div id="setorizacao_check"><br>
-                    <input type="checkbox" id="setorizacao" name="setorizacao">
+                    <input type="checkbox" id="setorizacao" name="setorizacao" onclick='processo_setorizacao(this.checked)'>
                     <label for="setorizacao"><strong>Habilitar Setorização</strong></label>
                 </div>
-                <div id="setor_1">
-                	<br><strong>Setor 1</strong><br>
-                	<div>
-                    	<input name="angulo_1" id="number" type="number" min="0" max="360"/>
-                    	<label for="angulo_1">ângulo inicial</label>
-                	</div>
-                    <div>
-	                    <input name="angulo_2" id="number" type="number" min="0" max="360"/>
-	                    <label for="angulo_2">ângulo final</label>
-                    </div>
-                </div>
-                <div id="setor_2">
-                	<br><strong>Setor 2</strong><br>
-                	<div>
-                    	<input name="angulo_3" id="number" type="number" min="0" max="360"/>
-                    	<label for="angulo_3">ângulo inicial</label>
-                	</div>
-                    <div>
-	                    <input name="angulo_4" id="number" type="number" min="0" max="360"/>
-	                    <label for="angulo_4">ângulo final</label>
-                    </div>
+
+                <div id="setorizacao_valor" style="display: none;">
+	                <div>
+	                	<br><strong>Setor 1</strong><br>
+	                	<div>
+	                    	<input name="angulo_1" id="angulo_1" type="number" min="0" max="360"/>
+	                    	<label for="angulo_1">ângulo inicial</label>
+	                	</div>
+	                    <div>
+		                    <input name="angulo_2" id="angulo_2" type="number" min="0" max="360"/>
+		                    <label for="angulo_2">ângulo final</label>
+	                    </div>
+	                </div>
+	                <div>
+	                	<br><strong>Setor 2</strong><br>
+	                	<div>
+	                    	<input name="angulo_3" id="angulo_3" type="number" min="0" max="360"/>
+	                    	<label for="angulo_3">ângulo inicial</label>
+	                	</div>
+	                    <div>
+		                    <input name="angulo_4" id="angulo_4" type="number" min="0" max="360"/>
+		                    <label for="angulo_4">ângulo final</label>
+	                    </div>
+	                </div>
                 </div>
             </fieldset>
 
@@ -147,6 +153,38 @@
 
         </form>
 
+    <script>
+    	function processo_horario_pico(checK_status)
+		{
+			document.getElementById('hpico').value = 'true';
+
+			if (!checK_status)
+			{
+				document.getElementById('hpico').checked = false;
+				document.getElementById('hpico_valor').style.display = 'none';
+			}
+			else
+			{
+				document.getElementById('hpico').checked = true;
+				document.getElementById('hpico_valor').style.display = 'inline';
+			}
+		}
+		function processo_setorizacao(checK_status)
+		{
+			document.getElementById('setorizacao').value = 'true';
+
+			if (!checK_status)
+			{
+				document.getElementById('setorizacao').checked = false;
+				document.getElementById('setorizacao_valor').style.display = 'none';
+			}
+			else
+			{
+				document.getElementById('setorizacao').checked = true;
+				document.getElementById('setorizacao_valor').style.display = 'inline';
+			}
+		}
+    </script>
     </body>
 
 </html>
