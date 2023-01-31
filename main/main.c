@@ -134,11 +134,6 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 	switch(state)
 	{
-		case CALL_LOAD_CONFIG:
-		{
-			// TODO: notify give main task
-			break;
-		}
 		case CALL_NEW_CONFIG:
 		{
 			pivot_config new_config = {};
@@ -155,6 +150,10 @@ static void app_main_call(app_call_states state,const void* buffer)
 				comm_app_send_event(new_config);
 			}
 
+			break;
+		}
+		case CALL_NEW_CONFIG_HTTP:
+		{
 			break;
 		}
 		case CALL_MANUAL_PIVOT:
@@ -178,7 +177,6 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_OFF_PIVOT:
 		{
-
 			pivot_config current_config = {};
 
 			data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));

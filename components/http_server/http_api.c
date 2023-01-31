@@ -76,7 +76,7 @@ typedef struct
 static httpd_handle_t http_handle = NULL;
 
 // callback pointer
-static http_server_callback http_callback = NULL;
+static app_callback http_callback = NULL;
 
 static char* http_config = NULL;
 
@@ -230,7 +230,7 @@ esp_err_t http_server_stop(void)
     return ret;
 }
 
-esp_err_t http_server_register_callback(http_server_callback callback)
+esp_err_t http_server_register_callback(app_callback callback)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -498,7 +498,7 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 
 		if(http_callback != NULL)
 		{
-			http_callback(content);
+			http_callback(CALL_NEW_CONFIG_HTTP, content);
 			err = ESP_OK;
 		}
 		else

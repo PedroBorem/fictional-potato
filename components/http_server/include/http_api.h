@@ -13,12 +13,6 @@
 #include "http_config_parser.h"
 
 /**
- * @brief	function pointer to an HTTP callback.
- * @param	config_received[in] - configuration structure received by the web page.
- */
-typedef void (*http_server_callback)(const char* config_received);
-
-/**
  * @brief	Method to start HTTP server.
  * @return
  * 	- ESP_OK: Success.
@@ -54,7 +48,7 @@ esp_err_t http_server_stop(void);
  *  - ESP_OK : callback registered successfully.
  *  - ESP_FAIL : invalid null pointer argument.
  */
-esp_err_t http_server_register_callback(http_server_callback callback);
+esp_err_t http_server_register_callback(app_callback callback);
 
 /**
  * @brief	Set the configuration string sent when receiving a GET request

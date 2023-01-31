@@ -19,6 +19,7 @@
 #include "gprs_module.h"
 #include "gprs_uart.h"
 #include "wifi_app.h"
+#include "http_api.h"
 
 /**\addtogroup main
  * @{
@@ -74,9 +75,11 @@ bool comm_app_init(const app_callback callback)
 
 	err = rf_module_init();
 	err &= gprs_module_init();
+	err &= http_server_init();
 	err &= wifi_app_init();
 	if(err == ESP_OK && callback != NULL )
 	{
+		http_server_register_callback(callback);
 		comm_app_call = callback;
 
 		xQueue_comm_app = xQueueCreate(COMM_APP_SIZE_QUEUE, sizeof(comm_app_request));

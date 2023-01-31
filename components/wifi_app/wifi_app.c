@@ -104,8 +104,6 @@ esp_err_t wifi_app_init(void)
         wifi_config.ap.authmode = WIFI_AUTH_OPEN;
     }
 
-    http_server_init();
-
     ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
     ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
     ESP_ERROR_CHECK(esp_wifi_start());
