@@ -1,115 +1,135 @@
-/*  WiFi softAP Example
+/*
+ * wifi_app.c
+ *
+ *  Created on: 20 de jan de 2023
+ *      Author: brunolima
+ */
 
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
+/* Self include */
+#include "wifi_app.h"
 
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
-#include <string.h>
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
+/* ESP modules include*/
 #include "esp_system.h"
 #include "esp_wifi.h"
 #include "esp_event.h"
-#include "esp_log.h"
-#include "nvs_flash.h"
 
-#include "lwip/err.h"
-#include "lwip/sys.h"
-
+/* Components include */
 #include "http_api.h"
 
-/* The examples use WiFi configuration that you can set via project configuration menu.
+/* Private definitions ------------------------------------------- */
+#define WIFI_TAG 	"wifi_app"
 
-   If you'd rather not, just change the below entries to strings with
-   the config you want - ie #define EXAMPLE_WIFI_SSID "mywifissid"
-*/
-#define EXAMPLE_ESP_WIFI_SSID      "Soil test"
-#define EXAMPLE_ESP_WIFI_PASS      "soiltest123"
-#define EXAMPLE_ESP_WIFI_CHANNEL   7
-#define EXAMPLE_MAX_STA_CONN       10
+#define WIFI_SSID      			"wifi-test"
+#define WIFI_PASS      			"soiltest123"
+#define WIFI_DEFAULT_IP			"192.168.0.1"
+#define WIFI_DEFAULT_MASK		"255.255.255.0"
+#define WIFI_CHANNEL   			7
+#define WIFI_MAX_STA_CONN       10
 
-static const char *TAG = "wifi softAP";
+/* Private function prototype ------------------------------------ */
+static void wifi_event_handler(void* arg, esp_event_base_t event_base,
+                                    int32_t event_id, void* event_data);
+
+/* Public methods ------------------------------------------------ */
+esp_err_t wifi_app_init(void)
+{
+	esp_err_t ret = ESP_FAIL;
+    esp_netif_t* ap_netif = NULL;
+
+    esp_netif_ip_info_t ip_info = {
+		.ip.addr = ipaddr_addr(WIFI_DEFAULT_IP),
+		.gw.addr = ipaddr_addr(WIFI_DEFAULT_IP),
+		.netmask.addr = ipaddr_addr(WIFI_DEFAULT_MASK)
+    };
+
+    wifi_config_t wifi_config = {
+		.ap = {
+			.ssid = WIFI_SSID,
+			.ssid_len = strlen(WIFI_SSID),
+			.channel = WIFI_CHANNEL,
+			.password = WIFI_PASS,
+			.max_connection = WIFI_MAX_STA_CONN,
+			.authmode = WIFI_AUTH_WPA_WPA2_PSK
+		},
+	};
+
+    ret = esp_netif_init();
+    if(ret == ESP_OK)
+    {
+    	ret = esp_event_loop_create_default();
+    	if(ret == ESP_OK)
+    	{
+    		ap_netif = esp_netif_create_default_wifi_ap();
+
+			esp_netif_dhcps_stop(ap_netif);
+			esp_netif_set_ip_info(ap_netif, &ip_info);
+			esp_netif_dhcps_start(ap_netif);
+
+			wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
+			ret &= esp_wifi_init(&cfg);
+			ret &= esp_event_handler_instance_register(WIFI_EVENT,
+														ESP_EVENT_ANY_ID,
+														&wifi_event_handler,
+														NULL,
+														NULL);
+
+			if (strlen(WIFI_PASS) == 0)
+			{
+				wifi_config.ap.authmode = WIFI_AUTH_OPEN;
+			}
+
+			ret &= esp_wifi_set_mode(WIFI_MODE_AP);
+			ret &= esp_wifi_set_config(WIFI_IF_AP, &wifi_config);
+			ret &= esp_wifi_start();
+
+			if(ret == ESP_OK)
+			{
+				LOG_COMM(WIFI_TAG,"WiFi started successfully");
+			}
+			else
+			{
+				ret = ESP_FAIL;
+				ESP_LOGE(WIFI_TAG, "%s, WiFi Failed to start", __func__);
+			}
+    	}
+    	else
+    	{
+    		ESP_LOGE(WIFI_TAG, "%s, loop create error", __func__);
+    	}
+    }
+    else
+    {
+    	ESP_LOGE(WIFI_TAG, "%s, error on init netif", __func__);
+    }
+
+
+    return ret;
+}
+
+/* Private methods ----------------------------------------------- */
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data)
 {
-	if (event_id == WIFI_EVENT_AP_START) {
+	if (event_id == WIFI_EVENT_AP_START)
+	{
 		http_server_start();
-
-	} else if (event_id == WIFI_EVENT_AP_STOP) {
+	}
+	else if (event_id == WIFI_EVENT_AP_STOP)
+	{
 		http_server_stop();
-
-	} else if (event_id == WIFI_EVENT_AP_STACONNECTED) {
+	}
+	else if (event_id == WIFI_EVENT_AP_STACONNECTED)
+	{
         wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" join, AID=%d",
+        LOG_COMM(WIFI_TAG, "station "MACSTR" join, AID=%d",
                  MAC2STR(event->mac), event->aid);
-    } else if (event_id == WIFI_EVENT_AP_STADISCONNECTED) {
+    }
+	else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
+	{
         wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-        ESP_LOGI(TAG, "station "MACSTR" leave, AID=%d",
+        LOG_COMM(WIFI_TAG, "station "MACSTR" leave, AID=%d",
                  MAC2STR(event->mac), event->aid);
     }
 }
 
-esp_err_t wifi_app_init(void)
-{
-    esp_netif_t* ap_netif;
-    esp_netif_ip_info_t ip_info;
-
-    ESP_ERROR_CHECK(esp_netif_init());
-//    ap_netif = esp_netif_create_default_wifi_ap();
-//
-//    // Set AP gateway address
-//    ip_info.ip.addr = ipaddr_addr("192.168.0.1");
-//    ip_info.gw.addr = ipaddr_addr("192.168.0.1");
-//    ip_info.netmask.addr = ipaddr_addr("255.255.255.0");
-//
-//    esp_netif_dhcps_stop(ap_netif);
-//    esp_netif_set_ip_info(ap_netif, &ip_info);
-//    esp_netif_dhcps_start(ap_netif);
-
-    ESP_ERROR_CHECK(esp_event_loop_create_default());
-    ap_netif = esp_netif_create_default_wifi_ap();
-
-	// Set AP gateway address
-	ip_info.ip.addr = ipaddr_addr("192.168.0.1");
-	ip_info.gw.addr = ipaddr_addr("192.168.0.1");
-	ip_info.netmask.addr = ipaddr_addr("255.255.255.0");
-
-	esp_netif_dhcps_stop(ap_netif);
-	esp_netif_set_ip_info(ap_netif, &ip_info);
-	esp_netif_dhcps_start(ap_netif);
-
-    wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
-    ESP_ERROR_CHECK(esp_wifi_init(&cfg));
-
-    ESP_ERROR_CHECK(esp_event_handler_instance_register(WIFI_EVENT,
-                                                        ESP_EVENT_ANY_ID,
-                                                        &wifi_event_handler,
-                                                        NULL,
-                                                        NULL));
-
-    wifi_config_t wifi_config = {
-        .ap = {
-            .ssid = EXAMPLE_ESP_WIFI_SSID,
-            .ssid_len = strlen(EXAMPLE_ESP_WIFI_SSID),
-            .channel = EXAMPLE_ESP_WIFI_CHANNEL,
-            .password = EXAMPLE_ESP_WIFI_PASS,
-            .max_connection = EXAMPLE_MAX_STA_CONN,
-			.authmode = WIFI_AUTH_WPA_WPA2_PSK
-        },
-    };
-    if (strlen(EXAMPLE_ESP_WIFI_PASS) == 0) {
-        wifi_config.ap.authmode = WIFI_AUTH_OPEN;
-    }
-
-    ESP_ERROR_CHECK(esp_wifi_set_mode(WIFI_MODE_AP));
-    ESP_ERROR_CHECK(esp_wifi_set_config(WIFI_IF_AP, &wifi_config));
-    ESP_ERROR_CHECK(esp_wifi_start());
-
-    ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s channel:%d",
-             EXAMPLE_ESP_WIFI_SSID, EXAMPLE_ESP_WIFI_PASS, EXAMPLE_ESP_WIFI_CHANNEL);
-
-    return ESP_OK;
-}

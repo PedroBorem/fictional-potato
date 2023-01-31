@@ -201,7 +201,7 @@ esp_err_t http_server_start(void)
 				};
 				httpd_register_uri_handler(http_handle, &file_submit);
 
-				ESP_LOGI(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
+				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 			}
 		}
     }
@@ -493,8 +493,7 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 #endif
 
 		/* Send a simple response */
-		const char resp[] = "Configuration received and applied !!!";
-		httpd_resp_send(req, resp, HTTPD_RESP_USE_STRLEN);
+		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);
 
 		if(http_callback != NULL)
 		{

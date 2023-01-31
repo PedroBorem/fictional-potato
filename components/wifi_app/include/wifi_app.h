@@ -4,23 +4,12 @@
  *  Created on: 29 de jan de 2023
  *      Author: brunolima
  */
-#ifndef WIFI_APP
-#define WIFI_APP
 
-#include "esp_err.h"
-#include "esp_wifi.h"
+#ifndef COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H
+#define COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H
 
-#include <stdbool.h>
-
-typedef enum {
-    WIFI_APP_MODE_AP = 0,
-} wifi_app_mode_t;
-
-typedef enum {
-    WIFI_APP_STATUS_DISCONNECTED = 0,
-    WIFI_APP_STATUS_CONNECTED,
-} wifi_app_status_t;
+#include "project_config.h"
 
 esp_err_t wifi_app_init(void);
 
-#endif /** WIFI_APP */
+#endif /** COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H */
