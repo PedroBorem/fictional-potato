@@ -495,6 +495,7 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 		/* Send a simple response */
 		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);
 
+		LOG_COMM(HTTP_API_TAG, "%s\n", content);
 		if(http_callback != NULL)
 		{
 			http_callback(CALL_NEW_CONFIG_HTTP, content);
