@@ -36,7 +36,7 @@
 #define GPIO_ACT_PIN_WATERING   	GPIO_NUM_9	/*!<Watering Relay*/
 #define GPIO_ACT_PIN_AUX      		GPIO_NUM_8	/*!<System Auxiliar Relay*/
 #define GPIO_ACT_PIN_PERC_AUX   	GPIO_NUM_16	/*!<Auxiliar Relay for Percentimeter*/
-#define GPIO_ACT_PIN_PERC_OUT   	GPIO_NUM_15	/*!<Percentimeter*/
+#define GPIO_ACT_PIN_PERC_OUT   	GPIO_NUM_35	/*!<Percentimeter*/
 #define GPIO_ACT_PIN_PUMP       	GPIO_NUM_14	/*!<Pump Relay*/
 
 /* GPIO Inputs */
