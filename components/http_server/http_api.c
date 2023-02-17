@@ -486,24 +486,35 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
     }
     else
     {
-#ifdef HTTP_DEBUG
-		ESP_LOGI(HTTP_API_TAG, "content_len %d", req->content_len);
-		ESP_LOGI(HTTP_API_TAG, "URI %s", req->uri);
-		ESP_LOGI(HTTP_API_TAG, "content %s", content);
-#endif
+		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+		LOG_COMM(HTTP_API_TAG, "content %s", content);
+
 
 		/* Send a simple response */
-		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);
+		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
 
-		LOG_COMM(HTTP_API_TAG, "%s\n", content);
-		if(http_callback != NULL)
+		if(strcmp(req->uri, "/actions") == 0)
 		{
-			http_callback(CALL_NEW_CONFIG_HTTP, content);
-			err = ESP_OK;
+			//convert action
+			//char * rendered = cJSON_Print(request_json);
+			//printf("%s\n\n", rendered);
+
+			pivot_config state = http_parser_action(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_NEW_CONFIG_HTTP, &state);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
 		}
 		else
 		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			ESP_LOGE(HTTP_API_TAG,"unregistered uri callback");
 		}
     }
 
