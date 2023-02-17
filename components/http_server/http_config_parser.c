@@ -1,0 +1,98 @@
+/*
+ * http_parser.c
+ *
+ *  Created on: 28 de ago de 2022
+ *      Author: bruno
+ */
+
+/* Self include */
+#include "http_config_parser.h"
+
+/* Base include */
+#include <stdlib.h>
+#include <string.h>
+
+#include "utils.h"
+
+/* Private methods - prototypes ---------------------------------- */
+/**
+ * @brief	Method fetches and makes adjustments to escape characters.
+ * @param	raw_value[in] - String of raw HTTP field value
+ * @return	Allocated string without HTTP escaping characters
+ */
+char *http_remove_escape_chr(char* raw_value);
+
+/* Public methods ------------------------------------------------ */
+char * http_config_parser(const char* received_post, const char* field_name)
+{
+    char *field_value_string = NULL;
+    char *field_name_http_expr = strdup(field_name);
+    field_name_http_expr = dyn_strcat(field_name_http_expr, "=");
+
+    if (field_name_http_expr != NULL) {
+        // Find field value if it exists
+        char *start_value = strstr(received_post, field_name_http_expr);
+        if (start_value != NULL) {
+            start_value += strlen(field_name_http_expr);
+
+            // Fields are separated by '&' but last does not have '&'
+            char *end_value = strstr(start_value, "&");
+            if (end_value == NULL) {
+                end_value = start_value + strlen(start_value);
+            }
+
+            // Raw value crop
+            int raw_value_strlen = end_value - start_value;
+            char *field_value_raw = (char *) malloc(raw_value_strlen + 1);
+            if (field_value_raw != NULL) {
+                field_value_raw[raw_value_strlen] = '\0';
+                memcpy(field_value_raw, start_value, raw_value_strlen);
+
+                // Remove HTTP escape chars to final output
+                field_value_string = http_remove_escape_chr(field_value_raw);
+                free(field_value_raw);
+            }
+        }
+
+        free(field_name_http_expr);
+    }
+
+    return field_value_string;
+}
+
+char *http_remove_escape_chr(char* raw_value)
+{
+    int len_content = strlen(raw_value);
+    char* occurrence = NULL;
+    char *output = (char *) malloc(len_content + 1);
+
+    if (output != NULL) {
+        output[len_content] = '\0';
+        memcpy(output, raw_value, len_content);
+
+        for (int i = 0; i < len_content; i++) {
+            if (output[i] == '+') {
+                output[i] = ' ';
+            }
+        }
+
+        while ((occurrence = strchr(output, '%'))) {
+            char hex_chr[3] = {'\0', '\0', '\0'};
+            int index = (int)(occurrence - output);
+
+            hex_chr[0] = output[index + 1];
+            hex_chr[1] = output[index + 2];
+            output[index] = strtol(hex_chr, NULL, 16);
+
+            for(int j = index + 1; j < len_content; j++) {
+                if (j + 2 < len_content) {
+                    output[j] = output[j + 2];
+                } else if (j < len_content) {
+                    output[j] = '\0';
+                }
+            }
+        }
+    }
+
+    return output;
+}

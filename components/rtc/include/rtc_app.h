@@ -20,4 +20,6 @@ time_t rtc_app_get_timestamp(void);
 
 void rtc_app_get_date_time(struct tm* rtcinfo);
 
+void rtc_show_date_time(time_t timestamp_now, uint8_t time_z);
+
 #endif /* COMPONENTS_RTC_INCLUDE_RTC_APP_H_ */

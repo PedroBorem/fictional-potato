@@ -16,6 +16,7 @@
 #include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
+#include "project_config.h"
 
 /**\addtogroup main
  * @{
@@ -47,16 +48,24 @@ void app_main(void)
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	rtc_app_get_timestamp();
+	//rtc_app_get_timestamp();
 
 	esp_reset_reason_t reset_cause = esp_reset_reason();
 	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
 		// critica de tempo
 		pivot_config current_config = {};
-		size_t config_length = 0;
 
-		data_app_load_config(&current_config, &config_length);
+		data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
+
+		LOG_DATA(MAIN_TAG, "");
+		LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
+		LOG_DATA(MAIN_TAG, " Power state: %d", current_config.power_state);
+		LOG_DATA(MAIN_TAG, " Advance mode: %d", current_config.rotation);
+		LOG_DATA(MAIN_TAG, " Watering state: %d", current_config.watering_state);
+		LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_config.percentimeter);
+		LOG_DATA(MAIN_TAG, " --------------------------------\n");
+
 		vTaskDelay(pdMS_TO_TICKS(500));
 
 		if(current_config.power_state != PIVOT_OFF)
@@ -106,7 +115,10 @@ static bool app_init(void)
 
 	ret &= rtc_app_init();
 	ret &= actuation_app_init(&app_main_call);
-	ret &= data_app_init(&app_main_call);
+	if(data_app_init() == ESP_FAIL)
+	{
+		ret = false;
+	}
 	ret &= comm_app_init(&app_main_call);
 
 	return ret;
@@ -118,22 +130,17 @@ static bool app_init(void)
  */
 static void app_main_call(app_call_states state,const void* buffer)
 {
-	bool ret = false;
+	esp_err_t ret = ESP_FAIL;
 
 	switch(state)
 	{
-		case CALL_LOAD_CONFIG:
-		{
-			// TODO: notify give main task
-			break;
-		}
 		case CALL_NEW_CONFIG:
 		{
 			pivot_config new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
 
-			ret = data_app_save_config(new_config, sizeof(new_config));
-			if(ret == true)
+			ret = data_app_save_config(DATA_LABEL_CONFIG, &new_config, sizeof(new_config));
+			if(ret == ESP_OK)
 			{
 				actuation_app_set_config(new_config, false);
 				comm_app_send_event(new_config);
@@ -143,6 +150,10 @@ static void app_main_call(app_call_states state,const void* buffer)
 				comm_app_send_event(new_config);
 			}
 
+			break;
+		}
+		case CALL_NEW_CONFIG_HTTP:
+		{
 			break;
 		}
 		case CALL_MANUAL_PIVOT:
@@ -166,18 +177,16 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_OFF_PIVOT:
 		{
-
 			pivot_config current_config = {};
-			size_t config_length = 0;
 
-			data_app_load_config(&current_config, &config_length);
+			data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
 			vTaskDelay(pdMS_TO_TICKS(500));
 
 			if(current_config.power_state != PIVOT_OFF)
 			{
 				current_config.power_state = PIVOT_OFF;
 				actuation_app_set_config(current_config, false);
-				data_app_save_config(current_config, sizeof(current_config));
+				data_app_save_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
 			}
 
 			vTaskDelay(pdMS_TO_TICKS(2000));
@@ -240,8 +249,6 @@ static void app_peak_hours_task(void* arg)
 	bool alredy_off = false;
 
 	pivot_config current_config = {};
-	size_t config_length = 0;
-
 	eTaskState TaskState;
 
 	while(1)
@@ -258,7 +265,7 @@ static void app_peak_hours_task(void* arg)
 				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
 				if(alredy_off == true)
 				{
-					data_app_load_config(&current_config, &config_length);
+					data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
 					vTaskDelay(pdMS_TO_TICKS(500));
 					actuation_app_set_config(current_config, false);
 

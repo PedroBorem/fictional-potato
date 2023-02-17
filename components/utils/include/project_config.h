@@ -23,6 +23,7 @@
 #include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <sys/param.h>
 
 /* include FreeRTOS */
 #include "freertos/FreeRTOSConfig.h"
@@ -52,10 +53,11 @@
 typedef enum
 {
 	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
-	CALL_NEW_CONFIG	= 2,
-	CALL_READ_STATUS = 3,
-	CALL_MANUAL_PIVOT = 4,
-	CALL_OFF_PIVOT = 5
+	CALL_NEW_CONFIG,
+	CALL_NEW_CONFIG_HTTP,
+	CALL_READ_STATUS,
+	CALL_MANUAL_PIVOT,
+	CALL_OFF_PIVOT
 }app_call_states;
 
 /**
@@ -114,7 +116,7 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define DATA_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 #define COMM_APP_TASK_NAME				"comm app task"
-#define COMM_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 6 )
+#define COMM_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 10 )
 #define COMM_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
 
 #define ACTUATION_APP_TASK_NAME			"actuation app task"
