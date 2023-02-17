@@ -445,23 +445,56 @@ void actuator_wait_pressure(void* arg)
 			gpio_actuator_start();
 			pressurizing = false;
 
-			check_start = xTaskGetTickCount();
-			vTaskSuspend(NULL); //suspend own task
+			//suspend own task
+			vTaskSuspend(NULL);
 
+			//task resume
 			pressurizing = true;
 			check_start = xTaskGetTickCount();
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
 		{
-			pressurizing = false;
+			// Local shutdown
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Water Pressure timeout", __func__);
-			gpio_actuator_shutdown();
-			check_start = xTaskGetTickCount();
-			vTaskSuspend(NULL); //suspend own task
+
+			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
+
+			vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
+
+			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+
+			if(perc_timer_handleOn != NULL)
+			{
+				xTimerStop(perc_timer_handleOn,portMAX_DELAY);
+				xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
+				perc_timer_handleOn = NULL;
+			}
+			if(perc_timer_handleOff != NULL)
+			{
+				xTimerStop(perc_timer_handleOff,portMAX_DELAY);
+				xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
+				perc_timer_handleOff = NULL;
+			}
+
+			pivot_config_read.percentimeter = 0;
+			pressurizing = false;
+
+			//suspend own task
+			vTaskSuspend(NULL);
 
 			//task resume
+			pressurizing = true;
 			check_start = xTaskGetTickCount();
 		}
+
 		vTaskDelay(pdMS_TO_TICKS(1000));
 	}
 }
