@@ -13,7 +13,7 @@
 #define RTC_SDA_PIN	36
 #define RTC_SCL_PIN	37
 
-#define RTC_CONFIG_TIMEZONE
+#define RTC_CONFIG_TIMEZONE -3
 
 static i2c_dev_t dev = {};
 
@@ -72,15 +72,12 @@ time_t rtc_app_get_timestamp(void)
 	}
 	else
 	{
-		ESP_LOGI(RTC_APP_TAG, "%02d/%02d/%04d %02d:%02d:%02d",
-			rtcinfo.tm_mday, rtcinfo.tm_mon,
-			rtcinfo.tm_year, rtcinfo.tm_hour, rtcinfo.tm_min, rtcinfo.tm_sec);
-
 		rtcinfo.tm_year = rtcinfo.tm_year - 1900;
 		rtcinfo.tm_mon = rtcinfo.tm_mon - 1;
 
 		timestamp_now = mktime(&rtcinfo);
 
+		rtc_show_date_time(timestamp_now, RTC_CONFIG_TIMEZONE);
 		ESP_LOGI(RTC_APP_TAG, "timestamp %ld", timestamp_now);
 	}
 
@@ -99,5 +96,12 @@ void rtc_app_get_date_time(struct tm* rtcinfo)
 	}
 }
 
+void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
+{
+	 struct tm *tminfo;
+	 time_t rawtime = (timestamp_now + (time_z*3600));
 
-
+	 time ( &rawtime );
+	 tminfo = localtime ( &rawtime );
+	 ESP_LOGI(RTC_APP_TAG, "Current date and time are: %s", asctime (tminfo) );
+}
