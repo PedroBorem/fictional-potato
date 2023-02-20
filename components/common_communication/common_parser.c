@@ -92,10 +92,10 @@
 #define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
 /* Public methods ------------------------------------------------ */
-esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* config_out)
+esp_err_t common_parser_string_to_config(const char* string_in, pivot_actions* config_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
-	pivot_config config = {};
+	pivot_actions config = {};
 	char status;
 	int validate_ret = 0;
 
@@ -112,7 +112,7 @@ esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* co
 
 	if(validate_ret >= COMMOM_PARSER_ELEMENT_NUMBER)
 	{
-		memcpy(config_out, &config, sizeof(pivot_config));
+		memcpy(config_out, &config, sizeof(pivot_actions));
 		err = ESP_OK;
 	}
 
@@ -166,7 +166,7 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 	return err;
 }
 
-esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
+esp_err_t common_parser_status_to_string(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 	char string_converted[25] = "";
@@ -218,7 +218,7 @@ esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timesta
 	return err;
 }
 
-esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
+esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 

@@ -98,9 +98,9 @@ char *http_remove_escape_chr(char* raw_value)
     return output;
 }
 
-pivot_config http_parser_action(char * request_body)
+pivot_actions http_parser_action(char * request_body)
 {
-	pivot_config config = {};
+	pivot_actions config = {};
 
 	cJSON * subitem = cJSON_Parse(request_body);
 

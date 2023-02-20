@@ -39,7 +39,7 @@
 /* Private variables  -------------------------------------------- */
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
-static pivot_config actuation_config = {};
+static pivot_actions actuation_config = {};
 
 /* Private methods  ---------------------------------------------- */
 void actuation_app_task(void* arg);
@@ -79,7 +79,7 @@ bool actuation_app_init(const app_callback callback)
 	return ret;
 }
 
-void actuation_app_set_config(const pivot_config config_in, bool alert_change)
+void actuation_app_set_config(const pivot_actions config_in, bool alert_change)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
 
@@ -98,9 +98,9 @@ void actuation_app_set_config(const pivot_config config_in, bool alert_change)
 	}
 }
 
-void actuation_app_get_config(pivot_config* config_out, size_t config_size)
+void actuation_app_get_config(pivot_actions* config_out, size_t config_size)
 {
-	pivot_config current_config = {};
+	pivot_actions current_config = {};
 
 	if(config_size > 0 && config_out != NULL )
 	{
@@ -138,7 +138,7 @@ void actuation_app_shutdown(void)
  */
 void actuation_app_task(void* arg)
 {
-	pivot_config current_config = {};
+	pivot_actions current_config = {};
 	TickType_t last_tick = xTaskGetTickCount();
 
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);

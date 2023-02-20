@@ -35,6 +35,6 @@ uint16_t comm_app_get_degree(void);
  * @brief	send events over communication interfaces
  * @param 	pivot_status[in]:  configuration structure to send
  */
-void comm_app_send_event(pivot_config pivot_status);
+void comm_app_send_event(pivot_actions pivot_status);
 
 #endif /* MAIN_INCLUDE_COMM_APP_H_ */

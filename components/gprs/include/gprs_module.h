@@ -31,7 +31,7 @@ esp_err_t gprs_module_init(void);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t gprs_module_send_event(pivot_config config_in, uint16_t degree);
+esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree);
 
 /**
  * @brief	get the timestamp in seconds
@@ -44,6 +44,6 @@ time_t gprs_module_get_timestamp(void);
  * @brief	trigger callback to each status message received (write and read)
  * @param 	config_in[in]:  configuration structure
  */
-void GPRS_MODULE_NOTIFY_APP(const pivot_config config_in);
+void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in);
 
 #endif /* COMPONENTS_GPRS_INCLUDE_GPRS_MODULE_H_ */

@@ -53,7 +53,7 @@ typedef enum
 typedef struct
 {
 	comm_app_request_type request_type; /*!< Request types sent to the control queue*/
-	pivot_config input_config;			/*!< Configuration input*/
+	pivot_actions input_config;			/*!< Configuration input*/
 }comm_app_request;
 
 /* Private variables  -------------------------------------------- */
@@ -122,7 +122,7 @@ uint16_t comm_app_get_degree(void)
 	return rf_module_get_angle();
 }
 
-void comm_app_send_event(pivot_config pivot_status)
+void comm_app_send_event(pivot_actions pivot_status)
 {
 	uint16_t degree = comm_app_get_degree();
 	rf_module_send_event(pivot_status);
@@ -171,7 +171,7 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-void MODULES_NOTIFY_APP(const pivot_config config_in)
+void MODULES_NOTIFY_APP(const pivot_actions config_in)
 {
 	comm_app_request comm_request = {};
 
@@ -194,12 +194,12 @@ void MODULES_NOTIFY_APP(const pivot_config config_in)
 	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
 }
 
-void RF_MODULE_NOTIFY_APP(const pivot_config config_in)
+void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	MODULES_NOTIFY_APP(config_in);
 }
 
-void GPRS_MODULE_NOTIFY_APP(const pivot_config config_in)
+void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	MODULES_NOTIFY_APP(config_in);
 }

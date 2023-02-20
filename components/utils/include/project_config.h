@@ -86,7 +86,7 @@ typedef	struct __attribute__((__packed__))
 	uint8_t rotation;		/*!< PIVOT_CW or PIVOT_CCW*/
 	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/ // @suppress("Type cannot be resolved")
 	uint8_t percentimeter;	/*!< Value from 0 to 100*/
-}pivot_config;
+}pivot_actions;
 
 /**
  * @brief: function used with return to main application class

@@ -490,17 +490,12 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
 		LOG_COMM(HTTP_API_TAG, "content %s", content);
 
-
 		/* Send a simple response */
 		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
 
 		if(strcmp(req->uri, "/actions") == 0)
 		{
-			//convert action
-			//char * rendered = cJSON_Print(request_json);
-			//printf("%s\n\n", rendered);
-
-			pivot_config state = http_parser_action(content);
+			pivot_actions state = http_parser_action(content);
 
 			if(http_callback != NULL)
 			{

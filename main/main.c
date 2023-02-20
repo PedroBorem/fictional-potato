@@ -54,7 +54,7 @@ void app_main(void)
 	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
 		// critica de tempo
-		pivot_config current_config = {};
+		pivot_actions current_config = {};
 
 		data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
 
@@ -136,7 +136,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 	{
 		case CALL_SAVE_ACTION:
 		{
-			pivot_config new_config = {};
+			pivot_actions new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
 
 			ret = data_app_save_config(DATA_LABEL_CONFIG, &new_config, sizeof(new_config));
@@ -154,7 +154,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_MANUAL_PIVOT:
 		{
-			pivot_config manual_config = {};
+			pivot_actions manual_config = {};
 			memcpy(&manual_config, buffer, sizeof(manual_config));
 
 			actuation_app_set_config(manual_config, true);
@@ -164,7 +164,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_READ_ACTION: // if you receive 000-000
 		{
-			pivot_config config_send = {};
+			pivot_actions config_send = {};
 
 			actuation_app_get_config(&config_send, sizeof(config_send));
 			comm_app_send_event(config_send);
@@ -173,7 +173,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_OFF_PIVOT:
 		{
-			pivot_config current_config = {};
+			pivot_actions current_config = {};
 
 			data_app_load_config(DATA_LABEL_CONFIG, &current_config, sizeof(current_config));
 			vTaskDelay(pdMS_TO_TICKS(500));
@@ -244,7 +244,7 @@ static void app_peak_hours_task(void* arg)
 	time_t diff_time = 0;
 	bool alredy_off = false;
 
-	pivot_config current_config = {};
+	pivot_actions current_config = {};
 	eTaskState TaskState;
 
 	while(1)

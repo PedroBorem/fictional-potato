@@ -26,7 +26,7 @@
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* config_out);
+esp_err_t common_parser_string_to_config(const char* string_in, pivot_actions* config_out);
 
 /**
  * @brief	convert string to angle and timestamp variables
@@ -49,11 +49,11 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out);
+esp_err_t common_parser_status_to_string(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out);
 
 
 esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timestamp);
 
-esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out);
+esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out);
 
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */
