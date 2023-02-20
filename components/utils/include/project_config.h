@@ -54,7 +54,6 @@ typedef enum
 {
 	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
 	CALL_NEW_CONFIG,
-	CALL_NEW_CONFIG_HTTP,
 	CALL_READ_STATUS,
 	CALL_MANUAL_PIVOT,
 	CALL_OFF_PIVOT

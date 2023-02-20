@@ -152,10 +152,6 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 			break;
 		}
-		case CALL_NEW_CONFIG_HTTP:
-		{
-			break;
-		}
 		case CALL_MANUAL_PIVOT:
 		{
 			pivot_config manual_config = {};
