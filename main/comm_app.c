@@ -41,8 +41,8 @@
  */
 typedef enum
 {
-	COMM_REQUEST_NEW_CONFIG = 0, 	/*!< Request to save a new configuration*/
-	COMM_REQUEST_READ_STATUS = 1,	/*!< Status read request*/
+	COMM_REQUEST_SAVE_ACTION = 0, 	/*!< Request to save a new configuration*/
+	COMM_REQUEST_READ_ACTION = 1,	/*!< Status read request*/
 	COMM_REQUEST_PIVOT_OFF = 2
 }comm_app_request_type;
 
@@ -145,14 +145,14 @@ void comm_app_task(void* arg)
 		{
 			switch(comm_request.request_type)
 			{
-				case COMM_REQUEST_NEW_CONFIG:
+				case COMM_REQUEST_SAVE_ACTION:
 				{
-					comm_app_call(CALL_NEW_CONFIG, &comm_request.input_config);
+					comm_app_call(CALL_SAVE_ACTION, &comm_request.input_config);
 					break;
 				}
-				case COMM_REQUEST_READ_STATUS:
+				case COMM_REQUEST_READ_ACTION:
 				{
-					comm_app_call(CALL_READ_STATUS, NULL);
+					comm_app_call(CALL_READ_ACTION, NULL);
 					break;
 				}
 				case COMM_REQUEST_PIVOT_OFF:
@@ -178,7 +178,7 @@ void MODULES_NOTIFY_APP(const pivot_config config_in)
 	if(config_in.power_state == 0 && config_in.rotation == 0
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
 	{
-		comm_request.request_type = COMM_REQUEST_READ_STATUS;
+		comm_request.request_type = COMM_REQUEST_READ_ACTION;
 	}
 	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
@@ -187,7 +187,7 @@ void MODULES_NOTIFY_APP(const pivot_config config_in)
 	}
 	else
 	{
-		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;
+		comm_request.request_type = COMM_REQUEST_SAVE_ACTION;
 		memcpy(&comm_request.input_config, &config_in, sizeof(comm_request.input_config));
 	}
 

@@ -134,7 +134,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 	switch(state)
 	{
-		case CALL_NEW_CONFIG:
+		case CALL_SAVE_ACTION:
 		{
 			pivot_config new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
@@ -162,7 +162,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 			break;
 		}
-		case CALL_READ_STATUS: // if you receive 000-000
+		case CALL_READ_ACTION: // if you receive 000-000
 		{
 			pivot_config config_send = {};
 

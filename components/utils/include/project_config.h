@@ -52,9 +52,10 @@
  */
 typedef enum
 {
-	CALL_LOAD_CONFIG = 1,	/*!< Configuration read request*/
-	CALL_NEW_CONFIG,
-	CALL_READ_STATUS,
+	CALL_LOAD_ACTION = 1,	/*!< Configuration read request*/
+	CALL_SAVE_ACTION,
+	CALL_SAVE_CONFIG,
+	CALL_READ_ACTION,
 	CALL_MANUAL_PIVOT,
 	CALL_OFF_PIVOT
 }app_call_states;

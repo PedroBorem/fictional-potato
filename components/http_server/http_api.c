@@ -504,7 +504,7 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
-				http_callback(CALL_NEW_CONFIG, &state);
+				http_callback(CALL_SAVE_ACTION, &state);
 				err = ESP_OK;
 			}
 			else
