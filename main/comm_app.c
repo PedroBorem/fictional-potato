@@ -95,12 +95,10 @@ bool comm_app_init(const app_callback callback)
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
 			{
 				ret = true;
-				const char gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
-				gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 			}
 			else
 			{
-				ESP_LOGE(COMM_APP_TAG, "%s, failed to create Testetask: %s", __func__, DATA_APP_TASK_NAME);
+				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
 			}
 		}
 		else

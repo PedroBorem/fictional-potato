@@ -58,6 +58,17 @@ esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree)
 	return err;
 }
 
+esp_err_t gprs_module_set_id(const char * gprs_id)
+{
+	esp_err_t err = ESP_FAIL;
+
+	//TODO : colocar gprs_id no lugar do Teste_INATEL
+	const char send_gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
+	err = gprs_uart_send_event(gprs_id, sizeof(gprs_id));
+
+	return err;
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Function is triggered when something arrives in the UART

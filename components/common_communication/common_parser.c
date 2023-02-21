@@ -222,7 +222,7 @@ esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp,
 {
 	esp_err_t err = ESP_OK;
 
-	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_5\",\"payload\":\"";
+	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_5\",\"payload\":\""; // AJUSTAR AQUI, UTILIZAR JSON
 	char string_status[25] = "";
 
 	common_parser_status_to_string(config_in, timestamp, angle, string_status);
