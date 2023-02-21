@@ -146,22 +146,30 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 		}
 	}
 
-	// time analyzer
-	string_off_set = COMMON_PARSER_TIMESTAMP_POSITION;
-	for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
-	{
-		if(ptr[(string_pos + string_off_set)] == '$')
-		{
-			break;
-		}
-		else
-		{
-			timestamp_out[string_pos] = ptr[(string_pos + string_off_set)];
-		}
-	}
-
 	sscanf(angle_out, "%d", (int*)angle);
-	sscanf(timestamp_out, "%d", (int*)timestamp);
+
+	// time analyzer
+	if(ptr != NULL)
+	{
+		string_off_set = COMMON_PARSER_TIMESTAMP_POSITION;
+		for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
+		{
+			if(ptr[(string_pos + string_off_set)] == '$')
+			{
+				break;
+			}
+			else
+			{
+				timestamp_out[string_pos] = ptr[(string_pos + string_off_set)];
+			}
+		}
+
+		sscanf(timestamp_out, "%d", (int*)timestamp);
+	}
+	else
+	{
+		*timestamp=0;
+	}
 
 	return err;
 }
