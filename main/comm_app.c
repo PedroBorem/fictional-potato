@@ -41,8 +41,8 @@
  */
 typedef enum
 {
-	COMM_REQUEST_NEW_CONFIG = 0, 	/*!< Request to save a new configuration*/
-	COMM_REQUEST_READ_STATUS = 1,	/*!< Status read request*/
+	COMM_REQUEST_SAVE_ACTION = 0, 	/*!< Request to save a new configuration*/
+	COMM_REQUEST_READ_ACTION = 1,	/*!< Status read request*/
 	COMM_REQUEST_PIVOT_OFF = 2
 }comm_app_request_type;
 
@@ -53,7 +53,7 @@ typedef enum
 typedef struct
 {
 	comm_app_request_type request_type; /*!< Request types sent to the control queue*/
-	pivot_config input_config;			/*!< Configuration input*/
+	pivot_actions input_config;			/*!< Configuration input*/
 }comm_app_request;
 
 /* Private variables  -------------------------------------------- */
@@ -95,12 +95,10 @@ bool comm_app_init(const app_callback callback)
 			if(xReturn == pdPASS || xTask_comm_app != NULL)
 			{
 				ret = true;
-				const char gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
-				gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 			}
 			else
 			{
-				ESP_LOGE(COMM_APP_TAG, "%s, failed to create Testetask: %s", __func__, DATA_APP_TASK_NAME);
+				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
 			}
 		}
 		else
@@ -122,7 +120,7 @@ uint16_t comm_app_get_degree(void)
 	return rf_module_get_angle();
 }
 
-void comm_app_send_event(pivot_config pivot_status)
+void comm_app_send_event(pivot_actions pivot_status)
 {
 	uint16_t degree = comm_app_get_degree();
 	rf_module_send_event(pivot_status);
@@ -145,14 +143,14 @@ void comm_app_task(void* arg)
 		{
 			switch(comm_request.request_type)
 			{
-				case COMM_REQUEST_NEW_CONFIG:
+				case COMM_REQUEST_SAVE_ACTION:
 				{
-					comm_app_call(CALL_NEW_CONFIG, &comm_request.input_config);
+					comm_app_call(CALL_SAVE_ACTION, &comm_request.input_config);
 					break;
 				}
-				case COMM_REQUEST_READ_STATUS:
+				case COMM_REQUEST_READ_ACTION:
 				{
-					comm_app_call(CALL_READ_STATUS, NULL);
+					comm_app_call(CALL_READ_ACTION, NULL);
 					break;
 				}
 				case COMM_REQUEST_PIVOT_OFF:
@@ -171,14 +169,14 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-void MODULES_NOTIFY_APP(const pivot_config config_in)
+void MODULES_NOTIFY_APP(const pivot_actions config_in)
 {
 	comm_app_request comm_request = {};
 
 	if(config_in.power_state == 0 && config_in.rotation == 0
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
 	{
-		comm_request.request_type = COMM_REQUEST_READ_STATUS;
+		comm_request.request_type = COMM_REQUEST_READ_ACTION;
 	}
 	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
 	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
@@ -187,19 +185,19 @@ void MODULES_NOTIFY_APP(const pivot_config config_in)
 	}
 	else
 	{
-		comm_request.request_type = COMM_REQUEST_NEW_CONFIG;
+		comm_request.request_type = COMM_REQUEST_SAVE_ACTION;
 		memcpy(&comm_request.input_config, &config_in, sizeof(comm_request.input_config));
 	}
 
 	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
 }
 
-void RF_MODULE_NOTIFY_APP(const pivot_config config_in)
+void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	MODULES_NOTIFY_APP(config_in);
 }
 
-void GPRS_MODULE_NOTIFY_APP(const pivot_config config_in)
+void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	MODULES_NOTIFY_APP(config_in);
 }

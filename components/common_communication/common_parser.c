@@ -92,10 +92,10 @@
 #define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
 /* Public methods ------------------------------------------------ */
-esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* config_out)
+esp_err_t common_parser_string_to_config(const char* string_in, pivot_actions* config_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
-	pivot_config config = {};
+	pivot_actions config = {};
 	char status;
 	int validate_ret = 0;
 
@@ -112,7 +112,7 @@ esp_err_t common_parser_string_to_config(const char* string_in, pivot_config* co
 
 	if(validate_ret >= COMMOM_PARSER_ELEMENT_NUMBER)
 	{
-		memcpy(config_out, &config, sizeof(pivot_config));
+		memcpy(config_out, &config, sizeof(pivot_actions));
 		err = ESP_OK;
 	}
 
@@ -146,27 +146,35 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 		}
 	}
 
-	// time analyzer
-	string_off_set = COMMON_PARSER_TIMESTAMP_POSITION;
-	for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
-	{
-		if(ptr[(string_pos + string_off_set)] == '$')
-		{
-			break;
-		}
-		else
-		{
-			timestamp_out[string_pos] = ptr[(string_pos + string_off_set)];
-		}
-	}
-
 	sscanf(angle_out, "%d", (int*)angle);
-	sscanf(timestamp_out, "%d", (int*)timestamp);
+
+	// time analyzer
+	if(ptr != NULL)
+	{
+		string_off_set = COMMON_PARSER_TIMESTAMP_POSITION;
+		for(string_pos = 0; string_pos < (sizeof(timestamp_out) - 1); string_pos++)
+		{
+			if(ptr[(string_pos + string_off_set)] == '$')
+			{
+				break;
+			}
+			else
+			{
+				timestamp_out[string_pos] = ptr[(string_pos + string_off_set)];
+			}
+		}
+
+		sscanf(timestamp_out, "%d", (int*)timestamp);
+	}
+	else
+	{
+		*timestamp=0;
+	}
 
 	return err;
 }
 
-esp_err_t common_parser_status_to_string(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
+esp_err_t common_parser_status_to_string(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 	char string_converted[25] = "";
@@ -218,11 +226,11 @@ esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timesta
 	return err;
 }
 
-esp_err_t common_parser_status_to_json(pivot_config config_in,time_t timestamp, uint16_t angle, char* string_out)
+esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 
-	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_5\",\"payload\":\"";
+	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_5\",\"payload\":\""; // AJUSTAR AQUI, UTILIZAR JSON
 	char string_status[25] = "";
 
 	common_parser_status_to_string(config_in, timestamp, angle, string_status);

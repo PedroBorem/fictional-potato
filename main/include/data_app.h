@@ -17,6 +17,7 @@
 #include "esp_err.h"
 
 /* Data app label names */
+#define DATA_LABEL_ACTIONS	"label_actions"
 #define DATA_LABEL_CONFIG	"label_config"
 
 /**

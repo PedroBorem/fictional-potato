@@ -79,7 +79,7 @@ esp_err_t gpio_actuator_init(void);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to initialize
  */
-esp_err_t gpio_actuator_set(pivot_config config);
+esp_err_t gpio_actuator_set(pivot_actions config);
 
 /**
  * @brief	Read actual pivot configuration.
@@ -87,7 +87,7 @@ esp_err_t gpio_actuator_set(pivot_config config);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to initialize
  */
-pivot_config gpio_actuator_get(void);
+pivot_actions gpio_actuator_get(void);
 
 /**
  * @brief	Disables all relays.

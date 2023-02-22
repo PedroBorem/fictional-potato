@@ -41,7 +41,7 @@
  * NVS access key
  *
  */
-#define DATA_APP_NAMESPACE		"msf_app_data"
+#define DATA_APP_NAMESPACE		"data_app"
 
 /* Public methods ------------------------------------------------ */
 esp_err_t data_app_init(void)

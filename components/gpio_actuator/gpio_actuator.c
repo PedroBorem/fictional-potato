@@ -39,8 +39,8 @@ static xTimerHandle perc_timer_handleOff = NULL;
 static TaskHandle_t xTask_waitpressure = NULL;
 
 //Configuration variables
-static pivot_config pivot_config_read = {};
-static pivot_config task_config_set = {};
+static pivot_actions pivot_config_read = {};
+static pivot_actions task_config_set = {};
 
 //Percentimeter variables
 static time_t posedge_perc = 0;
@@ -174,7 +174,7 @@ esp_err_t gpio_actuator_init()
 	return err;
 }
 
-esp_err_t gpio_actuator_set(pivot_config config)
+esp_err_t gpio_actuator_set(pivot_actions config)
 {
 	esp_err_t err = ESP_FAIL;
 	int perc_sec = 0;
@@ -281,7 +281,7 @@ esp_err_t gpio_actuator_set(pivot_config config)
 	return err;
 }
 
-pivot_config gpio_actuator_get(void)
+pivot_actions gpio_actuator_get(void)
 {
 	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == GPIO_ACT_SYS_ENABLE)
 	{

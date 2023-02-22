@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "cJSON.h"
 #include "utils.h"
 
 /* Private methods - prototypes ---------------------------------- */
@@ -96,3 +97,50 @@ char *http_remove_escape_chr(char* raw_value)
 
     return output;
 }
+
+pivot_actions http_parser_action(char * request_body)
+{
+	pivot_actions config = {};
+
+	cJSON * subitem = cJSON_Parse(request_body);
+	cJSON* power = cJSON_GetObjectItem(subitem, "power");
+
+	if(power->valueint == true)
+	{
+		config.power_state = PIVOT_ON;
+
+		cJSON* water = cJSON_GetObjectItem(subitem, "water");
+		cJSON* direction = cJSON_GetObjectItem(subitem, "direction");
+		cJSON* percentimeter = cJSON_GetObjectItem(subitem, "percentimeter");
+
+		if(water->valueint == true)
+		{
+			config.watering_state = PIVOT_WET;
+		}
+		else
+		{
+			config.watering_state = PIVOT_DRY;
+		}
+
+		if(strcmp(direction->valuestring, "ANTI_CLOCKWISE") == 0)
+		{
+			config.rotation = PIVOT_CW;
+		}
+		else
+		{
+			config.rotation = PIVOT_CCW;
+		}
+
+		config.percentimeter = percentimeter->valueint;
+	}
+	else
+	{
+		config.power_state = PIVOT_OFF;
+		config.watering_state = PIVOT_DRY;
+		config.rotation = PIVOT_CW;
+		config.percentimeter = 0;
+	}
+
+	return config;
+}
+

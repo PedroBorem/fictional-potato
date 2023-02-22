@@ -29,14 +29,14 @@ bool actuation_app_init(const app_callback callback);
  * @brief	apply the configuration to the drives
  * @param	config_in - [in]: function used with return to main application class
  */
-void actuation_app_set_config(const pivot_config config_in, bool alert_change);
+void actuation_app_set_config(const pivot_actions config_in, bool alert_change);
 
 /**
  * @brief	read current status on IO ports
  * @param	config_out - [out]: pivot configuration structure
  * @param	config_length - [out]: structure size
  */
-void actuation_app_get_config(pivot_config* config_out, size_t config_size);
+void actuation_app_get_config(pivot_actions* config_out, size_t config_size);
 
 void actuation_app_set_pump(bool pump_state);
 

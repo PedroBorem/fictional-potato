@@ -47,7 +47,7 @@ esp_err_t rf_module_init(void)
 	return err;
 }
 
-esp_err_t rf_module_send_event(pivot_config config_in)
+esp_err_t rf_module_send_event(pivot_actions config_in)
 {
 	esp_err_t err = ESP_FAIL;
 	uint16_t degree = rf_module_get_angle();
@@ -77,7 +77,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 	esp_err_t err = ESP_OK;
 
 	// Configuration Pivot
-	pivot_config config = {};
+	pivot_actions config = {};
 
 	// GPS variables
 	time_t timestamp = 0;
@@ -123,7 +123,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void RF_MODULE_NOTIFY_APP(const pivot_config config_in)
+__attribute__((weak)) void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	UNUSED(config_in);
 	return;

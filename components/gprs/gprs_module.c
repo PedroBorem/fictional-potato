@@ -45,7 +45,7 @@ esp_err_t gprs_module_init(void)
 	return err;
 }
 
-esp_err_t gprs_module_send_event(pivot_config config_in, uint16_t degree)
+esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree)
 {
 	esp_err_t err = ESP_FAIL;
 	time_t timestamp = rtc_app_get_timestamp();
@@ -54,6 +54,17 @@ esp_err_t gprs_module_send_event(pivot_config config_in, uint16_t degree)
 	common_parser_status_to_json(config_in, timestamp, degree, event);
 
 	err = gprs_uart_send_event(event, sizeof(event));
+
+	return err;
+}
+
+esp_err_t gprs_module_set_id(const char * gprs_id)
+{
+	esp_err_t err = ESP_FAIL;
+
+	//TODO : colocar gprs_id no lugar do Teste_INATEL
+	const char send_gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
+	err = gprs_uart_send_event(gprs_id, sizeof(gprs_id));
 
 	return err;
 }
@@ -69,7 +80,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 	esp_err_t err = ESP_OK;
 
 	// Configuration Pivot
-	pivot_config config = {};
+	pivot_actions config = {};
 
 	// GPS variables
 	time_t timestamp = 0;
@@ -117,7 +128,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(const pivot_config config_in)
+__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
 {
 	UNUSED(config_in);
 	return;
