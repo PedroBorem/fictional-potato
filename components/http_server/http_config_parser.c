@@ -124,11 +124,11 @@ pivot_actions http_parser_action(char * request_body)
 
 		if(strcmp(direction->valuestring, "ANTI_CLOCKWISE") == 0)
 		{
-			config.rotation = PIVOT_CW;
+			config.rotation = PIVOT_CCW;
 		}
 		else
 		{
-			config.rotation = PIVOT_CCW;
+			config.rotation = PIVOT_CW;
 		}
 
 		config.percentimeter = percentimeter->valueint;

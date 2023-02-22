@@ -43,12 +43,12 @@ static pivot_actions pivot_config_read = {};
 static pivot_actions task_config_set = {};
 
 //Percentimeter variables
-static time_t posedge_perc = 0;
-static time_t negedge_perc = 0;
-static int perc_diff_onoff = 0;
-static int perc_pct_on = 0;
-static int perc_sec_on = 0;
-static int percent_watchdog = 0;
+static uint64_t posedge_perc = 0;
+static uint64_t negedge_perc = 0;
+static uint32_t perc_diff_onoff = 0;
+static uint32_t perc_pct_on = 0;
+static uint32_t perc_sec_on = 0;
+static uint64_t percent_watchdog = 0;
 
 //Pressurizing flag
 static bool pressurizing = false;
