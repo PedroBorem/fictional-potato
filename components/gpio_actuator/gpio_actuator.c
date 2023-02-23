@@ -37,6 +37,7 @@
 static xTimerHandle perc_timer_handleOn = NULL;
 static xTimerHandle perc_timer_handleOff = NULL;
 static TaskHandle_t xTask_waitpressure = NULL;
+static TaskHandle_t xTask_readpercent = NULL;
 
 //Configuration variables
 static pivot_actions pivot_config_read = {};
@@ -84,35 +85,16 @@ esp_err_t gpio_actuator_start(void);
  */
 void actuator_wait_pressure(void* arg);
 
+
+void actuator_read_percent(void* arg);
+
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-	//taskENTER_CRITICAL(0);
-	//taskENTER_CRITICAL_FROM_ISR();
-	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
+	if(xTask_readpercent != NULL)
 	{
-		posedge_perc = clock();
+		vTaskResume(xTask_readpercent);
 	}
-
-	if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
-	{
-		negedge_perc = clock();
-
-		if(posedge_perc != 0 && negedge_perc != 0)
-		{
-			perc_diff_onoff = (negedge_perc - posedge_perc);
-			if (perc_diff_onoff != 0)
-			{
-				perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
-				perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
-				pivot_config_read.percentimeter = perc_pct_on;
-			}
-		}
-	}
-
-	percent_watchdog = clock();
-	//taskEXIT_CRITICAL(0);
-	//taskEXIT_CRITICAL_FROM_ISR(0);
 }
 
 esp_err_t gpio_actuator_init()
@@ -158,6 +140,26 @@ esp_err_t gpio_actuator_init()
     io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
     io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf_int);
+
+    if(xTask_readpercent == NULL)
+	{
+		BaseType_t xReturn = xTaskCreate(&actuator_read_percent,
+								ACTUATOR_PERCENT_TASK_NAME,
+								ACTUATOR_PERCENT_STACK_SIZE,
+								NULL,
+								ACTUATOR_PERCENT_TASK_PRIORITY,
+								&xTask_readpercent);
+
+		if(xReturn != pdPASS || xTask_readpercent == NULL)
+		{
+			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
+			return ESP_FAIL;
+		}
+	}
+	else
+	{
+		vTaskResume(xTask_readpercent);
+	}
 
     err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
     if(err != ESP_OK)
@@ -496,6 +498,40 @@ void actuator_wait_pressure(void* arg)
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(1000));
+	}
+}
+
+void actuator_read_percent(void* arg)
+{
+	while(1)
+	{
+		//suspend own task
+		vTaskSuspend(NULL);
+
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
+		{
+			posedge_perc = clock();
+		}
+
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
+		{
+			negedge_perc = clock();
+
+			if(posedge_perc != 0 && negedge_perc != 0)
+			{
+				perc_diff_onoff = (negedge_perc - posedge_perc);
+				if (perc_diff_onoff != 0)
+				{
+					perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
+					perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
+					pivot_config_read.percentimeter = perc_pct_on;
+				}
+			}
+		}
+
+		percent_watchdog = clock();
+
+		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
 
