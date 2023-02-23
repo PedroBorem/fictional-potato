@@ -88,6 +88,7 @@ static esp_err_t http_logo_get_handler(httpd_req_t *req);
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath);
 static esp_err_t http_download_get_handler(httpd_req_t *req);
 static esp_err_t http_submit_post_handler(httpd_req_t *req);
+static esp_err_t http_submit_put_handler(httpd_req_t *req);
 
 static http_file_server_data *server_data = NULL;
 
@@ -197,6 +198,15 @@ esp_err_t http_server_start(void)
 					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
 					.method    = HTTP_POST,
 					.handler   = http_submit_post_handler,
+					.user_ctx  = server_data    // Pass server data as context
+				};
+				httpd_register_uri_handler(http_handle, &file_submit);
+
+				/* URI handler for uploading files to server */
+				httpd_uri_t file_submit = {
+					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+					.method    = HTTP_PUT,
+					.handler   = http_submit_put_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_submit);
@@ -500,6 +510,67 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_ACTION, &state);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered uri callback");
+		}
+    }
+
+	return err;
+}
+
+/**
+ * @brief	Handler to  a file from the server
+ * @param
+ *  - req[in/out] - HTTP Request Data Structure.
+ * @return
+ *  - ESP_OK : On success
+ *  - ESP_FAIL : fail to get submit
+ */
+static esp_err_t http_submit_put_handler(httpd_req_t *req)
+{
+	esp_err_t err = ESP_FAIL;
+
+	char content[1000] = {};
+
+    /* Truncate if content length larger than the buffer */
+    size_t recv_size = MIN(req->content_len, sizeof(content));
+
+    int ret = httpd_req_recv(req, content, recv_size);
+    if (ret <= 0) // 0 return value indicates connection closed
+    {
+        /* Check if timeout occurred */
+        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+        {
+            /* In case of timeout one can choose to retry calling
+             * httpd_req_recv(), but to keep it simple, here we
+             * respond with an HTTP 408 (Request Timeout) error */
+            httpd_resp_send_408(req);
+        }
+    }
+    else
+    {
+		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+		LOG_COMM(HTTP_API_TAG, "content %s", content);
+
+		/* Send a simple response */
+		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
+
+		if(strcmp(req->uri, "/updateConfigurations") == 0)
+		{
+			pivot_config config = http_parser_config(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_CONFIG, &config);
 				err = ESP_OK;
 			}
 			else

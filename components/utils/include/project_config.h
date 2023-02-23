@@ -94,7 +94,6 @@ typedef enum
 	PRESSURE_SWITCH_NF,
 }pressure_switch_type;
 
-
 /**
  *	Configuration parameters
  *
@@ -105,9 +104,8 @@ typedef	struct __attribute__((__packed__))
 	char * gprs_id;
 	contactor_type contactor;
 	pressure_switch_type pressure_switch;
-	uint8_t pressurization_time;
+	uint16_t pressurization_time;
 	uint8_t on_off_time;
-	//TODO horario de pico e setorização
 }pivot_config;
 
 /**

@@ -100,14 +100,14 @@ char *http_remove_escape_chr(char* raw_value)
 
 pivot_actions http_parser_action(char * request_body)
 {
-	pivot_actions config = {};
+	pivot_actions actions = {};
 
 	cJSON * subitem = cJSON_Parse(request_body);
 	cJSON* power = cJSON_GetObjectItem(subitem, "power");
 
 	if(power->valueint == true)
 	{
-		config.power_state = PIVOT_ON;
+		actions.power_state = PIVOT_ON;
 
 		cJSON* water = cJSON_GetObjectItem(subitem, "water");
 		cJSON* direction = cJSON_GetObjectItem(subitem, "direction");
@@ -115,31 +115,65 @@ pivot_actions http_parser_action(char * request_body)
 
 		if(water->valueint == true)
 		{
-			config.watering_state = PIVOT_WET;
+			actions.watering_state = PIVOT_WET;
 		}
 		else
 		{
-			config.watering_state = PIVOT_DRY;
+			actions.watering_state = PIVOT_DRY;
 		}
 
 		if(strcmp(direction->valuestring, "ANTI_CLOCKWISE") == 0)
 		{
-			config.rotation = PIVOT_CW;
+			actions.rotation = PIVOT_CW;
 		}
 		else
 		{
-			config.rotation = PIVOT_CCW;
+			actions.rotation = PIVOT_CCW;
 		}
 
-		config.percentimeter = percentimeter->valueint;
+		actions.percentimeter = percentimeter->valueint;
 	}
 	else
 	{
-		config.power_state = PIVOT_OFF;
-		config.watering_state = PIVOT_DRY;
-		config.rotation = PIVOT_CW;
-		config.percentimeter = 0;
+		actions.power_state = PIVOT_OFF;
+		actions.watering_state = PIVOT_DRY;
+		actions.rotation = PIVOT_CW;
+		actions.percentimeter = 0;
 	}
+
+	cJSON_Delete(subitem);
+	return actions;
+}
+
+pivot_config http_parser_config(char * request_body)
+{
+	pivot_config config = {};
+
+	cJSON * subitem = cJSON_Parse(request_body);
+
+	config.pivot_id = cJSON_GetObjectItem(subitem, "pivot_id")->valuestring;
+	config.gprs_id = cJSON_GetObjectItem(subitem, "gprs_id")->valuestring;
+
+	if(strcmp(cJSON_GetObjectItem(subitem, "contactor")->valuestring, "NA") == 0)
+	{
+		config.contactor = CONTACTOR_NA;
+	}
+	else
+	{
+		config.contactor = CONTACTOR_NF;
+	}
+
+	if(strcmp(cJSON_GetObjectItem(subitem, "pressure")->valuestring, "NA") == 0)
+	{
+		config.contactor = PRESSURE_SWITCH_NA;
+	}
+	else
+	{
+		config.contactor = PRESSURE_SWITCH_NF;
+	}
+
+	config.pressurization_time = cJSON_GetObjectItem(subitem, "pressure_time")->valueint;
+	config.on_off_time = cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
 
 	cJSON_Delete(subitem);
 	return config;
