@@ -203,13 +203,13 @@ esp_err_t http_server_start(void)
 				httpd_register_uri_handler(http_handle, &file_submit);
 
 				/* URI handler for uploading files to server */
-				httpd_uri_t file_submit = {
+				httpd_uri_t file_config = {
 					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
 					.method    = HTTP_PUT,
 					.handler   = http_submit_put_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
-				httpd_register_uri_handler(http_handle, &file_submit);
+				httpd_register_uri_handler(http_handle, &file_config);
 
 				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 			}
