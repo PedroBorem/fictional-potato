@@ -409,14 +409,12 @@ void vPercTimerOnExpire(xTimerHandle pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	xTimerStart(perc_timer_handleOff, 1000);
-	LOG_ACTUATION(GPIO_ACT_TAG, "%s, Timer On expired", __func__);
 }
 
 void vPercTimerOffExpire(xTimerHandle pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
 	xTimerStart(perc_timer_handleOn, 1000);
-	LOG_ACTUATION(GPIO_ACT_TAG, "%s, Timer Off expired", __func__);
 }
 
 esp_err_t gpio_actuator_start(void)
