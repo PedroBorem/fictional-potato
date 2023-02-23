@@ -54,6 +54,8 @@ esp_err_t common_parser_status_to_string(pivot_actions config_in,time_t timestam
 
 esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timestamp);
 
-esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out);
+esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, const char* id, char* string_out, size_t string_size);
+
+esp_err_t common_parser_register_to_json(const char* id, char* string_out, size_t string_size);
 
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */

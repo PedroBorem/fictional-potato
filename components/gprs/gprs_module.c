@@ -45,16 +45,15 @@ esp_err_t gprs_module_init(void)
 	return err;
 }
 
-esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree)
+esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree, const char * gprs_id)
 {
 	esp_err_t err = ESP_FAIL;
 	time_t timestamp = rtc_app_get_timestamp();
 
 	char event[75] = "";
-	common_parser_status_to_json(config_in, timestamp, degree, event);
+	common_parser_status_to_json(config_in, timestamp, degree, gprs_id , event, sizeof(event));
 
 	err = gprs_uart_send_event(event, sizeof(event));
-
 	return err;
 }
 
@@ -62,9 +61,10 @@ esp_err_t gprs_module_set_id(const char * gprs_id)
 {
 	esp_err_t err = ESP_FAIL;
 
-	//TODO : colocar gprs_id no lugar do Teste_INATEL
-	const char send_gprs_id[] = "{\"register\":\"True\",\"id\":\"TesteInatel_5\"}";
-	err = gprs_uart_send_event(gprs_id, sizeof(gprs_id));
+	char send_gprs_id[70] = {};
+
+	common_parser_register_to_json(gprs_id, send_gprs_id, sizeof(send_gprs_id));
+	err = gprs_uart_send_event(send_gprs_id, sizeof(send_gprs_id));
 
 	return err;
 }

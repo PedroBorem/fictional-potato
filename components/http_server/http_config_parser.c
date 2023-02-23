@@ -141,6 +141,7 @@ pivot_actions http_parser_action(char * request_body)
 		config.percentimeter = 0;
 	}
 
+	cJSON_Delete(subitem);
 	return config;
 }
 

@@ -61,7 +61,11 @@ typedef struct
 static TaskHandle_t xTask_comm_app = NULL;
 static QueueHandle_t xQueue_comm_app = NULL;
 
+// callback with main
 static app_callback comm_app_call = NULL;
+
+// gprs id
+static char comm_app_grps_id[30] = {};
 
 /* Private methods  ---------------------------------------------- */
 void comm_app_task(void* arg);
@@ -124,7 +128,16 @@ void comm_app_send_event(pivot_actions pivot_status)
 {
 	uint16_t degree = comm_app_get_degree();
 	rf_module_send_event(pivot_status);
-	gprs_module_send_event(pivot_status, degree);
+	gprs_module_send_event(pivot_status, degree, comm_app_grps_id);
+}
+
+void comm_app_set_id(const char * gprs_id)
+{
+	if( gprs_module_set_id(gprs_id) == ESP_OK)
+	{
+		memset(comm_app_grps_id, 0x00, sizeof(comm_app_grps_id));
+		memcpy(comm_app_grps_id, gprs_id, sizeof(comm_app_grps_id));
+	}
 }
 
 /* Private methods ----------------------------------------------- */

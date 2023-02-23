@@ -37,4 +37,6 @@ uint16_t comm_app_get_degree(void);
  */
 void comm_app_send_event(pivot_actions pivot_status);
 
+void comm_app_set_id(const char * gprs_id);
+
 #endif /* MAIN_INCLUDE_COMM_APP_H_ */
