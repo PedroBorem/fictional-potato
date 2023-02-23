@@ -45,11 +45,15 @@ static void app_peak_hours_task(void* arg);
 void app_main(void)
 {
 	uint16_t angles[4] = {};
+	pivot_config current_config = {};
+
+
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	// TODO: get nvs grps id
-	comm_app_set_id("TesteInatel_5");
+	// get configurations
+	data_app_load_config(&current_config, sizeof(current_config));
+	comm_app_set_id(current_config.gprs_id);
 
 	//rtc_app_get_timestamp();
 	esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -138,18 +142,31 @@ static void app_main_call(app_call_states state,const void* buffer)
 	{
 		case CALL_SAVE_ACTION:
 		{
-			pivot_actions new_config = {};
-			memcpy(&new_config, buffer, sizeof(new_config));
+			pivot_actions new_actions = {};
+			memcpy(&new_actions, buffer, sizeof(new_actions));
 
-			ret = data_app_save_actions(&new_config, sizeof(new_config));
+			ret = data_app_save_actions(&new_actions, sizeof(new_actions));
 			if(ret == ESP_OK)
 			{
-				actuation_app_set_config(new_config, false);
-				comm_app_send_event(new_config);
+				actuation_app_set_config(new_actions, false);
+				comm_app_send_event(new_actions);
 			}
-			else if(new_config.rotation == PIVOT_UNKNOWN)
+			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{
-				comm_app_send_event(new_config);
+				comm_app_send_event(new_actions);
+			}
+
+			break;
+		}
+		case CALL_SAVE_CONFIG:
+		{
+			pivot_config new_config = {};
+			memcpy(&new_config, buffer, sizeof(new_config));
+
+			ret = data_app_save_config(&new_config, sizeof(new_config));
+			if(ret == ESP_OK)
+			{
+				comm_app_set_id(new_config.gprs_id);
 			}
 
 			break;
