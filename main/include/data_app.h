@@ -16,10 +16,6 @@
 
 #include "esp_err.h"
 
-/* Data app label names */
-#define DATA_LABEL_ACTIONS	"label_actions"
-#define DATA_LABEL_CONFIG	"label_config"
-
 /**
  * @brief	start all memory modules
  * @return
@@ -29,26 +25,45 @@
 esp_err_t data_app_init(void);
 
 /**
- * @brief	sends the queue a request to save a new configuration
- * @param 	key - access key defined in project_config.h
+ * @brief	sends the queue a request to save a new action
  * @param 	value - [in]: content you want to save in memory.
  * @param 	size - [in]: size of content
  * @return
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_save_config(const char* key, const void* value, size_t size);
+esp_err_t data_app_save_actions(const void* value, size_t size);
 
 /**
- * @brief	sends the queue a request to load a configuration.
- * @param 	key - access key defined in project_config.h
+ * @brief	sends the queue a request to load a current action.
  * @param 	out_value - [in]: return pointer with the value read from the label.
  * @param 	size - [in]: size allocated for pointer(out_value).
  * @return
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_load_config(const char* key, void* out_value, size_t size);
+esp_err_t data_app_load_actions(void* out_value, size_t size);
+
+/**
+ * @brief	sends the queue a request to save a new configuration
+ * @param 	value - [in]: content you want to save in memory.
+ * @param 	size - [in]: size of content
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to save
+ */
+esp_err_t data_app_save_config(const void* value, size_t size);
+
+/**
+ * @brief	sends the queue a request to load a configuration.
+ * @param 	out_value - [in]: return pointer with the value read from the label.
+ * @param 	size - [in]: size allocated for pointer(out_value).
+ * @return
+ * 	- ESP_OK: success
+ * 	- ESP_FAIL: fail to save
+ */
+esp_err_t data_app_load_config(void* out_value, size_t size);
+
 
 /**
  * @brief Gets the data size for the informed key.
@@ -57,6 +72,6 @@ esp_err_t data_app_load_config(const char* key, void* out_value, size_t size);
  *  - 0: in case of errors
  *  - Data size.
  */
-size_t data_app_get_data_size(const char* key);
+size_t data_app_get_data_size(const char* label_name, const char* key);
 
 #endif /* MAIN_INCLUDE_DATA_APP_H_ */

@@ -58,7 +58,7 @@ void app_main(void)
 		// critica de tempo
 		pivot_actions current_action = {};
 
-		data_app_load_config(DATA_LABEL_ACTIONS, &current_action, sizeof(current_action));
+		data_app_load_actions(&current_action, sizeof(current_action));
 
 		LOG_DATA(MAIN_TAG, "");
 		LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
@@ -141,7 +141,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			pivot_actions new_config = {};
 			memcpy(&new_config, buffer, sizeof(new_config));
 
-			ret = data_app_save_config(DATA_LABEL_ACTIONS, &new_config, sizeof(new_config));
+			ret = data_app_save_actions(&new_config, sizeof(new_config));
 			if(ret == ESP_OK)
 			{
 				actuation_app_set_config(new_config, false);
@@ -177,14 +177,14 @@ static void app_main_call(app_call_states state,const void* buffer)
 		{
 			pivot_actions current_action = {};
 
-			data_app_load_config(DATA_LABEL_ACTIONS, &current_action, sizeof(current_action));
+			data_app_load_actions(&current_action, sizeof(current_action));
 			vTaskDelay(pdMS_TO_TICKS(500));
 
 			if(current_action.power_state != PIVOT_OFF)
 			{
 				current_action.power_state = PIVOT_OFF;
 				actuation_app_set_config(current_action, false);
-				data_app_save_config(DATA_LABEL_ACTIONS, &current_action, sizeof(current_action));
+				data_app_save_actions(&current_action, sizeof(current_action));
 			}
 
 			vTaskDelay(pdMS_TO_TICKS(2000));
@@ -263,7 +263,7 @@ static void app_peak_hours_task(void* arg)
 				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
 				if(alredy_off == true)
 				{
-					data_app_load_config(DATA_LABEL_ACTIONS, &current_action, sizeof(current_action));
+					data_app_load_actions(&current_action, sizeof(current_action));
 					vTaskDelay(pdMS_TO_TICKS(500));
 					actuation_app_set_config(current_action, false);
 
