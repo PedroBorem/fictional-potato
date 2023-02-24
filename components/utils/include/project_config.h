@@ -158,8 +158,12 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 #define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
 
 #define ACTUATOR_CHECK_TASK_NAME		"actuator check task"
-#define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 4 )
+#define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 6 )
 #define ACTUATOR_CHECK_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
+
+#define ACTUATOR_PERCENT_TASK_NAME		"actuator percent task"
+#define ACTUATOR_PERCENT_STACK_SIZE		( configMINIMAL_STACK_SIZE * 6 )
+#define ACTUATOR_PERCENT_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
 
 #define GPRS_UART_TASK_NAME				"gprs uart task"
 #define GPRS_UART_STACK_SIZE			( configMINIMAL_STACK_SIZE * 10 )
