@@ -31,7 +31,7 @@
 #define ACTUATION_APP_TAG			"actuation_app"
 
 // manual config timeout
-#define ACTUATION_APP_POWER_TIME			3000	// 3 sec
+#define ACTUATION_APP_POWER_TIME			10000	// 10 sec
 #define ACTUATION_APP_WATERING_TIME			30000	// 30 sec
 #define ACTUATION_APP_ROTATION_TIME			3000	// 3 sec
 #define ACTUATION_APP_PERCENTIMETER_TIME	61000	// 1 min and 10 sec
