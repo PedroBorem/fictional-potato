@@ -102,7 +102,7 @@ pivot_actions http_parser_action(char * request_body)
 {
 	pivot_actions actions = {};
 
-	cJSON * subitem = cJSON_Parse(request_body);
+	cJSON* subitem = cJSON_Parse(request_body);
 	cJSON* power = cJSON_GetObjectItem(subitem, "power");
 
 	if(power->valueint == true)
@@ -132,6 +132,10 @@ pivot_actions http_parser_action(char * request_body)
 		}
 
 		actions.percentimeter = percentimeter->valueint;
+
+		cJSON_Delete(water);
+		cJSON_Delete(direction);
+		cJSON_Delete(percentimeter);
 	}
 	else
 	{
@@ -141,6 +145,7 @@ pivot_actions http_parser_action(char * request_body)
 		actions.percentimeter = 0;
 	}
 
+	cJSON_Delete(power);
 	cJSON_Delete(subitem);
 	return actions;
 }
@@ -149,12 +154,15 @@ pivot_config http_parser_config(char * request_body)
 {
 	pivot_config config = {};
 
-	cJSON * subitem = cJSON_Parse(request_body);
+	cJSON* subitem = cJSON_Parse(request_body);
 
-	config.pivot_id = cJSON_GetObjectItem(subitem, "pivot_id")->valuestring;
-	config.gprs_id = cJSON_GetObjectItem(subitem, "gprs_id")->valuestring;
+	char* pivot_id = cJSON_GetObjectItem(subitem, "pivot_id")->valuestring;
+	char* gprs_id = cJSON_GetObjectItem(subitem, "gprs_id")->valuestring;
 
-	if(strcmp(cJSON_GetObjectItem(subitem, "contactor")->valuestring, "NA") == 0)
+	memcpy(&config.pivot_id, pivot_id, strlen(pivot_id));
+	memcpy(&config.gprs_id, gprs_id, strlen(gprs_id));
+
+	if(strcmp(cJSON_GetObjectItem(subitem, "contactor_type")->valuestring, "NA") == 0)
 	{
 		config.contactor = CONTACTOR_NA;
 	}
@@ -163,7 +171,7 @@ pivot_config http_parser_config(char * request_body)
 		config.contactor = CONTACTOR_NF;
 	}
 
-	if(strcmp(cJSON_GetObjectItem(subitem, "pressure")->valuestring, "NA") == 0)
+	if(strcmp(cJSON_GetObjectItem(subitem, "pressure_type")->valuestring, "NA") == 0)
 	{
 		config.contactor = PRESSURE_SWITCH_NA;
 	}
@@ -176,6 +184,7 @@ pivot_config http_parser_config(char * request_body)
 	config.on_off_time = cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
 
 	cJSON_Delete(subitem);
+
 	return config;
 }
 

@@ -100,8 +100,8 @@ typedef enum
  */
 typedef	struct __attribute__((__packed__))
 {
-	char * pivot_id;
-	char * gprs_id;
+	char pivot_id[30];
+	char gprs_id[30];
 	contactor_type contactor;
 	pressure_switch_type pressure_switch;
 	uint16_t pressurization_time;
