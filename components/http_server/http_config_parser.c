@@ -71,32 +71,30 @@ void http_parser_action_to_json(pivot_actions action, char* out_action)
 	cJSON* action_root = cJSON_CreateObject();
 
 	// TODO : mock angle
-	/*
-	cJSON_AddItemToObject(root, "pivot_num", cJSON_CreateString("10"));
-	cJSON_AddItemToObject(root, "pivot_start_angle", cJSON_CreateString("20"));
-	cJSON_AddItemToObject(root, "pivot_end_angle", cJSON_CreateString("60"));
-	cJSON_AddItemToObject(root, "start_angle", cJSON_CreateString("25"));
-	cJSON_AddItemToObject(root, "end_angle", cJSON_CreateString("40"));
-	*/
+	cJSON_AddItemToObject(action_root, "pivot_num", cJSON_CreateString("10"));
+	cJSON_AddItemToObject(action_root, "pivot_start_angle", cJSON_CreateString("20"));
+	cJSON_AddItemToObject(action_root, "pivot_end_angle", cJSON_CreateString("60"));
+	cJSON_AddItemToObject(action_root, "start_angle", cJSON_CreateString("25"));
+	cJSON_AddItemToObject(action_root, "end_angle", cJSON_CreateString("40"));
 
 	// power state
 	if(action.power_state == PIVOT_ON)
 	{
-		cJSON_AddItemToObject(action_root, "power", cJSON_CreateString("True"));
+		cJSON_AddItemToObject(action_root, "power", cJSON_CreateString("true"));
 	}
 	else
 	{
-		cJSON_AddItemToObject(action_root, "power", cJSON_CreateString("False"));
+		cJSON_AddItemToObject(action_root, "power", cJSON_CreateString("false"));
 	}
 
 	// watering state
 	if(action.watering_state == PIVOT_WET)
 	{
-		cJSON_AddItemToObject(action_root, "water", cJSON_CreateString("True"));
+		cJSON_AddItemToObject(action_root, "water", cJSON_CreateString("true"));
 	}
 	else
 	{
-		cJSON_AddItemToObject(action_root, "water", cJSON_CreateString("False"));
+		cJSON_AddItemToObject(action_root, "water", cJSON_CreateString("false"));
 	}
 
 	// rotation

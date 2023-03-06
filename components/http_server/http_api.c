@@ -431,8 +431,7 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
     }
     else if (strcmp(req->uri, "/actions") == 0)
 	{
-    	ESP_LOGW("TESTE", "%s", http_actions);
-    	//httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
+    	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
     else
     {
