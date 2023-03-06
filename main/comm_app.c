@@ -81,6 +81,7 @@ bool comm_app_init(const app_callback callback)
 	err &= gprs_module_init();
 	err &= http_server_init();
 	err &= wifi_app_init();
+
 	if(err == ESP_OK && callback != NULL )
 	{
 		http_server_register_callback(callback);
@@ -131,12 +132,14 @@ void comm_app_send_event(pivot_actions pivot_status)
 	gprs_module_send_event(pivot_status, degree, comm_app_grps_id);
 }
 
-void comm_app_set_id(const char * gprs_id)
+void comm_app_set_config(const pivot_config config)
 {
-	if( gprs_module_set_id(gprs_id) == ESP_OK)
+	http_server_set_str_config(config);
+
+	if( gprs_module_set_id(config.gprs_id) == ESP_OK)
 	{
 		memset(comm_app_grps_id, 0x00, sizeof(comm_app_grps_id));
-		memcpy(comm_app_grps_id, gprs_id, sizeof(comm_app_grps_id));
+		memcpy(comm_app_grps_id, config.gprs_id, sizeof(comm_app_grps_id));
 	}
 }
 

@@ -53,7 +53,7 @@ void app_main(void)
 
 	// get configurations
 	data_app_load_config(&current_config, sizeof(current_config));
-	comm_app_set_id(current_config.gprs_id);
+	comm_app_set_config(current_config);
 
 	//rtc_app_get_timestamp();
 	esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -166,7 +166,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			ret = data_app_save_config(&new_config, sizeof(new_config));
 			if(ret == ESP_OK)
 			{
-				comm_app_set_id(new_config.gprs_id);
+				comm_app_set_config(new_config);
 			}
 
 			break;

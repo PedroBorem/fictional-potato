@@ -188,3 +188,45 @@ pivot_config http_parser_config(char * request_body)
 	return config;
 }
 
+char* http_parser_config_to_json(pivot_config config)
+{
+	char* string_out = "";
+	char int_str[20];
+
+	// create JSON
+	cJSON *root =  cJSON_CreateObject();
+
+	cJSON_AddItemToObject(root, "pivot_id", cJSON_CreateString(config.pivot_id));
+	cJSON_AddItemToObject(root, "gprs_id", cJSON_CreateString(config.gprs_id));
+
+	if(config.contactor == CONTACTOR_NA)
+	{
+		cJSON_AddItemToObject(root, "contactor_type", cJSON_CreateString("NA"));
+	}
+	else
+	{
+		cJSON_AddItemToObject(root, "contactor_type", cJSON_CreateString("NF"));
+	}
+
+	if(config.pressure_switch == PRESSURE_SWITCH_NA )
+	{
+		cJSON_AddItemToObject(root, "pressure_type", cJSON_CreateString("NA"));
+	}
+	else
+	{
+		cJSON_AddItemToObject(root, "pressure_type", cJSON_CreateString("NF"));
+	}
+
+	sprintf(int_str, "%d", config.pressurization_time );
+	cJSON_AddItemToObject(root, "pressure_time", cJSON_CreateString(int_str));
+
+	memset(int_str, 0x00, sizeof(int_str));
+	sprintf(int_str, "%d", config.on_off_time );
+	cJSON_AddItemToObject(root, "turn_on_time", cJSON_CreateString(int_str));
+
+	memcpy(string_out, cJSON_Print(root), strlen(cJSON_Print(root)));
+	cJSON_Delete(root);
+
+	return string_out;
+}
+

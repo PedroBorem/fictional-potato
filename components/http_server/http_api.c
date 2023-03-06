@@ -79,6 +79,7 @@ static httpd_handle_t http_handle = NULL;
 static app_callback http_callback = NULL;
 
 static char* http_config = NULL;
+static char* http_actions = NULL;
 
 /* Private function prototype ------------------------------------ */
 static esp_err_t http_index_html_get_handler(httpd_req_t *req);
@@ -253,9 +254,11 @@ esp_err_t http_server_register_callback(app_callback callback)
 	return ret;
 }
 
-esp_err_t http_server_set_str_config(char* str_config)
+esp_err_t http_server_set_str_config(pivot_config current_config)
 {
     esp_err_t err = ESP_OK;
+
+    char* str_config = http_parser_config_to_json(current_config);
 
     if(str_config == NULL)
     {
@@ -408,7 +411,7 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 	struct stat file_stat = {};
     char filepath[HTTP_FILE_PATH_MAX] = {};
 
-    if(strcmp(req->uri, "/get_config") == 0)
+    if(strcmp(req->uri, "/getConfigurations") == 0)
     {
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
     }
