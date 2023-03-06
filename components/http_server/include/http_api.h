@@ -70,4 +70,6 @@ esp_err_t http_server_set_str_action(pivot_actions current_action);
  */
 esp_err_t http_server_set_str_config(pivot_config current_config);
 
+esp_err_t http_server_set_str_actions(pivot_actions current_actions);
+
 #endif /* COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_API_H_ */

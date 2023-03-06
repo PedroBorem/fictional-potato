@@ -237,7 +237,7 @@ esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp,
 	cJSON *root =  cJSON_CreateObject();
 	cJSON_AddItemToObject(root, "type", cJSON_CreateString("status"));
 	cJSON_AddItemToObject(root, "id", cJSON_CreateString(id));
-	cJSON_AddItemToObject(root, "payload", cJSON_CreateString("string_status"));
+	cJSON_AddItemToObject(root, "payload", cJSON_CreateString(string_status));
 
 	memcpy(string_out, cJSON_Print(root), string_size);
 	cJSON_Delete(root);

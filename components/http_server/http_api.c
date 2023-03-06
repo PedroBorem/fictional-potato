@@ -257,27 +257,41 @@ esp_err_t http_server_register_callback(app_callback callback)
 esp_err_t http_server_set_str_config(pivot_config current_config)
 {
     esp_err_t err = ESP_OK;
+    char str_out[500] = {};
 
-    char* str_config = http_parser_config_to_json(current_config);
+	if(http_config != NULL)
+	{
+		free(http_config);
+	}
 
-    if(str_config == NULL)
-    {
-        err = ESP_ERR_INVALID_ARG;
-    }
-    else
-    {
-        if(http_config != NULL)
-        {
-            free(http_config);
-        }
+	http_parser_config_to_json(current_config, str_out);
+	http_config = strdup(str_out);
 
-        http_config = strdup(str_config);
+	if(http_config == NULL)
+	{
+		err = ESP_FAIL;
+	}
 
-        if(http_config == NULL)
-        {
-            err = ESP_FAIL;
-        }
-    }
+    return err;
+}
+
+esp_err_t http_server_set_str_actions(pivot_actions current_actions)
+{
+    esp_err_t err = ESP_OK;
+    char str_out[500] = {};
+
+	if(http_actions != NULL)
+	{
+		free(http_actions);
+	}
+
+	http_parser_action_to_json(current_actions, str_out);
+	http_actions = strdup(str_out);
+
+	if(http_actions == NULL)
+	{
+		err = ESP_FAIL;
+	}
 
     return err;
 }
@@ -415,6 +429,11 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
     {
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
     }
+    else if (strcmp(req->uri, "/actions") == 0)
+	{
+    	ESP_LOGW("TESTE", "%s", http_actions);
+    	//httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
+	}
     else
     {
 		const char *filename = http_get_path_from_uri(filepath, ((http_file_server_data *)req->user_ctx)->base_path,

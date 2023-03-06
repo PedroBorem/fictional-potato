@@ -46,22 +46,24 @@ void app_main(void)
 {
 	uint16_t angles[4] = {};
 	pivot_config current_config = {};
-
+	pivot_actions current_action = {};
 
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
 	// get configurations
 	data_app_load_config(&current_config, sizeof(current_config));
+	actuation_app_get_config(&current_action, sizeof(current_action));
+
+	// set http parameters
 	comm_app_set_config(current_config);
+	comm_app_set_actions(current_action);
 
 	//rtc_app_get_timestamp();
 	esp_reset_reason_t reset_cause = esp_reset_reason();
 	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
-		// critica de tempo
-		pivot_actions current_action = {};
-
+		// TODO : critica de tempo
 		data_app_load_actions(&current_action, sizeof(current_action));
 
 		LOG_DATA(MAIN_TAG, "");
