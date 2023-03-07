@@ -152,6 +152,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			{
 				actuation_app_set_config(new_actions, false);
 				comm_app_send_event(new_actions);
+				comm_app_set_actions(new_actions);
 			}
 			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{

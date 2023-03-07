@@ -425,8 +425,9 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 	struct stat file_stat = {};
     char filepath[HTTP_FILE_PATH_MAX] = {};
 
-    if(strcmp(req->uri, "/getConfigurations") == 0)
+    if(strcmp(req->uri, "/config") == 0)
     {
+    	ESP_LOGW("TESTE", "%s", http_config);
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
     }
     else if (strcmp(req->uri, "/actions") == 0)
@@ -509,9 +510,6 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
         /* Check if timeout occurred */
         if (ret == HTTPD_SOCK_ERR_TIMEOUT)
         {
-            /* In case of timeout one can choose to retry calling
-             * httpd_req_recv(), but to keep it simple, here we
-             * respond with an HTTP 408 (Request Timeout) error */
             httpd_resp_send_408(req);
         }
     }
@@ -570,9 +568,6 @@ static esp_err_t http_submit_put_handler(httpd_req_t *req)
         /* Check if timeout occurred */
         if (ret == HTTPD_SOCK_ERR_TIMEOUT)
         {
-            /* In case of timeout one can choose to retry calling
-             * httpd_req_recv(), but to keep it simple, here we
-             * respond with an HTTP 408 (Request Timeout) error */
             httpd_resp_send_408(req);
         }
     }
@@ -585,7 +580,7 @@ static esp_err_t http_submit_put_handler(httpd_req_t *req)
 		/* Send a simple response */
 		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
 
-		if(strcmp(req->uri, "/updateConfigurations") == 0)
+		if(strcmp(req->uri, "/config") == 0)
 		{
 			pivot_config config = http_parser_config(content);
 
