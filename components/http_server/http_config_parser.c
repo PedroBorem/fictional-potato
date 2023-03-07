@@ -145,8 +145,8 @@ pivot_config http_parser_config(char * request_body)
 		config.contactor = PRESSURE_SWITCH_NF;
 	}
 
-	config.pressurization_time = cJSON_GetObjectItem(subitem, "pressure_time")->valueint;
-	config.on_off_time = cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
+	config.pressurization_time = (uint16_t)cJSON_GetObjectItem(subitem, "pressure_time")->valueint;
+	config.on_off_time = (uint8_t)cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
 
 	cJSON_Delete(subitem);
 
@@ -187,6 +187,9 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	memset(int_str, 0x00, sizeof(int_str));
 	sprintf(int_str, "%d", config.on_off_time );
 	cJSON_AddItemToObject(config_root, "turn_on_time", cJSON_CreateString(int_str));
+
+	cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("false"));
 
 	memcpy(out_config, cJSON_Print(config_root), strlen(cJSON_Print(config_root)));
 	cJSON_Delete(config_root);
