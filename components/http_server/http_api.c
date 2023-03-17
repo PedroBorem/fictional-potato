@@ -434,6 +434,53 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 	{
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
+    else if (strcmp(req->uri, "/scheduling/date") == 0)
+   	{
+    	char* mock_test = "{ \
+						{	\
+						\"scheduling_id\":    \"20\", \
+						\"is_stop\":  \"false\", \
+						\"is_running\":         \"false\", \
+						\"start_date\":         \"1679066719\", \
+						\"end_date\": \"1679066819\", \
+						\"power\":    \"true\", \
+						\"water\":    \"true\", \
+						\"direction\":          \"CLOCLWISE\", \
+						\"percentimeter\":      \"50\" \
+						} \
+						{ \
+						\"scheduling_id\":    \"420\", \
+						\"is_stop\":  \"false\", \
+						\"is_running\":         \"false\", \
+						\"start_date\":         \"1679068719\", \
+						\"end_date\": \"1679069819\", \
+						\"power\":    \"true\", \
+						\"water\":    \"false\", \
+						\"direction\":          \"ANTI_CLOCKWISE\", \
+						\"percentimeter\":      \"10\" \
+						} \
+						}";
+       	httpd_resp_send(req, mock_test, HTTPD_RESP_USE_STRLEN);
+   	}
+    else if (strcmp(req->uri, "/scheduling/angle") == 0)
+	{
+		char* mock_test = "{ \
+						{	\
+						\"scheduling_id\":    \"20\", \
+						\"is_return\":  \"false\", \
+						\"is_running\":         \"false\", \
+						\"start_date\":         \"1679066719\", \
+						\"end_date\": \"1679066819\", \
+						\"power\":    \"true\", \
+						\"water\":    \"true\", \
+						\"direction\":          \"CLOCLWISE\", \
+						\"start_angle\":      \"50\" \
+						\"end_angle\":          \"120\", \
+						\"percentimeter\":      \"50\" \
+						} \
+						}";
+		httpd_resp_send(req, mock_test, HTTPD_RESP_USE_STRLEN);
+	}
     else
     {
 		const char *filename = http_get_path_from_uri(filepath, ((http_file_server_data *)req->user_ctx)->base_path,
