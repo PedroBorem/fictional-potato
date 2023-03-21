@@ -194,3 +194,71 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	memcpy(out_config, cJSON_Print(config_root), strlen(cJSON_Print(config_root)));
 	cJSON_Delete(config_root);
 }
+
+void http_parser_scheduling_angle_to_json(char* out_scheduling)
+{
+	// create JSON
+	cJSON* scheduling_angle_root = cJSON_CreateObject();
+	cJSON* scheduling_angle_array = cJSON_CreateArray();
+
+	cJSON_AddItemToObject(scheduling_angle_root, "scheduling_id", cJSON_CreateString("20"));
+	cJSON_AddItemToObject(scheduling_angle_root, "is_return", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_angle_root, "is_running", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_angle_root, "start_date", cJSON_CreateString("1679066719"));
+	cJSON_AddItemToObject(scheduling_angle_root, "end_date", cJSON_CreateString("1679066819"));
+	cJSON_AddItemToObject(scheduling_angle_root, "power", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_angle_root, "water", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_angle_root, "direction", cJSON_CreateString("CLOCKWISE"));
+	cJSON_AddItemToObject(scheduling_angle_root, "start_angle", cJSON_CreateString("50"));
+	cJSON_AddItemToObject(scheduling_angle_root, "end_angle", cJSON_CreateString("120"));
+	cJSON_AddItemToObject(scheduling_angle_root, "percentimeter", cJSON_CreateString("50"));
+
+	cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_root);
+
+	memcpy(out_scheduling, cJSON_Print(scheduling_angle_array), strlen(cJSON_Print(scheduling_angle_array)));
+	cJSON_Delete(scheduling_angle_array);
+}
+
+void http_parser_scheduling_date_to_json(char* out_scheduling)
+{
+	// create JSON
+	cJSON* scheduling_date_root = cJSON_CreateObject();
+	cJSON* scheduling_date_array = cJSON_CreateArray();
+
+	cJSON_AddItemToObject(scheduling_date_root, "scheduling_id", cJSON_CreateString("420"));
+	cJSON_AddItemToObject(scheduling_date_root, "is_stop", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_date_root, "is_running", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_date_root, "start_date", cJSON_CreateString("1679066719"));
+	cJSON_AddItemToObject(scheduling_date_root, "end_date", cJSON_CreateString("1679066819"));
+	cJSON_AddItemToObject(scheduling_date_root, "power", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_date_root, "water", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_date_root, "direction", cJSON_CreateString("CLOCKWISE"));
+	cJSON_AddItemToObject(scheduling_date_root, "percentimeter", cJSON_CreateString("50"));
+
+	cJSON_AddItemToArray(scheduling_date_array, scheduling_date_root);
+
+	memcpy(out_scheduling, cJSON_Print(scheduling_date_array), strlen(cJSON_Print(scheduling_date_array)));
+	cJSON_Delete(scheduling_date_array);
+}
+
+void http_parser_cycles_to_json(char* out_cycles)
+{
+	// create JSON
+	cJSON* cycles_root = cJSON_CreateObject();
+	cJSON* cycles_array = cJSON_CreateArray();
+
+	cJSON_AddItemToObject(cycles_root, "is_running", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(cycles_root, "start_date", cJSON_CreateString("1678935600"));
+	cJSON_AddItemToObject(cycles_root, "end_date", cJSON_CreateString("1678935600"));
+	cJSON_AddItemToObject(cycles_root, "start_angle", cJSON_CreateString("30"));
+	cJSON_AddItemToObject(cycles_root, "end_angle", cJSON_CreateString("60"));
+	cJSON_AddItemToObject(cycles_root, "power", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(cycles_root, "water", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(cycles_root, "direction", cJSON_CreateString("CLOCKWISE"));
+	cJSON_AddItemToObject(cycles_root, "percentimeter", cJSON_CreateString("50"));
+
+	cJSON_AddItemToArray(cycles_array, cycles_root);
+
+	memcpy(out_cycles, cJSON_Print(cycles_array), strlen(cJSON_Print(cycles_array)));
+	cJSON_Delete(cycles_array);
+}

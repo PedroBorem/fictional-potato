@@ -18,4 +18,10 @@ pivot_config http_parser_config(char * request_body);
 
 void http_parser_config_to_json(pivot_config config, char* out_config);
 
+void http_parser_scheduling_angle_to_json(char* out_scheduling);
+
+void http_parser_scheduling_date_to_json(char* out_scheduling);
+
+void http_parser_cycles_to_json(char* out_cycles);
+
 #endif /* COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_CONFIG_PARSER_H_ */

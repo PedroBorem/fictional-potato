@@ -436,50 +436,30 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char* mock_test = "{ \
-						{	\
-						\"scheduling_id\":    \"20\", \
-						\"is_stop\":  \"false\", \
-						\"is_running\":         \"false\", \
-						\"start_date\":         \"1679066719\", \
-						\"end_date\": \"1679066819\", \
-						\"power\":    \"true\", \
-						\"water\":    \"true\", \
-						\"direction\":          \"CLOCLWISE\", \
-						\"percentimeter\":      \"50\" \
-						} \
-						{ \
-						\"scheduling_id\":    \"420\", \
-						\"is_stop\":  \"false\", \
-						\"is_running\":         \"false\", \
-						\"start_date\":         \"1679068719\", \
-						\"end_date\": \"1679069819\", \
-						\"power\":    \"true\", \
-						\"water\":    \"false\", \
-						\"direction\":          \"ANTI_CLOCKWISE\", \
-						\"percentimeter\":      \"10\" \
-						} \
-						}";
-       	httpd_resp_send(req, mock_test, HTTPD_RESP_USE_STRLEN);
+    	char date[300] = {};;
+
+    	http_parser_scheduling_date_to_json(date);
+		ESP_LOGW("TESTE", "%s", date);	
+       	
+       	httpd_resp_send(req, date, HTTPD_RESP_USE_STRLEN);
    	}
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{
-		char* mock_test = "{ \
-						{	\
-						\"scheduling_id\":    \"20\", \
-						\"is_return\":  \"false\", \
-						\"is_running\":         \"false\", \
-						\"start_date\":         \"1679066719\", \
-						\"end_date\": \"1679066819\", \
-						\"power\":    \"true\", \
-						\"water\":    \"true\", \
-						\"direction\":          \"CLOCLWISE\", \
-						\"start_angle\":      \"50\" \
-						\"end_angle\":          \"120\", \
-						\"percentimeter\":      \"50\" \
-						} \
-						}";
-		httpd_resp_send(req, mock_test, HTTPD_RESP_USE_STRLEN);
+		char angle[300] = {};
+
+		http_parser_scheduling_angle_to_json(angle);
+		ESP_LOGW("TESTE", "%s", angle);	
+
+		httpd_resp_send(req, angle, HTTPD_RESP_USE_STRLEN);
+	}
+	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
+	{
+		char cycles[300] = {};
+
+		http_parser_cycles_to_json(cycles);
+		ESP_LOGW("TESTE", "%s", cycles);	
+
+		httpd_resp_send(req, cycles, HTTPD_RESP_USE_STRLEN);
 	}
     else
     {
@@ -565,9 +545,6 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
 		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
 		LOG_COMM(HTTP_API_TAG, "content %s", content);
-
-		/* Send a simple response */
-		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
 
 		if(strcmp(req->uri, "/actions") == 0)
 		{
