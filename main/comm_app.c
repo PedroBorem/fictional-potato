@@ -143,9 +143,9 @@ void comm_app_set_config(const pivot_config config)
 	}
 }
 
-void comm_app_set_actions(const pivot_actions action)
+void comm_app_set_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle)
 {
-	http_server_set_str_actions(action);
+	http_server_set_str_actions(action, config, start_angle, end_angle);
 }
 
 /* Private methods ----------------------------------------------- */

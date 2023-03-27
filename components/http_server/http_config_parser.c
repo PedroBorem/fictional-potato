@@ -63,19 +63,38 @@ pivot_actions http_parser_action(char * request_body)
 	return actions;
 }
 
-void http_parser_action_to_json(pivot_actions action, char* out_action)
+void http_parser_action_to_json(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle, char* out_action)
 {
 	char int_str[20];
 
 	// create JSON
 	cJSON* action_root = cJSON_CreateObject();
 
-	// TODO : mock angle
-	cJSON_AddItemToObject(action_root, "pivot_num", cJSON_CreateString("10"));
-	cJSON_AddItemToObject(action_root, "pivot_start_angle", cJSON_CreateString("20"));
-	cJSON_AddItemToObject(action_root, "pivot_end_angle", cJSON_CreateString("60"));
-	cJSON_AddItemToObject(action_root, "start_angle", cJSON_CreateString("25"));
-	cJSON_AddItemToObject(action_root, "end_angle", cJSON_CreateString("40"));
+	// pivot ID
+	cJSON_AddItemToObject(action_root, "pivot_num", cJSON_CreateString(config.pivot_id));
+
+	// coverage Angle
+	cJSON_AddItemToObject(action_root, "pivot_start_angle", cJSON_CreateString("0")); // TODO : mock angle
+	cJSON_AddItemToObject(action_root, "pivot_end_angle", cJSON_CreateString("360")); // TODO : mock angle
+
+	// current angles
+	memset(int_str, 0x00, sizeof(int_str));
+	sprintf(int_str, "%d", start_angle );
+	cJSON_AddItemToObject(action_root, "start_angle", cJSON_CreateString(int_str));
+
+	memset(int_str, 0x00, sizeof(int_str));
+	sprintf(int_str, "%d", end_angle );
+	cJSON_AddItemToObject(action_root, "end_angle", cJSON_CreateString(int_str));
+
+	// ECO mode
+	if(config.eco_mode == true)
+	{
+		cJSON_AddItemToObject(action_root, "eco", cJSON_CreateString("true"));
+	}
+	else
+	{
+		cJSON_AddItemToObject(action_root, "eco", cJSON_CreateString("false"));
+	}
 
 	// power state
 	if(action.power_state == PIVOT_ON)
@@ -107,10 +126,12 @@ void http_parser_action_to_json(pivot_actions action, char* out_action)
 		cJSON_AddItemToObject(action_root, "direction", cJSON_CreateString("CLOCKWISE"));
 	}
 
+	// percent
 	memset(int_str, 0x00, sizeof(int_str));
 	sprintf(int_str, "%d", action.percentimeter );
 	cJSON_AddItemToObject(action_root, "percentimeter", cJSON_CreateString(int_str));
 
+	// output vector
 	memcpy(out_action, cJSON_Print(action_root), strlen(cJSON_Print(action_root)));
 	cJSON_Delete(action_root);
 }

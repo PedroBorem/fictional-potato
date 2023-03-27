@@ -71,6 +71,10 @@ esp_err_t data_app_init(void)
 			.pressure_switch = PRESSURE_SWITCH_NA,
 			.pressurization_time = 30,
 			.on_off_time = 01,
+			.eco_mode = false,
+			.start_time = 500,
+			.end_time = 500,
+			.sector_enabled = false,
 	};
 
 	err = nvs_data_init();

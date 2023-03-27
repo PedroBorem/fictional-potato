@@ -275,7 +275,7 @@ esp_err_t http_server_set_str_config(pivot_config current_config)
     return err;
 }
 
-esp_err_t http_server_set_str_actions(pivot_actions current_actions)
+esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle)
 {
     esp_err_t err = ESP_OK;
     char str_out[500] = {};
@@ -285,7 +285,7 @@ esp_err_t http_server_set_str_actions(pivot_actions current_actions)
 		free(http_actions);
 	}
 
-	http_parser_action_to_json(current_actions, str_out);
+	http_parser_action_to_json(action, config, start_angle, end_angle, str_out);
 	http_actions = strdup(str_out);
 
 	if(http_actions == NULL)
@@ -427,11 +427,17 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
 
     if(strcmp(req->uri, "/config") == 0)
     {
-    	ESP_LOGW("TESTE", "%s", http_config);
+    	LOG_COMM(HTTP_API_TAG, "get /config : %s", http_config);
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
     }
     else if (strcmp(req->uri, "/actions") == 0)
 	{
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_ACTION, NULL);
+		}
+
+		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)

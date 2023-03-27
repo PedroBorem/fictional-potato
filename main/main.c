@@ -32,6 +32,9 @@
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
 
+// represents the initial coverage angle of the pivot
+static uint16_t app_start_angle = 0;
+
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
@@ -57,7 +60,6 @@ void app_main(void)
 
 	// set http parameters
 	comm_app_set_config(current_config);
-	comm_app_set_actions(current_action);
 
 	//rtc_app_get_timestamp();
 	esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -82,6 +84,10 @@ void app_main(void)
 		}
 	}
 
+	// get start angle
+	app_start_angle = comm_app_get_degree();
+
+	// TODO remove this
 	// mock input
 	angles[0] = 25; //initial 1
 	angles[1] = 80; //final 1
@@ -142,6 +148,21 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 	switch(state)
 	{
+		case CALL_LOAD_ACTION:
+		{
+			pivot_actions actions = {};
+			pivot_config config = {};
+
+			ret = data_app_load_actions(&actions, sizeof(actions));
+			ret = data_app_load_config(&config, sizeof(config));
+
+			if(ret == ESP_OK)
+			{
+				comm_app_set_actions(actions, config, app_start_angle, comm_app_get_degree());
+			}
+
+			break;
+		}
 		case CALL_SAVE_ACTION:
 		{
 			pivot_actions new_actions = {};
@@ -152,7 +173,6 @@ static void app_main_call(app_call_states state,const void* buffer)
 			{
 				actuation_app_set_config(new_actions, false);
 				comm_app_send_event(new_actions);
-				comm_app_set_actions(new_actions);
 			}
 			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{
