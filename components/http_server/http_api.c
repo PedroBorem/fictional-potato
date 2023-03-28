@@ -87,9 +87,10 @@ static esp_err_t http_index_css_get_handler(httpd_req_t *req);
 static esp_err_t http_favicon_get_handler(httpd_req_t *req);
 static esp_err_t http_logo_get_handler(httpd_req_t *req);
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath);
-static esp_err_t http_download_get_handler(httpd_req_t *req);
-static esp_err_t http_submit_post_handler(httpd_req_t *req);
-static esp_err_t http_submit_put_handler(httpd_req_t *req);
+static esp_err_t http_get_handler(httpd_req_t *req);
+static esp_err_t http_post_handler(httpd_req_t *req);
+static esp_err_t http_put_handler(httpd_req_t *req);
+static esp_err_t http_delete_handler(httpd_req_t *req);
 
 static http_file_server_data *server_data = NULL;
 
@@ -189,7 +190,7 @@ esp_err_t http_server_start(void)
 				httpd_uri_t file_download = {
 					.uri       = "/*",  // Match all URIs of type /path/to/file
 					.method    = HTTP_GET,
-					.handler   = http_download_get_handler,
+					.handler   = http_get_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_download);
@@ -198,7 +199,7 @@ esp_err_t http_server_start(void)
 				httpd_uri_t file_submit = {
 					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
 					.method    = HTTP_POST,
-					.handler   = http_submit_post_handler,
+					.handler   = http_post_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_submit);
@@ -207,10 +208,19 @@ esp_err_t http_server_start(void)
 				httpd_uri_t file_config = {
 					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
 					.method    = HTTP_PUT,
-					.handler   = http_submit_put_handler,
+					.handler   = http_put_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_config);
+
+				/* URI handler for uploading files to server */
+				httpd_uri_t file_delete = {
+					.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
+					.method    = HTTP_DELETE,
+					.handler   = http_delete_handler,
+					.user_ctx  = server_data    // Pass server data as context
+				};
+				httpd_register_uri_handler(http_handle, &file_delete);
 
 				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 			}
@@ -419,7 +429,7 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
  *  - ESP_OK : On success
  *  - ESP_FAIL : fail to get handler
  */
-static esp_err_t http_download_get_handler(httpd_req_t *req)
+static esp_err_t http_get_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_OK;
 	struct stat file_stat = {};
@@ -528,7 +538,7 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
  *  - ESP_OK : On success
  *  - ESP_FAIL : fail to get submit
  */
-static esp_err_t http_submit_post_handler(httpd_req_t *req)
+static esp_err_t http_post_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;
 
@@ -583,7 +593,7 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
  *  - ESP_OK : On success
  *  - ESP_FAIL : fail to get submit
  */
-static esp_err_t http_submit_put_handler(httpd_req_t *req)
+static esp_err_t http_put_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;
 
@@ -631,5 +641,35 @@ static esp_err_t http_submit_put_handler(httpd_req_t *req)
     }
 
 	return err;
+}
+
+static esp_err_t http_delete_handler(httpd_req_t *req)
+{
+	esp_err_t err = ESP_FAIL;
+
+		char content[1000] = {};
+
+	    /* Truncate if content length larger than the buffer */
+	    size_t recv_size = MIN(req->content_len, sizeof(content));
+
+	    int ret = httpd_req_recv(req, content, recv_size);
+	    if (ret <= 0) // 0 return value indicates connection closed
+	    {
+	        /* Check if timeout occurred */
+	        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+	        {
+	            httpd_resp_send_408(req);
+	        }
+	    }
+	    else
+	    {
+			LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+			LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+			LOG_COMM(HTTP_API_TAG, "content %s", content);
+
+			// TODO deletar do BD
+	    }
+
+		return err;
 }
 
