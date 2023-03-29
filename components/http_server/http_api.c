@@ -435,7 +435,12 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	struct stat file_stat = {};
     char filepath[HTTP_FILE_PATH_MAX] = {};
 
-    if(strcmp(req->uri, "/config") == 0)
+    if(strcmp(req->uri, "/api-status") == 0)
+    {
+    	LOG_COMM(HTTP_API_TAG, "get /api-status : %s", "{status_soil:200}");
+		httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
+    }
+    else if(strcmp(req->uri, "/config") == 0)
     {
     	LOG_COMM(HTTP_API_TAG, "get /config : %s", http_config);
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
