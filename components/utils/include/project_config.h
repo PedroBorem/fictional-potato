@@ -98,7 +98,7 @@ typedef enum
  *	Configuration angles
  *
  */
-typedef	struct __attribute__((__packed__))
+typedef	struct
 {
 	uint16_t start_angle;
 	uint16_t end_angle;
@@ -120,7 +120,7 @@ typedef	struct __attribute__((__packed__))
 	time_t start_time;
 	time_t end_time;
 	bool sector_enabled;
-	//pivot_sectors pivot_sectors[4]; //todo: ajustar o valor maximo de setores
+	pivot_sectors sectors[4]; //todo: ajustar o valor maximo de setores
 }pivot_config;
 
 /**

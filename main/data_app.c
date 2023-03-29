@@ -64,7 +64,7 @@ esp_err_t data_app_init(void)
 			.percentimeter = 0,
 	};
 
-	const pivot_config default_conifg = {
+	const pivot_config default_config = {
 			.pivot_id = "soil",
 			.gprs_id = "soil",
 			.contactor = CONTACTOR_NA,
@@ -72,8 +72,6 @@ esp_err_t data_app_init(void)
 			.pressurization_time = 30,
 			.on_off_time = 01,
 			.eco_mode = false,
-			.start_time = 500,
-			.end_time = 500,
 			.sector_enabled = false,
 	};
 
@@ -87,7 +85,7 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG) == 0)
 		{
-			data_app_save_config(&default_conifg, sizeof(default_conifg));
+			data_app_save_config(&default_config, sizeof(default_config));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);

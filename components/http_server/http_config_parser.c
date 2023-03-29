@@ -169,6 +169,37 @@ pivot_config http_parser_config(char * request_body)
 	config.pressurization_time = (uint16_t)cJSON_GetObjectItem(subitem, "pressure_time")->valueint;
 	config.on_off_time = (uint8_t)cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
 
+	config.eco_mode = (bool)cJSON_GetObjectItem(subitem, "eco_mode")->valueint;
+	if(config.eco_mode == true)
+	{
+		config.start_time = (time_t)cJSON_GetObjectItem(subitem, "eco_mode_start_time")->valueint;
+		config.end_time = (time_t)cJSON_GetObjectItem(subitem, "eco_mode_end_time")->valueint;
+	}
+
+	config.sector_enabled = (bool)cJSON_GetObjectItem(subitem, "sector_enabled")->valueint;
+	if(config.sector_enabled == true)
+	{
+		cJSON * sectors = cJSON_GetObjectItem(subitem,"sectors");
+		if( sectors )
+		{
+			uint8_t id = 0;
+			cJSON *sectors_x = sectors->child;
+
+			while( sectors_x )
+			{
+				id = (uint8_t)cJSON_GetObjectItem(sectors_x, "id")->valueint;
+				config.sectors[(id - 1)].start_angle = (uint16_t)cJSON_GetObjectItem(sectors_x, "start_angle")->valueint;
+				config.sectors[(id - 1)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_x, "end_angle")->valueint;
+
+				sectors_x = sectors_x->next;
+			}
+
+			//cJSON_Delete(sectors_x);
+		}
+
+		//cJSON_Delete(sectors);
+	}
+
 	cJSON_Delete(subitem);
 
 	return config;
@@ -177,6 +208,7 @@ pivot_config http_parser_config(char * request_body)
 void http_parser_config_to_json(pivot_config config, char* out_config)
 {
 	char int_str[20];
+	uint8_t sectors_indice = 0;
 
 	// create JSON
 	cJSON* config_root = cJSON_CreateObject();
@@ -209,8 +241,52 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	sprintf(int_str, "%d", config.on_off_time );
 	cJSON_AddItemToObject(config_root, "turn_on_time", cJSON_CreateString(int_str));
 
-	cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("false"));
+	if(config.eco_mode == true)
+	{
+		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("true"));
+
+		memset(int_str, 0x00, sizeof(int_str));
+		sprintf(int_str, "%ld", config.start_time );
+		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString(int_str));
+
+		memset(int_str, 0x00, sizeof(int_str));
+		sprintf(int_str, "%ld", config.end_time );
+		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString(int_str));
+	}
+	else
+	{
+		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("false"));
+		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString("0"));
+		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString("0"));
+	}
+
+	if(config.sector_enabled == true)
+	{
+		cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("true"));
+
+		cJSON* sector_y;
+
+		uint8_t size_sectors = 4; //TODO: tamanho maximo de setores
+		for(sectors_indice = 0; sectors_indice < size_sectors; sectors_indice++)
+		{
+			if(config.sectors[sectors_indice].start_angle != 0 && config.sectors[sectors_indice].end_angle != 0)
+			{
+				cJSON_AddItemToObject(config_root,"sectors", sector_y = cJSON_CreateObject());
+
+				memset(int_str, 0x00, sizeof(int_str));
+				sprintf(int_str, "%d",config.sectors[sectors_indice].start_angle );
+				cJSON_AddItemToObject(sector_y, "start_angle", cJSON_CreateString(int_str));
+
+				memset(int_str, 0x00, sizeof(int_str));
+				sprintf(int_str, "%d",config.sectors[sectors_indice].end_angle );
+				cJSON_AddItemToObject(sector_y, "end_angle", cJSON_CreateString(int_str));
+			}
+		}
+	}
+	else
+	{
+		cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("false"));
+	}
 
 	memcpy(out_config, cJSON_Print(config_root), strlen(cJSON_Print(config_root)));
 	cJSON_Delete(config_root);
