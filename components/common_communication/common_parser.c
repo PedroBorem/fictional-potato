@@ -13,6 +13,7 @@
 
 /* Self include */
 #include "common_parser.h"
+#include "cJSON.h"
 
 /**\addtogroup components
  * @{
@@ -226,23 +227,35 @@ esp_err_t common_parser_json_to_timestamp(const char* string_in, time_t* timesta
 	return err;
 }
 
-esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, char* string_out)
+esp_err_t common_parser_status_to_json(pivot_actions config_in,time_t timestamp, uint16_t angle, const char* id, char* string_out, size_t string_size)
 {
-	esp_err_t err = ESP_OK;
-
-	char string_converted[75] = "{\"type\":\"status\",\"id\":\"TesteInatel_5\",\"payload\":\""; // AJUSTAR AQUI, UTILIZAR JSON
+	// convert status
 	char string_status[25] = "";
-
 	common_parser_status_to_string(config_in, timestamp, angle, string_status);
 
-	strcat(string_converted, string_status);
+	// create JSON
+	cJSON *root =  cJSON_CreateObject();
+	cJSON_AddItemToObject(root, "type", cJSON_CreateString("status"));
+	cJSON_AddItemToObject(root, "id", cJSON_CreateString(id));
+	cJSON_AddItemToObject(root, "payload", cJSON_CreateString(string_status));
 
-	string_converted[71] = '\"';
-	string_converted[72] = '}';
+	memcpy(string_out, cJSON_Print(root), string_size);
+	cJSON_Delete(root);
 
-	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
+	return ESP_OK;
+}
 
-	return err;
+esp_err_t common_parser_register_to_json(const char* id, char* string_out, size_t string_size)
+{
+	// create JSON
+	cJSON *root =  cJSON_CreateObject();
+	cJSON_AddItemToObject(root, "register", cJSON_CreateString("True"));
+	cJSON_AddItemToObject(root, "id", cJSON_CreateString(id));
+
+	memcpy(string_out, cJSON_Print(root), string_size);
+	cJSON_Delete(root);
+
+	return ESP_OK;
 }
 
 /**@}*/ 	//common_parser

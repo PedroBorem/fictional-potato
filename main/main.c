@@ -32,6 +32,9 @@
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
 
+// represents the initial coverage angle of the pivot
+static uint16_t app_start_angle = 0;
+
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
@@ -45,35 +48,46 @@ static void app_peak_hours_task(void* arg);
 void app_main(void)
 {
 	uint16_t angles[4] = {};
+	pivot_config current_config = {};
+	pivot_actions current_action = {};
+
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
-	//rtc_app_get_timestamp();
+	// get configurations
+	data_app_load_config(&current_config, sizeof(current_config));
+	actuation_app_get_config(&current_action, sizeof(current_action));
 
+	// set http parameters
+	comm_app_set_config(current_config);
+
+	//rtc_app_get_timestamp();
 	esp_reset_reason_t reset_cause = esp_reset_reason();
 	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
-		// critica de tempo
-		pivot_actions current_config = {};
-
-		data_app_load_config(DATA_LABEL_ACTIONS, &current_config, sizeof(current_config));
+		// TODO : critica de tempo
+		data_app_load_actions(&current_action, sizeof(current_action));
 
 		LOG_DATA(MAIN_TAG, "");
 		LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
-		LOG_DATA(MAIN_TAG, " Power state: %d", current_config.power_state);
-		LOG_DATA(MAIN_TAG, " Advance mode: %d", current_config.rotation);
-		LOG_DATA(MAIN_TAG, " Watering state: %d", current_config.watering_state);
-		LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_config.percentimeter);
+		LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
+		LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
+		LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
+		LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
 		LOG_DATA(MAIN_TAG, " --------------------------------\n");
 
 		vTaskDelay(pdMS_TO_TICKS(500));
 
-		if(current_config.power_state != PIVOT_OFF)
+		if(current_action.power_state != PIVOT_OFF)
 		{
-			actuation_app_set_config(current_config, false);
+			actuation_app_set_config(current_action, false);
 		}
 	}
 
+	// get start angle
+	app_start_angle = comm_app_get_degree();
+
+	// TODO remove this
 	// mock input
 	angles[0] = 25; //initial 1
 	angles[1] = 80; //final 1
@@ -134,20 +148,48 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 	switch(state)
 	{
-		case CALL_SAVE_ACTION:
+		case CALL_LOAD_ACTION:
 		{
-			pivot_actions new_config = {};
-			memcpy(&new_config, buffer, sizeof(new_config));
+			pivot_actions actions = {};
+			pivot_config config = {};
 
-			ret = data_app_save_config(DATA_LABEL_ACTIONS, &new_config, sizeof(new_config));
+			ret = data_app_load_actions(&actions, sizeof(actions));
+			ret = data_app_load_config(&config, sizeof(config));
+
 			if(ret == ESP_OK)
 			{
-				actuation_app_set_config(new_config, false);
-				comm_app_send_event(new_config);
+				comm_app_set_actions(actions, config, app_start_angle, comm_app_get_degree());
 			}
-			else if(new_config.rotation == PIVOT_UNKNOWN)
+
+			break;
+		}
+		case CALL_SAVE_ACTION:
+		{
+			pivot_actions new_actions = {};
+			memcpy(&new_actions, buffer, sizeof(new_actions));
+
+			ret = data_app_save_actions(&new_actions, sizeof(new_actions));
+			if(ret == ESP_OK)
 			{
-				comm_app_send_event(new_config);
+				actuation_app_set_config(new_actions, false);
+				comm_app_send_event(new_actions);
+			}
+			else if(new_actions.rotation == PIVOT_UNKNOWN)
+			{
+				comm_app_send_event(new_actions);
+			}
+
+			break;
+		}
+		case CALL_SAVE_CONFIG:
+		{
+			pivot_config new_config = {};
+			memcpy(&new_config, buffer, sizeof(new_config));
+
+			ret = data_app_save_config(&new_config, sizeof(new_config));
+			if(ret == ESP_OK)
+			{
+				comm_app_set_config(new_config);
 			}
 
 			break;
@@ -173,23 +215,23 @@ static void app_main_call(app_call_states state,const void* buffer)
 		}
 		case CALL_OFF_PIVOT:
 		{
-			pivot_actions current_config = {};
+			pivot_actions current_action = {};
 
-			data_app_load_config(DATA_LABEL_ACTIONS, &current_config, sizeof(current_config));
+			data_app_load_actions(&current_action, sizeof(current_action));
 			vTaskDelay(pdMS_TO_TICKS(500));
 
-			if(current_config.power_state != PIVOT_OFF)
+			if(current_action.power_state != PIVOT_OFF)
 			{
-				current_config.power_state = PIVOT_OFF;
-				actuation_app_set_config(current_config, false);
-				data_app_save_config(DATA_LABEL_ACTIONS, &current_config, sizeof(current_config));
+				current_action.power_state = PIVOT_OFF;
+				actuation_app_set_config(current_action, false);
+				data_app_save_actions(&current_action, sizeof(current_action));
 			}
 
 			vTaskDelay(pdMS_TO_TICKS(2000));
 
 			//get current status
-			actuation_app_get_config(&current_config, sizeof(current_config));
-			comm_app_send_event(current_config);
+			actuation_app_get_config(&current_action, sizeof(current_action));
+			comm_app_send_event(current_action);
 			break;
 		}
 		default:
@@ -244,7 +286,7 @@ static void app_peak_hours_task(void* arg)
 	time_t diff_time = 0;
 	bool alredy_off = false;
 
-	pivot_actions current_config = {};
+	pivot_actions current_action = {};
 	eTaskState TaskState;
 
 	while(1)
@@ -261,9 +303,9 @@ static void app_peak_hours_task(void* arg)
 				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
 				if(alredy_off == true)
 				{
-					data_app_load_config(DATA_LABEL_ACTIONS, &current_config, sizeof(current_config));
+					data_app_load_actions(&current_action, sizeof(current_action));
 					vTaskDelay(pdMS_TO_TICKS(500));
-					actuation_app_set_config(current_config, false);
+					actuation_app_set_config(current_action, false);
 
 					alredy_off = false;
 

@@ -31,7 +31,7 @@ esp_err_t gprs_module_init(void);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail
  */
-esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree);
+esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree, const char * gprs_id);
 
 esp_err_t gprs_module_set_id(const char * gprs_id);
 

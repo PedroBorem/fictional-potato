@@ -79,6 +79,7 @@ static httpd_handle_t http_handle = NULL;
 static app_callback http_callback = NULL;
 
 static char* http_config = NULL;
+static char* http_actions = NULL;
 
 /* Private function prototype ------------------------------------ */
 static esp_err_t http_index_html_get_handler(httpd_req_t *req);
@@ -86,8 +87,10 @@ static esp_err_t http_index_css_get_handler(httpd_req_t *req);
 static esp_err_t http_favicon_get_handler(httpd_req_t *req);
 static esp_err_t http_logo_get_handler(httpd_req_t *req);
 static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath);
-static esp_err_t http_download_get_handler(httpd_req_t *req);
-static esp_err_t http_submit_post_handler(httpd_req_t *req);
+static esp_err_t http_get_handler(httpd_req_t *req);
+static esp_err_t http_post_handler(httpd_req_t *req);
+static esp_err_t http_put_handler(httpd_req_t *req);
+static esp_err_t http_delete_handler(httpd_req_t *req);
 
 static http_file_server_data *server_data = NULL;
 
@@ -187,7 +190,7 @@ esp_err_t http_server_start(void)
 				httpd_uri_t file_download = {
 					.uri       = "/*",  // Match all URIs of type /path/to/file
 					.method    = HTTP_GET,
-					.handler   = http_download_get_handler,
+					.handler   = http_get_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_download);
@@ -196,10 +199,28 @@ esp_err_t http_server_start(void)
 				httpd_uri_t file_submit = {
 					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
 					.method    = HTTP_POST,
-					.handler   = http_submit_post_handler,
+					.handler   = http_post_handler,
 					.user_ctx  = server_data    // Pass server data as context
 				};
 				httpd_register_uri_handler(http_handle, &file_submit);
+
+				/* URI handler for uploading files to server */
+				httpd_uri_t file_config = {
+					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+					.method    = HTTP_PUT,
+					.handler   = http_put_handler,
+					.user_ctx  = server_data    // Pass server data as context
+				};
+				httpd_register_uri_handler(http_handle, &file_config);
+
+				/* URI handler for uploading files to server */
+				httpd_uri_t file_delete = {
+					.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
+					.method    = HTTP_DELETE,
+					.handler   = http_delete_handler,
+					.user_ctx  = server_data    // Pass server data as context
+				};
+				httpd_register_uri_handler(http_handle, &file_delete);
 
 				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 			}
@@ -243,28 +264,44 @@ esp_err_t http_server_register_callback(app_callback callback)
 	return ret;
 }
 
-esp_err_t http_server_set_str_config(char* str_config)
+esp_err_t http_server_set_str_config(pivot_config current_config)
 {
     esp_err_t err = ESP_OK;
+    char str_out[500] = {};
 
-    if(str_config == NULL)
-    {
-        err = ESP_ERR_INVALID_ARG;
-    }
-    else
-    {
-        if(http_config != NULL)
-        {
-            free(http_config);
-        }
+	if(http_config != NULL)
+	{
+		free(http_config);
+	}
 
-        http_config = strdup(str_config);
+	http_parser_config_to_json(current_config, str_out);
+	http_config = strdup(str_out);
 
-        if(http_config == NULL)
-        {
-            err = ESP_FAIL;
-        }
-    }
+	if(http_config == NULL)
+	{
+		err = ESP_FAIL;
+	}
+
+    return err;
+}
+
+esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle)
+{
+    esp_err_t err = ESP_OK;
+    char str_out[500] = {};
+
+	if(http_actions != NULL)
+	{
+		free(http_actions);
+	}
+
+	http_parser_action_to_json(action, config, start_angle, end_angle, str_out);
+	http_actions = strdup(str_out);
+
+	if(http_actions == NULL)
+	{
+		err = ESP_FAIL;
+	}
 
     return err;
 }
@@ -392,16 +429,59 @@ static esp_err_t http_resp_dir_html(httpd_req_t *req, const char *dirpath)
  *  - ESP_OK : On success
  *  - ESP_FAIL : fail to get handler
  */
-static esp_err_t http_download_get_handler(httpd_req_t *req)
+static esp_err_t http_get_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_OK;
 	struct stat file_stat = {};
     char filepath[HTTP_FILE_PATH_MAX] = {};
 
-    if(strcmp(req->uri, "/get_config") == 0)
+    if(strcmp(req->uri, "/api-status") == 0)
     {
+    	LOG_COMM(HTTP_API_TAG, "get /api-status : %s", "{status_soil:200}");
+		httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
+    }
+    else if(strcmp(req->uri, "/config") == 0)
+    {
+    	LOG_COMM(HTTP_API_TAG, "get /config : %s", http_config);
 		httpd_resp_send(req, http_config, HTTPD_RESP_USE_STRLEN);
     }
+    else if (strcmp(req->uri, "/actions") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_ACTION, NULL);
+		}
+
+		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
+    	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
+	}
+    else if (strcmp(req->uri, "/scheduling/date") == 0)
+   	{
+    	char date[300] = {};;
+
+    	http_parser_scheduling_date_to_json(date);
+		ESP_LOGW("TESTE", "%s", date);	
+       	
+       	httpd_resp_send(req, date, HTTPD_RESP_USE_STRLEN);
+   	}
+    else if (strcmp(req->uri, "/scheduling/angle") == 0)
+	{
+		char angle[300] = {};
+
+		http_parser_scheduling_angle_to_json(angle);
+		ESP_LOGW("TESTE", "%s", angle);	
+
+		httpd_resp_send(req, angle, HTTPD_RESP_USE_STRLEN);
+	}
+	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
+	{
+		char cycles[300] = {};
+
+		http_parser_cycles_to_json(cycles);
+		ESP_LOGW("TESTE", "%s", cycles);	
+
+		httpd_resp_send(req, cycles, HTTPD_RESP_USE_STRLEN);
+	}
     else
     {
 		const char *filename = http_get_path_from_uri(filepath, ((http_file_server_data *)req->user_ctx)->base_path,
@@ -463,7 +543,7 @@ static esp_err_t http_download_get_handler(httpd_req_t *req)
  *  - ESP_OK : On success
  *  - ESP_FAIL : fail to get submit
  */
-static esp_err_t http_submit_post_handler(httpd_req_t *req)
+static esp_err_t http_post_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;
 
@@ -478,9 +558,6 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
         /* Check if timeout occurred */
         if (ret == HTTPD_SOCK_ERR_TIMEOUT)
         {
-            /* In case of timeout one can choose to retry calling
-             * httpd_req_recv(), but to keep it simple, here we
-             * respond with an HTTP 408 (Request Timeout) error */
             httpd_resp_send_408(req);
         }
     }
@@ -489,9 +566,6 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
 		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
 		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
 		LOG_COMM(HTTP_API_TAG, "content %s", content);
-
-		/* Send a simple response */
-		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
 
 		if(strcmp(req->uri, "/actions") == 0)
 		{
@@ -514,5 +588,93 @@ static esp_err_t http_submit_post_handler(httpd_req_t *req)
     }
 
 	return err;
+}
+
+/**
+ * @brief	Handler to  a file from the server
+ * @param
+ *  - req[in/out] - HTTP Request Data Structure.
+ * @return
+ *  - ESP_OK : On success
+ *  - ESP_FAIL : fail to get submit
+ */
+static esp_err_t http_put_handler(httpd_req_t *req)
+{
+	esp_err_t err = ESP_FAIL;
+
+	char content[1000] = {};
+
+    /* Truncate if content length larger than the buffer */
+    size_t recv_size = MIN(req->content_len, sizeof(content));
+
+    int ret = httpd_req_recv(req, content, recv_size);
+    if (ret <= 0) // 0 return value indicates connection closed
+    {
+        /* Check if timeout occurred */
+        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+        {
+            httpd_resp_send_408(req);
+        }
+    }
+    else
+    {
+		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+		LOG_COMM(HTTP_API_TAG, "content %s", content);
+
+		/* Send a simple response */
+		httpd_resp_send(req, content, HTTPD_RESP_USE_STRLEN);// TODO: mandar responsta para o edu?
+
+		if(strcmp(req->uri, "/config") == 0)
+		{
+			pivot_config config = http_parser_config(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_CONFIG, &config);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered uri callback");
+		}
+    }
+
+	return err;
+}
+
+static esp_err_t http_delete_handler(httpd_req_t *req)
+{
+	esp_err_t err = ESP_FAIL;
+
+		char content[1000] = {};
+
+	    /* Truncate if content length larger than the buffer */
+	    size_t recv_size = MIN(req->content_len, sizeof(content));
+
+	    int ret = httpd_req_recv(req, content, recv_size);
+	    if (ret <= 0) // 0 return value indicates connection closed
+	    {
+	        /* Check if timeout occurred */
+	        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+	        {
+	            httpd_resp_send_408(req);
+	        }
+	    }
+	    else
+	    {
+			LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+			LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+			LOG_COMM(HTTP_API_TAG, "content %s", content);
+
+			// TODO deletar do BD
+	    }
+
+		return err;
 }
 
