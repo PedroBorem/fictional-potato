@@ -34,6 +34,7 @@ static TaskHandle_t xTask_peak_hours_app = NULL;
 
 // represents the initial coverage angle of the pivot
 static uint16_t app_start_angle = 0;
+static pivot_config main_config = {};
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
@@ -47,7 +48,6 @@ static void app_peak_hours_task(void* arg);
  */
 void app_main(void)
 {
-	uint16_t angles[4] = {};
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
@@ -87,19 +87,11 @@ void app_main(void)
 	// get start angle
 	app_start_angle = comm_app_get_degree();
 
-	// TODO remove this
-	// mock input
-	angles[0] = 25; //initial 1
-	angles[1] = 80; //final 1
-
-	angles[2] = 180; //initial 1
-	angles[3] = 250; //final 1
-
 	// create sectorization task
 	xTaskCreate(&app_sectorization_task,
 				MAIN_APP_TASK_1_NAME,
 				MAIN_APP_STACK_1_SIZE,
-				angles,
+				NULL,
 				MAIN_APP_TASK_1_PRIORITY,
 				&xTask_sectorization_app);
 
@@ -110,6 +102,8 @@ void app_main(void)
 				NULL,
 				MAIN_APP_TASK_2_PRIORITY,
 				&xTask_peak_hours_app);
+
+	memcpy(&main_config, &current_config, sizeof(main_config));
 
 	while (1)
 	{
@@ -190,6 +184,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			if(ret == ESP_OK)
 			{
 				comm_app_set_config(new_config);
+				memcpy(&main_config, &new_config, sizeof(main_config));
 			}
 
 			break;
@@ -243,37 +238,47 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 static void app_sectorization_task(void* arg)
 {
-	uint16_t angles[4] = {};
 	uint16_t current_angle = 0;
 	bool pump_is_on = false;
-	memcpy(angles, arg, sizeof(angles));
+	uint8_t pump_flag = 0;
 
 	while(1)
 	{
-		current_angle = comm_app_get_degree();
-		if(current_angle >= angles[0] && current_angle <= angles[1])
+		if(main_config.sector_enabled == true)
 		{
-			if(pump_is_on == false)
+			current_angle = comm_app_get_degree();
+
+			//TODO trocar o 4 por define
+			for(uint8_t angles = 0; angles < 4; angles++)
 			{
-				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
-				actuation_app_set_pump(true);
-				pump_is_on = true;
+				if(main_config.sectors[angles].start_angle != 0
+						&& main_config.sectors[angles].end_angle != 0)
+				{
+					if(current_angle >= main_config.sectors[angles].start_angle
+							&& current_angle <= main_config.sectors[angles].end_angle)
+					{
+						if(pump_is_on == false)
+						{
+							ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
+							actuation_app_set_pump(true);
+							pump_is_on = true;
+						}
+					}
+					else
+					{
+						pump_flag++;
+					}
+				}
 			}
-		}
-		else if(current_angle >= angles[2] && current_angle <= angles[3])
-		{
-			if(pump_is_on == false)
+
+			if(pump_flag == 4 && pump_is_on == true)
 			{
-				ESP_LOGI(MAIN_TAG,"Pump ON (%d)", current_angle);
-				actuation_app_set_pump(true);
-				pump_is_on = true;
+				ESP_LOGI(MAIN_TAG,"Pump OFF");
+				actuation_app_set_pump(false);
+				pump_is_on = false;
 			}
-		}
-		else if(pump_is_on == true)
-		{
-			ESP_LOGI(MAIN_TAG,"Pump OFF");
-			actuation_app_set_pump(false);
-			pump_is_on = false;
+
+			pump_flag = 0;
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(2000));
