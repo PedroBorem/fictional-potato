@@ -179,18 +179,16 @@ pivot_config http_parser_config(char * request_body)
 	config.sector_enabled = (bool)cJSON_GetObjectItem(subitem, "sector_enabled")->valueint;
 	if(config.sector_enabled == true)
 	{
-		uint8_t id = 0;
 		cJSON * sectors = cJSON_GetObjectItem(subitem,"sectors");
 
-		for (uint8_t i = 0 ; i < cJSON_GetArraySize(sectors) ; i++)
+		for (uint8_t index = 0 ; index < cJSON_GetArraySize(sectors) ; index++)
 		{
-			cJSON * sectors_array = cJSON_GetArrayItem(sectors, i);
-			id = (uint8_t)cJSON_GetObjectItem(sectors_array, "id")->valueint;
-			config.sectors[(id - 1)].start_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "start_angle")->valueint;
-			config.sectors[(id - 1)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "end_angle")->valueint;
-		}
+			cJSON * sectors_array = cJSON_GetArrayItem(sectors, index);
 
-		//cJSON_Delete(sectors);
+			config.sectors[(index)].id = (uint8_t)cJSON_GetObjectItem(sectors_array, "id")->valueint;
+			config.sectors[(index)].start_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "start_angle")->valueint;
+			config.sectors[(index)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "end_angle")->valueint;
+		}
 	}
 
 	cJSON_Delete(subitem);
@@ -268,6 +266,10 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 			if(config.sectors[sectors_indice].start_angle != 0 && config.sectors[sectors_indice].end_angle != 0)
 			{
 				cJSON_AddItemToArray(array_sectors, sectors = cJSON_CreateObject());
+
+				memset(int_str, 0x00, sizeof(int_str));
+				sprintf(int_str, "%d",config.sectors[sectors_indice].id );
+				cJSON_AddItemToObject(sectors, "id", cJSON_CreateString(int_str));
 
 				memset(int_str, 0x00, sizeof(int_str));
 				sprintf(int_str, "%d",config.sectors[sectors_indice].start_angle );
