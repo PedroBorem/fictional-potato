@@ -34,8 +34,8 @@
 /* Global variables ---------------------------------------------- */
 
 //FreeRTOS variables
-static xTimerHandle perc_timer_handleOn = NULL;
-static xTimerHandle perc_timer_handleOff = NULL;
+static TimerHandle_t perc_timer_handleOn = NULL;
+static TimerHandle_t perc_timer_handleOff = NULL;
 static TaskHandle_t xTask_waitpressure = NULL;
 static TaskHandle_t xTask_readpercent = NULL;
 
@@ -61,7 +61,7 @@ static bool pressurizing = false;
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to initialize
  */
-void vPercTimerOnExpire(xTimerHandle pxTimer);
+void vPercTimerOnExpire(TimerHandle_t pxTimer);
 
 /**
  * @brief	Perc Off timer expiration callback.
@@ -69,7 +69,7 @@ void vPercTimerOnExpire(xTimerHandle pxTimer);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to initialize
  */
-void vPercTimerOffExpire(xTimerHandle pxTimer);
+void vPercTimerOffExpire(TimerHandle_t pxTimer);
 
 /**
  * @brief	Start relays accordingly, after pressure check or dry mode
@@ -405,13 +405,13 @@ void gpio_actuator_pressure_off(void)
 }
 
 /* Private methods  ---------------------------------------------- */
-void vPercTimerOnExpire(xTimerHandle pxTimer)
+void vPercTimerOnExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	xTimerStart(perc_timer_handleOff, 1000);
 }
 
-void vPercTimerOffExpire(xTimerHandle pxTimer)
+void vPercTimerOffExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
 	xTimerStart(perc_timer_handleOn, 1000);
@@ -436,7 +436,7 @@ void actuator_wait_pressure(void* arg)
 
 	while(1)
 	{
-		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %d",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
+		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
 		{
 			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);

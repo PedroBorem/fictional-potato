@@ -57,7 +57,7 @@ esp_err_t rf_uart_init(const rf_uart_callback callback)
 		.parity =		UART_PARITY_DISABLE,
 		.stop_bits =	UART_STOP_BITS_1,
 		.flow_ctrl =	UART_HW_FLOWCTRL_DISABLE,
-		.source_clk =	UART_SCLK_APB,
+		.source_clk =	UART_SCLK_DEFAULT,
 	};
 
 	// Install UART driver, and get the queue.
@@ -130,7 +130,7 @@ static void rf_uart_event_task(void* arg)
 	while(1)
 	{
 		//Waiting for UART event.
-		if(xQueueReceive(rf_uart_queue, (void*)&event, (portTickType)portMAX_DELAY))
+		if(xQueueReceive(rf_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, RF_UART_BUF_SIZE);
 			LOG_COMM(RF_UART_TAG, "uart[%d] event:", RF_UART_NUM);

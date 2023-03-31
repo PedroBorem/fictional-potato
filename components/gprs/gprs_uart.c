@@ -50,13 +50,14 @@ esp_err_t gprs_uart_init(const gprs_uart_callback callback)
 	BaseType_t xReturn = pdPASS;
 
 	// Configure parameters of an UART driver, communication pins and install the driver
+
 	const uart_config_t uart_config = {
-		.baud_rate =	115200,
-		.data_bits =	UART_DATA_8_BITS,
-		.parity =		UART_PARITY_DISABLE,
-		.stop_bits =	UART_STOP_BITS_1,
-		.flow_ctrl =	UART_HW_FLOWCTRL_DISABLE,
-		.source_clk =	UART_SCLK_APB,
+		.baud_rate = 115200,
+		.data_bits = UART_DATA_8_BITS,
+		.parity = UART_PARITY_DISABLE,
+		.stop_bits = UART_STOP_BITS_1,
+		.flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
+		.source_clk = UART_SCLK_DEFAULT,
 	};
 
 	// Install UART driver, and get the queue.
@@ -129,7 +130,7 @@ static void gprs_uart_event_task(void* arg)
 	while(1)
 	{
 		//Waiting for UART event.
-		if(xQueueReceive(gprs_uart_queue, (void*)&event, (portTickType)portMAX_DELAY))
+		if(xQueueReceive(gprs_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, GPRS_UART_BUF_SIZE);
 			LOG_COMM(GPRS_UART_TAG, "uart[%d] event:", GPRS_UART_NUM);

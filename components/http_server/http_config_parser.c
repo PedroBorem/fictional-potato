@@ -237,11 +237,11 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("true"));
 
 		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%ld", config.start_time );
+		sprintf(int_str, "%lld", config.start_time );
 		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString(int_str));
 
 		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%ld", config.end_time );
+		sprintf(int_str, "%lld", config.end_time );
 		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString(int_str));
 	}
 	else
