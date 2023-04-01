@@ -7,7 +7,6 @@
 
 // System
 #include "esp_mac.h"
-#include "esp_netif.h"
 
 /* Public functions --------------------------------------------------------- */
 /**

@@ -160,7 +160,7 @@ void comm_app_task(void* arg)
 	while(1)
 	{
 		//Waiting for UART event.
-		if(xQueueReceive(xQueue_comm_app, (void*)&comm_request, (portTickType)portMAX_DELAY) == pdTRUE)
+		if(xQueueReceive(xQueue_comm_app, (void*)&comm_request, (TickType_t)portMAX_DELAY) == pdTRUE)
 		{
 			switch(comm_request.request_type)
 			{

@@ -100,6 +100,7 @@ typedef enum
  */
 typedef	struct
 {
+	uint8_t id;
 	uint16_t start_angle;
 	uint16_t end_angle;
 }pivot_sectors;

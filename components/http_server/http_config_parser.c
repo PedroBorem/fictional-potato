@@ -180,24 +180,15 @@ pivot_config http_parser_config(char * request_body)
 	if(config.sector_enabled == true)
 	{
 		cJSON * sectors = cJSON_GetObjectItem(subitem,"sectors");
-		if( sectors )
+
+		for (uint8_t index = 0 ; index < cJSON_GetArraySize(sectors) ; index++)
 		{
-			uint8_t id = 0;
-			cJSON *sectors_x = sectors->child;
+			cJSON * sectors_array = cJSON_GetArrayItem(sectors, index);
 
-			while( sectors_x )
-			{
-				id = (uint8_t)cJSON_GetObjectItem(sectors_x, "id")->valueint;
-				config.sectors[(id - 1)].start_angle = (uint16_t)cJSON_GetObjectItem(sectors_x, "start_angle")->valueint;
-				config.sectors[(id - 1)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_x, "end_angle")->valueint;
-
-				sectors_x = sectors_x->next;
-			}
-
-			//cJSON_Delete(sectors_x);
+			config.sectors[(index)].id = (uint8_t)cJSON_GetObjectItem(sectors_array, "id")->valueint;
+			config.sectors[(index)].start_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "start_angle")->valueint;
+			config.sectors[(index)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "end_angle")->valueint;
 		}
-
-		//cJSON_Delete(sectors);
 	}
 
 	cJSON_Delete(subitem);
@@ -246,11 +237,11 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("true"));
 
 		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%ld", config.start_time );
+		sprintf(int_str, "%lld", config.start_time );
 		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString(int_str));
 
 		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%ld", config.end_time );
+		sprintf(int_str, "%lld", config.end_time );
 		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString(int_str));
 	}
 	else
@@ -264,22 +255,29 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	{
 		cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("true"));
 
-		cJSON* sector_y;
+		cJSON* array_sectors =  cJSON_CreateArray();
+		cJSON* sectors;
+
+		cJSON_AddItemToObject(config_root, "sectors", array_sectors);
 
 		uint8_t size_sectors = 4; //TODO: tamanho maximo de setores
 		for(sectors_indice = 0; sectors_indice < size_sectors; sectors_indice++)
 		{
 			if(config.sectors[sectors_indice].start_angle != 0 && config.sectors[sectors_indice].end_angle != 0)
 			{
-				cJSON_AddItemToObject(config_root,"sectors", sector_y = cJSON_CreateObject());
+				cJSON_AddItemToArray(array_sectors, sectors = cJSON_CreateObject());
+
+				memset(int_str, 0x00, sizeof(int_str));
+				sprintf(int_str, "%d",config.sectors[sectors_indice].id );
+				cJSON_AddItemToObject(sectors, "id", cJSON_CreateString(int_str));
 
 				memset(int_str, 0x00, sizeof(int_str));
 				sprintf(int_str, "%d",config.sectors[sectors_indice].start_angle );
-				cJSON_AddItemToObject(sector_y, "start_angle", cJSON_CreateString(int_str));
+				cJSON_AddItemToObject(sectors, "start_angle", cJSON_CreateString(int_str));
 
 				memset(int_str, 0x00, sizeof(int_str));
 				sprintf(int_str, "%d",config.sectors[sectors_indice].end_angle );
-				cJSON_AddItemToObject(sector_y, "end_angle", cJSON_CreateString(int_str));
+				cJSON_AddItemToObject(sectors, "end_angle", cJSON_CreateString(int_str));
 			}
 		}
 	}

@@ -78,7 +78,7 @@ time_t rtc_app_get_timestamp(void)
 		timestamp_now = mktime(&rtcinfo);
 
 		rtc_show_date_time(timestamp_now, RTC_CONFIG_TIMEZONE);
-		ESP_LOGI(RTC_APP_TAG, "timestamp %ld", timestamp_now);
+		ESP_LOGI(RTC_APP_TAG, "timestamp %lld", timestamp_now);
 	}
 
 	return timestamp_now;

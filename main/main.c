@@ -25,9 +25,6 @@
 
 #define MAIN_TAG "main"
 
-#define MAIN_PEAK_HOUR_INIT		19 // 17 hours
-#define MAIN_PEAK_HOUR_END		22 // 20 hours
-
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
@@ -287,31 +284,48 @@ static void app_sectorization_task(void* arg)
 
 static void app_peak_hours_task(void* arg)
 {
-	struct tm rtcinfo = {0};
-	time_t diff_time = 0;
 	bool alredy_off = false;
+
+	struct tm rtcinfo = {0};
+	time_t current_time = 0;
 
 	pivot_actions current_action = {};
 	eTaskState TaskState;
 
 	while(1)
 	{
-		rtc_app_get_date_time(&rtcinfo); // 1 h = 3600000 ms
+		if(main_config.eco_mode == true)
+		{
+			rtc_app_get_date_time(&rtcinfo);
+			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60));
 
-		if(rtcinfo.tm_hour < MAIN_PEAK_HOUR_INIT)
-		{
-			diff_time = (MAIN_PEAK_HOUR_INIT - rtcinfo.tm_hour) * 3600000;
-		}
-		else if(rtcinfo.tm_hour > MAIN_PEAK_HOUR_END ||
-		(rtcinfo.tm_hour == MAIN_PEAK_HOUR_END && rtcinfo.tm_min > 0))
-		{
-				diff_time = (24 - (rtcinfo.tm_hour - MAIN_PEAK_HOUR_END)) * 3600000;
-				if(alredy_off == true)
+			if(main_config.start_time < main_config.end_time)
+			{
+				if(current_time >= main_config.start_time
+				&& current_time <= main_config.end_time)
+				{
+					if(alredy_off == false)
+					{
+						// TODO talvez ler dos pinos antes de gravar
+						// TODO desligar o sistema completo
+						actuation_app_shutdown();
+						alredy_off = true;
+
+						TaskState = eTaskGetState( xTask_sectorization_app );
+
+						if(TaskState == eRunning
+						|| TaskState == eReady)
+						{
+							vTaskSuspend(xTask_sectorization_app);
+						}
+					}
+				}
+				else if(alredy_off == true)
 				{
 					data_app_load_actions(&current_action, sizeof(current_action));
 					vTaskDelay(pdMS_TO_TICKS(500));
-					actuation_app_set_config(current_action, false);
 
+					actuation_app_set_config(current_action, false);
 					alredy_off = false;
 
 					TaskState = eTaskGetState( xTask_sectorization_app );
@@ -322,27 +336,47 @@ static void app_peak_hours_task(void* arg)
 						vTaskResume(xTask_sectorization_app);
 					}
 				}
-		}
-		else
-		{
-			 diff_time = (MAIN_PEAK_HOUR_END - MAIN_PEAK_HOUR_INIT) * 3600000;
-			 if(alredy_off == false)
-			 {
-				actuation_app_shutdown();
-
-				alredy_off = true;
-
-				TaskState = eTaskGetState( xTask_sectorization_app );
-
-				if(TaskState == eRunning
-				|| TaskState == eReady)
+			}
+			else
+			{
+				if(current_time >= main_config.end_time
+				&& current_time <= main_config.start_time)
 				{
-					vTaskSuspend(xTask_sectorization_app);
-				}
-			 }
-		}
+					if(alredy_off == false)
+					{
+						// TODO talvez ler dos pinos antes de gravar
+						// TODO desligar o sistema completo
+						actuation_app_shutdown();
+						alredy_off = true;
 
-		vTaskDelay(pdMS_TO_TICKS(diff_time));
+						TaskState = eTaskGetState( xTask_sectorization_app );
+
+						if(TaskState == eRunning
+						|| TaskState == eReady)
+						{
+							vTaskSuspend(xTask_sectorization_app);
+						}
+					}
+				}
+				else if(alredy_off == true)
+				{
+					data_app_load_actions(&current_action, sizeof(current_action));
+					vTaskDelay(pdMS_TO_TICKS(500));
+
+					actuation_app_set_config(current_action, false);
+					alredy_off = false;
+
+					TaskState = eTaskGetState( xTask_sectorization_app );
+
+					if(TaskState == eSuspended
+					|| TaskState == eBlocked)
+					{
+						vTaskResume(xTask_sectorization_app);
+					}
+				}
+			}
+		}
+		vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
 	}
 }
 
