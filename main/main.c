@@ -104,7 +104,19 @@ void app_main(void)
 
 	while (1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		// get start angle
+		if(comm_app_get_degree() == 0xFFFF)
+		{
+			vTaskDelay(pdMS_TO_TICKS(300));
+		}
+		else
+		{
+			if(app_start_angle == 0)
+			{
+				app_start_angle = comm_app_get_degree();
+			}
+			vTaskDelay(pdMS_TO_TICKS(3000));
+		}
 	}
 }
 

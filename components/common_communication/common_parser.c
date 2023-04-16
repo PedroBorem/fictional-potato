@@ -127,7 +127,7 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 	// assistant buffers
 	char angle_out[COMMON_PARSER_ANGLE_SIZE] = "";
 	char timestamp_out[COMMON_PARSER_TIMESTAMP_SIZE] = "";
-	char search_timestamp[] = "#";
+	char search_timestamp[] = "-";
 	char* ptr = strstr(string_in, search_timestamp);
 
 	// assistant accountant
