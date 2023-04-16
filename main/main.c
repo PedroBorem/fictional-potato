@@ -210,6 +210,44 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 			break;
 		}
+		case CALL_SAVE_SCHEDULE_DATE:
+		{
+			pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			{
+				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+				{
+					memcpy(&scheduling_date[position], buffer, sizeof(scheduling_date[position]));
+					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_date[position].scheduling_id);
+					break;
+				}
+			}
+
+			break;
+		}
+		case CALL_SAVE_SCHEDULE_ANGLE:
+		{
+			pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+			data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			{
+				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
+				{
+					memcpy(&scheduling_angle[position], buffer, sizeof(scheduling_angle[position]));
+					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_angle[position].scheduling_id);
+					break;
+				}
+			}
+
+			break;
+		}
 		case CALL_MANUAL_PIVOT:
 		{
 			pivot_actions manual_config = {};
