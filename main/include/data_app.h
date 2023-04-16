@@ -16,6 +16,12 @@
 
 #include "esp_err.h"
 
+typedef enum
+{
+	data_scheduling_date = 0,
+	data_scheduling_angle,
+}data_scheduling_type;
+
 /**
  * @brief	start all memory modules
  * @return
@@ -64,6 +70,11 @@ esp_err_t data_app_save_config(const void* value, size_t size);
  */
 esp_err_t data_app_load_config(void* out_value, size_t size);
 
+esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size);
+
+esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* out_value, size_t size);
+
+esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char* scheduling_id);
 
 /**
  * @brief Gets the data size for the informed key.

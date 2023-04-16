@@ -43,6 +43,7 @@
  * compiler warnings about unused variables. */
 #define UNUSED(x)               (void)(sizeof(x))
 
+#define SCHEDULING_MAX_VALUE	(10)
 
 /* Public definitions ******************************************************/
 
@@ -123,6 +124,32 @@ typedef	struct __attribute__((__packed__))
 	bool sector_enabled;
 	pivot_sectors sectors[4]; //todo: ajustar o valor maximo de setores
 }pivot_config;
+
+/**
+ *	scheduling date parameters
+ *
+ */
+typedef	struct __attribute__((__packed__))
+{
+	char scheduling_id[30];
+	time_t start_date;
+	time_t end_time;
+	pivot_actions acionts;
+}pivot_scheduling_date;
+
+/**
+ *	scheduling angle parameters
+ *
+ */
+typedef	struct __attribute__((__packed__))
+{
+	char scheduling_id[30];
+	bool is_return;
+	time_t start_date;
+	uint16_t start_angle;
+	uint16_t end_angle;
+	pivot_actions acionts;
+}pivot_scheduling_angle;
 
 /**
  *	Main Callback request

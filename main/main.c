@@ -30,7 +30,7 @@ static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
 
 // represents the initial coverage angle of the pivot
-static uint16_t app_start_angle = 0;
+static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
 
 /* Private function prototype ------------------------------------ */
@@ -55,7 +55,7 @@ void app_main(void)
 	data_app_load_config(&current_config, sizeof(current_config));
 	actuation_app_get_config(&current_action, sizeof(current_action));
 
-	// set http parameters
+	// set HTTP parameters
 	comm_app_set_config(current_config);
 
 	//rtc_app_get_timestamp();
@@ -107,15 +107,15 @@ void app_main(void)
 		// get start angle
 		if(comm_app_get_degree() == 0xFFFF)
 		{
-			vTaskDelay(pdMS_TO_TICKS(300));
+			vTaskDelay(pdMS_TO_TICKS(1000));
 		}
 		else
 		{
-			if(app_start_angle == 0)
+			if(app_start_angle == 0xFFFF)
 			{
 				app_start_angle = comm_app_get_degree();
 			}
-			vTaskDelay(pdMS_TO_TICKS(3000));
+			vTaskDelay(pdMS_TO_TICKS(10000));
 		}
 	}
 }
