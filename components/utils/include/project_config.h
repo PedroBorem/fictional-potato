@@ -133,7 +133,7 @@ typedef	struct __attribute__((__packed__))
 {
 	char scheduling_id[30];
 	time_t start_date;
-	time_t end_time;
+	time_t end_date;
 	pivot_actions acionts;
 }pivot_scheduling_date;
 
@@ -186,7 +186,11 @@ typedef void (*app_callback)(app_call_states state, const void* buffer);
 
 #define MAIN_APP_TASK_2_NAME			"main peak hours task"
 #define MAIN_APP_STACK_2_SIZE			( configMINIMAL_STACK_SIZE * 4 )
-#define MAIN_APP_TASK_2_PRIORITY		( tskIDLE_PRIORITY + 2 )
+#define MAIN_APP_TASK_2_PRIORITY		( tskIDLE_PRIORITY + 3 )
+
+#define MAIN_APP_TASK_3_NAME			"main scheduling task"
+#define MAIN_APP_STACK_3_SIZE			( configMINIMAL_STACK_SIZE * 6 )
+#define MAIN_APP_TASK_3_PRIORITY		( tskIDLE_PRIORITY + 3 )
 
 #define DATA_APP_TASK_NAME				"data app task"
 #define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 6 )

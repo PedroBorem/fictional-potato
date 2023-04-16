@@ -28,16 +28,20 @@
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
+static TaskHandle_t xTask_scheduling_app = NULL;
 
 // represents the initial coverage angle of the pivot
 static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
+static pivot_scheduling_date main_scheduling_date[SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_angle main_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
 static void app_main_call(app_call_states state,const void* buffer);
 static void app_sectorization_task(void* arg);
 static void app_peak_hours_task(void* arg);
+static void app_scheduling_task(void* arg);
 
 /**
  * @brief	main class
@@ -99,6 +103,14 @@ void app_main(void)
 				NULL,
 				MAIN_APP_TASK_2_PRIORITY,
 				&xTask_peak_hours_app);
+
+	// create peak hours task
+	xTaskCreate(&app_scheduling_task,
+				MAIN_APP_TASK_3_NAME,
+				MAIN_APP_STACK_3_SIZE,
+				NULL,
+				MAIN_APP_TASK_3_PRIORITY,
+				&xTask_scheduling_app);
 
 	memcpy(&main_config, &current_config, sizeof(main_config));
 
@@ -389,6 +401,100 @@ static void app_peak_hours_task(void* arg)
 			}
 		}
 		vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
+	}
+}
+
+static void app_scheduling_task(void* arg)
+{
+	bool scheduling_status = false;
+	time_t scheduling_timestamp_now = 0;
+	uint16_t scheduling_angle = comm_app_get_degree();
+
+	data_app_load_scheduling(data_scheduling_date, main_scheduling_date, sizeof(main_scheduling_date));
+	data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
+
+	while(1)
+	{
+		scheduling_timestamp_now = rtc_app_get_timestamp();
+
+		// date analysis
+		for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+		{
+			if(scheduling_timestamp_now >= main_scheduling_date[date_position].start_date
+			&& scheduling_timestamp_now <= main_scheduling_date[date_position].end_date
+			&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
+			{
+				if(scheduling_status == false)
+				{
+					scheduling_status = true;
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_date[date_position].acionts);
+					ESP_LOGI(MAIN_TAG, "processing schedule by date id : %s", main_scheduling_date[date_position].scheduling_id);
+				}
+			}
+			else if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
+			&& main_scheduling_date[date_position].end_date != 0)
+			{
+				data_app_delete_scheduling(data_scheduling_date, main_scheduling_date[date_position].scheduling_id);
+				if(scheduling_status == true)
+				{
+					scheduling_status = false;
+					app_main_call(CALL_OFF_PIVOT, NULL);
+				}
+			}
+		}
+
+		// angle analysis
+		for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+		{
+			if(scheduling_timestamp_now >= main_scheduling_angle[angle_position].start_date
+			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
+			{
+				// get current angle
+				scheduling_angle = comm_app_get_degree();
+
+				// TODO : se o pivot estiver parado? devemos ligar o motor?
+
+				if(main_scheduling_angle[angle_position].start_angle < main_scheduling_angle[angle_position].end_angle)
+				{
+					if(scheduling_angle >= main_scheduling_angle[angle_position].start_angle
+					&& scheduling_angle <= main_scheduling_angle[angle_position].end_angle)
+					{
+						if(scheduling_status == false)
+						{
+							scheduling_status = true;
+							app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+							ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
+									main_scheduling_angle[angle_position].scheduling_id);
+						}
+					}
+					else if(scheduling_status == true)
+					{
+						scheduling_status = false;
+						app_main_call(CALL_OFF_PIVOT, NULL);
+					}
+				}
+				else
+				{
+					if(scheduling_angle <= main_scheduling_angle[angle_position].start_angle
+					&& scheduling_angle >= main_scheduling_angle[angle_position].end_angle)
+					{
+						if(scheduling_status == false)
+						{
+							scheduling_status = true;
+							app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+							ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
+									main_scheduling_angle[angle_position].scheduling_id);
+						}
+					}
+					else if(scheduling_status == true)
+					{
+						scheduling_status = false;
+						app_main_call(CALL_OFF_PIVOT, NULL);
+					}
+				}
+			}
+		}
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 10 seconds
 	}
 }
 
