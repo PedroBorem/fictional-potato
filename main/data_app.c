@@ -129,19 +129,7 @@ esp_err_t data_app_save_actions(const void* value, size_t size)
 
 esp_err_t data_app_load_actions(void* out_value, size_t size)
 {
-	esp_err_t ret = ESP_FAIL;
-
-	size_t required_size = nvs_data_get_size(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS);
-	if(size < required_size)
-	{
-		ESP_LOGE( DATA_APP_TAG, "%s, buffer size smaller than label size", __func__);
-	}
-	else
-	{
-		ret = nvs_data_get_blob(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, out_value);
-	}
-
-	return ret;
+	return nvs_data_get_blob(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, out_value);
 }
 
 esp_err_t data_app_save_config(const void* value, size_t size)
@@ -158,19 +146,7 @@ esp_err_t data_app_save_config(const void* value, size_t size)
 
 esp_err_t data_app_load_config(void* out_value, size_t size)
 {
-	esp_err_t ret = ESP_FAIL;
-
-	size_t required_size = nvs_data_get_size(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG);
-	if(size < required_size)
-	{
-		ESP_LOGE( DATA_APP_TAG, "%s, buffer size smaller than label size", __func__);
-	}
-	else
-	{
-		ret = nvs_data_get_blob(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, out_value);
-	}
-
-	return ret;
+	return nvs_data_get_blob(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, out_value);
 }
 
 esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size)
@@ -199,7 +175,7 @@ esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* o
 	size_t required_size = nvs_data_get_size(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG);
 	if(size < required_size)
 	{
-		ESP_LOGE( DATA_APP_TAG, "%s, buffer size smaller than label size", __func__);
+		ESP_LOGE( DATA_APP_TAG, "%s, buffer size smaller than label size %d < %d", __func__, size, required_size);
 	}
 	else
 	{
