@@ -418,25 +418,86 @@ pivot_scheduling_angle http_parser_scheduling_angle(char* request_body)
 	return scheduling_angle;
 }
 
-void http_parser_scheduling_angle_to_json(char* out_scheduling)
+void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_angle, char* out_scheduling)
 {
 	// create JSON
-	cJSON* scheduling_angle_root = cJSON_CreateObject();
 	cJSON* scheduling_angle_array = cJSON_CreateArray();
+	cJSON* scheduling_angle_obj;
+	char int_str[20] = {};
 
-	cJSON_AddItemToObject(scheduling_angle_root, "scheduling_id", cJSON_CreateString("20"));
-	cJSON_AddItemToObject(scheduling_angle_root, "is_return", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_angle_root, "is_running", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_angle_root, "start_date", cJSON_CreateString("1679066719"));
-	cJSON_AddItemToObject(scheduling_angle_root, "end_date", cJSON_CreateString("1679066819"));
-	cJSON_AddItemToObject(scheduling_angle_root, "power", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_angle_root, "water", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_angle_root, "direction", cJSON_CreateString("CLOCKWISE"));
-	cJSON_AddItemToObject(scheduling_angle_root, "start_angle", cJSON_CreateString("50"));
-	cJSON_AddItemToObject(scheduling_angle_root, "end_angle", cJSON_CreateString("120"));
-	cJSON_AddItemToObject(scheduling_angle_root, "percentimeter", cJSON_CreateString("50"));
+	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	{
+		if(strcmp(scheduling_angle[position].scheduling_id,"") > 0)
+		{
+			cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_obj = cJSON_CreateObject());
+			cJSON_AddItemToObject(scheduling_angle_obj, "scheduling_id", cJSON_CreateString(scheduling_angle[position].scheduling_id));
 
-	cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_root);
+			if(scheduling_angle[position].is_return == true)
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "is_stop", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "is_stop", cJSON_CreateString("false"));
+			}
+
+			if(scheduling_angle[position].is_running == true)
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "is_running", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "is_running", cJSON_CreateString("false"));
+			}
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",scheduling_angle[position].start_date);
+			cJSON_AddItemToObject(scheduling_angle_obj, "start_date", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d",scheduling_angle[position].start_angle);
+			cJSON_AddItemToObject(scheduling_angle_obj, "start_angle", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d",scheduling_angle[position].end_angle);
+			cJSON_AddItemToObject(scheduling_angle_obj, "end_angle", cJSON_CreateString(int_str));
+
+			// power state
+			if(scheduling_angle[position].acionts.power_state == PIVOT_ON)
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "power", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "power", cJSON_CreateString("false"));
+			}
+
+			// watering state
+			if(scheduling_angle[position].acionts.watering_state == PIVOT_WET)
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "water", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "water", cJSON_CreateString("false"));
+			}
+
+			// rotation
+			if(scheduling_angle[position].acionts.rotation == PIVOT_CCW)
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "direction", cJSON_CreateString("ANTI_CLOCKWISE"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_angle_obj, "direction", cJSON_CreateString("CLOCKWISE"));
+			}
+
+			// percent
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d", scheduling_angle[position].acionts.percentimeter );
+			cJSON_AddItemToObject(scheduling_angle_obj, "percentimeter", cJSON_CreateString(int_str));
+		}
+	}
 
 	memcpy(out_scheduling, cJSON_Print(scheduling_angle_array), strlen(cJSON_Print(scheduling_angle_array)));
 	cJSON_Delete(scheduling_angle_array);

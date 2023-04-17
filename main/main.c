@@ -263,6 +263,17 @@ static void app_main_call(app_call_states state, void* buffer)
 			}
 			break;
 		}
+		case CALL_LOAD_SCHEDULE_ANGLE:
+		{
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE ; position++)
+			{
+				memcpy(&main_scheduling_angle[position].is_running, &main_scheduling_angle[position],
+						sizeof(main_scheduling_angle[position].is_running));
+			}
+			memcpy(buffer, main_scheduling_angle, sizeof(main_scheduling_angle));
+
+			break;
+		}
 		case CALL_MANUAL_PIVOT:
 		{
 			pivot_actions manual_config = {};

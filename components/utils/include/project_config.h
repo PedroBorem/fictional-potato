@@ -147,6 +147,7 @@ typedef	struct __attribute__((__packed__))
 {
 	char scheduling_id[30];
 	bool is_return;
+	bool is_running;
 	uint16_t start_angle;
 	uint16_t end_angle;
 	time_t start_date;
@@ -166,6 +167,7 @@ typedef enum
 	CALL_SAVE_SCHEDULE_DATE,
 	CALL_LOAD_SCHEDULE_DATE,
 	CALL_SAVE_SCHEDULE_ANGLE,
+	CALL_LOAD_SCHEDULE_ANGLE,
 	CALL_MANUAL_PIVOT,
 	CALL_OFF_PIVOT
 }app_call_states;

@@ -463,7 +463,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char out_scheduling[600] = {};
+    	char out_scheduling[1000] = {}; //TODO : calcular o tamanho real
     	pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
 
     	if(http_callback != NULL)
@@ -483,12 +483,23 @@ static esp_err_t http_get_handler(httpd_req_t *req)
    	}
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{
-		char angle[300] = {};
+    	char out_scheduling[1000] = {}; //TODO : calcular o tamanho real
+    	pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
 
-		http_parser_scheduling_angle_to_json(angle);
-		ESP_LOGW("TESTE", "%s", angle);	
+    	if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_ANGLE, &scheduling_angle);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
-		httpd_resp_send(req, angle, HTTPD_RESP_USE_STRLEN);
+    	http_parser_scheduling_angle_to_json(scheduling_angle, out_scheduling);
+    	LOG_COMM(HTTP_API_TAG, "get /scheduling/angle : %s", out_scheduling);
+
+    	httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
 	}
 	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
 	{
