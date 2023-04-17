@@ -290,28 +290,25 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	cJSON_Delete(config_root);
 }
 
-void http_parser_scheduling_angle_to_json(char* out_scheduling)
+pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 {
-	// create JSON
-	cJSON* scheduling_angle_root = cJSON_CreateObject();
-	cJSON* scheduling_angle_array = cJSON_CreateArray();
+	pivot_scheduling_date scheduling_date = {};
 
-	cJSON_AddItemToObject(scheduling_angle_root, "scheduling_id", cJSON_CreateString("20"));
-	cJSON_AddItemToObject(scheduling_angle_root, "is_return", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_angle_root, "is_running", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_angle_root, "start_date", cJSON_CreateString("1679066719"));
-	cJSON_AddItemToObject(scheduling_angle_root, "end_date", cJSON_CreateString("1679066819"));
-	cJSON_AddItemToObject(scheduling_angle_root, "power", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_angle_root, "water", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_angle_root, "direction", cJSON_CreateString("CLOCKWISE"));
-	cJSON_AddItemToObject(scheduling_angle_root, "start_angle", cJSON_CreateString("50"));
-	cJSON_AddItemToObject(scheduling_angle_root, "end_angle", cJSON_CreateString("120"));
-	cJSON_AddItemToObject(scheduling_angle_root, "percentimeter", cJSON_CreateString("50"));
+	cJSON* subitem = cJSON_Parse(request_body);
 
-	cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_root);
+	char* scheduling_id = "7"; // TODO receber esse valor
+	memcpy(&scheduling_date.scheduling_id, scheduling_id, strlen(scheduling_id));
 
-	memcpy(out_scheduling, cJSON_Print(scheduling_angle_array), strlen(cJSON_Print(scheduling_angle_array)));
-	cJSON_Delete(scheduling_angle_array);
+	// get scheduling
+	scheduling_date.is_stop = (bool)cJSON_GetObjectItem(subitem, "is_stop")->valueint;
+	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
+	scheduling_date.end_date = (time_t)cJSON_GetObjectItem(subitem, "end_date")->valueint;
+	cJSON_Delete(subitem);
+
+	// get actions
+	scheduling_date.acionts = http_parser_action(request_body);
+
+	return scheduling_date;
 }
 
 void http_parser_scheduling_date_to_json(char* out_scheduling)
@@ -334,6 +331,52 @@ void http_parser_scheduling_date_to_json(char* out_scheduling)
 
 	memcpy(out_scheduling, cJSON_Print(scheduling_date_array), strlen(cJSON_Print(scheduling_date_array)));
 	cJSON_Delete(scheduling_date_array);
+}
+
+pivot_scheduling_angle http_parser_scheduling_angle(char* request_body)
+{
+	pivot_scheduling_angle scheduling_angle = {};
+
+	cJSON* subitem = cJSON_Parse(request_body);
+
+	char* scheduling_id = "7"; // TODO receber esse valor
+	memcpy(&scheduling_angle.scheduling_id, scheduling_id, strlen(scheduling_id));
+
+	// get scheduling
+	scheduling_angle.is_return = (bool)cJSON_GetObjectItem(subitem, "is_return")->valueint;
+	scheduling_angle.start_angle = (uint16_t)cJSON_GetObjectItem(subitem, "start_angle")->valueint;
+	scheduling_angle.end_angle = (uint16_t)cJSON_GetObjectItem(subitem, "end_angle")->valueint;
+	scheduling_angle.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
+	cJSON_Delete(subitem);
+
+	// get actions
+	scheduling_angle.acionts = http_parser_action(request_body);
+
+	return scheduling_angle;
+}
+
+void http_parser_scheduling_angle_to_json(char* out_scheduling)
+{
+	// create JSON
+	cJSON* scheduling_angle_root = cJSON_CreateObject();
+	cJSON* scheduling_angle_array = cJSON_CreateArray();
+
+	cJSON_AddItemToObject(scheduling_angle_root, "scheduling_id", cJSON_CreateString("20"));
+	cJSON_AddItemToObject(scheduling_angle_root, "is_return", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_angle_root, "is_running", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(scheduling_angle_root, "start_date", cJSON_CreateString("1679066719"));
+	cJSON_AddItemToObject(scheduling_angle_root, "end_date", cJSON_CreateString("1679066819"));
+	cJSON_AddItemToObject(scheduling_angle_root, "power", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_angle_root, "water", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(scheduling_angle_root, "direction", cJSON_CreateString("CLOCKWISE"));
+	cJSON_AddItemToObject(scheduling_angle_root, "start_angle", cJSON_CreateString("50"));
+	cJSON_AddItemToObject(scheduling_angle_root, "end_angle", cJSON_CreateString("120"));
+	cJSON_AddItemToObject(scheduling_angle_root, "percentimeter", cJSON_CreateString("50"));
+
+	cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_root);
+
+	memcpy(out_scheduling, cJSON_Print(scheduling_angle_array), strlen(cJSON_Print(scheduling_angle_array)));
+	cJSON_Delete(scheduling_angle_array);
 }
 
 void http_parser_cycles_to_json(char* out_cycles)

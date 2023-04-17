@@ -582,6 +582,34 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
 			}
 		}
+		else if(strcmp(req->uri, "/scheduling/date") == 0)
+		{
+			pivot_scheduling_date http_scheduling_date = http_parser_scheduling_date(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/angle") == 0)
+		{
+			pivot_scheduling_angle http_scheduling_angle = http_parser_scheduling_angle(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
 		else
 		{
 			ESP_LOGE(HTTP_API_TAG,"unregistered uri callback");

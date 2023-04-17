@@ -132,6 +132,7 @@ typedef	struct __attribute__((__packed__))
 typedef	struct __attribute__((__packed__))
 {
 	char scheduling_id[30];
+	bool is_stop;
 	time_t start_date;
 	time_t end_date;
 	pivot_actions acionts;
@@ -145,9 +146,9 @@ typedef	struct __attribute__((__packed__))
 {
 	char scheduling_id[30];
 	bool is_return;
-	time_t start_date;
 	uint16_t start_angle;
 	uint16_t end_angle;
+	time_t start_date;
 	pivot_actions acionts;
 }pivot_scheduling_angle;
 
