@@ -244,6 +244,12 @@ static void app_main_call(app_call_states state, void* buffer)
 
 			break;
 		}
+		case CALL_DELETE_SCHEDULE_DATE:
+		{
+			data_app_delete_scheduling(data_scheduling_date, (char*)buffer);
+			data_app_load_scheduling(data_scheduling_date, main_scheduling_date, sizeof(main_scheduling_date));
+			break;
+		}
 		case CALL_SAVE_SCHEDULE_ANGLE:
 		{
 			pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
@@ -272,6 +278,12 @@ static void app_main_call(app_call_states state, void* buffer)
 			}
 			memcpy(buffer, main_scheduling_angle, sizeof(main_scheduling_angle));
 
+			break;
+		}
+		case CALL_DELETE_SCHEDULE_ANGLE:
+		{
+			data_app_delete_scheduling(data_scheduling_angle, (char*)buffer);
+			data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
 			break;
 		}
 		case CALL_MANUAL_PIVOT:

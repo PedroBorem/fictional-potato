@@ -22,6 +22,8 @@ void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date,
 pivot_scheduling_angle http_parser_scheduling_angle(char* request_body);
 void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_angle, char* out_scheduling);
 
+char* http_parser_scheduling_delete(char* request_body);
+
 
 void http_parser_cycles_to_json(char* out_cycles);
 

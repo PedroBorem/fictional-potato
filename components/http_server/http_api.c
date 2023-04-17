@@ -708,29 +708,52 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;
 
-		char content[1000] = {};
+	char content[100] = {};
 
-	    /* Truncate if content length larger than the buffer */
-	    size_t recv_size = MIN(req->content_len, sizeof(content));
+	/* Truncate if content length larger than the buffer */
+	size_t recv_size = MIN(req->content_len, sizeof(content));
 
-	    int ret = httpd_req_recv(req, content, recv_size);
-	    if (ret <= 0) // 0 return value indicates connection closed
-	    {
-	        /* Check if timeout occurred */
-	        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-	        {
-	            httpd_resp_send_408(req);
-	        }
-	    }
-	    else
-	    {
-			LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
-			LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
-			LOG_COMM(HTTP_API_TAG, "content %s", content);
+	int ret = httpd_req_recv(req, content, recv_size);
+	if (ret <= 0) // 0 return value indicates connection closed
+	{
+		/* Check if timeout occurred */
+		if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+		{
+			httpd_resp_send_408(req);
+		}
+	}
+	else
+	{
+		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+		LOG_COMM(HTTP_API_TAG, "content %s", content);
 
-			// TODO deletar do BD
-	    }
+		if(strcmp(req->uri, "/scheduling/date") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/angle") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+	}
 
-		return err;
+	return err;
 }
 

@@ -503,6 +503,12 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 	cJSON_Delete(scheduling_angle_array);
 }
 
+char* http_parser_scheduling_delete(char* request_body)
+{
+	cJSON* scheduling_delete = cJSON_Parse(request_body);
+	return cJSON_GetObjectItem(scheduling_delete, "scheduling_id")->valuestring;
+}
+
 void http_parser_cycles_to_json(char* out_cycles)
 {
 	// create JSON
