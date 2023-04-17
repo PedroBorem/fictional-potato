@@ -17,7 +17,7 @@ pivot_config http_parser_config(char * request_body);
 void http_parser_config_to_json(pivot_config config, char* out_config);
 
 pivot_scheduling_date http_parser_scheduling_date(char* request_body);
-void http_parser_scheduling_date_to_json(char* out_scheduling);
+void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date, char* out_scheduling);
 
 pivot_scheduling_angle http_parser_scheduling_angle(char* request_body);
 void http_parser_scheduling_angle_to_json(char* out_scheduling);

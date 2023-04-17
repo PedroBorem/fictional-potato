@@ -133,6 +133,7 @@ typedef	struct __attribute__((__packed__))
 {
 	char scheduling_id[30];
 	bool is_stop;
+	bool is_running;
 	time_t start_date;
 	time_t end_date;
 	pivot_actions acionts;
@@ -163,6 +164,7 @@ typedef enum
 	CALL_READ_ACTION,
 	CALL_SAVE_CONFIG,
 	CALL_SAVE_SCHEDULE_DATE,
+	CALL_LOAD_SCHEDULE_DATE,
 	CALL_SAVE_SCHEDULE_ANGLE,
 	CALL_MANUAL_PIVOT,
 	CALL_OFF_PIVOT
@@ -172,7 +174,7 @@ typedef enum
  * @brief: function used with return to main application class
  *
  */
-typedef void (*app_callback)(app_call_states state, const void* buffer);
+typedef void (*app_callback)(app_call_states state, void* buffer);
 
 /**\addtogroup FreeRTOS
  * @{

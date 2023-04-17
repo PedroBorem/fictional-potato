@@ -13,6 +13,7 @@
 #include "esp_spiffs.h"
 #include "esp_http_server.h"
 #include "http_storage.h"
+#include "http_config_parser.h"
 #include "esp_vfs.h"
 
 /* Private definitions ------------------------------------------- */
@@ -451,19 +452,34 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 		{
 			http_callback(CALL_LOAD_ACTION, NULL);
 		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
 		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char date[300] = {};
+    	char out_scheduling[600] = {};
+    	pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
 
-    	//TODO fazer callback
-    	http_parser_scheduling_date_to_json(date);
-		ESP_LOGW("TESTE", "%s", date);	
-       	
-       	httpd_resp_send(req, date, HTTPD_RESP_USE_STRLEN);
+    	if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_DATE, &scheduling_date);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
+
+    	http_parser_scheduling_date_to_json(scheduling_date, out_scheduling);
+    	LOG_COMM(HTTP_API_TAG, "get /scheduling/date : %s", out_scheduling);
+
+       	httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
    	}
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{

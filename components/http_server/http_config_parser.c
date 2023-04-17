@@ -303,6 +303,10 @@ pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 	scheduling_date.is_stop = (bool)cJSON_GetObjectItem(subitem, "is_stop")->valueint;
 	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_date.end_date = (time_t)cJSON_GetObjectItem(subitem, "end_date")->valueint;
+
+	printf("scheduling_date[position].start_date %lld \n", scheduling_date.start_date);
+	printf("scheduling_date[position].start_date %lld \n", scheduling_date.end_date);
+
 	cJSON_Delete(subitem);
 
 	// get actions
@@ -311,23 +315,82 @@ pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 	return scheduling_date;
 }
 
-void http_parser_scheduling_date_to_json(char* out_scheduling)
+void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date, char* out_scheduling)
 {
 	// create JSON
-	cJSON* scheduling_date_root = cJSON_CreateObject();
 	cJSON* scheduling_date_array = cJSON_CreateArray();
+	cJSON* scheduling_date_obj;
+	char int_str[20] = {};
 
-	cJSON_AddItemToObject(scheduling_date_root, "scheduling_id", cJSON_CreateString("420"));
-	cJSON_AddItemToObject(scheduling_date_root, "is_stop", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_date_root, "is_running", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(scheduling_date_root, "start_date", cJSON_CreateString("1679066719"));
-	cJSON_AddItemToObject(scheduling_date_root, "end_date", cJSON_CreateString("1679066819"));
-	cJSON_AddItemToObject(scheduling_date_root, "power", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_date_root, "water", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(scheduling_date_root, "direction", cJSON_CreateString("CLOCKWISE"));
-	cJSON_AddItemToObject(scheduling_date_root, "percentimeter", cJSON_CreateString("50"));
+	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	{
+		if(strcmp(scheduling_date[position].scheduling_id,"") > 0)
+		{
+			cJSON_AddItemToArray(scheduling_date_array, scheduling_date_obj = cJSON_CreateObject());
+			cJSON_AddItemToObject(scheduling_date_obj, "scheduling_id", cJSON_CreateString(scheduling_date[position].scheduling_id));
 
-	cJSON_AddItemToArray(scheduling_date_array, scheduling_date_root);
+			if(scheduling_date[position].is_stop == true)
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "is_stop", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "is_stop", cJSON_CreateString("false"));
+			}
+
+			if(scheduling_date[position].is_running == true)
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "is_running", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "is_running", cJSON_CreateString("false"));
+			}
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",scheduling_date[position].start_date);
+			cJSON_AddItemToObject(scheduling_date_obj, "start_date", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",scheduling_date[position].end_date);
+			cJSON_AddItemToObject(scheduling_date_obj, "end_date", cJSON_CreateString(int_str));
+
+			// power state
+			if(scheduling_date[position].acionts.power_state == PIVOT_ON)
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "power", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "power", cJSON_CreateString("false"));
+			}
+
+			// watering state
+			if(scheduling_date[position].acionts.watering_state == PIVOT_WET)
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "water", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "water", cJSON_CreateString("false"));
+			}
+
+			// rotation
+			if(scheduling_date[position].acionts.rotation == PIVOT_CCW)
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "direction", cJSON_CreateString("ANTI_CLOCKWISE"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(scheduling_date_obj, "direction", cJSON_CreateString("CLOCKWISE"));
+			}
+
+			// percent
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d", scheduling_date[position].acionts.percentimeter );
+			cJSON_AddItemToObject(scheduling_date_obj, "percentimeter", cJSON_CreateString(int_str));
+		}
+	}
 
 	memcpy(out_scheduling, cJSON_Print(scheduling_date_array), strlen(cJSON_Print(scheduling_date_array)));
 	cJSON_Delete(scheduling_date_array);
