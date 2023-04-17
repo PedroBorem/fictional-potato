@@ -457,8 +457,9 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char date[300] = {};;
+    	char date[300] = {};
 
+    	//TODO fazer callback
     	http_parser_scheduling_date_to_json(date);
 		ESP_LOGW("TESTE", "%s", date);	
        	

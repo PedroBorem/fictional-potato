@@ -221,6 +221,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 				{
 					memcpy(&scheduling_date[position], buffer, sizeof(scheduling_date[position]));
 					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+					memcpy(main_scheduling_date, scheduling_date, sizeof(main_scheduling_date));
 
 					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_date[position].scheduling_id);
 					break;
@@ -240,12 +241,12 @@ static void app_main_call(app_call_states state,const void* buffer)
 				{
 					memcpy(&scheduling_angle[position], buffer, sizeof(scheduling_angle[position]));
 					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+					memcpy(main_scheduling_angle, scheduling_angle, sizeof(main_scheduling_angle));
 
 					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_angle[position].scheduling_id);
 					break;
 				}
 			}
-
 			break;
 		}
 		case CALL_MANUAL_PIVOT:
@@ -286,6 +287,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			//get current status
 			actuation_app_get_config(&current_action, sizeof(current_action));
 			comm_app_send_event(current_action);
+
 			break;
 		}
 		default:
