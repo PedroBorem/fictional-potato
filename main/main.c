@@ -499,8 +499,8 @@ static void app_scheduling_task(void* arg)
 		// date analysis
 		for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
 		{
-			if(scheduling_timestamp_now >= main_scheduling_date[date_position].start_date
-			&& scheduling_timestamp_now <= main_scheduling_date[date_position].end_date
+			if(scheduling_timestamp_now > main_scheduling_date[date_position].start_date
+			&& scheduling_timestamp_now < main_scheduling_date[date_position].end_date
 			&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_date_status[date_position] == false)
@@ -525,13 +525,13 @@ static void app_scheduling_task(void* arg)
 		// angle analysis
 		for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
 		{
-			if(scheduling_timestamp_now >= main_scheduling_angle[angle_position].start_date
+			if(scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date
 			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
 			{
 				// get current angle
 				scheduling_angle = comm_app_get_degree();
 
-				// TODO : se o pivot estiver parado? devemos ligar o motor?
+				// TODO : se o pivot estiver parado? devemos ligar o motor? por posição
 
 				if(main_scheduling_angle[angle_position].start_angle < main_scheduling_angle[angle_position].end_angle)
 				{
