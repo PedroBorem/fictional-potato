@@ -70,7 +70,7 @@ esp_err_t data_app_init(void)
 
 	const pivot_config default_config = {
 			.pivot_id = "soil",
-			.gprs_id = "soil",
+			.gprs_id = "TesteInatel_5",
 			.contactor = CONTACTOR_NA,
 			.pressure_switch = PRESSURE_SWITCH_NA,
 			.pressurization_time = 30,
