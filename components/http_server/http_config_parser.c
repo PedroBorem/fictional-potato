@@ -324,7 +324,8 @@ void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date,
 
 	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
 	{
-		if(strcmp(scheduling_date[position].scheduling_id,"") > 0)
+		if((strcmp(scheduling_date[position].scheduling_id,"") > 0)
+		&& (scheduling_date[position].acionts.power_state == PIVOT_ON))
 		{
 			cJSON_AddItemToArray(scheduling_date_array, scheduling_date_obj = cJSON_CreateObject());
 			cJSON_AddItemToObject(scheduling_date_obj, "scheduling_id", cJSON_CreateString(scheduling_date[position].scheduling_id));
@@ -456,6 +457,52 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 
 	memcpy(out_scheduling, cJSON_Print(scheduling_angle_array), strlen(cJSON_Print(scheduling_angle_array)));
 	cJSON_Delete(scheduling_angle_array);
+}
+
+pivot_scheduling_date http_parser_scheduling_date_off(char* request_body)
+{
+	pivot_scheduling_date scheduling_date = {};
+
+	cJSON* subitem = cJSON_Parse(request_body);
+
+	// get scheduling
+	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "date")->valueint;
+	scheduling_date.end_date = scheduling_date.start_date + 60; // 1 minutes
+	sprintf(scheduling_date.scheduling_id, "%lld", scheduling_date.start_date);
+
+	scheduling_date.acionts.power_state = PIVOT_OFF;
+	scheduling_date.acionts.rotation = PIVOT_CCW;
+	scheduling_date.acionts.watering_state = PIVOT_DRY;
+	scheduling_date.acionts.percentimeter = 0;
+
+	cJSON_Delete(subitem);
+
+	return scheduling_date;
+}
+
+void http_parser_scheduling_date_off_to_json(pivot_scheduling_date* scheduling_date, char* out_scheduling)
+{
+	// create JSON
+	cJSON* scheduling_date_array = cJSON_CreateArray();
+	cJSON* scheduling_date_obj;
+	char int_str[20] = {};
+
+	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	{
+		if((strcmp(scheduling_date[position].scheduling_id,"") > 0)
+		&& (scheduling_date[position].acionts.power_state == PIVOT_OFF))
+		{
+			cJSON_AddItemToArray(scheduling_date_array, scheduling_date_obj = cJSON_CreateObject());
+			cJSON_AddItemToObject(scheduling_date_obj, "scheduling_id", cJSON_CreateString(scheduling_date[position].scheduling_id));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",scheduling_date[position].start_date);
+			cJSON_AddItemToObject(scheduling_date_obj, "date", cJSON_CreateString(int_str));
+		}
+	}
+
+	memcpy(out_scheduling, cJSON_Print(scheduling_date_array), strlen(cJSON_Print(scheduling_date_array)));
+	cJSON_Delete(scheduling_date_array);
 }
 
 char* http_parser_scheduling_delete(char* request_body)

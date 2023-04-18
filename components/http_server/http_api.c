@@ -463,7 +463,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char out_scheduling[1000] = {}; //TODO : calcular o tamanho real
+    	char out_scheduling[1000] = {};
     	pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
 
     	if(http_callback != NULL)
@@ -483,7 +483,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
    	}
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{
-    	char out_scheduling[1000] = {}; //TODO : calcular o tamanho real
+    	char out_scheduling[1000] = {};
     	pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
 
     	if(http_callback != NULL)
@@ -500,6 +500,26 @@ static esp_err_t http_get_handler(httpd_req_t *req)
     	LOG_COMM(HTTP_API_TAG, "get /scheduling/angle : %s", out_scheduling);
 
     	httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
+	}
+    else if (strcmp(req->uri, "/scheduling/off") == 0)
+	{
+		char out_scheduling[1000] = {};
+		pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_DATE, &scheduling_date);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
+
+		http_parser_scheduling_date_off_to_json(scheduling_date, out_scheduling);
+		LOG_COMM(HTTP_API_TAG, "get /scheduling/off : %s", out_scheduling);
+
+		httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
 	}
 	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
 	{
@@ -630,6 +650,20 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/off") == 0)
+		{
+			pivot_scheduling_date http_scheduling_date = http_parser_scheduling_date_off(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				err = ESP_OK;
 			}
 			else
