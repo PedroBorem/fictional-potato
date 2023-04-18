@@ -597,7 +597,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 		if(strcmp(req->uri, "/actions") == 0)
 		{
-			pivot_actions state = http_parser_action(content);
+			pivot_actions state = http_parser_action(content, false);
 
 			if(http_callback != NULL)
 			{

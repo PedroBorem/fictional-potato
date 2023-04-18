@@ -16,14 +16,19 @@
 #include "utils.h"
 
 /* Public methods ------------------------------------------------ */
-pivot_actions http_parser_action(char * request_body)
+pivot_actions http_parser_action(char * request_body, bool scheduling)
 {
 	pivot_actions actions = {};
 
 	cJSON* action_subitem = cJSON_Parse(request_body);
-	cJSON* action_power = cJSON_GetObjectItem(action_subitem, "power");
+	cJSON* action_power = NULL;
 
-	if(action_power->valueint == true)
+	if(scheduling == false)
+	{
+		action_power = cJSON_GetObjectItem(action_subitem, "power");
+	}
+
+	if(action_power->valueint == true || scheduling == true)
 	{
 		actions.power_state = PIVOT_ON;
 
@@ -296,21 +301,18 @@ pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 
 	cJSON* subitem = cJSON_Parse(request_body);
 
-	char* scheduling_id = "7"; // TODO receber esse valor
-	memcpy(&scheduling_date.scheduling_id, scheduling_id, strlen(scheduling_id));
-
 	// get scheduling
-	scheduling_date.is_stop = (bool)cJSON_GetObjectItem(subitem, "is_stop")->valueint;
+	memcpy(	scheduling_date.scheduling_id,
+			cJSON_GetObjectItem(subitem, "start_date")->valuestring,
+			sizeof(scheduling_date.scheduling_id));
+
 	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_date.end_date = (time_t)cJSON_GetObjectItem(subitem, "end_date")->valueint;
-
-	printf("scheduling_date[position].start_date %lld \n", scheduling_date.start_date);
-	printf("scheduling_date[position].start_date %lld \n", scheduling_date.end_date);
 
 	cJSON_Delete(subitem);
 
 	// get actions
-	scheduling_date.acionts = http_parser_action(request_body);
+	scheduling_date.acionts = http_parser_action(request_body, true);
 
 	return scheduling_date;
 }
@@ -328,15 +330,6 @@ void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date,
 		{
 			cJSON_AddItemToArray(scheduling_date_array, scheduling_date_obj = cJSON_CreateObject());
 			cJSON_AddItemToObject(scheduling_date_obj, "scheduling_id", cJSON_CreateString(scheduling_date[position].scheduling_id));
-
-			if(scheduling_date[position].is_stop == true)
-			{
-				cJSON_AddItemToObject(scheduling_date_obj, "is_stop", cJSON_CreateString("true"));
-			}
-			else
-			{
-				cJSON_AddItemToObject(scheduling_date_obj, "is_stop", cJSON_CreateString("false"));
-			}
 
 			if(scheduling_date[position].is_running == true)
 			{
@@ -402,18 +395,18 @@ pivot_scheduling_angle http_parser_scheduling_angle(char* request_body)
 
 	cJSON* subitem = cJSON_Parse(request_body);
 
-	char* scheduling_id = "7"; // TODO receber esse valor
-	memcpy(&scheduling_angle.scheduling_id, scheduling_id, strlen(scheduling_id));
-
 	// get scheduling
-	scheduling_angle.is_return = (bool)cJSON_GetObjectItem(subitem, "is_return")->valueint;
-	scheduling_angle.start_angle = (uint16_t)cJSON_GetObjectItem(subitem, "start_angle")->valueint;
-	scheduling_angle.end_angle = (uint16_t)cJSON_GetObjectItem(subitem, "end_angle")->valueint;
+	memcpy(	scheduling_angle.scheduling_id,
+			cJSON_GetObjectItem(subitem, "start_date")->valuestring,
+			sizeof(scheduling_angle.scheduling_id));
+
 	scheduling_angle.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
+	scheduling_angle.end_angle = (uint16_t)cJSON_GetObjectItem(subitem, "end_angle")->valueint;
+
 	cJSON_Delete(subitem);
 
 	// get actions
-	scheduling_angle.acionts = http_parser_action(request_body);
+	scheduling_angle.acionts = http_parser_action(request_body, true);
 
 	return scheduling_angle;
 }
@@ -432,15 +425,6 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 			cJSON_AddItemToArray(scheduling_angle_array, scheduling_angle_obj = cJSON_CreateObject());
 			cJSON_AddItemToObject(scheduling_angle_obj, "scheduling_id", cJSON_CreateString(scheduling_angle[position].scheduling_id));
 
-			if(scheduling_angle[position].is_return == true)
-			{
-				cJSON_AddItemToObject(scheduling_angle_obj, "is_stop", cJSON_CreateString("true"));
-			}
-			else
-			{
-				cJSON_AddItemToObject(scheduling_angle_obj, "is_stop", cJSON_CreateString("false"));
-			}
-
 			if(scheduling_angle[position].is_running == true)
 			{
 				cJSON_AddItemToObject(scheduling_angle_obj, "is_running", cJSON_CreateString("true"));
@@ -453,10 +437,6 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 			memset(int_str, 0x00, sizeof(int_str));
 			sprintf(int_str, "%lld",scheduling_angle[position].start_date);
 			cJSON_AddItemToObject(scheduling_angle_obj, "start_date", cJSON_CreateString(int_str));
-
-			memset(int_str, 0x00, sizeof(int_str));
-			sprintf(int_str, "%d",scheduling_angle[position].start_angle);
-			cJSON_AddItemToObject(scheduling_angle_obj, "start_angle", cJSON_CreateString(int_str));
 
 			memset(int_str, 0x00, sizeof(int_str));
 			sprintf(int_str, "%d",scheduling_angle[position].end_angle);

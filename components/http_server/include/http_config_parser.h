@@ -10,7 +10,7 @@
 
 #include "project_config.h"
 
-pivot_actions http_parser_action(char * request_body);
+pivot_actions http_parser_action(char * request_body, bool scheduling);
 void http_parser_action_to_json(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle, char* out_action);
 
 pivot_config http_parser_config(char * request_body);

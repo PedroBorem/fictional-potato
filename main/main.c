@@ -483,6 +483,8 @@ static void app_peak_hours_task(void* arg)
 
 static void app_scheduling_task(void* arg)
 {
+	const uint8_t angle_off_set = 5;
+
 	time_t scheduling_timestamp_now = 0;
 	uint16_t scheduling_angle = comm_app_get_degree();
 
@@ -491,6 +493,29 @@ static void app_scheduling_task(void* arg)
 
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
+
+	/* Delete old scheduling **************************************************************************/
+	vTaskDelay(pdMS_TO_TICKS(5000)); // Delay RTC sync
+	scheduling_timestamp_now = rtc_app_get_timestamp();
+
+	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+	{
+		if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
+		&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
+		{
+			data_app_delete_scheduling(data_scheduling_date, main_scheduling_date[date_position].scheduling_id);
+		}
+	}
+	for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+	{
+		if((scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date)
+		&& (scheduling_timestamp_now - main_scheduling_angle[angle_position].start_date) > 3600
+		&& (strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0))
+		{
+			data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
+		}
+	}
+	/* End Delete old scheduling **********************************************************************/
 
 	while(1)
 	{
@@ -528,54 +553,27 @@ static void app_scheduling_task(void* arg)
 			if(scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date
 			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
 			{
+				if(scheduling_angle_status[angle_position] == false)
+				{
+					scheduling_angle_status[angle_position] = true;
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+					ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
+							main_scheduling_angle[angle_position].scheduling_id);
+				}
+
 				// get current angle
 				scheduling_angle = comm_app_get_degree();
 
-				// TODO : se o pivot estiver parado? devemos ligar o motor? por posição
-
-				if(main_scheduling_angle[angle_position].start_angle < main_scheduling_angle[angle_position].end_angle)
+				if( scheduling_angle > (main_scheduling_angle[angle_position].end_angle - angle_off_set)
+				&& scheduling_angle < (main_scheduling_angle[angle_position].end_angle + angle_off_set ))
 				{
-					if(scheduling_angle >= main_scheduling_angle[angle_position].start_angle
-					&& scheduling_angle <= main_scheduling_angle[angle_position].end_angle)
-					{
-						if(scheduling_angle_status[angle_position] == false)
-						{
-							scheduling_angle_status[angle_position] = true;
-							app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
-							ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
-									main_scheduling_angle[angle_position].scheduling_id);
-						}
-					}
-					else if(scheduling_angle_status[angle_position] == true)
-					{
-						scheduling_angle_status[angle_position] = false;
-						app_main_call(CALL_OFF_PIVOT, NULL);
-						data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
-					}
-				}
-				else
-				{
-					if(scheduling_angle <= main_scheduling_angle[angle_position].start_angle
-					&& scheduling_angle >= main_scheduling_angle[angle_position].end_angle)
-					{
-						if(scheduling_angle_status[angle_position] == false)
-						{
-							scheduling_angle_status[angle_position] = true;
-							app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
-							ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
-									main_scheduling_angle[angle_position].scheduling_id);
-						}
-					}
-					else if(scheduling_angle_status[angle_position] == true)
-					{
-						scheduling_angle_status[angle_position] = false;
-						app_main_call(CALL_OFF_PIVOT, NULL);
-						data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
-					}
+					scheduling_angle_status[angle_position] = false;
+					app_main_call(CALL_OFF_PIVOT, NULL);
+					data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
 				}
 			}
 		}
-		vTaskDelay(pdMS_TO_TICKS(5000)); // 10 seconds
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 	}
 }
 
