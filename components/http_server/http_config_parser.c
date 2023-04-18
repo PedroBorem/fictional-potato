@@ -21,48 +21,49 @@ pivot_actions http_parser_action(char * request_body, bool scheduling)
 	pivot_actions actions = {};
 
 	cJSON* action_subitem = cJSON_Parse(request_body);
-	cJSON* action_power = NULL;
 
-	if(scheduling == false)
-	{
-		action_power = cJSON_GetObjectItem(action_subitem, "power");
-	}
-
-	if(action_power->valueint == true || scheduling == true)
+	if(scheduling == true)
 	{
 		actions.power_state = PIVOT_ON;
-
-		cJSON* action_water = cJSON_GetObjectItem(action_subitem, "water");
-		cJSON* action_direction = cJSON_GetObjectItem(action_subitem, "direction");
-		cJSON* action_percentimeter = cJSON_GetObjectItem(action_subitem, "percentimeter");
-
-		if(action_water->valueint == true)
-		{
-			actions.watering_state = PIVOT_WET;
-		}
-		else
-		{
-			actions.watering_state = PIVOT_DRY;
-		}
-
-		if(strcmp(action_direction->valuestring, "ANTI_CLOCKWISE") == 0)
-		{
-			actions.rotation = PIVOT_CCW;
-		}
-		else
-		{
-			actions.rotation = PIVOT_CW;
-		}
-
-		actions.percentimeter = action_percentimeter->valueint;
 	}
 	else
 	{
-		actions.power_state = PIVOT_OFF;
-		actions.watering_state = PIVOT_DRY;
-		actions.rotation = PIVOT_CW;
-		actions.percentimeter = 0;
+		cJSON* action_power = cJSON_GetObjectItem(action_subitem, "power");
+		if(action_power->valueint == true)
+		{
+			actions.power_state = PIVOT_ON;
+		}
+		else
+		{
+			actions.power_state = PIVOT_OFF;
+			actions.watering_state = PIVOT_DRY;
+			actions.rotation = PIVOT_CW;
+			actions.percentimeter = 0;
+
+			cJSON_Delete(action_subitem);
+			return actions;
+		}
 	}
+
+	if(cJSON_GetObjectItem(action_subitem, "water")->valueint == true)
+	{
+		actions.watering_state = PIVOT_WET;
+	}
+	else
+	{
+		actions.watering_state = PIVOT_DRY;
+	}
+
+	if(strcmp(cJSON_GetObjectItem(action_subitem, "direction")->valuestring, "ANTI_CLOCKWISE") == 0)
+	{
+		actions.rotation = PIVOT_CCW;
+	}
+	else
+	{
+		actions.rotation = PIVOT_CW;
+	}
+
+	actions.percentimeter = cJSON_GetObjectItem(action_subitem, "percentimeter")->valueint;
 
 	cJSON_Delete(action_subitem);
 	return actions;
@@ -302,12 +303,9 @@ pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 	cJSON* subitem = cJSON_Parse(request_body);
 
 	// get scheduling
-	memcpy(	scheduling_date.scheduling_id,
-			cJSON_GetObjectItem(subitem, "start_date")->valuestring,
-			sizeof(scheduling_date.scheduling_id));
-
 	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_date.end_date = (time_t)cJSON_GetObjectItem(subitem, "end_date")->valueint;
+	sprintf(scheduling_date.scheduling_id, "%lld", scheduling_date.start_date);
 
 	cJSON_Delete(subitem);
 
@@ -348,16 +346,6 @@ void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date,
 			sprintf(int_str, "%lld",scheduling_date[position].end_date);
 			cJSON_AddItemToObject(scheduling_date_obj, "end_date", cJSON_CreateString(int_str));
 
-			// power state
-			if(scheduling_date[position].acionts.power_state == PIVOT_ON)
-			{
-				cJSON_AddItemToObject(scheduling_date_obj, "power", cJSON_CreateString("true"));
-			}
-			else
-			{
-				cJSON_AddItemToObject(scheduling_date_obj, "power", cJSON_CreateString("false"));
-			}
-
 			// watering state
 			if(scheduling_date[position].acionts.watering_state == PIVOT_WET)
 			{
@@ -396,12 +384,9 @@ pivot_scheduling_angle http_parser_scheduling_angle(char* request_body)
 	cJSON* subitem = cJSON_Parse(request_body);
 
 	// get scheduling
-	memcpy(	scheduling_angle.scheduling_id,
-			cJSON_GetObjectItem(subitem, "start_date")->valuestring,
-			sizeof(scheduling_angle.scheduling_id));
-
 	scheduling_angle.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_angle.end_angle = (uint16_t)cJSON_GetObjectItem(subitem, "end_angle")->valueint;
+	sprintf(scheduling_angle.scheduling_id, "%lld", scheduling_angle.start_date);
 
 	cJSON_Delete(subitem);
 
@@ -441,16 +426,6 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 			memset(int_str, 0x00, sizeof(int_str));
 			sprintf(int_str, "%d",scheduling_angle[position].end_angle);
 			cJSON_AddItemToObject(scheduling_angle_obj, "end_angle", cJSON_CreateString(int_str));
-
-			// power state
-			if(scheduling_angle[position].acionts.power_state == PIVOT_ON)
-			{
-				cJSON_AddItemToObject(scheduling_angle_obj, "power", cJSON_CreateString("true"));
-			}
-			else
-			{
-				cJSON_AddItemToObject(scheduling_angle_obj, "power", cJSON_CreateString("false"));
-			}
 
 			// watering state
 			if(scheduling_angle[position].acionts.watering_state == PIVOT_WET)
