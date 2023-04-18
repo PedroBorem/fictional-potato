@@ -97,12 +97,12 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_APP_LABEL_SCHEDULING_DATE, DATA_KEY_SCHEDULING_DATE) == 0)
 		{
-			data_app_save_config(&default_scheduling_date, sizeof(default_scheduling_date));
+			data_app_save_scheduling(data_scheduling_date, &default_scheduling_date, sizeof(default_scheduling_date));
 		}
 
 		if(nvs_data_get_size(DATA_APP_LABEL_SCHEDULING_ANGLE, DATA_KEY_SCHEDULING_ANGLE) == 0)
 		{
-			data_app_save_config(&default_scheduling_angle, sizeof(default_scheduling_angle));
+			data_app_save_scheduling(data_scheduling_angle, &default_scheduling_angle, sizeof(default_scheduling_angle));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
