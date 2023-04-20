@@ -546,6 +546,7 @@ static void app_scheduling_task(void* arg)
 					scheduling_date_status[date_position] = false;
 					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
+					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_date[date_position].scheduling_id);
 				}
 			}
 		}
@@ -564,7 +565,7 @@ static void app_scheduling_task(void* arg)
 					scheduling_angle_status[angle_position] = true;
 					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
 					rtc_app_get_timestamp(true);
-					ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
+					ESP_LOGW(MAIN_TAG, "processing schedule by angle id : %s",
 							main_scheduling_angle[angle_position].scheduling_id);
 				}
 				else if( scheduling_angle > (main_scheduling_angle[angle_position].end_angle - angle_off_set)
@@ -573,7 +574,7 @@ static void app_scheduling_task(void* arg)
 					scheduling_angle_status[angle_position] = false;
 					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
-					data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
+					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_angle[angle_position].scheduling_id);
 				}
 			}
 		}
