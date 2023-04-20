@@ -496,7 +496,7 @@ static void app_scheduling_task(void* arg)
 
 	/* Delete old scheduling **************************************************************************/
 	vTaskDelay(pdMS_TO_TICKS(5000)); // Delay RTC sync
-	scheduling_timestamp_now = rtc_app_get_timestamp();
+	scheduling_timestamp_now = rtc_app_get_timestamp(true);
 
 	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
 	{
@@ -519,7 +519,8 @@ static void app_scheduling_task(void* arg)
 
 	while(1)
 	{
-		scheduling_timestamp_now = rtc_app_get_timestamp();
+		//get timestamp
+		scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
 		// date analysis
 		for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
@@ -532,6 +533,7 @@ static void app_scheduling_task(void* arg)
 				{
 					scheduling_date_status[date_position] = true;
 					app_main_call(CALL_SAVE_ACTION, &main_scheduling_date[date_position].acionts);
+					rtc_app_get_timestamp(true);
 					ESP_LOGI(MAIN_TAG, "processing schedule by date id : %s", main_scheduling_date[date_position].scheduling_id);
 				}
 			}
@@ -542,6 +544,7 @@ static void app_scheduling_task(void* arg)
 				if(scheduling_date_status[date_position] == true)
 				{
 					scheduling_date_status[date_position] = false;
+					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
 				}
 			}
@@ -553,21 +556,22 @@ static void app_scheduling_task(void* arg)
 			if(scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date
 			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
 			{
+				// get current angle
+				scheduling_angle = comm_app_get_degree();
+
 				if(scheduling_angle_status[angle_position] == false)
 				{
 					scheduling_angle_status[angle_position] = true;
 					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+					rtc_app_get_timestamp(true);
 					ESP_LOGI(MAIN_TAG, "processing schedule by angle id : %s",
 							main_scheduling_angle[angle_position].scheduling_id);
 				}
-
-				// get current angle
-				scheduling_angle = comm_app_get_degree();
-
-				if( scheduling_angle > (main_scheduling_angle[angle_position].end_angle - angle_off_set)
+				else if( scheduling_angle > (main_scheduling_angle[angle_position].end_angle - angle_off_set)
 				&& scheduling_angle < (main_scheduling_angle[angle_position].end_angle + angle_off_set ))
 				{
 					scheduling_angle_status[angle_position] = false;
+					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
 					data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
 				}

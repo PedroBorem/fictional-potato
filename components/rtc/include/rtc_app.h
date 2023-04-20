@@ -16,7 +16,7 @@ bool rtc_app_init(void);
 
 bool rtc_app_set_timestamp(time_t timestamp);
 
-time_t rtc_app_get_timestamp(void);
+time_t rtc_app_get_timestamp(bool rtc_show_dt);
 
 void rtc_app_get_date_time(struct tm* rtcinfo);
 
