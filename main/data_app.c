@@ -206,8 +206,8 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 			{
 				if(strcmp(scheduling_date[position].scheduling_id,scheduling_id) == 0)
 				{
-					ESP_LOGW(DATA_APP_TAG, "deleting schedule id : %s", scheduling_date[position].scheduling_id);
-					memset(&scheduling_date[position], 0x00, sizeof(scheduling_date[position]));
+					ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_date[position].scheduling_id);
+					memset(&scheduling_date[position], 0x00, sizeof(pivot_scheduling_date));
 					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 					break;
 				}
@@ -224,8 +224,8 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 			{
 				if(strcmp(scheduling_angle[position].scheduling_id,scheduling_id) == 0)
 				{
-					ESP_LOGW(DATA_APP_TAG, "deleting schedule id : %s", scheduling_angle[position].scheduling_id);
-					memset(&scheduling_angle[position], 0x00, sizeof(scheduling_angle[position]));
+					ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_angle[position].scheduling_id);
+					memset(&scheduling_angle[position], 0x00, sizeof(pivot_scheduling_date));
 					data_app_save_scheduling(data_scheduling_date, scheduling_angle, sizeof(scheduling_angle));
 					break;
 				}

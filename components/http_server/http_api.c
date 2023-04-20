@@ -786,6 +786,18 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
 			}
 		}
+		else if(strcmp(req->uri, "/scheduling/off") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
 	}
 
 	return err;
