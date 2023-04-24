@@ -76,6 +76,16 @@ typedef struct
     char scratch[HTTP_SCRATCH_BUFSIZE];
 }http_file_server_data;
 
+/*
+ * Structure holding server handle
+ * and internal socket fd in order
+ * to use out of request send
+ */
+struct async_resp_arg {
+    httpd_handle_t hd;
+    int fd;
+};
+
 // callback pointer
 static app_callback http_callback = NULL;
 
@@ -92,6 +102,9 @@ static esp_err_t http_get_handler(httpd_req_t *req);
 static esp_err_t http_post_handler(httpd_req_t *req);
 static esp_err_t http_put_handler(httpd_req_t *req);
 static esp_err_t http_delete_handler(httpd_req_t *req);
+static esp_err_t http_ws_handler(httpd_req_t *req);
+static void ws_async_send(void *arg);
+static esp_err_t trigger_async_send(httpd_handle_t handle, httpd_req_t *req);
 
 static http_file_server_data *server_data = NULL;
 
@@ -249,10 +262,19 @@ httpd_handle_t http_server_start(void)
 			};
 			httpd_register_uri_handler(http_handle, &file_delete);
 
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_ws = {
+				.uri = "/ws",
+				.method = HTTP_GET,
+				.handler = http_ws_handler,
+				.user_ctx = NULL,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &file_ws);
+
 			LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 		}
 	}
-
 
     return http_handle;
 }
@@ -828,4 +850,84 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 
 	return err;
 }
+
+static esp_err_t http_ws_handler(httpd_req_t *req)
+{
+	if (req->method == HTTP_GET)
+	{
+		ESP_LOGI(HTTP_API_TAG, "Handshake done, the new connection was opened");
+		return ESP_OK;
+	}
+
+	httpd_ws_frame_t ws_pkt;
+	uint8_t *buf = NULL;
+	memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+	ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+	esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
+	if (ret != ESP_OK)
+	{
+		ESP_LOGE(HTTP_API_TAG, "httpd_ws_recv_frame failed to get frame len with %d", ret);
+		return ret;
+	}
+
+	if (ws_pkt.len)
+	{
+		buf = calloc(1, ws_pkt.len + 1);
+		if (buf == NULL)
+		{
+			ESP_LOGE(HTTP_API_TAG, "Failed to calloc memory for buf");
+			return ESP_ERR_NO_MEM;
+		}
+		ws_pkt.payload = buf;
+		ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
+		if (ret != ESP_OK)
+		{
+			ESP_LOGE(HTTP_API_TAG, "httpd_ws_recv_frame failed with %d", ret);
+			free(buf);
+			return ret;
+		}
+		ESP_LOGI(HTTP_API_TAG, "Got packet with message: %s", ws_pkt.payload);
+	}
+
+	ESP_LOGI(HTTP_API_TAG, "frame len is %d", ws_pkt.len);
+
+	if (ws_pkt.type == HTTPD_WS_TYPE_TEXT &&
+		strcmp((char *)ws_pkt.payload, "toggle") == 0)
+	{
+		free(buf);
+		return trigger_async_send(req->handle, req);
+	}
+
+	return ESP_OK;
+}
+
+// ws functions
+
+/*
+ * async send function, which we put into the httpd work queue
+ */
+static void ws_async_send(void *arg)
+{
+    static const char * data = "Async data";
+    struct async_resp_arg *resp_arg = arg;
+    httpd_handle_t hd = resp_arg->hd;
+    int fd = resp_arg->fd;
+    httpd_ws_frame_t ws_pkt;
+    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
+    ws_pkt.payload = (uint8_t*)data;
+    ws_pkt.len = strlen(data);
+    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+
+    httpd_ws_send_frame_async(hd, fd, &ws_pkt);
+    free(resp_arg);
+}
+
+static esp_err_t trigger_async_send(httpd_handle_t handle, httpd_req_t *req)
+{
+    struct async_resp_arg *resp_arg = malloc(sizeof(struct async_resp_arg));
+    resp_arg->hd = req->handle;
+    resp_arg->fd = httpd_req_to_sockfd(req);
+    return httpd_queue_work(handle, ws_async_send, resp_arg);
+}
+
 
