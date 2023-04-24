@@ -13,6 +13,7 @@
 #include "esp_spiffs.h"
 #include "esp_http_server.h"
 #include "http_storage.h"
+#include "http_config_parser.h"
 #include "esp_vfs.h"
 
 /* Private definitions ------------------------------------------- */
@@ -451,27 +452,74 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 		{
 			http_callback(CALL_LOAD_ACTION, NULL);
 		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
 		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
-    	char date[300] = {};;
+    	char out_scheduling[1000] = {};
+    	pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
 
-    	http_parser_scheduling_date_to_json(date);
-		ESP_LOGW("TESTE", "%s", date);	
-       	
-       	httpd_resp_send(req, date, HTTPD_RESP_USE_STRLEN);
+    	if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_DATE, &scheduling_date);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
+
+    	http_parser_scheduling_date_to_json(scheduling_date, out_scheduling);
+    	LOG_COMM(HTTP_API_TAG, "get /scheduling/date : %s", out_scheduling);
+
+       	httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
    	}
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{
-		char angle[300] = {};
+    	char out_scheduling[1000] = {};
+    	pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
 
-		http_parser_scheduling_angle_to_json(angle);
-		ESP_LOGW("TESTE", "%s", angle);	
+    	if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_ANGLE, &scheduling_angle);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
-		httpd_resp_send(req, angle, HTTPD_RESP_USE_STRLEN);
+    	http_parser_scheduling_angle_to_json(scheduling_angle, out_scheduling);
+    	LOG_COMM(HTTP_API_TAG, "get /scheduling/angle : %s", out_scheduling);
+
+    	httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
+	}
+    else if (strcmp(req->uri, "/scheduling/off") == 0)
+	{
+		char out_scheduling[1000] = {};
+		pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_SCHEDULE_DATE, &scheduling_date);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
+
+		http_parser_scheduling_date_off_to_json(scheduling_date, out_scheduling);
+		LOG_COMM(HTTP_API_TAG, "get /scheduling/off : %s", out_scheduling);
+
+		httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
 	}
 	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
 	{
@@ -569,11 +617,53 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 		if(strcmp(req->uri, "/actions") == 0)
 		{
-			pivot_actions state = http_parser_action(content);
+			pivot_actions state = http_parser_action(content, false);
 
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_ACTION, &state);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/date") == 0)
+		{
+			pivot_scheduling_date http_scheduling_date = http_parser_scheduling_date(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/angle") == 0)
+		{
+			pivot_scheduling_angle http_scheduling_angle = http_parser_scheduling_angle(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/off") == 0)
+		{
+			pivot_scheduling_date http_scheduling_date = http_parser_scheduling_date_off(content);
+
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				err = ESP_OK;
 			}
 			else
@@ -652,29 +742,64 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;
 
-		char content[1000] = {};
+	char content[100] = {};
 
-	    /* Truncate if content length larger than the buffer */
-	    size_t recv_size = MIN(req->content_len, sizeof(content));
+	/* Truncate if content length larger than the buffer */
+	size_t recv_size = MIN(req->content_len, sizeof(content));
 
-	    int ret = httpd_req_recv(req, content, recv_size);
-	    if (ret <= 0) // 0 return value indicates connection closed
-	    {
-	        /* Check if timeout occurred */
-	        if (ret == HTTPD_SOCK_ERR_TIMEOUT)
-	        {
-	            httpd_resp_send_408(req);
-	        }
-	    }
-	    else
-	    {
-			LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
-			LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
-			LOG_COMM(HTTP_API_TAG, "content %s", content);
+	int ret = httpd_req_recv(req, content, recv_size);
+	if (ret <= 0) // 0 return value indicates connection closed
+	{
+		/* Check if timeout occurred */
+		if (ret == HTTPD_SOCK_ERR_TIMEOUT)
+		{
+			httpd_resp_send_408(req);
+		}
+	}
+	else
+	{
+		LOG_COMM(HTTP_API_TAG, "content_len %d", req->content_len);
+		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
+		LOG_COMM(HTTP_API_TAG, "content %s", content);
 
-			// TODO deletar do BD
-	    }
+		if(strcmp(req->uri, "/scheduling/date") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/angle") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+		else if(strcmp(req->uri, "/scheduling/off") == 0)
+		{
+			if(http_callback != NULL)
+			{
+				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				err = ESP_OK;
+			}
+			else
+			{
+				ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			}
+		}
+	}
 
-		return err;
+	return err;
 }
 

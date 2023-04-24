@@ -48,7 +48,7 @@ esp_err_t gprs_module_init(void)
 esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree, const char * gprs_id)
 {
 	esp_err_t err = ESP_FAIL;
-	time_t timestamp = rtc_app_get_timestamp();
+	time_t timestamp = rtc_app_get_timestamp(true);
 
 	char event[90] = "";
 	common_parser_status_to_json(config_in, timestamp, degree, gprs_id , event, sizeof(event));

@@ -28,16 +28,23 @@
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
+static TaskHandle_t xTask_scheduling_app = NULL;
 
 // represents the initial coverage angle of the pivot
-static uint16_t app_start_angle = 0;
+static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
+
+static pivot_scheduling_date main_scheduling_date[SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_angle main_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_date_status[SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_angle_status[SCHEDULING_MAX_VALUE] = {};
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
-static void app_main_call(app_call_states state,const void* buffer);
+static void app_main_call(app_call_states state, void* buffer);
 static void app_sectorization_task(void* arg);
 static void app_peak_hours_task(void* arg);
+static void app_scheduling_task(void* arg);
 
 /**
  * @brief	main class
@@ -55,7 +62,7 @@ void app_main(void)
 	data_app_load_config(&current_config, sizeof(current_config));
 	actuation_app_get_config(&current_action, sizeof(current_action));
 
-	// set http parameters
+	// set HTTP parameters
 	comm_app_set_config(current_config);
 
 	//rtc_app_get_timestamp();
@@ -100,11 +107,31 @@ void app_main(void)
 				MAIN_APP_TASK_2_PRIORITY,
 				&xTask_peak_hours_app);
 
+	// create peak hours task
+	xTaskCreate(&app_scheduling_task,
+				MAIN_APP_TASK_3_NAME,
+				MAIN_APP_STACK_3_SIZE,
+				NULL,
+				MAIN_APP_TASK_3_PRIORITY,
+				&xTask_scheduling_app);
+
 	memcpy(&main_config, &current_config, sizeof(main_config));
 
 	while (1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(1000));
+		// get start angle
+		if(comm_app_get_degree() == 0xFFFF)
+		{
+			vTaskDelay(pdMS_TO_TICKS(1000));
+		}
+		else
+		{
+			if(app_start_angle == 0xFFFF)
+			{
+				app_start_angle = comm_app_get_degree();
+			}
+			vTaskDelay(pdMS_TO_TICKS(10000));
+		}
 	}
 }
 
@@ -133,7 +160,7 @@ static bool app_init(void)
  * @brief	callback from secondary applications to the main
  * @param	state - [in]: reason why a callback was triggered
  */
-static void app_main_call(app_call_states state,const void* buffer)
+static void app_main_call(app_call_states state, void* buffer)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -186,6 +213,79 @@ static void app_main_call(app_call_states state,const void* buffer)
 
 			break;
 		}
+		case CALL_SAVE_SCHEDULE_DATE:
+		{
+			pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			{
+				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+				{
+					memcpy(&scheduling_date[position], buffer, sizeof(scheduling_date[position]));
+					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+					memcpy(main_scheduling_date, scheduling_date, sizeof(main_scheduling_date));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_date[position].scheduling_id);
+					break;
+				}
+			}
+
+			break;
+		}
+		case CALL_LOAD_SCHEDULE_DATE:
+		{
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE ; position++)
+			{
+				memcpy(&main_scheduling_date[position].is_running, &scheduling_date_status[position],
+						sizeof(main_scheduling_date[position].is_running));
+			}
+			memcpy(buffer, main_scheduling_date, sizeof(main_scheduling_date));
+
+			break;
+		}
+		case CALL_DELETE_SCHEDULE_DATE:
+		{
+			data_app_delete_scheduling(data_scheduling_date, (char*)buffer);
+			data_app_load_scheduling(data_scheduling_date, main_scheduling_date, sizeof(main_scheduling_date));
+			break;
+		}
+		case CALL_SAVE_SCHEDULE_ANGLE:
+		{
+			pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+			data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			{
+				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
+				{
+					memcpy(&scheduling_angle[position], buffer, sizeof(scheduling_angle[position]));
+					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+					memcpy(main_scheduling_angle, scheduling_angle, sizeof(main_scheduling_angle));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_angle[position].scheduling_id);
+					break;
+				}
+			}
+			break;
+		}
+		case CALL_LOAD_SCHEDULE_ANGLE:
+		{
+			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE ; position++)
+			{
+				memcpy(&main_scheduling_angle[position].is_running, &main_scheduling_angle[position],
+						sizeof(main_scheduling_angle[position].is_running));
+			}
+			memcpy(buffer, main_scheduling_angle, sizeof(main_scheduling_angle));
+
+			break;
+		}
+		case CALL_DELETE_SCHEDULE_ANGLE:
+		{
+			data_app_delete_scheduling(data_scheduling_angle, (char*)buffer);
+			data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
+			break;
+		}
 		case CALL_MANUAL_PIVOT:
 		{
 			pivot_actions manual_config = {};
@@ -224,6 +324,7 @@ static void app_main_call(app_call_states state,const void* buffer)
 			//get current status
 			actuation_app_get_config(&current_action, sizeof(current_action));
 			comm_app_send_event(current_action);
+
 			break;
 		}
 		default:
@@ -377,6 +478,107 @@ static void app_peak_hours_task(void* arg)
 			}
 		}
 		vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
+	}
+}
+
+static void app_scheduling_task(void* arg)
+{
+	const uint8_t angle_off_set = 5;
+
+	time_t scheduling_timestamp_now = 0;
+	uint16_t scheduling_angle = comm_app_get_degree();
+
+	data_app_load_scheduling(data_scheduling_date, main_scheduling_date, sizeof(main_scheduling_date));
+	data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
+
+	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
+	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
+
+	/* Delete old scheduling **************************************************************************/
+	vTaskDelay(pdMS_TO_TICKS(5000)); // Delay RTC sync
+	scheduling_timestamp_now = rtc_app_get_timestamp(true);
+
+	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+	{
+		if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
+		&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
+		{
+			data_app_delete_scheduling(data_scheduling_date, main_scheduling_date[date_position].scheduling_id);
+		}
+	}
+	for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+	{
+		if((scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date)
+		&& (scheduling_timestamp_now - main_scheduling_angle[angle_position].start_date) > 3600
+		&& (strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0))
+		{
+			data_app_delete_scheduling(data_scheduling_angle, main_scheduling_date[angle_position].scheduling_id);
+		}
+	}
+	/* End Delete old scheduling **********************************************************************/
+
+	while(1)
+	{
+		//get timestamp
+		scheduling_timestamp_now = rtc_app_get_timestamp(false);
+
+		// date analysis
+		for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+		{
+			if(scheduling_timestamp_now > main_scheduling_date[date_position].start_date
+			&& scheduling_timestamp_now < main_scheduling_date[date_position].end_date
+			&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
+			{
+				if(scheduling_date_status[date_position] == false)
+				{
+					scheduling_date_status[date_position] = true;
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_date[date_position].acionts);
+					rtc_app_get_timestamp(true);
+					ESP_LOGI(MAIN_TAG, "processing schedule by date id : %s", main_scheduling_date[date_position].scheduling_id);
+				}
+			}
+			else if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
+			&& main_scheduling_date[date_position].end_date != 0)
+			{
+				data_app_delete_scheduling(data_scheduling_date, main_scheduling_date[date_position].scheduling_id);
+				if(scheduling_date_status[date_position] == true)
+				{
+					scheduling_date_status[date_position] = false;
+					rtc_app_get_timestamp(true);
+					app_main_call(CALL_OFF_PIVOT, NULL);
+					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_date[date_position].scheduling_id);
+				}
+			}
+		}
+
+		// angle analysis
+		for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+		{
+			if(scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date
+			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
+			{
+				// get current angle
+				scheduling_angle = comm_app_get_degree();
+
+				if(scheduling_angle_status[angle_position] == false)
+				{
+					scheduling_angle_status[angle_position] = true;
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+					rtc_app_get_timestamp(true);
+					ESP_LOGW(MAIN_TAG, "processing schedule by angle id : %s",
+							main_scheduling_angle[angle_position].scheduling_id);
+				}
+				else if( scheduling_angle > (main_scheduling_angle[angle_position].end_angle - angle_off_set)
+				&& scheduling_angle < (main_scheduling_angle[angle_position].end_angle + angle_off_set ))
+				{
+					scheduling_angle_status[angle_position] = false;
+					rtc_app_get_timestamp(true);
+					app_main_call(CALL_OFF_PIVOT, NULL);
+					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_angle[angle_position].scheduling_id);
+				}
+			}
+		}
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 	}
 }
 

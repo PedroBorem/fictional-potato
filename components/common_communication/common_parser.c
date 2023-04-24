@@ -127,7 +127,7 @@ esp_err_t common_parser_string_to_gnss(const char* string_in, uint16_t* angle, t
 	// assistant buffers
 	char angle_out[COMMON_PARSER_ANGLE_SIZE] = "";
 	char timestamp_out[COMMON_PARSER_TIMESTAMP_SIZE] = "";
-	char search_timestamp[] = "#";
+	char search_timestamp[] = "-";
 	char* ptr = strstr(string_in, search_timestamp);
 
 	// assistant accountant
@@ -180,20 +180,21 @@ esp_err_t common_parser_status_to_string(pivot_actions config_in,time_t timestam
 	esp_err_t err = ESP_OK;
 	char string_converted[25] = "";
 
-	sprintf(&string_converted[COMMON_PARSER_ROTATION_POSITION], "%d", config_in.rotation);
-	sprintf(&string_converted[COMMON_PARSER_WATERING_POSITION], "%d", config_in.watering_state);
-	sprintf(&string_converted[COMMON_PARSER_POWER_POSITION], "%d", config_in.power_state);
+        string_converted[0] = '#';
+	sprintf(&string_converted[1], "%d", config_in.rotation);
+	sprintf(&string_converted[2], "%d", config_in.watering_state);
+	sprintf(&string_converted[3], "%d", config_in.power_state);
 
-	string_converted[3] = '-';
-	sprintf(&string_converted[COMMON_PARSER_PERCENTIMETER_POSITION], "%03d", config_in.percentimeter);
+	string_converted[4] = '-';
+	sprintf(&string_converted[5], "%03d", config_in.percentimeter);
 
-	string_converted[7] = '-';
-	sprintf(&string_converted[COMMON_PARSER_ANGLE_OUT_POSITION], "%03d", angle);
+	string_converted[8] = '-';
+	sprintf(&string_converted[9], "%03d", angle);
 
-	string_converted[11] = '-';
-	sprintf(&string_converted[COMMON_PARSER_TIMESTAMP_OUT_POSITION], "%010lld", (long long int)timestamp);
+	string_converted[12] = '-';
+	sprintf(&string_converted[13], "%010lld", (long long int)timestamp);
 
-	string_converted[24] = '#';
+	string_converted[23] = '$';
 	memcpy(string_out, string_converted, (sizeof(string_converted) - 1));
 
 	return err;

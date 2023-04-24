@@ -60,7 +60,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	return ret;
 }
 
-time_t rtc_app_get_timestamp(void)
+time_t rtc_app_get_timestamp(bool rtc_show_dt)
 {
 	struct tm rtcinfo = {0};
 	time_t timestamp_now = 0;
@@ -68,7 +68,6 @@ time_t rtc_app_get_timestamp(void)
 	if (ds3231_get_time(&dev, &rtcinfo) != ESP_OK)
 	{
 		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
-
 	}
 	else
 	{
@@ -77,8 +76,10 @@ time_t rtc_app_get_timestamp(void)
 
 		timestamp_now = mktime(&rtcinfo);
 
-		rtc_show_date_time(timestamp_now, RTC_CONFIG_TIMEZONE);
-		ESP_LOGI(RTC_APP_TAG, "timestamp %lld", timestamp_now);
+		if(rtc_show_dt == true)
+		{
+			rtc_show_date_time(timestamp_now, RTC_CONFIG_TIMEZONE);
+		}
 	}
 
 	return timestamp_now;
@@ -98,10 +99,12 @@ void rtc_app_get_date_time(struct tm* rtcinfo)
 
 void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 {
-	 struct tm *tminfo;
-	 time_t rawtime = (timestamp_now + (time_z*3600));
+	char time_str[80];
+	struct tm tminfo;
+	time_t rawtime = (timestamp_now + (time_z*3600));
 
-	 time ( &rawtime );
-	 tminfo = localtime ( &rawtime );
-	 ESP_LOGI(RTC_APP_TAG, "Current date and time are: %s", asctime (tminfo) );
+	tminfo = *localtime ( &rawtime );
+
+	strftime(time_str, sizeof(time_str), "%a %Y-%m-%d %H:%M:%S %Z", &tminfo);
+	ESP_LOGI(RTC_APP_TAG, "timestamp %lld [%s]", timestamp_now, time_str);
 }

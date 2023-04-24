@@ -10,7 +10,6 @@
 
 // Components include
 #include "project_config.h"
-#include "http_config_parser.h"
 
 /**
  * @brief	Method to start HTTP server.

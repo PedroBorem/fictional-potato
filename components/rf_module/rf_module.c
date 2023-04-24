@@ -51,7 +51,7 @@ esp_err_t rf_module_send_event(pivot_actions config_in)
 {
 	esp_err_t err = ESP_FAIL;
 	uint16_t degree = rf_module_get_angle();
-	time_t timestamp = rtc_app_get_timestamp();
+	time_t timestamp = rtc_app_get_timestamp(true);
 
 	char event[25] = "";
 	common_parser_status_to_string(config_in, timestamp, degree, event);

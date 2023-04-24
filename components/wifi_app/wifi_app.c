@@ -26,7 +26,7 @@
 /* Private definitions ------------------------------------------- */
 #define WIFI_TAG 	"wifi_app"
 
-#define WIFI_SSID      			"wifi-test"
+#define WIFI_SSID      			"wifi-test3"
 #define WIFI_PASS      			"soiltest123"
 #define WIFI_DEFAULT_IP			"192.168.0.1"
 #define WIFI_DEFAULT_MASK		"255.255.255.0"
