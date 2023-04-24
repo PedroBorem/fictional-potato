@@ -226,12 +226,23 @@ httpd_handle_t http_server_start(void)
 		}
 		else
 		{
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_ws = {
+				.uri = "/data/ws",
+				.method = HTTP_GET,
+				.handler = http_ws_handler,
+				.user_ctx = NULL,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &file_ws);
+
 			/* URI handler for getting uploaded files */
 			httpd_uri_t file_download = {
 				.uri       = "/*",  // Match all URIs of type /path/to/file
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
-				.user_ctx  = server_data    // Pass server data as context
+				.user_ctx  = server_data,    // Pass server data as context
+				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &file_download);
 
@@ -261,16 +272,6 @@ httpd_handle_t http_server_start(void)
 				.user_ctx  = server_data    // Pass server data as context
 			};
 			httpd_register_uri_handler(http_handle, &file_delete);
-
-			/* URI handler for uploading files to server */
-			httpd_uri_t file_ws = {
-				.uri = "/ws",
-				.method = HTTP_GET,
-				.handler = http_ws_handler,
-				.user_ctx = NULL,
-				.is_websocket = true
-			};
-			httpd_register_uri_handler(http_handle, &file_ws);
 
 			LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 		}
@@ -569,12 +570,12 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 
 		httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
 	}
-	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
+	else if (strcmp(req->uri, "/cycles") == 0)
 	{
 		char cycles[300] = {};
 
 		http_parser_cycles_to_json(cycles);
-		ESP_LOGW("TESTE", "%s", cycles);	
+		LOG_COMM(HTTP_API_TAG, "get /cycles: %s", cycles);
 
 		httpd_resp_send(req, cycles, HTTPD_RESP_USE_STRLEN);
 	}
@@ -616,6 +617,10 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 				else if (strcmp(filename, "/logo.png") == 0)
 				{
 					err = http_logo_get_handler(req);
+				}
+				else if (strcmp(filename, "/ws") == 0)
+				{
+					http_ws_handler(req);
 				}
 				else
 				{
@@ -863,6 +868,7 @@ static esp_err_t http_ws_handler(httpd_req_t *req)
 	uint8_t *buf = NULL;
 	memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
 	ws_pkt.type = HTTPD_WS_TYPE_TEXT;
+	/* Set max_len = 0 to get the frame len */
 	esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
 	if (ret != ESP_OK)
 	{
@@ -870,15 +876,20 @@ static esp_err_t http_ws_handler(httpd_req_t *req)
 		return ret;
 	}
 
+	ESP_LOGI(HTTP_API_TAG, "frame len is %d", ws_pkt.len);
+
 	if (ws_pkt.len)
 	{
+		/* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
 		buf = calloc(1, ws_pkt.len + 1);
 		if (buf == NULL)
 		{
 			ESP_LOGE(HTTP_API_TAG, "Failed to calloc memory for buf");
 			return ESP_ERR_NO_MEM;
 		}
+
 		ws_pkt.payload = buf;
+		/* Set max_len = ws_pkt.len to get the frame payload */
 		ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
 		if (ret != ESP_OK)
 		{
@@ -886,19 +897,25 @@ static esp_err_t http_ws_handler(httpd_req_t *req)
 			free(buf);
 			return ret;
 		}
+
 		ESP_LOGI(HTTP_API_TAG, "Got packet with message: %s", ws_pkt.payload);
 	}
 
-	ESP_LOGI(HTTP_API_TAG, "frame len is %d", ws_pkt.len);
-
+	ESP_LOGI(HTTP_API_TAG, "Packet type: %d", ws_pkt.type);
 	if (ws_pkt.type == HTTPD_WS_TYPE_TEXT &&
-		strcmp((char *)ws_pkt.payload, "toggle") == 0)
+		strcmp((char*)ws_pkt.payload,"Trigger async") == 0)
 	{
 		free(buf);
 		return trigger_async_send(req->handle, req);
 	}
 
-	return ESP_OK;
+	ret = httpd_ws_send_frame(req, &ws_pkt);
+	if (ret != ESP_OK) {
+		ESP_LOGE(HTTP_API_TAG, "httpd_ws_send_frame failed with %d", ret);
+	}
+
+	free(buf);
+	return ret;
 }
 
 // ws functions
