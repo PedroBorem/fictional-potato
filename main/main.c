@@ -171,8 +171,9 @@ static void app_main_call(app_call_states state, void* buffer)
 			pivot_actions actions = {};
 			pivot_config config = {};
 
-			ret = data_app_load_actions(&actions, sizeof(actions));
-			ret = data_app_load_config(&config, sizeof(config));
+			//ret = data_app_load_actions(&actions, sizeof(actions));
+			ret = actuation_app_get_config(actions, sizeof(actions));
+			ret &= data_app_load_config(&config, sizeof(config));
 
 			if(ret == ESP_OK)
 			{
