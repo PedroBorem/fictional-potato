@@ -11,10 +11,13 @@
 /* HTTP include */
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
-#include "esp_http_server.h"
 #include "http_storage.h"
 #include "http_config_parser.h"
 #include "esp_vfs.h"
+
+// Register SOCKET event
+#include <esp_wifi.h>
+#include <esp_event.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -73,9 +76,6 @@ typedef struct
     char scratch[HTTP_SCRATCH_BUFSIZE];
 }http_file_server_data;
 
-// handle to the driver
-static httpd_handle_t http_handle = NULL;
-
 // callback pointer
 static app_callback http_callback = NULL;
 
@@ -129,11 +129,40 @@ static const char* http_get_path_from_uri(char *dest, const char *base_path, con
     return dest + base_pathlen;
 }
 
+static void http_connect_handler(void* arg, esp_event_base_t event_base,
+                            int32_t event_id, void* event_data)
+{
+    httpd_handle_t* server = (httpd_handle_t*) arg;
+    if (*server == NULL)
+    {
+        LOG_COMM(HTTP_API_TAG, "Starting webserver");
+        *server = http_server_start();
+    }
+}
+
+static void http_disconnect_handler(void* arg, esp_event_base_t event_base,
+                               int32_t event_id, void* event_data)
+{
+    httpd_handle_t* server = (httpd_handle_t*) arg;
+    if (*server)
+    {
+        if (http_server_stop(*server) == ESP_OK)
+        {
+            *server = NULL;
+        }
+        else
+        {
+            ESP_LOGE(HTTP_API_TAG, "Failed to stop http server");
+        }
+    }
+}
+
 /* Public methods ------------------------------------------------ */
 esp_err_t http_server_init(void)
 {
     esp_err_t err = ESP_OK;
     const char* base_path = "/data";
+    static httpd_handle_t server = NULL;
 
     err = http_server_mount_storage(base_path);
     if(err != ESP_OK)
@@ -143,95 +172,92 @@ esp_err_t http_server_init(void)
 
     /* Allocate memory for server data */
     server_data = calloc(1, sizeof(http_file_server_data));
-    if (!server_data)
+    if (server_data == NULL)
     {
         ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
         err = ESP_ERR_NO_MEM;
     }
 
+	ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &http_connect_handler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &http_disconnect_handler, &server));
+
+    /* Start the server for the first time */
+    server = http_server_start();
+
     return err;
 }
 
-esp_err_t http_server_start(void)
+httpd_handle_t http_server_start(void)
 {
-	esp_err_t err = ESP_OK;
 	const char* base_path = "/data";
+    httpd_handle_t http_handle = NULL;
 
-    if (http_handle != NULL)
-    {
-        ESP_LOGE(HTTP_API_TAG, "File server already started");
-        err = ESP_ERR_INVALID_STATE;
-    }
-    else
-    {
-		if (!server_data)
+	if (server_data == NULL)
+	{
+		ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
+	}
+	else
+	{
+		strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
+		httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+		config.stack_size = (4096 * 5);
+
+		/* Use the URI wildcard matching function in order to
+		 * allow the same handler to respond to multiple different
+		 * target URIs which match the wildcard scheme */
+		config.uri_match_fn = httpd_uri_match_wildcard;
+
+		if (httpd_start(&http_handle, &config) != ESP_OK)
 		{
-			ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
-			err = ESP_ERR_NO_MEM;
+			ESP_LOGE(HTTP_API_TAG, "Failed to start file server!");
 		}
 		else
 		{
-			strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
-			httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-			config.stack_size = (4096 * 5);
+			/* URI handler for getting uploaded files */
+			httpd_uri_t file_download = {
+				.uri       = "/*",  // Match all URIs of type /path/to/file
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data    // Pass server data as context
+			};
+			httpd_register_uri_handler(http_handle, &file_download);
 
-			/* Use the URI wildcard matching function in order to
-			 * allow the same handler to respond to multiple different
-			 * target URIs which match the wildcard scheme */
-			config.uri_match_fn = httpd_uri_match_wildcard;
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_submit = {
+				.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+				.method    = HTTP_POST,
+				.handler   = http_post_handler,
+				.user_ctx  = server_data    // Pass server data as context
+			};
+			httpd_register_uri_handler(http_handle, &file_submit);
 
-			if (httpd_start(&http_handle, &config) != ESP_OK)
-			{
-				ESP_LOGE(HTTP_API_TAG, "Failed to start file server!");
-				err = ESP_FAIL;
-			}
-			else
-			{
-				/* URI handler for getting uploaded files */
-				httpd_uri_t file_download = {
-					.uri       = "/*",  // Match all URIs of type /path/to/file
-					.method    = HTTP_GET,
-					.handler   = http_get_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_download);
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_config = {
+				.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+				.method    = HTTP_PUT,
+				.handler   = http_put_handler,
+				.user_ctx  = server_data    // Pass server data as context
+			};
+			httpd_register_uri_handler(http_handle, &file_config);
 
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_submit = {
-					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_POST,
-					.handler   = http_post_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_submit);
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_delete = {
+				.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
+				.method    = HTTP_DELETE,
+				.handler   = http_delete_handler,
+				.user_ctx  = server_data    // Pass server data as context
+			};
+			httpd_register_uri_handler(http_handle, &file_delete);
 
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_config = {
-					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_PUT,
-					.handler   = http_put_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_config);
-
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_delete = {
-					.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_DELETE,
-					.handler   = http_delete_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_delete);
-
-				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
-			}
+			LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 		}
-    }
+	}
 
-    return err;
+
+    return http_handle;
 }
 
-esp_err_t http_server_stop(void)
+esp_err_t http_server_stop(httpd_handle_t http_handle)
 {
 	esp_err_t ret = ESP_ERR_INVALID_STATE;
 

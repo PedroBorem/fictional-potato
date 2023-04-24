@@ -79,8 +79,8 @@ bool comm_app_init(const app_callback callback)
 
 	err = rf_module_init();
 	err &= gprs_module_init();
-	err &= http_server_init();
 	err &= wifi_app_init();
+	err &= http_server_init();
 
 	if(err == ESP_OK && callback != NULL )
 	{
