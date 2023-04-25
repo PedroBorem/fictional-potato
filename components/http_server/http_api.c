@@ -145,34 +145,6 @@ static const char* http_get_path_from_uri(char *dest, const char *base_path, con
     return dest + base_pathlen;
 }
 
-static void http_connect_handler(void* arg, esp_event_base_t event_base,
-                            int32_t event_id, void* event_data)
-{
-    httpd_handle_t* server_connect = (httpd_handle_t*) arg;
-    if (*server_connect == NULL)
-    {
-        LOG_COMM(HTTP_API_TAG, "Starting webserver");
-        *server_connect = http_server_start();
-    }
-}
-
-static void http_disconnect_handler(void* arg, esp_event_base_t event_base,
-                               int32_t event_id, void* event_data)
-{
-    httpd_handle_t* server = (httpd_handle_t*) arg;
-    if (*server)
-    {
-        if (http_server_stop(*server) == ESP_OK)
-        {
-            *server = NULL;
-        }
-        else
-        {
-            ESP_LOGE(HTTP_API_TAG, "Failed to stop http server");
-        }
-    }
-}
-
 /* Public methods ------------------------------------------------ */
 esp_err_t http_server_init(void)
 {
@@ -192,9 +164,6 @@ esp_err_t http_server_init(void)
         ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
         err = ESP_ERR_NO_MEM;
     }
-
-	ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &http_connect_handler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &http_disconnect_handler, &server));
 
     /* Start the server for the first time */
     server = http_server_start();
@@ -872,6 +841,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -884,6 +854,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -896,6 +867,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -912,6 +884,7 @@ static esp_err_t http_ws_handler(httpd_req_t *req)
 {
 	if(req->method == HTTP_GET)
 	{
+		ESP_LOGW(HTTP_API_TAG, "Handshake done, the new connection was opened");
 		return ESP_OK;
 	}
 
@@ -926,31 +899,22 @@ static esp_err_t http_ws_handler(httpd_req_t *req)
 // The asynchronous response
 static void http_generate_async_resp(void *arg)
 {
-	if(http_callback != NULL)
-	{
-		http_callback(CALL_LOAD_ACTION, NULL);
+	// Data format to be sent from the server as a response to the client
+	char http_string[250];
+	char* http_ws_str = "ws send";
+	sprintf(http_string, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", strlen(http_ws_str));
 
-		// Data format to be sent from the server as a response to the client
-		char http_string[250];
-		sprintf(http_string, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", strlen(http_actions));
+	// Initialize asynchronous response data structure
+	struct async_resp_arg *resp_arg = (struct async_resp_arg *)arg;
+	httpd_handle_t hd = resp_arg->hd;
+	int fd = resp_arg->fd;
 
-		// Initialize asynchronous response data structure
-		struct async_resp_arg *resp_arg = (struct async_resp_arg *)arg;
-		httpd_handle_t hd = resp_arg->hd;
-		int fd = resp_arg->fd;
+	// Send data to the client
+	ESP_LOGI(HTTP_API_TAG, "Executing queued work fd : %d", fd);
+	httpd_socket_send(hd, fd, http_string, strlen(http_string), 0);
+	httpd_socket_send(hd, fd, http_ws_str, strlen(http_ws_str), 0);
 
-		// Send data to the client
-		ESP_LOGI(HTTP_API_TAG, "Executing queued work fd : %d", fd);
-		httpd_socket_send(hd, fd, http_string, strlen(http_string), 0);
-		httpd_socket_send(hd, fd, http_actions, strlen(http_actions), 0);
-
-		free(arg);
-	}
-	else
-	{
-		ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-
-	}
+	free(arg);
 }
 
 
