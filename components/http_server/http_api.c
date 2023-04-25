@@ -192,7 +192,7 @@ esp_err_t http_server_init(void)
     }
 
 	ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STACONNECTED, &http_connect_handler, &server));
-    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STADISCONNECTED, &http_disconnect_handler, &server));
+    ESP_ERROR_CHECK(esp_event_handler_register(WIFI_EVENT, WIFI_EVENT_AP_STOP, &http_disconnect_handler, &server));
 
     /* Start the server for the first time */
     server = http_server_start();
