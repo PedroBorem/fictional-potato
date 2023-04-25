@@ -214,6 +214,7 @@ httpd_handle_t http_server_start(void)
 		strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
 		httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 		config.stack_size = (4096 * 5);
+		config.max_uri_handlers = 10;
 
 		/* Use the URI wildcard matching function in order to
 		 * allow the same handler to respond to multiple different
@@ -226,50 +227,100 @@ httpd_handle_t http_server_start(void)
 		}
 		else
 		{
-			/* URI handler for uploading files to server */
-			httpd_uri_t file_ws = {
-				.uri = "/data/ws",
+			/* URI handler for WebSocket server */
+			httpd_uri_t get_ws = {
+				.uri = "/ws",
 				.method = HTTP_GET,
 				.handler = http_ws_handler,
 				.user_ctx = NULL,
 				.is_websocket = true
 			};
-			httpd_register_uri_handler(http_handle, &file_ws);
+			httpd_register_uri_handler(http_handle, &get_ws);
 
 			/* URI handler for getting uploaded files */
-			httpd_uri_t file_download = {
-				.uri       = "/*",  // Match all URIs of type /path/to/file
+			httpd_uri_t get_download = {
+				.uri       = "/data/*",
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
-				.user_ctx  = server_data,    // Pass server data as context
+				.user_ctx  = server_data,
 				.is_websocket = true
 			};
-			httpd_register_uri_handler(http_handle, &file_download);
+			httpd_register_uri_handler(http_handle, &get_download);
+
+			/* URI handler for get api-status */
+			httpd_uri_t get_api_status = {
+				.uri       = "/api-status",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &get_api_status);
+
+			/* URI handler for get config */
+			httpd_uri_t get_config = {
+				.uri       = "/config",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &get_config);
+
+			/* URI handler for get action */
+			httpd_uri_t get_action = {
+				.uri       = "/actions",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &get_action);
+
+			/* URI handler for get scheduling */
+			httpd_uri_t get_scheduling= {
+				.uri       = "/scheduling/*",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &get_scheduling);
+
+			/* URI handler for get history */
+			httpd_uri_t get_cycles = {
+				.uri       = "/cycles",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+				.is_websocket = true
+			};
+			httpd_register_uri_handler(http_handle, &get_cycles);
 
 			/* URI handler for uploading files to server */
 			httpd_uri_t file_submit = {
-				.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+				.uri       = "/*",
 				.method    = HTTP_POST,
 				.handler   = http_post_handler,
-				.user_ctx  = server_data    // Pass server data as context
+				.user_ctx  = server_data
 			};
 			httpd_register_uri_handler(http_handle, &file_submit);
 
 			/* URI handler for uploading files to server */
 			httpd_uri_t file_config = {
-				.uri       = "/*",   // Match all URIs of type /upload/path/to/file
+				.uri       = "/*",
 				.method    = HTTP_PUT,
 				.handler   = http_put_handler,
-				.user_ctx  = server_data    // Pass server data as context
+				.user_ctx  = server_data
 			};
 			httpd_register_uri_handler(http_handle, &file_config);
 
 			/* URI handler for uploading files to server */
 			httpd_uri_t file_delete = {
-				.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
+				.uri       = "/scheduling/*",
 				.method    = HTTP_DELETE,
 				.handler   = http_delete_handler,
-				.user_ctx  = server_data    // Pass server data as context
+				.user_ctx  = server_data
 			};
 			httpd_register_uri_handler(http_handle, &file_delete);
 
