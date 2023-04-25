@@ -89,6 +89,10 @@ struct async_resp_arg {
 // callback pointer
 static app_callback http_callback = NULL;
 
+static httpd_handle_t server = NULL;
+
+httpd_req_t http_ws_req = {};
+
 static char* http_config = NULL;
 static char* http_actions = NULL;
 
@@ -103,8 +107,7 @@ static esp_err_t http_post_handler(httpd_req_t *req);
 static esp_err_t http_put_handler(httpd_req_t *req);
 static esp_err_t http_delete_handler(httpd_req_t *req);
 static esp_err_t http_ws_handler(httpd_req_t *req);
-static void ws_async_send(void *arg);
-static esp_err_t trigger_async_send(httpd_handle_t handle, httpd_req_t *req);
+static void http_generate_async_resp(void *arg);
 
 static http_file_server_data *server_data = NULL;
 
@@ -145,11 +148,11 @@ static const char* http_get_path_from_uri(char *dest, const char *base_path, con
 static void http_connect_handler(void* arg, esp_event_base_t event_base,
                             int32_t event_id, void* event_data)
 {
-    httpd_handle_t* server = (httpd_handle_t*) arg;
-    if (*server == NULL)
+    httpd_handle_t* server_connect = (httpd_handle_t*) arg;
+    if (*server_connect == NULL)
     {
         LOG_COMM(HTTP_API_TAG, "Starting webserver");
-        *server = http_server_start();
+        *server_connect = http_server_start();
     }
 }
 
@@ -175,7 +178,6 @@ esp_err_t http_server_init(void)
 {
     esp_err_t err = ESP_OK;
     const char* base_path = "/data";
-    static httpd_handle_t server = NULL;
 
     err = http_server_mount_storage(base_path);
     if(err != ESP_OK)
@@ -214,7 +216,7 @@ httpd_handle_t http_server_start(void)
 		strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
 		httpd_config_t config = HTTPD_DEFAULT_CONFIG();
 		config.stack_size = (4096 * 5);
-		config.max_uri_handlers = 10;
+		config.max_uri_handlers = 11;
 
 		/* Use the URI wildcard matching function in order to
 		 * allow the same handler to respond to multiple different
@@ -233,7 +235,7 @@ httpd_handle_t http_server_start(void)
 				.method = HTTP_GET,
 				.handler = http_ws_handler,
 				.user_ctx = NULL,
-				.is_websocket = true
+				.is_websocket = true,
 			};
 			httpd_register_uri_handler(http_handle, &get_ws);
 
@@ -243,7 +245,6 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_download);
 
@@ -253,7 +254,6 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_api_status);
 
@@ -263,7 +263,6 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_config);
 
@@ -273,7 +272,6 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_action);
 
@@ -283,7 +281,6 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_scheduling);
 
@@ -293,9 +290,17 @@ httpd_handle_t http_server_start(void)
 				.method    = HTTP_GET,
 				.handler   = http_get_handler,
 				.user_ctx  = server_data,
-				.is_websocket = true
 			};
 			httpd_register_uri_handler(http_handle, &get_cycles);
+
+			/* URI handler for get_favicon */
+			httpd_uri_t get_favicon = {
+				.uri       = "/favicon.ico",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_favicon);
 
 			/* URI handler for uploading files to server */
 			httpd_uri_t file_submit = {
@@ -406,7 +411,6 @@ esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_co
 
     return err;
 }
-
 
 /* Private methods ----------------------------------------------- */
 /**
@@ -669,10 +673,6 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 				{
 					err = http_logo_get_handler(req);
 				}
-				else if (strcmp(filename, "/ws") == 0)
-				{
-					http_ws_handler(req);
-				}
 				else
 				{
 					ESP_LOGE(HTTP_API_TAG, "Failed to stat file : %s (%s)", filepath, filename);
@@ -726,6 +726,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_ACTION, &state);
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -909,93 +910,48 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 
 static esp_err_t http_ws_handler(httpd_req_t *req)
 {
-	if (req->method == HTTP_GET)
+	if(req->method == HTTP_GET)
 	{
-		ESP_LOGI(HTTP_API_TAG, "Handshake done, the new connection was opened");
 		return ESP_OK;
 	}
 
-	httpd_ws_frame_t ws_pkt;
-	uint8_t *buf = NULL;
-	memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-	ws_pkt.type = HTTPD_WS_TYPE_TEXT;
-	/* Set max_len = 0 to get the frame len */
-	esp_err_t ret = httpd_ws_recv_frame(req, &ws_pkt, 0);
-	if (ret != ESP_OK)
-	{
-		ESP_LOGE(HTTP_API_TAG, "httpd_ws_recv_frame failed to get frame len with %d", ret);
-		return ret;
-	}
-
-	ESP_LOGI(HTTP_API_TAG, "frame len is %d", ws_pkt.len);
-
-	if (ws_pkt.len)
-	{
-		/* ws_pkt.len + 1 is for NULL termination as we are expecting a string */
-		buf = calloc(1, ws_pkt.len + 1);
-		if (buf == NULL)
-		{
-			ESP_LOGE(HTTP_API_TAG, "Failed to calloc memory for buf");
-			return ESP_ERR_NO_MEM;
-		}
-
-		ws_pkt.payload = buf;
-		/* Set max_len = ws_pkt.len to get the frame payload */
-		ret = httpd_ws_recv_frame(req, &ws_pkt, ws_pkt.len);
-		if (ret != ESP_OK)
-		{
-			ESP_LOGE(HTTP_API_TAG, "httpd_ws_recv_frame failed with %d", ret);
-			free(buf);
-			return ret;
-		}
-
-		ESP_LOGI(HTTP_API_TAG, "Got packet with message: %s", ws_pkt.payload);
-	}
-
-	ESP_LOGI(HTTP_API_TAG, "Packet type: %d", ws_pkt.type);
-	if (ws_pkt.type == HTTPD_WS_TYPE_TEXT &&
-		strcmp((char*)ws_pkt.payload,"Trigger async") == 0)
-	{
-		free(buf);
-		return trigger_async_send(req->handle, req);
-	}
-
-	ret = httpd_ws_send_frame(req, &ws_pkt);
-	if (ret != ESP_OK) {
-		ESP_LOGE(HTTP_API_TAG, "httpd_ws_send_frame failed with %d", ret);
-	}
-
-	free(buf);
-	return ret;
-}
-
-// ws functions
-
-/*
- * async send function, which we put into the httpd work queue
- */
-static void ws_async_send(void *arg)
-{
-    static const char * data = "Async data";
-    struct async_resp_arg *resp_arg = arg;
-    httpd_handle_t hd = resp_arg->hd;
-    int fd = resp_arg->fd;
-    httpd_ws_frame_t ws_pkt;
-    memset(&ws_pkt, 0, sizeof(httpd_ws_frame_t));
-    ws_pkt.payload = (uint8_t*)data;
-    ws_pkt.len = strlen(data);
-    ws_pkt.type = HTTPD_WS_TYPE_TEXT;
-
-    httpd_ws_send_frame_async(hd, fd, &ws_pkt);
-    free(resp_arg);
-}
-
-static esp_err_t trigger_async_send(httpd_handle_t handle, httpd_req_t *req)
-{
     struct async_resp_arg *resp_arg = malloc(sizeof(struct async_resp_arg));
     resp_arg->hd = req->handle;
     resp_arg->fd = httpd_req_to_sockfd(req);
-    return httpd_queue_work(handle, ws_async_send, resp_arg);
+    ESP_LOGI(HTTP_API_TAG, "Queuing work fd : %d", resp_arg->fd);
+    httpd_queue_work(req->handle, http_generate_async_resp, resp_arg);
+    return ESP_OK;
 }
+
+// The asynchronous response
+static void http_generate_async_resp(void *arg)
+{
+	if(http_callback != NULL)
+	{
+		http_callback(CALL_LOAD_ACTION, NULL);
+
+		// Data format to be sent from the server as a response to the client
+		char http_string[250];
+		sprintf(http_string, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", strlen(http_actions));
+
+		// Initialize asynchronous response data structure
+		struct async_resp_arg *resp_arg = (struct async_resp_arg *)arg;
+		httpd_handle_t hd = resp_arg->hd;
+		int fd = resp_arg->fd;
+
+		// Send data to the client
+		ESP_LOGI(HTTP_API_TAG, "Executing queued work fd : %d", fd);
+		httpd_socket_send(hd, fd, http_string, strlen(http_string), 0);
+		httpd_socket_send(hd, fd, http_actions, strlen(http_actions), 0);
+
+		free(arg);
+	}
+	else
+	{
+		ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+
+	}
+}
+
 
 
