@@ -91,7 +91,7 @@ static app_callback http_callback = NULL;
 
 static httpd_handle_t server = NULL;
 
-httpd_req_t http_ws_req = {};
+httpd_req_t http_ws_last_get_req = {};
 
 static char* http_config = NULL;
 static char* http_actions = NULL;
@@ -381,6 +381,13 @@ esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_co
     return err;
 }
 
+void http_server_alert_actions(void)
+{
+	if(http_ws_last_get_req.handle != NULL)
+	{
+		http_ws_handler(&http_ws_last_get_req);
+	}
+}
 /* Private methods ----------------------------------------------- */
 /**
  * @brief	Handler to redirect incoming GET request for /index.html to /
@@ -533,6 +540,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 
 		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
+    	memcpy(&http_ws_last_get_req, req, sizeof(http_ws_last_get_req));
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{

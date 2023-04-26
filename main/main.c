@@ -303,6 +303,8 @@ static void app_main_call(app_call_states state, void* buffer)
 			actuation_app_set_config(manual_config, true);
 			comm_app_send_event(manual_config);
 
+			app_main_call(CALL_LOAD_ACTION, NULL);
+			comm_app_send_actions();
 			break;
 		}
 		case CALL_READ_ACTION: // if you receive 000-000

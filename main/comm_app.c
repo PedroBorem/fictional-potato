@@ -154,6 +154,11 @@ void comm_app_set_actions(const pivot_actions action, const pivot_config config,
 	http_server_set_str_actions(action, config, start_angle, end_angle);
 }
 
+void comm_app_send_actions(void)
+{
+	http_server_alert_actions();
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	communication reception task
