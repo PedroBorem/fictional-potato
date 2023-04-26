@@ -122,6 +122,16 @@ void http_parser_action_to_json(const pivot_actions action, const pivot_config c
 		cJSON_AddItemToObject(action_root, "water", cJSON_CreateString("false"));
 	}
 
+	// pressur state
+	if(action.watering_state == PIVOT_PRESSURIZING)
+	{
+		cJSON_AddItemToObject(action_root, "is_pressure", cJSON_CreateString("true"));
+	}
+	else
+	{
+		cJSON_AddItemToObject(action_root, "is_pressure", cJSON_CreateString("false"));
+	}
+
 	// rotation
 	if(action.rotation == PIVOT_CCW)
 	{
