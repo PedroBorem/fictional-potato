@@ -161,6 +161,7 @@ typedef enum
 	CALL_SAVE_ACTION,
 	CALL_READ_ACTION,
 	CALL_SAVE_CONFIG,
+	CALL_READ_CONFIG,
 	CALL_SAVE_SCHEDULE_DATE,
 	CALL_LOAD_SCHEDULE_DATE,
 	CALL_DELETE_SCHEDULE_DATE,
@@ -225,6 +226,10 @@ typedef void (*app_callback)(app_call_states state, void* buffer);
 #define RF_UART_TASK_NAME				"rf uart task"
 #define RF_UART_STACK_SIZE				( configMINIMAL_STACK_SIZE * 10 )
 #define RF_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
+
+#define WIFI_APP_TASK_NAME				"wifi app task"
+#define WIFI_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
+#define WIFI_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 8 )
 
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions

@@ -213,6 +213,15 @@ static void app_main_call(app_call_states state, void* buffer)
 
 			break;
 		}
+		case CALL_READ_CONFIG:
+		{
+			pivot_config current_config = {};
+			data_app_load_config(&current_config, sizeof(current_config));
+
+			memcpy(buffer, &current_config, sizeof(current_config));
+
+			break;
+		}
 		case CALL_SAVE_SCHEDULE_DATE:
 		{
 			pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};

@@ -13,7 +13,6 @@
 #include <string.h>
 
 #include "cJSON.h"
-#include "utils.h"
 
 /* Public methods ------------------------------------------------ */
 pivot_actions http_parser_action(char * request_body, bool scheduling)

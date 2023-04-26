@@ -79,16 +79,22 @@ bool comm_app_init(const app_callback callback)
 
 	err = rf_module_init();
 	err &= gprs_module_init();
-	err &= wifi_app_init();
-	err &= http_server_init();
 
 	if(err == ESP_OK && callback != NULL )
 	{
+		pivot_config current_config = {};
+
+		wifi_app_register_callback(callback);
 		http_server_register_callback(callback);
+
 		comm_app_call = callback;
 
+		callback(CALL_READ_CONFIG, &current_config);
+		err &= wifi_app_init(current_config.pivot_id);
+		err &= http_server_init();
+
 		xQueue_comm_app = xQueueCreate(COMM_APP_SIZE_QUEUE, sizeof(comm_app_request));
-		if(xQueue_comm_app != NULL)
+		if(xQueue_comm_app != NULL && err == ESP_OK)
 		{
 			xReturn = xTaskCreate(&comm_app_task,
 								COMM_APP_TASK_NAME,
@@ -108,7 +114,7 @@ bool comm_app_init(const app_callback callback)
 		}
 		else
 		{
-			ESP_LOGE(COMM_APP_TAG, "%s, failed to create queue", __func__);
+			ESP_LOGE(COMM_APP_TAG, "%s, failed to create HTTP/WIFI", __func__);
 		}
 
 	}

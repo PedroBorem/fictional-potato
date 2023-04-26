@@ -10,6 +10,8 @@
 
 #include "project_config.h"
 
-esp_err_t wifi_app_init(void);
+esp_err_t wifi_app_init(char* wifi_ssid);
+
+esp_err_t wifi_app_register_callback(app_callback callback);
 
 #endif /** COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H */
