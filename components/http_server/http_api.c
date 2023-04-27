@@ -604,12 +604,23 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
 	else if (strcmp(req->uri, "/cycles") == 0)
 	{
-		char cycles[300] = {};
+		char out_history[1000] = {};
+		pivot_history load_history[HISTORY_MAX_VALUE] = {};
 
-		http_parser_cycles_to_json(cycles);
-		LOG_COMM(HTTP_API_TAG, "get /cycles: %s", cycles);
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_HISTORY, &load_history);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
-		httpd_resp_send(req, cycles, HTTPD_RESP_USE_STRLEN);
+		http_parser_history_to_json(load_history, out_history);
+		LOG_COMM(HTTP_API_TAG, "get /cycles: %s", out_history);
+
+		httpd_resp_send(req, out_history, HTTPD_RESP_USE_STRLEN);
 	}
     else
     {

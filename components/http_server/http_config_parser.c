@@ -520,24 +520,80 @@ char* http_parser_scheduling_delete(char* request_body)
 	return cJSON_GetObjectItem(scheduling_delete, "scheduling_id")->valuestring;
 }
 
-void http_parser_cycles_to_json(char* out_cycles)
+void http_parser_history_to_json(pivot_history* history, char* out_history)
 {
 	// create JSON
-	cJSON* cycles_root = cJSON_CreateObject();
-	cJSON* cycles_array = cJSON_CreateArray();
+	cJSON* history_array = cJSON_CreateArray();
+	cJSON* history_obj;
+	char int_str[20] = {};
 
-	cJSON_AddItemToObject(cycles_root, "is_running", cJSON_CreateString("false"));
-	cJSON_AddItemToObject(cycles_root, "start_date", cJSON_CreateString("1678935600"));
-	cJSON_AddItemToObject(cycles_root, "end_date", cJSON_CreateString("1678935600"));
-	cJSON_AddItemToObject(cycles_root, "start_angle", cJSON_CreateString("30"));
-	cJSON_AddItemToObject(cycles_root, "end_angle", cJSON_CreateString("60"));
-	cJSON_AddItemToObject(cycles_root, "power", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(cycles_root, "water", cJSON_CreateString("true"));
-	cJSON_AddItemToObject(cycles_root, "direction", cJSON_CreateString("CLOCKWISE"));
-	cJSON_AddItemToObject(cycles_root, "percentimeter", cJSON_CreateString("50"));
+	for(uint8_t position = 0; position < HISTORY_MAX_VALUE; position ++)
+	{
+		//printf("http_parser_history_to_json %lld\n",history[position].start_date);
+		if(history[position].start_date > 0)
+		{
+			cJSON_AddItemToArray(history_array, history_obj = cJSON_CreateObject());
 
-	cJSON_AddItemToArray(cycles_array, cycles_root);
+			if(history[position].is_running == true)
+			{
+				cJSON_AddItemToObject(history_obj, "is_running", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(history_obj, "is_running", cJSON_CreateString("false"));
+			}
 
-	memcpy(out_cycles, cJSON_Print(cycles_array), strlen(cJSON_Print(cycles_array)));
-	cJSON_Delete(cycles_array);
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",history[position].start_date);
+			cJSON_AddItemToObject(history_obj, "start_date", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%lld",history[position].end_date);
+			cJSON_AddItemToObject(history_obj, "end_date", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d",history[position].start_angle);
+			cJSON_AddItemToObject(history_obj, "start_angle", cJSON_CreateString(int_str));
+
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d",history[position].end_angle);
+			cJSON_AddItemToObject(history_obj, "end_angle", cJSON_CreateString(int_str));
+
+			// power state
+			if(history[position].acionts.power_state == PIVOT_ON)
+			{
+				cJSON_AddItemToObject(history_obj, "power", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(history_obj, "power", cJSON_CreateString("false"));
+			}
+
+			// watering state
+			if(history[position].acionts.watering_state == PIVOT_WET)
+			{
+				cJSON_AddItemToObject(history_obj, "water", cJSON_CreateString("true"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(history_obj, "water", cJSON_CreateString("false"));
+			}
+
+			// rotation
+			if(history[position].acionts.rotation == PIVOT_CCW)
+			{
+				cJSON_AddItemToObject(history_obj, "direction", cJSON_CreateString("ANTI_CLOCKWISE"));
+			}
+			else
+			{
+				cJSON_AddItemToObject(history_obj, "direction", cJSON_CreateString("CLOCKWISE"));
+			}
+
+			// percent
+			memset(int_str, 0x00, sizeof(int_str));
+			sprintf(int_str, "%d", history[position].acionts.percentimeter );
+			cJSON_AddItemToObject(history_obj, "percentimeter", cJSON_CreateString(int_str));
+		}
+	}
+
 }

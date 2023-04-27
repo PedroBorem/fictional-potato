@@ -309,6 +309,15 @@ static void app_main_call(app_call_states state, void* buffer)
 			data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
 			break;
 		}
+		case CALL_LOAD_HISTORY:
+		{
+			pivot_history load_history[HISTORY_MAX_VALUE] = {};
+
+			data_app_load_history(load_history, sizeof(load_history));
+			memcpy(buffer, load_history, sizeof(load_history));
+
+			break;
+		}
 		case CALL_MANUAL_PIVOT:
 		{
 			pivot_actions manual_action = {};

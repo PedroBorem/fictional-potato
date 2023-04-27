@@ -255,6 +255,7 @@ esp_err_t data_app_save_new_history(pivot_history new_history)
 
     for( i = 1; i < HISTORY_MAX_VALUE; i++)
     {
+    	//printf("data_app_save_new_history %lld\n",history[i].start_date);
         memcpy(&history_tmp, &history[i], sizeof(pivot_history));
 
         for(j = i-1; j >= 0 && history_tmp.start_date < history[j].start_date; j--)
