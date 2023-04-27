@@ -385,7 +385,8 @@ void http_server_alert_actions(void)
 {
 	if(http_ws_last_get_req.handle != NULL)
 	{
-		http_ws_handler(&http_ws_last_get_req);
+		//http_ws_handler(&http_ws_last_get_req);
+		return;
 	}
 }
 /* Private methods ----------------------------------------------- */
