@@ -79,7 +79,9 @@ esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* o
 esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char* scheduling_id);
 
 
-esp_err_t data_app_save_history(const pivot_history new_history);
+esp_err_t data_app_save_new_history(pivot_history new_history);
+
+esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle);
 
 esp_err_t data_app_load_history(void* out_value, size_t size);
 

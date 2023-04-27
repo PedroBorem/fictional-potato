@@ -184,13 +184,27 @@ static void app_main_call(app_call_states state, void* buffer)
 		case CALL_SAVE_ACTION:
 		{
 			pivot_actions new_actions = {};
+			pivot_history new_history = {};
 			memcpy(&new_actions, buffer, sizeof(new_actions));
 
 			ret = data_app_save_actions(&new_actions, sizeof(new_actions));
 			if(ret == ESP_OK)
 			{
+				// save old history
+				data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+
+				// act on the equipment
 				actuation_app_set_config(new_actions, false);
+
+				// send current status
 				comm_app_send_event(new_actions);
+
+				// save new history
+				new_history.is_running = true;
+				new_history.start_date = rtc_app_get_timestamp(false);
+				new_history.start_angle = comm_app_get_degree();
+				memcpy(&new_history.acionts, &new_actions, sizeof(new_actions));
+				data_app_save_new_history(new_history);
 			}
 			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{

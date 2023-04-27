@@ -243,7 +243,7 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 	return ret;
 }
 
-esp_err_t data_app_save_history(const pivot_history new_history)
+esp_err_t data_app_save_new_history(pivot_history new_history)
 {
 	esp_err_t ret = ESP_FAIL;
 	pivot_history history[HISTORY_MAX_VALUE] = {};
@@ -264,6 +264,22 @@ esp_err_t data_app_save_history(const pivot_history new_history)
 
         memcpy(&history[j+1], &history_tmp, sizeof(pivot_history));
     }
+
+	nvs_data_set(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, history, sizeof(history));
+
+	return ret;
+}
+
+esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle)
+{
+	esp_err_t ret = ESP_FAIL;
+	pivot_history history[HISTORY_MAX_VALUE] = {};
+
+	data_app_load_history(history, sizeof(history));
+
+	history[(HISTORY_MAX_VALUE - 1)].is_running = false;
+	history[(HISTORY_MAX_VALUE - 1)].end_date = end_date;
+	history[(HISTORY_MAX_VALUE - 1)].end_angle = end_angle;
 
 	nvs_data_set(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, history, sizeof(history));
 
