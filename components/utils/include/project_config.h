@@ -45,6 +45,8 @@
 
 #define SCHEDULING_MAX_VALUE	(10)
 
+#define HISTORY_MAX_VALUE	(20)
+
 /* Public definitions ******************************************************/
 
 /**
@@ -150,6 +152,20 @@ typedef	struct __attribute__((__packed__))
 	uint16_t end_angle;
 	pivot_actions acionts;
 }pivot_scheduling_angle;
+
+/**
+ *	scheduling angle parameters
+ *
+ */
+typedef	struct __attribute__((__packed__))
+{
+	bool is_running;
+	time_t start_date;
+	time_t end_date;
+	uint16_t start_angle;
+	uint16_t end_angle;
+	pivot_actions acionts;
+}pivot_history;
 
 /**
  *	Main Callback request

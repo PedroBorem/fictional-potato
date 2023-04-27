@@ -16,6 +16,8 @@
 
 #include "esp_err.h"
 
+#include "project_config.h"
+
 typedef enum
 {
 	data_scheduling_date = 0,
@@ -75,6 +77,11 @@ esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const v
 esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* out_value, size_t size);
 
 esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char* scheduling_id);
+
+
+esp_err_t data_app_save_history(const pivot_history new_history);
+
+esp_err_t data_app_load_history(void* out_value, size_t size);
 
 /**
  * @brief Gets the data size for the informed key.
