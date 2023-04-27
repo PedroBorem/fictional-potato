@@ -529,7 +529,6 @@ void http_parser_history_to_json(pivot_history* history, char* out_history)
 
 	for(uint8_t position = 0; position < HISTORY_MAX_VALUE; position ++)
 	{
-		//printf("http_parser_history_to_json %lld\n",history[position].start_date);
 		if(history[position].start_date > 0)
 		{
 			cJSON_AddItemToArray(history_array, history_obj = cJSON_CreateObject());
@@ -596,4 +595,6 @@ void http_parser_history_to_json(pivot_history* history, char* out_history)
 		}
 	}
 
+	memcpy(out_history, cJSON_Print(history_array), strlen(cJSON_Print(history_array)));
+	cJSON_Delete(history_array);
 }
