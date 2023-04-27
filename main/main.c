@@ -311,14 +311,29 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_MANUAL_PIVOT:
 		{
-			pivot_actions manual_config = {};
-			memcpy(&manual_config, buffer, sizeof(manual_config));
+			pivot_actions manual_action = {};
+			pivot_history new_history = {};
 
-			actuation_app_set_config(manual_config, true);
-			comm_app_send_event(manual_config);
+			memcpy(&manual_action, buffer, sizeof(manual_action));
 
+			// save old history
+			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+
+			// save new history
+			new_history.is_running = true;
+			new_history.start_date = rtc_app_get_timestamp(false);
+			new_history.start_angle = comm_app_get_degree();
+			memcpy(&new_history.acionts, &manual_action, sizeof(manual_action));
+			data_app_save_new_history(new_history);
+
+			// act on the equipment
+			actuation_app_set_config(manual_action, true);
+
+			// send current status
+			comm_app_send_event(manual_action);
 			app_main_call(CALL_LOAD_ACTION, NULL);
 			comm_app_send_actions();
+
 			break;
 		}
 		case CALL_READ_ACTION: // if you receive 000-000
