@@ -200,11 +200,14 @@ static void app_main_call(app_call_states state, void* buffer)
 				comm_app_send_event(new_actions);
 
 				// save new history
-				new_history.is_running = true;
-				new_history.start_date = rtc_app_get_timestamp(false);
-				new_history.start_angle = comm_app_get_degree();
-				memcpy(&new_history.acionts, &new_actions, sizeof(new_actions));
-				data_app_save_new_history(new_history);
+				if(new_actions.power_state != PIVOT_OFF)
+				{
+					new_history.is_running = true;
+					new_history.start_date = rtc_app_get_timestamp(false);
+					new_history.start_angle = comm_app_get_degree();
+					memcpy(&new_history.acionts, &new_actions, sizeof(new_actions));
+					data_app_save_new_history(new_history);
+				}
 			}
 			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{
@@ -329,11 +332,15 @@ static void app_main_call(app_call_states state, void* buffer)
 			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
 
 			// save new history
-			new_history.is_running = true;
-			new_history.start_date = rtc_app_get_timestamp(false);
-			new_history.start_angle = comm_app_get_degree();
-			memcpy(&new_history.acionts, &manual_action, sizeof(manual_action));
-			data_app_save_new_history(new_history);
+
+			if(manual_action.power_state != PIVOT_OFF)
+			{
+				new_history.is_running = true;
+				new_history.start_date = rtc_app_get_timestamp(false);
+				new_history.start_angle = comm_app_get_degree();
+				memcpy(&new_history.acionts, &manual_action, sizeof(manual_action));
+				data_app_save_new_history(new_history);
+			}
 
 			// act on the equipment
 			actuation_app_set_config(manual_action, true);

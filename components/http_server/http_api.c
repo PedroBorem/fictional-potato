@@ -605,7 +605,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
 	else if (strcmp(req->uri, "/cycles") == 0)
 	{
-		char out_history[1000] = {};
+		char out_history[350 * HISTORY_MAX_VALUE] = {};
 		pivot_history load_history[HISTORY_MAX_VALUE] = {};
 
 		if(http_callback != NULL)
