@@ -52,6 +52,7 @@ static void app_scheduling_task(void* arg);
  */
 void app_main(void)
 {
+	time_t timestamp_nvs = 0;
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
@@ -65,26 +66,29 @@ void app_main(void)
 	// set HTTP parameters
 	comm_app_set_config(current_config);
 
-	//rtc_app_get_timestamp();
-	esp_reset_reason_t reset_cause = esp_reset_reason();
-	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	// reboot reset cause
+	//data_app_load_timestamp(&timestamp_nvs);
+	if((rtc_app_get_timestamp(false) - timestamp_nvs) < 60) //1 minute
 	{
-		// TODO : critica de tempo
-		data_app_load_actions(&current_action, sizeof(current_action));
-
-		LOG_DATA(MAIN_TAG, "");
-		LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
-		LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
-		LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
-		LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
-		LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
-		LOG_DATA(MAIN_TAG, " --------------------------------\n");
-
-		vTaskDelay(pdMS_TO_TICKS(500));
-
-		if(current_action.power_state != PIVOT_OFF)
+		esp_reset_reason_t reset_cause = esp_reset_reason();
+		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 		{
-			actuation_app_set_config(current_action, false);
+			data_app_load_actions(&current_action, sizeof(current_action));
+
+			LOG_DATA(MAIN_TAG, "");
+			LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
+			LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
+			LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
+			LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
+			LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
+			LOG_DATA(MAIN_TAG, " --------------------------------\n");
+
+			vTaskDelay(pdMS_TO_TICKS(500));
+
+			if(current_action.power_state != PIVOT_OFF)
+			{
+				actuation_app_set_config(current_action, false);
+			}
 		}
 	}
 
@@ -130,7 +134,12 @@ void app_main(void)
 			{
 				app_start_angle = comm_app_get_degree();
 			}
-			vTaskDelay(pdMS_TO_TICKS(10000));
+
+			// save current datetime
+			timestamp_nvs = rtc_app_get_timestamp(true);
+			data_app_save_timestamp(&timestamp_nvs);
+
+			vTaskDelay(pdMS_TO_TICKS(15000));
 		}
 	}
 }
@@ -149,6 +158,8 @@ static bool app_init(void)
 	ret &= actuation_app_init(&app_main_call);
 	if(data_app_init() == ESP_FAIL)
 	{
+		vTaskDelay(pdMS_TO_TICKS(100000));
+		ESP_LOGE("AAa","AAAAA");
 		ret = false;
 	}
 	ret &= comm_app_init(&app_main_call);

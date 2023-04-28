@@ -40,7 +40,7 @@ esp_err_t data_app_init(void);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_save_actions(const void* value, size_t size);
+esp_err_t data_app_save_actions(const pivot_actions* action, size_t size);
 
 /**
  * @brief	sends the queue a request to load a current action.
@@ -50,7 +50,7 @@ esp_err_t data_app_save_actions(const void* value, size_t size);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_load_actions(void* out_value, size_t size);
+esp_err_t data_app_load_actions(pivot_actions* out_action, size_t size);
 
 /**
  * @brief	sends the queue a request to save a new configuration
@@ -60,7 +60,7 @@ esp_err_t data_app_load_actions(void* out_value, size_t size);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_save_config(const void* value, size_t size);
+esp_err_t data_app_save_config(const pivot_config* config, size_t size);
 
 /**
  * @brief	sends the queue a request to load a configuration.
@@ -70,7 +70,7 @@ esp_err_t data_app_save_config(const void* value, size_t size);
  * 	- ESP_OK: success
  * 	- ESP_FAIL: fail to save
  */
-esp_err_t data_app_load_config(void* out_value, size_t size);
+esp_err_t data_app_load_config(pivot_config* out_config, size_t size);
 
 esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size);
 
@@ -83,7 +83,12 @@ esp_err_t data_app_save_new_history(pivot_history new_history);
 
 esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle);
 
-esp_err_t data_app_load_history(void* out_value, size_t size);
+esp_err_t data_app_load_history(pivot_history* out_history, size_t size);
+
+
+esp_err_t data_app_save_timestamp(time_t* timestamp);
+
+esp_err_t data_app_load_timestamp(time_t* out_timestamp);
 
 /**
  * @brief Gets the data size for the informed key.
