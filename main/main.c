@@ -53,6 +53,7 @@ static void app_scheduling_task(void* arg);
 void app_main(void)
 {
 	time_t timestamp_nvs = 0;
+	time_t timestamp_now = 0;
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
@@ -67,7 +68,9 @@ void app_main(void)
 	comm_app_set_config(current_config);
 
 	// reboot reset cause
-	if((rtc_app_get_timestamp(false) - timestamp_nvs) < 60) //1 minute
+	data_app_load_timestamp(&timestamp_nvs);
+	timestamp_now = rtc_app_get_timestamp(false);
+	if((timestamp_now - timestamp_nvs) < 60) //1 minute - religamento automático
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -128,23 +131,19 @@ void app_main(void)
 	while (1)
 	{
 		// get start angle
-		if(comm_app_get_degree() == 0xFFFF)
+		if(app_start_angle == 0xFFFF)
 		{
-			vTaskDelay(pdMS_TO_TICKS(1000));
+			app_start_angle = comm_app_get_degree();
+			vTaskDelay(pdMS_TO_TICKS(2000));
 		}
 		else
 		{
-			if(app_start_angle == 0xFFFF)
-			{
-				app_start_angle = comm_app_get_degree();
-			}
-
-			// save current datetime
-			timestamp_nvs = rtc_app_get_timestamp(true);
-			data_app_save_timestamp(&timestamp_nvs);
-
 			vTaskDelay(pdMS_TO_TICKS(15000));
 		}
+
+		// save current datetime
+		timestamp_nvs = rtc_app_get_timestamp(false);
+		data_app_save_timestamp(&timestamp_nvs);
 	}
 }
 
@@ -388,6 +387,9 @@ static void app_main_call(app_call_states state, void* buffer)
 				data_app_save_actions(&current_action, sizeof(current_action));
 			}
 
+			// save old history
+			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+
 			vTaskDelay(pdMS_TO_TICKS(2000));
 
 			//get current status
@@ -615,7 +617,7 @@ static void app_scheduling_task(void* arg)
 					scheduling_date_status[date_position] = false;
 					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
-					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_date[date_position].scheduling_id);
+					app_main_call(CALL_DELETE_SCHEDULE_DATE, main_scheduling_date[date_position].scheduling_id);
 				}
 			}
 		}
