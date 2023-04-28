@@ -158,8 +158,6 @@ static bool app_init(void)
 	ret &= actuation_app_init(&app_main_call);
 	if(data_app_init() == ESP_FAIL)
 	{
-		vTaskDelay(pdMS_TO_TICKS(100000));
-		ESP_LOGE("AAa","AAAAA");
 		ret = false;
 	}
 	ret &= comm_app_init(&app_main_call);
