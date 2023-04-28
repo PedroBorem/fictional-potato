@@ -11,10 +11,13 @@
 /* HTTP include */
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
-#include "esp_http_server.h"
 #include "http_storage.h"
 #include "http_config_parser.h"
 #include "esp_vfs.h"
+
+// Register SOCKET event
+#include <esp_wifi.h>
+#include <esp_event.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -73,11 +76,22 @@ typedef struct
     char scratch[HTTP_SCRATCH_BUFSIZE];
 }http_file_server_data;
 
-// handle to the driver
-static httpd_handle_t http_handle = NULL;
+/*
+ * Structure holding server handle
+ * and internal socket fd in order
+ * to use out of request send
+ */
+struct async_resp_arg {
+    httpd_handle_t hd;
+    int fd;
+};
 
 // callback pointer
 static app_callback http_callback = NULL;
+
+static httpd_handle_t server = NULL;
+
+httpd_req_t http_ws_last_get_req = {};
 
 static char* http_config = NULL;
 static char* http_actions = NULL;
@@ -92,6 +106,8 @@ static esp_err_t http_get_handler(httpd_req_t *req);
 static esp_err_t http_post_handler(httpd_req_t *req);
 static esp_err_t http_put_handler(httpd_req_t *req);
 static esp_err_t http_delete_handler(httpd_req_t *req);
+static esp_err_t http_ws_handler(httpd_req_t *req);
+static void http_generate_async_resp(void *arg);
 
 static http_file_server_data *server_data = NULL;
 
@@ -143,95 +159,153 @@ esp_err_t http_server_init(void)
 
     /* Allocate memory for server data */
     server_data = calloc(1, sizeof(http_file_server_data));
-    if (!server_data)
+    if (server_data == NULL)
     {
         ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
         err = ESP_ERR_NO_MEM;
     }
 
+    /* Start the server for the first time */
+    server = http_server_start();
+
     return err;
 }
 
-esp_err_t http_server_start(void)
+httpd_handle_t http_server_start(void)
 {
-	esp_err_t err = ESP_OK;
 	const char* base_path = "/data";
+    httpd_handle_t http_handle = NULL;
 
-    if (http_handle != NULL)
-    {
-        ESP_LOGE(HTTP_API_TAG, "File server already started");
-        err = ESP_ERR_INVALID_STATE;
-    }
-    else
-    {
-		if (!server_data)
+	if (server_data == NULL)
+	{
+		ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
+	}
+	else
+	{
+		strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
+		httpd_config_t config = HTTPD_DEFAULT_CONFIG();
+		config.stack_size = (4096 * 5);
+		config.max_uri_handlers = 11;
+
+		/* Use the URI wildcard matching function in order to
+		 * allow the same handler to respond to multiple different
+		 * target URIs which match the wildcard scheme */
+		config.uri_match_fn = httpd_uri_match_wildcard;
+
+		if (httpd_start(&http_handle, &config) != ESP_OK)
 		{
-			ESP_LOGE(HTTP_API_TAG, "Failed to allocate memory for server data");
-			err = ESP_ERR_NO_MEM;
+			ESP_LOGE(HTTP_API_TAG, "Failed to start file server!");
 		}
 		else
 		{
-			strlcpy(server_data->base_path, base_path, sizeof(server_data->base_path));
-			httpd_config_t config = HTTPD_DEFAULT_CONFIG();
-			config.stack_size = (4096 * 5);
+			/* URI handler for WebSocket server */
+			httpd_uri_t get_ws = {
+				.uri = "/ws",
+				.method = HTTP_GET,
+				.handler = http_ws_handler,
+				.user_ctx = NULL,
+				.is_websocket = true,
+			};
+			httpd_register_uri_handler(http_handle, &get_ws);
 
-			/* Use the URI wildcard matching function in order to
-			 * allow the same handler to respond to multiple different
-			 * target URIs which match the wildcard scheme */
-			config.uri_match_fn = httpd_uri_match_wildcard;
+			/* URI handler for getting uploaded files */
+			httpd_uri_t get_download = {
+				.uri       = "/data/*",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_download);
 
-			if (httpd_start(&http_handle, &config) != ESP_OK)
-			{
-				ESP_LOGE(HTTP_API_TAG, "Failed to start file server!");
-				err = ESP_FAIL;
-			}
-			else
-			{
-				/* URI handler for getting uploaded files */
-				httpd_uri_t file_download = {
-					.uri       = "/*",  // Match all URIs of type /path/to/file
-					.method    = HTTP_GET,
-					.handler   = http_get_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_download);
+			/* URI handler for get api-status */
+			httpd_uri_t get_api_status = {
+				.uri       = "/api-status",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_api_status);
 
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_submit = {
-					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_POST,
-					.handler   = http_post_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_submit);
+			/* URI handler for get config */
+			httpd_uri_t get_config = {
+				.uri       = "/config",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_config);
 
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_config = {
-					.uri       = "/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_PUT,
-					.handler   = http_put_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_config);
+			/* URI handler for get action */
+			httpd_uri_t get_action = {
+				.uri       = "/actions",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_action);
 
-				/* URI handler for uploading files to server */
-				httpd_uri_t file_delete = {
-					.uri       = "/scheduling/*",   // Match all URIs of type /upload/path/to/file
-					.method    = HTTP_DELETE,
-					.handler   = http_delete_handler,
-					.user_ctx  = server_data    // Pass server data as context
-				};
-				httpd_register_uri_handler(http_handle, &file_delete);
+			/* URI handler for get scheduling */
+			httpd_uri_t get_scheduling= {
+				.uri       = "/scheduling/*",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_scheduling);
 
-				LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
-			}
+			/* URI handler for get history */
+			httpd_uri_t get_cycles = {
+				.uri       = "/cycles",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_cycles);
+
+			/* URI handler for get_favicon */
+			httpd_uri_t get_favicon = {
+				.uri       = "/favicon.ico",
+				.method    = HTTP_GET,
+				.handler   = http_get_handler,
+				.user_ctx  = server_data,
+			};
+			httpd_register_uri_handler(http_handle, &get_favicon);
+
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_submit = {
+				.uri       = "/*",
+				.method    = HTTP_POST,
+				.handler   = http_post_handler,
+				.user_ctx  = server_data
+			};
+			httpd_register_uri_handler(http_handle, &file_submit);
+
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_config = {
+				.uri       = "/*",
+				.method    = HTTP_PUT,
+				.handler   = http_put_handler,
+				.user_ctx  = server_data
+			};
+			httpd_register_uri_handler(http_handle, &file_config);
+
+			/* URI handler for uploading files to server */
+			httpd_uri_t file_delete = {
+				.uri       = "/scheduling/*",
+				.method    = HTTP_DELETE,
+				.handler   = http_delete_handler,
+				.user_ctx  = server_data
+			};
+			httpd_register_uri_handler(http_handle, &file_delete);
+
+			LOG_COMM(HTTP_API_TAG, "HTTP server started on port: '%d'", config.server_port);
 		}
-    }
+	}
 
-    return err;
+    return http_handle;
 }
 
-esp_err_t http_server_stop(void)
+esp_err_t http_server_stop(httpd_handle_t http_handle)
 {
 	esp_err_t ret = ESP_ERR_INVALID_STATE;
 
@@ -307,7 +381,14 @@ esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_co
     return err;
 }
 
-
+void http_server_alert_actions(void)
+{
+	if(http_ws_last_get_req.handle != NULL)
+	{
+		//http_ws_handler(&http_ws_last_get_req);
+		return;
+	}
+}
 /* Private methods ----------------------------------------------- */
 /**
  * @brief	Handler to redirect incoming GET request for /index.html to /
@@ -460,6 +541,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 
 		LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
     	httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
+    	memcpy(&http_ws_last_get_req, req, sizeof(http_ws_last_get_req));
 	}
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
@@ -521,14 +603,25 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 
 		httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
 	}
-	else if (strcmp(req->uri, "/cycles/1678935600/1678935600") == 0)
+	else if (strcmp(req->uri, "/cycles") == 0)
 	{
-		char cycles[300] = {};
+		char out_history[350 * HISTORY_MAX_VALUE] = {};
+		pivot_history load_history[HISTORY_MAX_VALUE] = {};
 
-		http_parser_cycles_to_json(cycles);
-		ESP_LOGW("TESTE", "%s", cycles);	
+		if(http_callback != NULL)
+		{
+			http_callback(CALL_LOAD_HISTORY, &load_history);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			return ESP_FAIL;
+		}
 
-		httpd_resp_send(req, cycles, HTTPD_RESP_USE_STRLEN);
+		http_parser_history_to_json(load_history, out_history);
+		LOG_COMM(HTTP_API_TAG, "get /cycles: %s", out_history);
+
+		httpd_resp_send(req, out_history, HTTPD_RESP_USE_STRLEN);
 	}
     else
     {
@@ -622,6 +715,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_ACTION, &state);
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -767,6 +861,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -779,6 +874,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -791,6 +887,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -802,4 +899,43 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 
 	return err;
 }
+
+static esp_err_t http_ws_handler(httpd_req_t *req)
+{
+	if(req->method == HTTP_GET)
+	{
+		ESP_LOGW(HTTP_API_TAG, "Handshake done, the new connection was opened");
+		return ESP_OK;
+	}
+
+    struct async_resp_arg *resp_arg = malloc(sizeof(struct async_resp_arg));
+    resp_arg->hd = req->handle;
+    resp_arg->fd = httpd_req_to_sockfd(req);
+    ESP_LOGI(HTTP_API_TAG, "Queuing work fd : %d", resp_arg->fd);
+    httpd_queue_work(req->handle, http_generate_async_resp, resp_arg);
+    return ESP_OK;
+}
+
+// The asynchronous response
+static void http_generate_async_resp(void *arg)
+{
+	// Data format to be sent from the server as a response to the client
+	char http_string[250];
+	char* http_ws_str = "ws send";
+	sprintf(http_string, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\n\r\n", strlen(http_ws_str));
+
+	// Initialize asynchronous response data structure
+	struct async_resp_arg *resp_arg = (struct async_resp_arg *)arg;
+	httpd_handle_t hd = resp_arg->hd;
+	int fd = resp_arg->fd;
+
+	// Send data to the client
+	ESP_LOGI(HTTP_API_TAG, "Executing queued work fd : %d", fd);
+	httpd_socket_send(hd, fd, http_string, strlen(http_string), 0);
+	httpd_socket_send(hd, fd, http_ws_str, strlen(http_ws_str), 0);
+
+	free(arg);
+}
+
+
 

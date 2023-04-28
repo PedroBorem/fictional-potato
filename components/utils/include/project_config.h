@@ -45,6 +45,8 @@
 
 #define SCHEDULING_MAX_VALUE	(10)
 
+#define HISTORY_MAX_VALUE	(20)
+
 /* Public definitions ******************************************************/
 
 /**
@@ -152,6 +154,20 @@ typedef	struct __attribute__((__packed__))
 }pivot_scheduling_angle;
 
 /**
+ *	scheduling angle parameters
+ *
+ */
+typedef	struct __attribute__((__packed__))
+{
+	bool is_running;
+	time_t start_date;
+	time_t end_date;
+	uint16_t start_angle;
+	uint16_t end_angle;
+	pivot_actions acionts;
+}pivot_history;
+
+/**
  *	Main Callback request
  *
  */
@@ -161,12 +177,14 @@ typedef enum
 	CALL_SAVE_ACTION,
 	CALL_READ_ACTION,
 	CALL_SAVE_CONFIG,
+	CALL_READ_CONFIG,
 	CALL_SAVE_SCHEDULE_DATE,
 	CALL_LOAD_SCHEDULE_DATE,
 	CALL_DELETE_SCHEDULE_DATE,
 	CALL_SAVE_SCHEDULE_ANGLE,
 	CALL_LOAD_SCHEDULE_ANGLE,
 	CALL_DELETE_SCHEDULE_ANGLE,
+	CALL_LOAD_HISTORY,
 	CALL_MANUAL_PIVOT,
 	CALL_OFF_PIVOT
 }app_call_states;
@@ -225,6 +243,10 @@ typedef void (*app_callback)(app_call_states state, void* buffer);
 #define RF_UART_TASK_NAME				"rf uart task"
 #define RF_UART_STACK_SIZE				( configMINIMAL_STACK_SIZE * 10 )
 #define RF_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
+
+#define WIFI_APP_TASK_NAME				"wifi app task"
+#define WIFI_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
+#define WIFI_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 8 )
 
 /**@}*/ 	//FreeRTOS
 /** @}*/	//Task_Definitions

@@ -27,6 +27,6 @@ void http_parser_scheduling_date_off_to_json(pivot_scheduling_date* scheduling_d
 
 char* http_parser_scheduling_delete(char* request_body);
 
-void http_parser_cycles_to_json(char* out_cycles);
+void http_parser_history_to_json(pivot_history* history, char* out_history);
 
 #endif /* COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_CONFIG_PARSER_H_ */

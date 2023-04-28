@@ -171,7 +171,7 @@ static void app_main_call(app_call_states state, void* buffer)
 			pivot_actions actions = {};
 			pivot_config config = {};
 
-			ret = data_app_load_actions(&actions, sizeof(actions));
+			actuation_app_get_config(&actions, sizeof(actions));
 			ret = data_app_load_config(&config, sizeof(config));
 
 			if(ret == ESP_OK)
@@ -184,13 +184,30 @@ static void app_main_call(app_call_states state, void* buffer)
 		case CALL_SAVE_ACTION:
 		{
 			pivot_actions new_actions = {};
+			pivot_history new_history = {};
 			memcpy(&new_actions, buffer, sizeof(new_actions));
 
 			ret = data_app_save_actions(&new_actions, sizeof(new_actions));
 			if(ret == ESP_OK)
 			{
+				// save old history
+				data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+
+				// act on the equipment
 				actuation_app_set_config(new_actions, false);
+
+				// send current status
 				comm_app_send_event(new_actions);
+
+				// save new history
+				if(new_actions.power_state != PIVOT_OFF)
+				{
+					new_history.is_running = true;
+					new_history.start_date = rtc_app_get_timestamp(false);
+					new_history.start_angle = comm_app_get_degree();
+					memcpy(&new_history.acionts, &new_actions, sizeof(new_actions));
+					data_app_save_new_history(new_history);
+				}
 			}
 			else if(new_actions.rotation == PIVOT_UNKNOWN)
 			{
@@ -210,6 +227,15 @@ static void app_main_call(app_call_states state, void* buffer)
 				comm_app_set_config(new_config);
 				memcpy(&main_config, &new_config, sizeof(main_config));
 			}
+
+			break;
+		}
+		case CALL_READ_CONFIG:
+		{
+			pivot_config current_config = {};
+			data_app_load_config(&current_config, sizeof(current_config));
+
+			memcpy(buffer, &current_config, sizeof(current_config));
 
 			break;
 		}
@@ -286,13 +312,43 @@ static void app_main_call(app_call_states state, void* buffer)
 			data_app_load_scheduling(data_scheduling_angle, main_scheduling_angle, sizeof(main_scheduling_angle));
 			break;
 		}
+		case CALL_LOAD_HISTORY:
+		{
+			pivot_history load_history[HISTORY_MAX_VALUE] = {};
+
+			data_app_load_history(load_history, sizeof(load_history));
+			memcpy(buffer, load_history, sizeof(load_history));
+
+			break;
+		}
 		case CALL_MANUAL_PIVOT:
 		{
-			pivot_actions manual_config = {};
-			memcpy(&manual_config, buffer, sizeof(manual_config));
+			pivot_actions manual_action = {};
+			pivot_history new_history = {};
 
-			actuation_app_set_config(manual_config, true);
-			comm_app_send_event(manual_config);
+			memcpy(&manual_action, buffer, sizeof(manual_action));
+
+			// save old history
+			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+
+			// save new history
+
+			if(manual_action.power_state != PIVOT_OFF)
+			{
+				new_history.is_running = true;
+				new_history.start_date = rtc_app_get_timestamp(false);
+				new_history.start_angle = comm_app_get_degree();
+				memcpy(&new_history.acionts, &manual_action, sizeof(manual_action));
+				data_app_save_new_history(new_history);
+			}
+
+			// act on the equipment
+			actuation_app_set_config(manual_action, true);
+
+			// send current status
+			comm_app_send_event(manual_action);
+			app_main_call(CALL_LOAD_ACTION, NULL);
+			comm_app_send_actions();
 
 			break;
 		}

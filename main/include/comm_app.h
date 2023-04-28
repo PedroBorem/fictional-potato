@@ -41,4 +41,6 @@ void comm_app_set_config(const pivot_config config);
 
 void comm_app_set_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle);
 
+void comm_app_send_actions(void);
+
 #endif /* MAIN_INCLUDE_COMM_APP_H_ */
