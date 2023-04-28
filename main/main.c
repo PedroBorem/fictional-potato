@@ -67,7 +67,6 @@ void app_main(void)
 	comm_app_set_config(current_config);
 
 	// reboot reset cause
-	//data_app_load_timestamp(&timestamp_nvs);
 	if((rtc_app_get_timestamp(false) - timestamp_nvs) < 60) //1 minute
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -90,6 +89,11 @@ void app_main(void)
 				actuation_app_set_config(current_action, false);
 			}
 		}
+	}
+	else
+	{
+		// save old history
+		data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
 	}
 
 	// get start angle
