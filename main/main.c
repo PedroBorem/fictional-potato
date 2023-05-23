@@ -25,6 +25,10 @@
 
 #define MAIN_TAG "main"
 
+#define MAIN_REBOOT_DELAY	 	(120) // 2 minutos
+#define MAIN_REBOOT_TIMEOUT		(46800) // 3 horas
+#define MAIN_SAVE_FLASH_TIME 	(600) // 10 minutos
+
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
@@ -57,6 +61,14 @@ void app_main(void)
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
+	esp_reset_reason_t reset_cause = esp_reset_reason();
+	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	{
+		ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
+		vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY));
+	}
+
+	// init system
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
@@ -70,9 +82,9 @@ void app_main(void)
 	// reboot reset cause
 	data_app_load_timestamp(&timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
-	if((timestamp_now - timestamp_nvs) < 60) //1 minute - religamento automático
+	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT)
 	{
-		esp_reset_reason_t reset_cause = esp_reset_reason();
+		reset_cause = esp_reset_reason();
 		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 		{
 			data_app_load_actions(&current_action, sizeof(current_action));
@@ -138,12 +150,12 @@ void app_main(void)
 		}
 		else
 		{
-			vTaskDelay(pdMS_TO_TICKS(15000));
-		}
+			// save current datetime
+			timestamp_nvs = rtc_app_get_timestamp(false);
+			data_app_save_timestamp(&timestamp_nvs);
 
-		// save current datetime
-		timestamp_nvs = rtc_app_get_timestamp(false);
-		data_app_save_timestamp(&timestamp_nvs);
+			vTaskDelay(pdMS_TO_TICKS(MAIN_SAVE_FLASH_TIME));
+		}
 	}
 }
 
