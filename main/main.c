@@ -25,9 +25,9 @@
 
 #define MAIN_TAG "main"
 
-#define MAIN_REBOOT_DELAY	 	(120) // 2 minutos
-#define MAIN_REBOOT_TIMEOUT		(46800) // 3 horas
-#define MAIN_SAVE_FLASH_TIME 	(600) // 10 minutos
+#define MAIN_REBOOT_DELAY_MS	 	(120000) // 2 minutos
+#define MAIN_REBOOT_TIMEOUT_MS		(46800000) // 3 horas
+#define MAIN_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
 
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
@@ -65,7 +65,7 @@ void app_main(void)
 	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 	{
 		ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
-		vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY));
+		vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY_MS));
 	}
 
 	// init system
@@ -82,7 +82,7 @@ void app_main(void)
 	// reboot reset cause
 	data_app_load_timestamp(&timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
-	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT)
+	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
 	{
 		reset_cause = esp_reset_reason();
 		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -154,7 +154,7 @@ void app_main(void)
 			timestamp_nvs = rtc_app_get_timestamp(false);
 			data_app_save_timestamp(&timestamp_nvs);
 
-			vTaskDelay(pdMS_TO_TICKS(MAIN_SAVE_FLASH_TIME));
+			vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_TIMEOUT_MS));
 		}
 	}
 }
