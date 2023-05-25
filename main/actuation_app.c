@@ -155,7 +155,7 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
 				if(current_config.power_state == PIVOT_OFF)
 				{
-					gpio_actuator_shutdown();
+					actuation_app_call(CALL_OFF_PIVOT, NULL);
 				}
 				last_tick = xTaskGetTickCount();
 				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
@@ -170,7 +170,7 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_config.watering_state == PIVOT_DRY)
 				{
-					gpio_actuator_shutdown();
+					actuation_app_call(CALL_OFF_PIVOT, NULL);
 				}
 				else if(current_config.watering_state == PIVOT_WET)
 				{

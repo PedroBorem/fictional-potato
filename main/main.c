@@ -37,6 +37,7 @@ static TaskHandle_t xTask_scheduling_app = NULL;
 // represents the initial coverage angle of the pivot
 static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
+static uint8_t main_alredy_init = 0;
 
 static pivot_scheduling_date main_scheduling_date[SCHEDULING_MAX_VALUE] = {};
 static pivot_scheduling_angle main_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
@@ -61,13 +62,6 @@ void app_main(void)
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
-	esp_reset_reason_t reset_cause = esp_reset_reason();
-	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
-	{
-		ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
-		vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY_MS));
-	}
-
 	// init system
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
@@ -84,7 +78,7 @@ void app_main(void)
 	timestamp_now = rtc_app_get_timestamp(false);
 	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
 	{
-		reset_cause = esp_reset_reason();
+		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 		{
 			data_app_load_actions(&current_action, sizeof(current_action));
@@ -99,9 +93,19 @@ void app_main(void)
 
 			vTaskDelay(pdMS_TO_TICKS(500));
 
-			if(current_action.power_state != PIVOT_OFF)
+			if(current_action.power_state == PIVOT_ON)
 			{
-				actuation_app_set_config(current_action, false);
+				ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
+				vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY_MS));
+				if(main_alredy_init == 0)
+				{
+					actuation_app_set_config(current_action, false);
+				}
+				else
+				{
+					// save old history
+					data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
+				}
 			}
 		}
 	}
@@ -219,6 +223,7 @@ static void app_main_call(app_call_states state, void* buffer)
 
 				// act on the equipment
 				actuation_app_set_config(new_actions, false);
+				main_alredy_init = 1;
 
 				// send current status
 				comm_app_send_event(new_actions);
@@ -368,6 +373,7 @@ static void app_main_call(app_call_states state, void* buffer)
 
 			// act on the equipment
 			actuation_app_set_config(manual_action, true);
+			main_alredy_init = 1;
 
 			// send current status
 			comm_app_send_event(manual_action);
@@ -389,15 +395,9 @@ static void app_main_call(app_call_states state, void* buffer)
 		{
 			pivot_actions current_action = {};
 
-			data_app_load_actions(&current_action, sizeof(current_action));
-			vTaskDelay(pdMS_TO_TICKS(500));
-
-			if(current_action.power_state != PIVOT_OFF)
-			{
-				current_action.power_state = PIVOT_OFF;
-				actuation_app_set_config(current_action, false);
-				data_app_save_actions(&current_action, sizeof(current_action));
-			}
+			actuation_app_shutdown();
+			current_action.power_state = PIVOT_OFF;
+			data_app_save_actions(&current_action, sizeof(current_action));
 
 			// save old history
 			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
@@ -580,6 +580,12 @@ static void app_scheduling_task(void* arg)
 	/* Delete old scheduling **************************************************************************/
 	vTaskDelay(pdMS_TO_TICKS(5000)); // Delay RTC sync
 	scheduling_timestamp_now = rtc_app_get_timestamp(true);
+
+	if(scheduling_timestamp_now == 0)
+	{
+		vTaskDelay(pdMS_TO_TICKS(15000)); // Delay RTC sync
+		scheduling_timestamp_now = rtc_app_get_timestamp(true);
+	}
 
 	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
 	{
