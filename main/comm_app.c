@@ -43,7 +43,7 @@
 typedef struct
 {
 	idp_type request_idp; 			/*!< Request types sent to the control queue*/
-	void* request_buffer;			/*!< Configuration input*/
+	char request_buffer[100];			/*!< Configuration input*/
 }comm_app_request;
 
 /* Private variables  -------------------------------------------- */
@@ -172,21 +172,30 @@ void comm_app_task(void* arg)
 				}
 				case IDP_1:
 				{
-					pivot_actions config = {};
-					common_parser_string_to_action(comm_request.request_buffer, &config);
-					comm_app_call(CALL_SAVE_ACTION, comm_request.request_buffer);
+					pivot_actions action = {};
+					common_parser_string_to_action(comm_request.request_buffer, &action);
+					comm_app_call(CALL_SAVE_ACTION, &action);
 					break;
 				}
 				case IDP_2:
 				{
+					pivot_scheduling_date scheduling_date = {};
+					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
+					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
 					break;
 				}
 				case IDP_3:
 				{
+					pivot_scheduling_angle scheduling_angle = {};
+					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
+					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
 					break;
 				}
 				case IDP_4:
 				{
+					pivot_scheduling_date scheduling_date = {};
+					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
+					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
 					break;
 				}
 				case IDP_5:
@@ -221,10 +230,12 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-void MODULES_NOTIFY_APP(const void* notify_buffer)
+void MODULES_NOTIFY_APP(void* notify_buffer)
 {
 	comm_app_request comm_request = {};
 	idp_type idp = common_parser_get_idp(notify_buffer);
+
+	memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
 
 	if(idp == IDP_INVALID)
 	{
@@ -245,7 +256,8 @@ void MODULES_NOTIFY_APP(const void* notify_buffer)
 		else
 		{
 			comm_request.request_idp = IDP_1;
-			comm_request.request_buffer = &config_in;
+			memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
+			//comm_request.request_buffer = &config_in;
 		}
 	}
 	else
@@ -253,15 +265,22 @@ void MODULES_NOTIFY_APP(const void* notify_buffer)
 		comm_request.request_idp = idp;
 	}
 
-	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+	if(xQueue_comm_app != NULL)
+	{
+		xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+	}
+	else
+	{
+		ESP_LOGW(COMM_APP_TAG, "%s, queue not yet created", __func__);
+	}
 }
 
-void RF_MODULE_NOTIFY_APP(const void* notify_buffer)
+void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 {
 	MODULES_NOTIFY_APP(notify_buffer);
 }
 
-void GPRS_MODULE_NOTIFY_APP(const void* notify_buffer)
+void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
 	MODULES_NOTIFY_APP(notify_buffer);
 }

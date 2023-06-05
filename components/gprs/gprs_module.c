@@ -128,7 +128,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(const void* notify_buffer)
+__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
 	UNUSED(notify_buffer);
 	return;

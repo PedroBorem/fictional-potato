@@ -278,36 +278,101 @@ idp_type common_parser_get_idp(const char* string_in)
 	return idp_ret;
 }
 
-/*
-
-#include <string.h>
-
-int main()
+esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_scheduling_date* scheduling_out)
 {
-	char str[] = "20-54-54-4444";
-	int init_size = strlen(str);
+	char status;
 	char delim[] = "-";
+	char *ptr = strtok(string_in, delim);
 
-	char *ptr = strtok(str, delim);
-
-	while(ptr != NULL)
+	idp_type idp = common_parser_get_idp(string_in);
+	if(idp == IDP_2)
 	{
-		printf("'%s'\n", ptr);
+		// PIVO_ID
+		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
+
+		// TS1
 		ptr = strtok(NULL, delim);
+		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
+
+		// TS2
+		ptr = strtok(NULL, delim);
+		sscanf(ptr, "%lld",(time_t*)&scheduling_out->end_date);
+
+		//DWP
+		ptr = strtok(NULL, delim);
+
+		status = ptr[0];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.rotation);
+
+		status = ptr[1];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.watering_state);
+
+		status = ptr[2];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
+
+		sscanf(&string_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&scheduling_out->acionts.percentimeter);
 	}
-
-
-	for (int i = 0; i < init_size; i++)
+	else if(idp == IDP_4)
 	{
-		printf("%d ", str[i]);
-	}
-	printf("\n");
+		// PIVO_ID
+		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
-	return 0;
+		// TS1
+		ptr = strtok(NULL, delim);
+		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
+
+		// TS2
+		scheduling_out->end_date = scheduling_out->start_date;
+
+		//DWP
+		scheduling_out->acionts.rotation = PIVOT_CCW;
+		scheduling_out->acionts.watering_state = PIVOT_DRY;
+		scheduling_out->acionts.power_state = PIVOT_OFF;
+
+		scheduling_out->acionts.percentimeter = 0;
+	}
+
+	return ESP_OK;
 }
- * */
-esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_scheduling_date* action_out)
+
+esp_err_t common_parser_string_to_scheaduling_angle(const char* string_in, pivot_scheduling_angle* scheduling_out)
 {
+	char status;
+	char delim[] = "-";
+	char *ptr = strtok(string_in, delim);
+
+	idp_type idp = common_parser_get_idp(string_in);
+	if(idp == IDP_3)
+	{
+		// PIVO_ID
+		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
+
+		// TS1
+		ptr = strtok(NULL, delim);
+		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
+
+		// TS2
+		ptr = strtok(NULL, delim);
+		sscanf(ptr, "%d",(int*)&scheduling_out->end_angle);
+
+		//DWP
+		ptr = strtok(NULL, delim);
+
+		status = ptr[0];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.rotation);
+
+		status = ptr[1];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.watering_state);
+
+		status = ptr[2];
+		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
+
+		sscanf(&string_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&scheduling_out->acionts.percentimeter);
+	}
+	else if(idp == IDP_5)
+	{
+		// não implementado
+	}
 
 	return ESP_OK;
 }

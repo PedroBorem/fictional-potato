@@ -86,6 +86,8 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 	const char search[] = "GPS";
 	char* ptr = strstr(buffer, search);
 
+	LOG_COMM(RF_MODULE_TAG, "AAAAAAAAAAAAAAA");
+
 	if(ptr != NULL)
 	{
 		// if the received message is GPS data
@@ -130,7 +132,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void RF_MODULE_NOTIFY_APP(const void* notify_buffer)
+__attribute__((weak)) void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 {
 	UNUSED(notify_buffer);
 	return;

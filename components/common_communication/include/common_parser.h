@@ -69,4 +69,6 @@ idp_type common_parser_get_idp(const char* string_in);
  */
 esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_scheduling_date* action_out);
 
+esp_err_t common_parser_string_to_scheaduling_angle(const char* string_in, pivot_scheduling_angle* scheduling_out);
+
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */

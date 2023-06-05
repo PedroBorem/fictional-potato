@@ -44,6 +44,6 @@ uint16_t rf_module_get_angle(void);
  * @brief	trigger callback to each status message received (write and read)
  * @param 	config_in[in]:  configuration structure
  */
-void RF_MODULE_NOTIFY_APP(const void* notify_buffer);
+void RF_MODULE_NOTIFY_APP(void* notify_buffer);
 
 #endif /* COMPONENTS_RF_MODULE_INCLUDE_RF_MODULE_H_ */
