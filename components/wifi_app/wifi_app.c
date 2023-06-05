@@ -29,7 +29,7 @@
 #define WIFI_DEFAULT_IP			"192.168.0.1"
 #define WIFI_DEFAULT_MASK		"255.255.255.0"
 #define WIFI_CHANNEL   			7
-#define WIFI_MAX_STA_CONN       1
+#define WIFI_MAX_STA_CONN       5
 
 #define WIFI_APP_SIZE_QUEUE_EVENT	5
 

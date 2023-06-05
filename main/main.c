@@ -25,6 +25,10 @@
 
 #define MAIN_TAG "main"
 
+#define MAIN_REBOOT_DELAY_MS	 	(120000) // 2 minutos
+#define MAIN_REBOOT_TIMEOUT_MS		(46800000) // 3 horas
+#define MAIN_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
+
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
@@ -33,6 +37,7 @@ static TaskHandle_t xTask_scheduling_app = NULL;
 // represents the initial coverage angle of the pivot
 static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
+static uint8_t main_alredy_init = 0;
 
 static pivot_scheduling_date main_scheduling_date[SCHEDULING_MAX_VALUE] = {};
 static pivot_scheduling_angle main_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
@@ -52,9 +57,12 @@ static void app_scheduling_task(void* arg);
  */
 void app_main(void)
 {
+	time_t timestamp_nvs = 0;
+	time_t timestamp_now = 0;
 	pivot_config current_config = {};
 	pivot_actions current_action = {};
 
+	// init system
 	ESP_LOGI(MAIN_TAG,"starting the system ...");
 	assert(app_init());
 
@@ -65,27 +73,46 @@ void app_main(void)
 	// set HTTP parameters
 	comm_app_set_config(current_config);
 
-	//rtc_app_get_timestamp();
-	esp_reset_reason_t reset_cause = esp_reset_reason();
-	if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	// reboot reset cause
+	data_app_load_timestamp(&timestamp_nvs);
+	timestamp_now = rtc_app_get_timestamp(false);
+	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
 	{
-		// TODO : critica de tempo
-		data_app_load_actions(&current_action, sizeof(current_action));
-
-		LOG_DATA(MAIN_TAG, "");
-		LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
-		LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
-		LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
-		LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
-		LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
-		LOG_DATA(MAIN_TAG, " --------------------------------\n");
-
-		vTaskDelay(pdMS_TO_TICKS(500));
-
-		if(current_action.power_state != PIVOT_OFF)
+		esp_reset_reason_t reset_cause = esp_reset_reason();
+		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
 		{
-			actuation_app_set_config(current_action, false);
+			data_app_load_actions(&current_action, sizeof(current_action));
+
+			LOG_DATA(MAIN_TAG, "");
+			LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
+			LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
+			LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
+			LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
+			LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
+			LOG_DATA(MAIN_TAG, " --------------------------------\n");
+
+			vTaskDelay(pdMS_TO_TICKS(500));
+
+			if(current_action.power_state == PIVOT_ON)
+			{
+				ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
+				vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY_MS));
+				if(main_alredy_init == 0)
+				{
+					actuation_app_set_config(current_action, false);
+				}
+				else
+				{
+					// save old history
+					data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
+				}
+			}
 		}
+	}
+	else
+	{
+		// save old history
+		data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
 	}
 
 	// get start angle
@@ -120,17 +147,18 @@ void app_main(void)
 	while (1)
 	{
 		// get start angle
-		if(comm_app_get_degree() == 0xFFFF)
+		if(app_start_angle == 0xFFFF)
 		{
-			vTaskDelay(pdMS_TO_TICKS(1000));
+			app_start_angle = comm_app_get_degree();
+			vTaskDelay(pdMS_TO_TICKS(2000));
 		}
 		else
 		{
-			if(app_start_angle == 0xFFFF)
-			{
-				app_start_angle = comm_app_get_degree();
-			}
-			vTaskDelay(pdMS_TO_TICKS(10000));
+			// save current datetime
+			timestamp_nvs = rtc_app_get_timestamp(false);
+			data_app_save_timestamp(&timestamp_nvs);
+
+			vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_TIMEOUT_MS));
 		}
 	}
 }
@@ -195,6 +223,7 @@ static void app_main_call(app_call_states state, void* buffer)
 
 				// act on the equipment
 				actuation_app_set_config(new_actions, false);
+				main_alredy_init = 1;
 
 				// send current status
 				comm_app_send_event(new_actions);
@@ -344,6 +373,7 @@ static void app_main_call(app_call_states state, void* buffer)
 
 			// act on the equipment
 			actuation_app_set_config(manual_action, true);
+			main_alredy_init = 1;
 
 			// send current status
 			comm_app_send_event(manual_action);
@@ -365,15 +395,12 @@ static void app_main_call(app_call_states state, void* buffer)
 		{
 			pivot_actions current_action = {};
 
-			data_app_load_actions(&current_action, sizeof(current_action));
-			vTaskDelay(pdMS_TO_TICKS(500));
+			actuation_app_shutdown();
+			current_action.power_state = PIVOT_OFF;
+			data_app_save_actions(&current_action, sizeof(current_action));
 
-			if(current_action.power_state != PIVOT_OFF)
-			{
-				current_action.power_state = PIVOT_OFF;
-				actuation_app_set_config(current_action, false);
-				data_app_save_actions(&current_action, sizeof(current_action));
-			}
+			// save old history
+			data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
 
 			vTaskDelay(pdMS_TO_TICKS(2000));
 
@@ -554,6 +581,12 @@ static void app_scheduling_task(void* arg)
 	vTaskDelay(pdMS_TO_TICKS(5000)); // Delay RTC sync
 	scheduling_timestamp_now = rtc_app_get_timestamp(true);
 
+	if(scheduling_timestamp_now == 0)
+	{
+		vTaskDelay(pdMS_TO_TICKS(15000)); // Delay RTC sync
+		scheduling_timestamp_now = rtc_app_get_timestamp(true);
+	}
+
 	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
 	{
 		if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
@@ -602,7 +635,7 @@ static void app_scheduling_task(void* arg)
 					scheduling_date_status[date_position] = false;
 					rtc_app_get_timestamp(true);
 					app_main_call(CALL_OFF_PIVOT, NULL);
-					app_main_call(CALL_DELETE_SCHEDULE_ANGLE, main_scheduling_date[date_position].scheduling_id);
+					app_main_call(CALL_DELETE_SCHEDULE_DATE, main_scheduling_date[date_position].scheduling_id);
 				}
 			}
 		}
