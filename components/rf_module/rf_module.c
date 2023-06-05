@@ -35,7 +35,7 @@
 static uint16_t rf_angle = 0xFFFF;
 
 /* Private methods  ---------------------------------------------- */
-void rf_module_call(const char* buffer, size_t buffer_size);
+void rf_module_call(char* buffer, size_t buffer_size);
 
 /* Public methods ------------------------------------------------ */
 esp_err_t rf_module_init(void)
@@ -72,7 +72,7 @@ uint16_t rf_module_get_angle(void)
  * @param	buffer[in] : received content
  * @param	buffer_size[in] : received content size
  */
-void rf_module_call(const char* buffer, size_t buffer_size)
+void rf_module_call(char* buffer, size_t buffer_size)
 {
 	esp_err_t err = ESP_OK;
 
@@ -85,8 +85,6 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 
 	const char search[] = "GPS";
 	char* ptr = strstr(buffer, search);
-
-	LOG_COMM(RF_MODULE_TAG, "AAAAAAAAAAAAAAA");
 
 	if(ptr != NULL)
 	{

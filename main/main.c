@@ -281,7 +281,7 @@ static void app_main_call(app_call_states state, void* buffer)
 					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 					memcpy(main_scheduling_date, scheduling_date, sizeof(main_scheduling_date));
 
-					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_date[position].scheduling_id);
+					ESP_LOGI(MAIN_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 					break;
 				}
 			}
@@ -318,7 +318,7 @@ static void app_main_call(app_call_states state, void* buffer)
 					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
 					memcpy(main_scheduling_angle, scheduling_angle, sizeof(main_scheduling_angle));
 
-					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_angle[position].scheduling_id);
+					ESP_LOGI(MAIN_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 					break;
 				}
 			}

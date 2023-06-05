@@ -45,7 +45,7 @@ static QueueHandle_t rf_uart_queue = NULL;
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(const rf_uart_callback callback)
+esp_err_t rf_uart_init(rf_uart_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;
@@ -141,28 +141,13 @@ static void rf_uart_event_task(void* arg)
 				{
 					if(event.size > 0 && event.size < 3000) // 3 KB
 					{
-						char* buff_in = (char*)malloc(event.size);
-						int aux = 0;
-
 						//Event of UART receving data
 						uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
+
 						LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
+						LOG_COMM(RF_UART_TAG, "data dtmp : %s", (char*)dtmp);
 
-						for(int char_position = 0; char_position < event.size; char_position++)
-						{
-							// 0x7F = ASCII space
-							// 0x1A <= ASCII C^ values
-							if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
-							{
-								buff_in[aux] = dtmp[char_position];
-								aux ++;
-							}
-						}
-
-						LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
-
-						rf_callback(buff_in, aux);
-						free(buff_in);
+						rf_callback((char*)dtmp, event.size);
 					}
 					break;
 				}

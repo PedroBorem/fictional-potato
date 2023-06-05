@@ -239,26 +239,30 @@ void MODULES_NOTIFY_APP(void* notify_buffer)
 
 	if(idp == IDP_INVALID)
 	{
-		pivot_actions config_in = {};
+		pivot_actions action = {};
 
-		memcpy(&config_in, notify_buffer, sizeof(config_in));
+		common_parser_string_to_action(notify_buffer, &action);
 
-		if(config_in.power_state == 0 && config_in.rotation == 0
-		&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+		if(action.power_state == 0 && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
 		{
-			comm_request.request_idp = IDP_0;
+			//comm_request.request_idp = IDP_0;
+			comm_app_call(CALL_READ_ACTION, NULL);
 		}
-		else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
-		&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+		else if(action.power_state == PIVOT_OFF && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
 		{
-			comm_request.request_idp = IDP_7;
+			//comm_request.request_idp = IDP_7;
+			comm_app_call(CALL_OFF_PIVOT, NULL);
 		}
 		else
 		{
-			comm_request.request_idp = IDP_1;
-			memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
-			//comm_request.request_buffer = &config_in;
+			comm_app_call(CALL_SAVE_ACTION, &action);
+			//comm_request.request_idp = IDP_1;
+			//comm_request.request_buffer = &action;
 		}
+
+		return;
 	}
 	else
 	{

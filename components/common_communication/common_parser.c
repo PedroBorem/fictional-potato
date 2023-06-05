@@ -278,16 +278,18 @@ idp_type common_parser_get_idp(const char* string_in)
 	return idp_ret;
 }
 
-esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_scheduling_date* scheduling_out)
+esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_scheduling_date* scheduling_out)
 {
 	char status;
 	char delim[] = "-";
-	char *ptr = strtok(string_in, delim);
 
 	idp_type idp = common_parser_get_idp(string_in);
+	char *ptr = strtok(string_in, delim);
+
 	if(idp == IDP_2)
 	{
 		// PIVO_ID
+		ptr = strtok(NULL, delim);
 		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS1
@@ -315,6 +317,7 @@ esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_
 	else if(idp == IDP_4)
 	{
 		// PIVO_ID
+		ptr = strtok(NULL, delim);
 		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS1
@@ -335,16 +338,17 @@ esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_
 	return ESP_OK;
 }
 
-esp_err_t common_parser_string_to_scheaduling_angle(const char* string_in, pivot_scheduling_angle* scheduling_out)
+esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_scheduling_angle* scheduling_out)
 {
 	char status;
 	char delim[] = "-";
-	char *ptr = strtok(string_in, delim);
 
 	idp_type idp = common_parser_get_idp(string_in);
+	char *ptr = strtok(string_in, delim);
+
 	if(idp == IDP_3)
 	{
-		// PIVO_ID
+		ptr = strtok(NULL, delim);
 		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS1
