@@ -46,6 +46,7 @@
 #define DATA_APP_LABEL_SCHEDULING_DATE	"space_s_date"
 #define DATA_APP_LABEL_SCHEDULING_ANGLE	"space_s_angle"
 #define DATA_APP_LABEL_HISTORY	"space_history"
+#define DATA_APP_LABEL_TIMESTAMP	"space_timestamp"
 
 /**
  * NVS access label
@@ -56,6 +57,7 @@
 #define DATA_KEY_SCHEDULING_DATE	"label_s_date"
 #define DATA_KEY_SCHEDULING_ANGLE	"label_s_angle"
 #define DATA_KEY_HISTORY	"label_history"
+#define DATA_KEY_TIMESTAMP	"label_timestamp"
 
 /* Public methods ------------------------------------------------ */
 esp_err_t data_app_init(void)
@@ -83,6 +85,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_date default_scheduling_date[SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_angle default_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
 	const pivot_history default_history[HISTORY_MAX_VALUE] = {};
+	const time_t default_timestamp = 0;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -109,7 +112,12 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY) == 0)
 		{
-			nvs_data_set(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, default_history, sizeof(default_history));
+			nvs_data_set(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, &default_history, sizeof(default_history));
+		}
+
+		if(nvs_data_get_size(DATA_APP_LABEL_TIMESTAMP, DATA_KEY_TIMESTAMP) == 0)
+		{
+			nvs_data_set(DATA_APP_LABEL_TIMESTAMP, DATA_KEY_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -122,38 +130,38 @@ esp_err_t data_app_init(void)
 	return err;
 }
 
-esp_err_t data_app_save_actions(const void* value, size_t size)
+esp_err_t data_app_save_actions(const pivot_actions* action, size_t size)
 {
 	esp_err_t ret = ESP_FAIL;
 
-	if(value != NULL)
+	if(action)
 	{
-		ret = nvs_data_set(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, value, size);
+		ret = nvs_data_set(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, action, size);
 	}
 
 	return ret;
 }
 
-esp_err_t data_app_load_actions(void* out_value, size_t size)
+esp_err_t data_app_load_actions(pivot_actions* out_action, size_t size)
 {
-	return nvs_data_get_blob(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, out_value);
+	return nvs_data_get_blob(DATA_APP_LABEL_ACTION, DATA_KEY_ACTIONS, (void*)out_action);
 }
 
-esp_err_t data_app_save_config(const void* value, size_t size)
+esp_err_t data_app_save_config(const pivot_config* config, size_t size)
 {
 	esp_err_t ret = ESP_FAIL;
 
-	if(value != NULL)
+	if(config != NULL)
 	{
-		ret = nvs_data_set(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, value, size);
+		ret = nvs_data_set(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, config, size);
 	}
 
 	return ret;
 }
 
-esp_err_t data_app_load_config(void* out_value, size_t size)
+esp_err_t data_app_load_config(pivot_config* out_config, size_t size)
 {
-	return nvs_data_get_blob(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, out_value);
+	return nvs_data_get_blob(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, (void*)out_config);
 }
 
 esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size)
@@ -245,7 +253,7 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 
 esp_err_t data_app_save_new_history(pivot_history new_history)
 {
-	esp_err_t ret = ESP_FAIL;
+	esp_err_t ret = ESP_OK;
 	pivot_history history[HISTORY_MAX_VALUE] = {};
 	pivot_history history_tmp = {};
 	int i,j;
@@ -272,7 +280,7 @@ esp_err_t data_app_save_new_history(pivot_history new_history)
 
 esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle)
 {
-	esp_err_t ret = ESP_FAIL;
+	esp_err_t ret = ESP_OK;
 	pivot_history history[HISTORY_MAX_VALUE] = {};
 
 	data_app_load_history(history, sizeof(history));
@@ -286,9 +294,19 @@ esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle)
 	return ret;
 }
 
-esp_err_t data_app_load_history(void* out_value, size_t size)
+esp_err_t data_app_load_history(pivot_history* out_history, size_t size)
 {
-	return nvs_data_get_blob(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, out_value);
+	return nvs_data_get_blob(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, (void*)out_history);
+}
+
+esp_err_t data_app_save_timestamp(time_t* timestamp)
+{
+	return nvs_data_set(DATA_APP_LABEL_TIMESTAMP, DATA_KEY_TIMESTAMP, timestamp, sizeof(timestamp));;
+}
+
+esp_err_t data_app_load_timestamp(time_t* out_timestamp)
+{
+	return nvs_data_get_blob(DATA_APP_LABEL_TIMESTAMP, DATA_KEY_TIMESTAMP, (void*)out_timestamp);
 }
 
 size_t data_app_get_data_size(const char* label_name, const char* key)

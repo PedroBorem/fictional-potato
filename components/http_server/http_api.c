@@ -730,6 +730,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -744,6 +745,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
@@ -758,6 +760,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 			if(http_callback != NULL)
 			{
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
+				http_ws_handler(req);
 				err = ESP_OK;
 			}
 			else
