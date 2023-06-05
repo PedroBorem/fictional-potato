@@ -93,7 +93,7 @@
 #define COMMOM_PARSER_ELEMENT_NUMBER				(4)
 
 /* Public methods ------------------------------------------------ */
-esp_err_t common_parser_string_to_config(const char* string_in, pivot_actions* config_out)
+esp_err_t common_parser_string_to_action(const char* string_in, pivot_actions* action_out)
 {
 	esp_err_t err = ESP_ERR_INVALID_ARG;
 	pivot_actions config = {};
@@ -113,7 +113,7 @@ esp_err_t common_parser_string_to_config(const char* string_in, pivot_actions* c
 
 	if(validate_ret >= COMMOM_PARSER_ELEMENT_NUMBER)
 	{
-		memcpy(config_out, &config, sizeof(pivot_actions));
+		memcpy(action_out, &config, sizeof(pivot_actions));
 		err = ESP_OK;
 	}
 
@@ -255,6 +255,59 @@ esp_err_t common_parser_register_to_json(const char* id, char* string_out, size_
 
 	memcpy(string_out, cJSON_Print(root), string_size);
 	cJSON_Delete(root);
+
+	return ESP_OK;
+}
+
+idp_type common_parser_get_idp(const char* string_in)
+{
+	idp_type idp_ret;
+	char idp_value = string_in[0];
+	char idp_delimiter = string_in[1];
+
+	if(idp_value >= '0' && idp_value <= '9'
+	&& idp_delimiter == '-')
+	{
+		idp_ret = idp_value - '0';
+	}
+	else
+	{
+		idp_ret = IDP_INVALID;
+	}
+
+	return idp_ret;
+}
+
+/*
+
+#include <string.h>
+
+int main()
+{
+	char str[] = "20-54-54-4444";
+	int init_size = strlen(str);
+	char delim[] = "-";
+
+	char *ptr = strtok(str, delim);
+
+	while(ptr != NULL)
+	{
+		printf("'%s'\n", ptr);
+		ptr = strtok(NULL, delim);
+	}
+
+
+	for (int i = 0; i < init_size; i++)
+	{
+		printf("%d ", str[i]);
+	}
+	printf("\n");
+
+	return 0;
+}
+ * */
+esp_err_t common_parser_string_to_scheaduling_date(const char* string_in, pivot_scheduling_date* action_out)
+{
 
 	return ESP_OK;
 }

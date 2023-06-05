@@ -46,6 +46,6 @@ time_t gprs_module_get_timestamp(void);
  * @brief	trigger callback to each status message received (write and read)
  * @param 	config_in[in]:  configuration structure
  */
-void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in);
+void GPRS_MODULE_NOTIFY_APP(const void* notify_buffer);
 
 #endif /* COMPONENTS_GPRS_INCLUDE_GPRS_MODULE_H_ */

@@ -20,6 +20,7 @@
 #include "gprs_uart.h"
 #include "wifi_app.h"
 #include "http_api.h"
+#include "common_parser.h"
 
 /**\addtogroup main
  * @{
@@ -36,24 +37,13 @@
 #define COMM_APP_SIZE_QUEUE		10
 
 /**
- *	Request types sent to the control queue
- *
- */
-typedef enum
-{
-	COMM_REQUEST_SAVE_ACTION = 0, 	/*!< Request to save a new configuration*/
-	COMM_REQUEST_READ_ACTION = 1,	/*!< Status read request*/
-	COMM_REQUEST_PIVOT_OFF = 2
-}comm_app_request_type;
-
-/**
  *	Structure sent to the control queue
  *
  */
 typedef struct
 {
-	comm_app_request_type request_type; /*!< Request types sent to the control queue*/
-	pivot_actions input_config;			/*!< Configuration input*/
+	idp_type request_idp; 			/*!< Request types sent to the control queue*/
+	void* request_buffer;			/*!< Configuration input*/
 }comm_app_request;
 
 /* Private variables  -------------------------------------------- */
@@ -173,21 +163,51 @@ void comm_app_task(void* arg)
 		//Waiting for UART event.
 		if(xQueueReceive(xQueue_comm_app, (void*)&comm_request, (TickType_t)portMAX_DELAY) == pdTRUE)
 		{
-			switch(comm_request.request_type)
+			switch(comm_request.request_idp)
 			{
-				case COMM_REQUEST_SAVE_ACTION:
-				{
-					comm_app_call(CALL_SAVE_ACTION, &comm_request.input_config);
-					break;
-				}
-				case COMM_REQUEST_READ_ACTION:
+				case IDP_0:
 				{
 					comm_app_call(CALL_READ_ACTION, NULL);
 					break;
 				}
-				case COMM_REQUEST_PIVOT_OFF:
+				case IDP_1:
+				{
+					pivot_actions config = {};
+					common_parser_string_to_action(comm_request.request_buffer, &config);
+					comm_app_call(CALL_SAVE_ACTION, comm_request.request_buffer);
+					break;
+				}
+				case IDP_2:
+				{
+					break;
+				}
+				case IDP_3:
+				{
+					break;
+				}
+				case IDP_4:
+				{
+					break;
+				}
+				case IDP_5:
+				{
+					break;
+				}
+				case IDP_6:
+				{
+					break;
+				}
+				case IDP_7:
 				{
 					comm_app_call(CALL_OFF_PIVOT, NULL);
+					break;
+				}
+				case IDP_INVALID:
+				{
+					break;
+				}
+				default:
+				{
 					break;
 				}
 			}
@@ -201,36 +221,48 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-void MODULES_NOTIFY_APP(const pivot_actions config_in)
+void MODULES_NOTIFY_APP(const void* notify_buffer)
 {
 	comm_app_request comm_request = {};
+	idp_type idp = common_parser_get_idp(notify_buffer);
 
-	if(config_in.power_state == 0 && config_in.rotation == 0
-	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+	if(idp == IDP_INVALID)
 	{
-		comm_request.request_type = COMM_REQUEST_READ_ACTION;
-	}
-	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
-	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
-	{
-		comm_request.request_type = COMM_REQUEST_PIVOT_OFF;
+		pivot_actions config_in = {};
+
+		memcpy(&config_in, notify_buffer, sizeof(config_in));
+
+		if(config_in.power_state == 0 && config_in.rotation == 0
+		&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+		{
+			comm_request.request_idp = IDP_0;
+		}
+		else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
+		&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+		{
+			comm_request.request_idp = IDP_7;
+		}
+		else
+		{
+			comm_request.request_idp = IDP_1;
+			comm_request.request_buffer = &config_in;
+		}
 	}
 	else
 	{
-		comm_request.request_type = COMM_REQUEST_SAVE_ACTION;
-		memcpy(&comm_request.input_config, &config_in, sizeof(comm_request.input_config));
+		comm_request.request_idp = idp;
 	}
 
 	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
 }
 
-void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
+void RF_MODULE_NOTIFY_APP(const void* notify_buffer)
 {
-	MODULES_NOTIFY_APP(config_in);
+	MODULES_NOTIFY_APP(notify_buffer);
 }
 
-void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
+void GPRS_MODULE_NOTIFY_APP(const void* notify_buffer)
 {
-	MODULES_NOTIFY_APP(config_in);
+	MODULES_NOTIFY_APP(notify_buffer);
 }
 

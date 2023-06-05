@@ -50,6 +50,23 @@
 /* Public definitions ******************************************************/
 
 /**
+ *	Packet Identifier
+ *
+ */
+typedef enum
+{
+	IDP_0 = 0,			/*!< Read actions*/
+	IDP_1 = 1,			/*!< Save actions*/
+	IDP_2 = 2,			/*!< Scheduling type 1 (On by date and off by date)*/
+	IDP_3 = 3,			/*!< Schedule type 2 (Turn on by date and turn off by angle)*/
+	IDP_4 = 4,			/*!< Schedule type 3 (Only turns off by date)*/
+	IDP_5 = 5,			/*!< Schedule type 4 (Only turns off by angle)*/
+	IDP_6 = 6,			/*!< Schedule delete*/
+	IDP_7 = 7,			/*!< Pivot off*/
+	IDP_INVALID = 255,			/*!< Schedule delete*/
+}idp_type;
+
+/**
  *	Pivot actions states
  *
  */
