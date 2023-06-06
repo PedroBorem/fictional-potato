@@ -246,25 +246,30 @@ void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 	{
 		pivot_actions action = {};
 
-		common_parser_string_to_action(notify_buffer, &action);
-
-		if(action.power_state == 0 && action.rotation == 0
-		&& action.watering_state == 0 && action.percentimeter == 0)
+		if(common_parser_string_to_action(notify_buffer, &action) == ESP_OK)
 		{
-			//comm_request.request_idp = IDP_0;
-			comm_app_call(CALL_READ_ACTION, NULL);
-		}
-		else if(action.power_state == PIVOT_OFF && action.rotation == 0
-		&& action.watering_state == 0 && action.percentimeter == 0)
-		{
-			//comm_request.request_idp = IDP_7;
-			comm_app_call(CALL_OFF_PIVOT, NULL);
+			if(action.power_state == 0 && action.rotation == 0
+			&& action.watering_state == 0 && action.percentimeter == 0)
+			{
+				//comm_request.request_idp = IDP_0;
+				comm_app_call(CALL_READ_ACTION, NULL);
+			}
+			else if(action.power_state == PIVOT_OFF && action.rotation == 0
+			&& action.watering_state == 0 && action.percentimeter == 0)
+			{
+				//comm_request.request_idp = IDP_7;
+				comm_app_call(CALL_OFF_PIVOT, NULL);
+			}
+			else
+			{
+				comm_app_call(CALL_SAVE_ACTION, &action);
+				//comm_request.request_idp = IDP_1;
+				//comm_request.request_buffer = &action;
+			}
 		}
 		else
 		{
-			comm_app_call(CALL_SAVE_ACTION, &action);
-			//comm_request.request_idp = IDP_1;
-			//comm_request.request_buffer = &action;
+			ESP_LOGE(COMM_APP_TAG, "%s, Invalid RF msg", __func__);
 		}
 
 		return;
