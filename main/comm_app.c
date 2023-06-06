@@ -232,6 +232,11 @@ void comm_app_task(void* arg)
 /* Public callback ----------------------------------------------- */
 void MODULES_NOTIFY_APP(void* notify_buffer)
 {
+
+}
+
+void RF_MODULE_NOTIFY_APP(void* notify_buffer)
+{
 	comm_app_request comm_request = {};
 	idp_type idp = common_parser_get_idp(notify_buffer);
 
@@ -279,13 +284,25 @@ void MODULES_NOTIFY_APP(void* notify_buffer)
 	}
 }
 
-void RF_MODULE_NOTIFY_APP(void* notify_buffer)
-{
-	MODULES_NOTIFY_APP(notify_buffer);
-}
-
 void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
-	MODULES_NOTIFY_APP(notify_buffer);
+	pivot_actions action = {};
+
+	memcpy(&action, notify_buffer, sizeof(action));
+
+	if(action.power_state == 0 && action.rotation == 0
+	&& action.watering_state == 0 && action.percentimeter == 0)
+	{
+		comm_app_call(CALL_READ_ACTION, NULL);
+	}
+	else if(action.power_state == PIVOT_OFF && action.rotation == 0
+	&& action.watering_state == 0 && action.percentimeter == 0)
+	{
+		comm_app_call(CALL_OFF_PIVOT, NULL);
+	}
+	else
+	{
+		comm_app_call(CALL_SAVE_ACTION, &action);
+	}
 }
 

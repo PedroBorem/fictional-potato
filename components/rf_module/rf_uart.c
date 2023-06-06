@@ -147,14 +147,7 @@ static void rf_uart_event_task(void* arg)
 						LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
 						LOG_COMM(RF_UART_TAG, "data dtmp : %s", (char*)dtmp);
 
-						if(dtmp[0] == '(')
-						{
-							rf_callback((char*)&dtmp[1], (event.size - 1));
-						}
-						else
-						{
-							rf_callback((char*)dtmp, event.size);
-						}
+						rf_callback((char*)dtmp, event.size);
 					}
 					break;
 				}
