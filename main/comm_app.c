@@ -291,23 +291,43 @@ void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 
 void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
-	pivot_actions action = {};
+	comm_app_request comm_request = {};
+	idp_type idp = common_parser_get_idp(notify_buffer);
 
-	memcpy(&action, notify_buffer, sizeof(action));
+	if(idp != IDP_INVALID)
+	{
+		comm_request.request_idp = idp;
+		memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
 
-	if(action.power_state == 0 && action.rotation == 0
-	&& action.watering_state == 0 && action.percentimeter == 0)
-	{
-		comm_app_call(CALL_READ_ACTION, NULL);
-	}
-	else if(action.power_state == PIVOT_OFF && action.rotation == 0
-	&& action.watering_state == 0 && action.percentimeter == 0)
-	{
-		comm_app_call(CALL_OFF_PIVOT, NULL);
+		if(xQueue_comm_app != NULL)
+		{
+			xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+		}
+		else
+		{
+			ESP_LOGW(COMM_APP_TAG, "%s, queue not yet created", __func__);
+		}
 	}
 	else
 	{
-		comm_app_call(CALL_SAVE_ACTION, &action);
+		pivot_actions action = {};
+
+		memcpy(&action, notify_buffer, sizeof(action));
+
+		if(action.power_state == 0 && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
+		{
+			comm_app_call(CALL_READ_ACTION, NULL);
+		}
+		else if(action.power_state == PIVOT_OFF && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
+		{
+			comm_app_call(CALL_OFF_PIVOT, NULL);
+		}
+		else
+		{
+			comm_app_call(CALL_SAVE_ACTION, &action);
+		}
 	}
 }
 

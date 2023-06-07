@@ -262,11 +262,12 @@ esp_err_t common_parser_register_to_json(const char* id, char* string_out, size_
 idp_type common_parser_get_idp(const char* string_in)
 {
 	idp_type idp_ret;
-	char idp_value = string_in[0];
-	char idp_delimiter = string_in[1];
+	char pack_delimiter = string_in[0];
+	char idp_value = string_in[1];
+	char idp_delimiter = string_in[2];
 
 	if(idp_value >= '0' && idp_value <= '9'
-	&& idp_delimiter == '-')
+	&& idp_delimiter == '-' && pack_delimiter == '#')
 	{
 		idp_ret = idp_value - '0';
 	}
@@ -312,7 +313,10 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		status = ptr[2];
 		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
 
-		sscanf(&string_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&scheduling_out->acionts.percentimeter);
+		//Percent
+		ptr = strtok(NULL, delim);
+		ptr[(strlen(ptr) - 1)] = 0x00;
+		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
 	}
 	else if(idp == IDP_4)
 	{
@@ -371,7 +375,10 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 		status = ptr[2];
 		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
 
-		sscanf(&string_in[COMMON_PARSER_PERCENTIMETER_POSITION], "%d", (int*)&scheduling_out->acionts.percentimeter);
+		//Percent
+		ptr = strtok(NULL, delim);
+		ptr[(strlen(ptr) - 1)] = 0x00;
+		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
 	}
 	else if(idp == IDP_5)
 	{

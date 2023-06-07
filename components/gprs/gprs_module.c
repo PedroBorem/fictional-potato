@@ -125,8 +125,15 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 	}
 	else
 	{
-
-		ESP_LOGE(GPRS_MODULE_TAG, "%s, invalid received message", __func__);
+		idp_type idp = common_parser_get_idp(buffer);
+		if(idp != IDP_INVALID)
+		{
+			GPRS_MODULE_NOTIFY_APP(&buffer);
+		}
+		else
+		{
+			ESP_LOGE(GPRS_MODULE_TAG, "%s, invalid received message", __func__);
+		}
 	}
 }
 
