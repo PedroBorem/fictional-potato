@@ -76,9 +76,6 @@ void rf_module_call(char* buffer, size_t buffer_size)
 {
 	esp_err_t err = ESP_OK;
 
-	// Configuration Pivot
-	//pivot_actions config = {};
-
 	// GPS variables
 	time_t timestamp = 0;
 	uint16_t angle = 0;
@@ -106,22 +103,6 @@ void rf_module_call(char* buffer, size_t buffer_size)
 	else
 	{
 		RF_MODULE_NOTIFY_APP(buffer);
-/*
-		idp_type idp = common_parser_get_idp(buffer);
-		if(idp == IDP_INVALID)
-		{
-			// if the received message is a configuration
-			err = common_parser_string_to_config(buffer, &config);
-			if(err == ESP_OK)
-			{
-				RF_MODULE_NOTIFY_APP(config);
-			}
-			else
-			{
-				ESP_LOGE(RF_MODULE_TAG, "%s, invalid configuration", __func__);
-			}
-		}
-		*/
 	}
 }
 

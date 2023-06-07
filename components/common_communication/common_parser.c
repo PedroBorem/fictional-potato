@@ -305,13 +305,13 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		ptr = strtok(NULL, delim);
 
 		status = ptr[0];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.rotation);
+		scheduling_out->acionts.rotation = status - '0';
 
 		status = ptr[1];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.watering_state);
+		scheduling_out->acionts.watering_state = status - '0';
 
 		status = ptr[2];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
+		scheduling_out->acionts.power_state = status - '0';
 
 		//Percent
 		ptr = strtok(NULL, delim);
@@ -367,13 +367,13 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 		ptr = strtok(NULL, delim);
 
 		status = ptr[0];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.rotation);
+		scheduling_out->acionts.rotation = status - '0';
 
 		status = ptr[1];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.watering_state);
+		scheduling_out->acionts.watering_state = status - '0';
 
 		status = ptr[2];
-		sscanf(&status, "%d",(int*)&scheduling_out->acionts.power_state);
+		scheduling_out->acionts.power_state = status - '0';
 
 		//Percent
 		ptr = strtok(NULL, delim);

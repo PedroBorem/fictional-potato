@@ -128,7 +128,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 		idp_type idp = common_parser_get_idp(buffer);
 		if(idp != IDP_INVALID)
 		{
-			GPRS_MODULE_NOTIFY_APP(&buffer);
+			GPRS_MODULE_NOTIFY_APP((char*)buffer);
 		}
 		else
 		{
