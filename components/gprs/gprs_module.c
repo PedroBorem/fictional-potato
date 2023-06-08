@@ -108,14 +108,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 			}
 			else
 			{
-				if(config.rotation == 0 && config.watering_state == 0 && config.percentimeter == 0)
-				{
-					GPRS_MODULE_NOTIFY_APP(&config);
-				}
-				else
-				{
-					ESP_LOGE(GPRS_MODULE_TAG, "%s, Timestamp invalid format", __func__);
-				}
+				GPRS_MODULE_NOTIFY_APP(&config);
 			}
 		}
 		else
