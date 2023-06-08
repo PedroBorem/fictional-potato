@@ -388,5 +388,23 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 	return ESP_OK;
 }
 
+esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* resp_out)
+{
+	esp_err_t err = ESP_OK;
+	char string_converted[25] = "";
+	size_t size_str = strlen(pivo_id);
+
+    string_converted[0] = '#';
+	sprintf(&string_converted[1], "%d", idp);
+	string_converted[2] = '-';
+
+	memcpy(&string_converted[3], pivo_id, size_str);
+	string_converted[(size_str + 3)] = '$';
+
+	memcpy(resp_out, string_converted, strlen(string_converted));
+	return err;
+}
+
+
 /**@}*/ 	//common_parser
 /** @}*/	//components

@@ -35,6 +35,8 @@ esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree, const
 
 esp_err_t gprs_module_set_id(const char * gprs_id);
 
+esp_err_t gprs_module_send_idp(const char * gprs_id);
+
 /**
  * @brief	get the timestamp in seconds
  * @return	timestamp: returns the timestamp obtained via gprs

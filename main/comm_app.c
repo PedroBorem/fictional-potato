@@ -149,6 +149,14 @@ void comm_app_send_actions(void)
 	http_server_alert_actions();
 }
 
+void comm_app_send_idp_resp(idp_type idp, char* pivo_id)
+{
+	char resp_mqtt[25] = {};
+
+	common_parser_ipm_resp(idp, pivo_id, resp_mqtt);
+	gprs_module_send_idp(resp_mqtt);
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	communication reception task
@@ -182,6 +190,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
+					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_3:
@@ -189,6 +198,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_angle scheduling_angle = {};
 					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
 					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
+					comm_app_send_idp_resp(comm_request.request_idp,scheduling_angle.scheduling_id);
 					break;
 				}
 				case IDP_4:
@@ -196,6 +206,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
+					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_5:

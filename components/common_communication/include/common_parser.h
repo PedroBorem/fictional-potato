@@ -71,4 +71,6 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 
 esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_scheduling_angle* scheduling_out);
 
+esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* resp_out);
+
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */

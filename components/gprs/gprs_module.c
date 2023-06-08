@@ -69,6 +69,15 @@ esp_err_t gprs_module_set_id(const char * gprs_id)
 	return err;
 }
 
+esp_err_t gprs_module_send_idp(const char * gprs_id)
+{
+	esp_err_t err = ESP_OK;
+	err = gprs_uart_send_event(gprs_id, strlen(gprs_id));
+
+	return err;
+}
+
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Function is triggered when something arrives in the UART
