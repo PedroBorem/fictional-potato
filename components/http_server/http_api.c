@@ -15,6 +15,11 @@
 #include "http_config_parser.h"
 #include "esp_vfs.h"
 
+//TODO : remover esses includes
+#include "common_parser.h"
+#include "gprs_uart.h"
+#include "data_app.h"
+
 // Register SOCKET event
 #include <esp_wifi.h>
 #include <esp_event.h>
@@ -729,8 +734,18 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
+				char string_send[50];
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				http_ws_handler(req);
+
+				memset(http_scheduling_date.scheduling_id, 0x00, sizeof(http_scheduling_date.scheduling_id));
+				memcpy(http_scheduling_date.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+
+				common_parser_scheaduling_date_http_to_mqtt(2, &http_scheduling_date, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
 				err = ESP_OK;
 			}
 			else
@@ -759,8 +774,19 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
+				char string_send[50];
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				http_ws_handler(req);
+
+				memset(http_scheduling_date.scheduling_id, 0x00, sizeof(http_scheduling_date.scheduling_id));
+				memcpy(http_scheduling_date.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+
+				common_parser_scheaduling_date_http_to_mqtt(4, &http_scheduling_date, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
+
 				err = ESP_OK;
 			}
 			else
