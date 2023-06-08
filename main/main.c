@@ -278,6 +278,11 @@ static void app_main_call(app_call_states state, void* buffer)
 				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
 				{
 					memcpy(&scheduling_date[position], buffer, sizeof(scheduling_date[position]));
+
+					// get_rtc
+					scheduling_date[position].start_date += rtc_app_get_timestamp(false);
+					scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+
 					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 					memcpy(main_scheduling_date, scheduling_date, sizeof(main_scheduling_date));
 
@@ -315,6 +320,10 @@ static void app_main_call(app_call_states state, void* buffer)
 				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
 				{
 					memcpy(&scheduling_angle[position], buffer, sizeof(scheduling_angle[position]));
+
+					// get_rtc
+					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+
 					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
 					memcpy(main_scheduling_angle, scheduling_angle, sizeof(main_scheduling_angle));
 
