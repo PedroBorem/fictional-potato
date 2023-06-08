@@ -759,8 +759,19 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
+				char string_send[50];
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
 				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
 				http_ws_handler(req);
+
+				memset(http_scheduling_angle.scheduling_id, 0x00, sizeof(http_scheduling_angle.scheduling_id));
+				memcpy(http_scheduling_angle.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+
+				common_parser_scheaduling_angle_http_to_mqtt(3, &http_scheduling_angle, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
+
 				err = ESP_OK;
 			}
 			else

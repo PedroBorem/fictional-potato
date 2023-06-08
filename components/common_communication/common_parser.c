@@ -464,15 +464,67 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, pivot_schedu
 
 	memcpy(string_out, string_converted, strlen(string_converted));
 
-	printf("aaa %s", string_out);
-
 	return err;
 }
 
-esp_err_t common_parser_scheaduling_angle_http_to_mqtt(pivot_scheduling_angle* scheduling_in, char* string_out)
+esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, pivot_scheduling_angle* scheduling_in, char* string_out)
 {
 	esp_err_t err = ESP_OK;
+	char string_converted[50] = "";
+	char string_timestamp[15] = "";
+	size_t size_str = strlen(scheduling_in->scheduling_id);
 
+    string_converted[0] = '#';
+	sprintf(&string_converted[1], "%d", idp);
+	string_converted[2] = '-';
+
+	memcpy(&string_converted[3], scheduling_in->scheduling_id, size_str);
+	size_str = size_str + 3;
+	string_converted[(size_str)] = '-';
+
+	size_str = size_str + 1;
+	sprintf(string_timestamp, "%lld", scheduling_in->start_date);
+	memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+	if(idp == IDP_3)
+	{
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '-';
+		size_str = size_str + 1;
+
+		sprintf(string_timestamp, "%03d", scheduling_in->end_angle);
+		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '-';
+		size_str = size_str + 1;
+
+		string_converted[size_str] = scheduling_in->acionts.rotation + '0';
+		size_str = size_str + 1;
+
+		string_converted[size_str] = scheduling_in->acionts.watering_state + '0';
+		size_str = size_str + 1;
+
+		string_converted[size_str] = scheduling_in->acionts.power_state + '0';
+		size_str = size_str + 1;
+
+		string_converted[(size_str)] = '-';
+		size_str = size_str + 1;
+
+		sprintf(string_timestamp, "%03d", scheduling_in->acionts.percentimeter);
+		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '$';
+	}
+	else
+	{
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '$';
+		size_str = size_str + 1;
+	}
+
+	memcpy(string_out, string_converted, strlen(string_converted));
 
 	return err;
 }
