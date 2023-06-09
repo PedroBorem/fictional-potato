@@ -220,6 +220,7 @@ void comm_app_task(void* arg)
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_DELETE_SCHEDULE_DATE, &scheduling_date.scheduling_id);
 					comm_app_call(CALL_DELETE_SCHEDULE_ANGLE, &scheduling_date.scheduling_id);
+					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_7:

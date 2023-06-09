@@ -902,6 +902,18 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
+
+				char string_send[50];
+				pivot_scheduling_date scheduling_in;
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				memcpy(scheduling_in.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+				scheduling_in.start_date = atoi(http_parser_scheduling_delete(content));
+
+				common_parser_scheaduling_date_http_to_mqtt(6, &scheduling_in, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
+
 				err = ESP_OK;
 			}
 			else
@@ -915,6 +927,18 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
+
+				char string_send[50];
+				pivot_scheduling_date scheduling_in;
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				memcpy(scheduling_in.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+				scheduling_in.start_date = atoi(http_parser_scheduling_delete(content));
+
+				common_parser_scheaduling_date_http_to_mqtt(6, &scheduling_in, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
+
 				err = ESP_OK;
 			}
 			else
@@ -928,6 +952,18 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 			{
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
+
+				char string_send[50];
+				pivot_scheduling_date scheduling_in;
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				memcpy(scheduling_in.scheduling_id, config.gprs_id, strlen(config.gprs_id));
+				scheduling_in.start_date = atoi(http_parser_scheduling_delete(content));
+
+				common_parser_scheaduling_date_http_to_mqtt(6, &scheduling_in, string_send);
+				gprs_uart_send_event(string_send, strlen(string_send));
+
 				err = ESP_OK;
 			}
 			else
