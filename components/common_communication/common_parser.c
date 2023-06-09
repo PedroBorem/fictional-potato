@@ -318,13 +318,14 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		ptr[(strlen(ptr) - 1)] = 0x00;
 		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
 	}
-	else if(idp == IDP_4)
+	else if(idp == IDP_4 || idp == IDP_6)
 	{
 		// PIVO_ID
 		ptr = strtok(NULL, delim);
 
 		// TS1
 		ptr = strtok(NULL, delim);
+		ptr[(strlen(ptr) - 1)] = 0x00;
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
 		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
