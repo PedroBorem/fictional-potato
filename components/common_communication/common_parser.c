@@ -330,7 +330,7 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS2
-		scheduling_out->end_date = scheduling_out->start_date;
+		scheduling_out->end_date = scheduling_out->start_date + 30;
 
 		//DWP
 		scheduling_out->acionts.rotation = PIVOT_CCW;

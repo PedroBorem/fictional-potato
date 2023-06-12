@@ -22,6 +22,9 @@
 #include "http_api.h"
 #include "common_parser.h"
 
+//TODO: remover esse include
+#include "data_app.h"
+
 /**\addtogroup main
  * @{
  *
@@ -99,7 +102,7 @@ bool comm_app_init(const app_callback callback)
 			}
 			else
 			{
-				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
+				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, COMM_APP_TASK_NAME);
 			}
 		}
 		else
@@ -187,26 +190,35 @@ void comm_app_task(void* arg)
 				}
 				case IDP_2:
 				{
+					pivot_config config = {};//todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
-					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
 					break;
 				}
 				case IDP_3:
 				{
+					pivot_config config = {}; //todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
 					pivot_scheduling_angle scheduling_angle = {};
 					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
 					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
-					comm_app_send_idp_resp(comm_request.request_idp,scheduling_angle.scheduling_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
 					break;
 				}
 				case IDP_4:
 				{
+					pivot_config config = {}; //todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
-					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
 					break;
 				}
 				case IDP_5:
