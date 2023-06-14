@@ -29,6 +29,9 @@
 #define MAIN_REBOOT_TIMEOUT_MS		(46800000) // 3 horas
 #define MAIN_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
 
+// Apagar o define para desativar o desligamento.
+#define RELIGAMENTO
+
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
@@ -76,6 +79,8 @@ void app_main(void)
 	// reboot reset cause
 	data_app_load_timestamp(&timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
+
+#ifdef RELIGAMENTO
 	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -114,6 +119,7 @@ void app_main(void)
 		// save old history
 		data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
 	}
+#endif
 
 	// get start angle
 	app_start_angle = comm_app_get_degree();
