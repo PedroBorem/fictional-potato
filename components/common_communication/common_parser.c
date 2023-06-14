@@ -453,6 +453,20 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_
 		size_str = size_str + strlen(string_timestamp);
 		string_converted[(size_str)] = '$';
 	}
+	else if(idp == IDP_4)
+	{
+		size_str = size_str + 1;
+		memcpy(&string_converted[size_str], scheduling_in.scheduling_id, strlen(scheduling_in.scheduling_id));
+		size_str = size_str + strlen(scheduling_in.scheduling_id);
+		string_converted[(size_str)] = '-';
+
+		size_str = size_str + 1;
+		sprintf(string_timestamp, "%lld", scheduling_in.start_date);
+		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '$';
+	}
 	else
 	{
 		size_str = size_str + 1;
