@@ -158,7 +158,7 @@ void app_main(void)
 			timestamp_nvs = rtc_app_get_timestamp(false);
 			data_app_save_timestamp(&timestamp_nvs);
 
-			vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_TIMEOUT_MS));
+			vTaskDelay(pdMS_TO_TICKS(MAIN_SAVE_FLASH_TIME_MS));
 		}
 	}
 }
