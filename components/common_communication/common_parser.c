@@ -289,9 +289,6 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 
 	if(idp == IDP_2)
 	{
-		// PIVO_ID
-		ptr = strtok(NULL, delim);
-
 		// TS1
 		ptr = strtok(NULL, delim);
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
@@ -319,9 +316,6 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 	}
 	else if(idp == IDP_4 || idp == IDP_6)
 	{
-		// PIVO_ID
-		ptr = strtok(NULL, delim);
-
 		// TS1
 		ptr = strtok(NULL, delim);
 		ptr[(strlen(ptr) - 1)] = 0x00;
@@ -351,9 +345,6 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 
 	if(idp == IDP_3)
 	{
-		// PIVO_ID
-		ptr = strtok(NULL, delim);
-
 		// TS1
 		ptr = strtok(NULL, delim);
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
@@ -387,7 +378,7 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 	return ESP_OK;
 }
 
-esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* resp_out)
+esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* scheaduling_id, char* resp_out)
 {
 	esp_err_t err = ESP_OK;
 	char string_converted[25] = "";
@@ -398,57 +389,65 @@ esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* resp_out)
 	string_converted[2] = '-';
 
 	memcpy(&string_converted[3], pivo_id, size_str);
-	string_converted[(size_str + 3)] = '$';
+	string_converted[(size_str + 3)] = '-';
+
+	memcpy(&string_converted[(size_str + 4)], scheaduling_id, strlen(scheaduling_id));
+	string_converted[(size_str + 4 + strlen(scheaduling_id))] = '$';
 
 	memcpy(resp_out, string_converted, strlen(string_converted));
 	return err;
 }
 
-esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, pivot_scheduling_date* scheduling_in, char* string_out)
+esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_date scheduling_in, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 	char string_converted[50] = "";
 	char string_timestamp[15] = "";
-	size_t size_str = strlen(scheduling_in->scheduling_id);
+	size_t size_str = strlen(gprs_id);
 
     string_converted[0] = '#';
-	sprintf(&string_converted[1], "%d", idp);
+	string_converted[1] = idp + '0';
 	string_converted[2] = '-';
 
-	memcpy(&string_converted[3], scheduling_in->scheduling_id, size_str);
+	memcpy(&string_converted[3], gprs_id, size_str);
 	size_str = size_str + 3;
 	string_converted[(size_str)] = '-';
 
-	size_str = size_str + 1;
-	sprintf(string_timestamp, "%lld", scheduling_in->start_date);
-	memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
-
 	if(idp == IDP_2)
 	{
-		size_str = size_str + strlen(string_timestamp);
-		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
+		memcpy(&string_converted[size_str], scheduling_in.scheduling_id, strlen(scheduling_in.scheduling_id));
+		size_str = size_str + strlen(scheduling_in.scheduling_id);
+		string_converted[(size_str)] = '-';
 
-		sprintf(string_timestamp, "%lld", scheduling_in->end_date);
+		size_str = size_str + 1;
+		sprintf(string_timestamp, "%lld", scheduling_in.start_date);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.rotation + '0';
+		sprintf(string_timestamp, "%lld", scheduling_in.end_date);
+		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.watering_state + '0';
+		string_converted[size_str] = scheduling_in.acionts.rotation + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.power_state + '0';
+		string_converted[size_str] = scheduling_in.acionts.watering_state + '0';
+		size_str = size_str + 1;
+
+		string_converted[size_str] = scheduling_in.acionts.power_state + '0';
 		size_str = size_str + 1;
 
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		sprintf(string_timestamp, "%03d", scheduling_in->acionts.percentimeter);
+		sprintf(string_timestamp, "%03d", scheduling_in.acionts.percentimeter);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);
@@ -456,9 +455,10 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, pivot_schedu
 	}
 	else
 	{
-		size_str = size_str + strlen(string_timestamp);
-		string_converted[(size_str)] = '$';
 		size_str = size_str + 1;
+		memcpy(&string_converted[size_str], scheduling_in.scheduling_id, strlen(scheduling_in.scheduling_id));
+		size_str = size_str + strlen(scheduling_in.scheduling_id);
+		string_converted[(size_str)] = '$';
 	}
 
 	memcpy(string_out, string_converted, strlen(string_converted));
@@ -466,51 +466,57 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, pivot_schedu
 	return err;
 }
 
-esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, pivot_scheduling_angle* scheduling_in, char* string_out)
+esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_angle scheduling_in, char* string_out)
 {
 	esp_err_t err = ESP_OK;
 	char string_converted[50] = "";
 	char string_timestamp[15] = "";
-	size_t size_str = strlen(scheduling_in->scheduling_id);
+	size_t size_str = strlen(gprs_id);
 
     string_converted[0] = '#';
-	sprintf(&string_converted[1], "%d", idp);
+    string_converted[1] = idp + '0';
 	string_converted[2] = '-';
 
-	memcpy(&string_converted[3], scheduling_in->scheduling_id, size_str);
+	memcpy(&string_converted[3], gprs_id, size_str);
 	size_str = size_str + 3;
 	string_converted[(size_str)] = '-';
 
-	size_str = size_str + 1;
-	sprintf(string_timestamp, "%lld", scheduling_in->start_date);
-	memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
-
 	if(idp == IDP_3)
 	{
-		size_str = size_str + strlen(string_timestamp);
-		string_converted[(size_str)] = '-';
-		size_str = size_str + 1;
 
-		sprintf(string_timestamp, "%03d", scheduling_in->end_angle);
+		size_str = size_str + 1;
+		memcpy(&string_converted[size_str], scheduling_in.scheduling_id, strlen(scheduling_in.scheduling_id));
+		size_str = size_str + strlen(scheduling_in.scheduling_id);
+		string_converted[(size_str)] = '-';
+
+		size_str = size_str + 1;
+		sprintf(string_timestamp, "%lld", scheduling_in.start_date);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.rotation + '0';
+		sprintf(string_timestamp, "%d", scheduling_in.end_angle);
+		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
+
+		size_str = size_str + strlen(string_timestamp);
+		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.watering_state + '0';
+		string_converted[size_str] = scheduling_in.acionts.rotation + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in->acionts.power_state + '0';
+		string_converted[size_str] = scheduling_in.acionts.watering_state + '0';
+		size_str = size_str + 1;
+
+		string_converted[size_str] = scheduling_in.acionts.power_state + '0';
 		size_str = size_str + 1;
 
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		sprintf(string_timestamp, "%03d", scheduling_in->acionts.percentimeter);
+		sprintf(string_timestamp, "%03d", scheduling_in.acionts.percentimeter);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);
@@ -518,9 +524,10 @@ esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, pivot_sched
 	}
 	else
 	{
-		size_str = size_str + strlen(string_timestamp);
-		string_converted[(size_str)] = '$';
 		size_str = size_str + 1;
+		memcpy(&string_converted[size_str], scheduling_in.scheduling_id, strlen(scheduling_in.scheduling_id));
+		size_str = size_str + strlen(scheduling_in.scheduling_id);
+		string_converted[(size_str)] = '$';
 	}
 
 	memcpy(string_out, string_converted, strlen(string_converted));

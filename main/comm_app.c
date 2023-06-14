@@ -152,11 +152,12 @@ void comm_app_send_actions(void)
 	http_server_alert_actions();
 }
 
-void comm_app_send_idp_resp(idp_type idp, char* pivo_id)
+void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id)
 {
 	char resp_mqtt[25] = {};
 
-	common_parser_ipm_resp(idp, pivo_id, resp_mqtt);
+	vTaskDelay(pdMS_TO_TICKS(5000));
+	common_parser_ipm_resp(idp, pivo_id, resp_mqtt, scheaduling_id);
 	gprs_module_send_idp(resp_mqtt);
 }
 
@@ -196,7 +197,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
-					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_3:
@@ -207,7 +208,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_angle scheduling_angle = {};
 					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
 					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
-					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_angle.scheduling_id);
 					break;
 				}
 				case IDP_4:
@@ -218,7 +219,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
-					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id);
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_5:
@@ -232,7 +233,7 @@ void comm_app_task(void* arg)
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_DELETE_SCHEDULE_DATE, &scheduling_date.scheduling_id);
 					comm_app_call(CALL_DELETE_SCHEDULE_ANGLE, &scheduling_date.scheduling_id);
-					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id);
+					comm_app_send_idp_resp(comm_request.request_idp,scheduling_date.scheduling_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_7:

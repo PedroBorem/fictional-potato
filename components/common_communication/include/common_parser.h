@@ -71,10 +71,10 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 
 esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_scheduling_angle* scheduling_out);
 
-esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* resp_out);
+esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* scheaduling_id, char* resp_out);
 
-esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, pivot_scheduling_date* scheduling_in, char* string_out);
+esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_date scheduling_in, char* string_out);
 
-esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, pivot_scheduling_angle* scheduling_in, char* string_out);
+esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_angle scheduling_in, char* string_out);
 
 #endif /* COMPONENTS_COMMON_COMMUNICATION_INCLUDE_COMMON_PARSER_H_ */
