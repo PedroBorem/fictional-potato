@@ -156,7 +156,7 @@ void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id)
 {
 	char resp_mqtt[50] = {};
 
-	common_parser_ipm_resp(idp, pivo_id, resp_mqtt, scheaduling_id);
+	common_parser_ipm_resp(idp, pivo_id, scheaduling_id, resp_mqtt);
 	gprs_module_send_idp(resp_mqtt);
 }
 
@@ -196,6 +196,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
+
 					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
