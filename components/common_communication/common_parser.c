@@ -295,7 +295,6 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		// TS1
 		ptr = strtok(NULL, delim);
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
-		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS2
 		ptr = strtok(NULL, delim);
@@ -327,7 +326,6 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		ptr = strtok(NULL, delim);
 		ptr[(strlen(ptr) - 1)] = 0x00;
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
-		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS2
 		scheduling_out->end_date = scheduling_out->start_date + 30;
@@ -359,7 +357,6 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 		// TS1
 		ptr = strtok(NULL, delim);
 		sscanf(ptr, "%lld",(time_t*)&scheduling_out->start_date);
-		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 
 		// TS2
 		ptr = strtok(NULL, delim);

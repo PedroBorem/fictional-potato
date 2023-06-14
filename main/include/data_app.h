@@ -72,6 +72,8 @@ esp_err_t data_app_save_config(const pivot_config* config, size_t size);
  */
 esp_err_t data_app_load_config(pivot_config* out_config, size_t size);
 
+void data_app_gen_scheduling_key(char* scheduling_id);
+
 esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size);
 
 esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* out_value, size_t size);

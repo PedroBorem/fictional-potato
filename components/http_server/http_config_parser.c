@@ -314,7 +314,6 @@ pivot_scheduling_date http_parser_scheduling_date(char* request_body)
 	// get scheduling
 	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_date.end_date = (time_t)cJSON_GetObjectItem(subitem, "end_date")->valueint;
-	sprintf(scheduling_date.scheduling_id, "%lld", scheduling_date.start_date);
 
 	cJSON_Delete(subitem);
 
@@ -396,7 +395,6 @@ pivot_scheduling_angle http_parser_scheduling_angle(char* request_body)
 	// get scheduling
 	scheduling_angle.start_date = (time_t)cJSON_GetObjectItem(subitem, "start_date")->valueint;
 	scheduling_angle.end_angle = (uint16_t)cJSON_GetObjectItem(subitem, "end_angle")->valueint;
-	sprintf(scheduling_angle.scheduling_id, "%lld", scheduling_angle.start_date);
 
 	cJSON_Delete(subitem);
 
@@ -477,7 +475,6 @@ pivot_scheduling_date http_parser_scheduling_date_off(char* request_body)
 	// get scheduling
 	scheduling_date.start_date = (time_t)cJSON_GetObjectItem(subitem, "date")->valueint;
 	scheduling_date.end_date = scheduling_date.start_date + 60; // 1 minutes
-	sprintf(scheduling_date.scheduling_id, "%lld", scheduling_date.start_date);
 
 	scheduling_date.acionts.power_state = PIVOT_OFF;
 	scheduling_date.acionts.rotation = PIVOT_CCW;
