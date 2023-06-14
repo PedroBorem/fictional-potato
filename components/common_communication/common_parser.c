@@ -314,7 +314,7 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		ptr[(strlen(ptr) - 1)] = 0x00;
 		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
 	}
-	else if(idp == IDP_4 || idp == IDP_6)
+	else if(idp == IDP_4 )
 	{
 		// TS1
 		ptr = strtok(NULL, delim);
@@ -330,6 +330,14 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		scheduling_out->acionts.power_state = PIVOT_OFF;
 
 		scheduling_out->acionts.percentimeter = 0;
+	}
+	else if(idp == IDP_6)
+	{
+		// SCHEADULING ID
+		ptr = strtok(NULL, delim);
+		ptr[(strlen(ptr) - 1)] = 0x00;
+
+		memcpy(scheduling_out->scheduling_id, ptr, strlen(ptr));
 	}
 
 	return ESP_OK;
