@@ -401,8 +401,8 @@ esp_err_t common_parser_ipm_resp(idp_type idp, char* pivo_id, char* scheaduling_
 esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_date scheduling_in, char* string_out)
 {
 	esp_err_t err = ESP_OK;
-	char string_converted[50] = "";
-	char string_timestamp[15] = "";
+	char string_converted[100] = "";
+	char string_timestamp[30] = "";
 	size_t size_str = strlen(gprs_id);
 
     string_converted[0] = '#';
@@ -469,8 +469,8 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_
 esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, char * gprs_id, pivot_scheduling_angle scheduling_in, char* string_out)
 {
 	esp_err_t err = ESP_OK;
-	char string_converted[50] = "";
-	char string_timestamp[15] = "";
+	char string_converted[100] = "";
+	char string_timestamp[30] = "";
 	size_t size_str = strlen(gprs_id);
 
     string_converted[0] = '#';

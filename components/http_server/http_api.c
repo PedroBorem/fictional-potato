@@ -734,7 +734,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
-				char string_send[50] = {};
+				char string_send[100] = {};
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
 
@@ -756,7 +756,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
-				char string_send[50] = {};
+				char string_send[100] = {};
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
 
@@ -779,7 +779,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 			if(http_callback != NULL)
 			{
-				char string_send[50] = {};
+				char string_send[100] = {};
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
 
@@ -894,7 +894,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
 
-				char string_send[50] = {};
+				char string_send[100] = {};
 				pivot_scheduling_date scheduling_in;
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
@@ -917,7 +917,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				http_callback(CALL_DELETE_SCHEDULE_ANGLE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
 
-				char string_send[50] = {};
+				char string_send[100] = {};
 				pivot_scheduling_date scheduling_in;
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
@@ -940,7 +940,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				http_callback(CALL_DELETE_SCHEDULE_DATE, http_parser_scheduling_delete(content));
 				http_ws_handler(req);
 
-				char string_send[50];
+				char string_send[100];
 				pivot_scheduling_date scheduling_in;
 				pivot_config config = {};
 				data_app_load_config(&config, sizeof(config));
