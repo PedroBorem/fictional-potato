@@ -174,7 +174,9 @@ void data_app_gen_scheduling_key(char* scheduling_id)
 	esp_fill_random(&random_number, sizeof(random_number));
 	while(char_position < 6)
 	{
-		if(random_number >= 48 && random_number <= 126)
+		if((random_number >= 48 && random_number <= 57)
+		|| (random_number >= 65 && random_number <= 90)
+		|| (random_number >= 97 && random_number <= 122))
 		{
 			output_key[char_position] = random_number;
 			esp_fill_random(&random_number, sizeof(random_number));
