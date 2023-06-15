@@ -453,11 +453,11 @@ static void app_sectorization_task(void* arg)
 			//TODO trocar o 4 por define
 			for(uint8_t angles = 0; angles < 4; angles++)
 			{
-				if(main_config.sectors[angles].start_angle != 0
-						&& main_config.sectors[angles].end_angle != 0)
+				if(current_angle >= main_config.sectors[angles].start_angle
+				&& current_angle <= main_config.sectors[angles].end_angle)
 				{
-					if(current_angle >= main_config.sectors[angles].start_angle
-							&& current_angle <= main_config.sectors[angles].end_angle)
+					if(main_config.sectors[angles].start_angle != 0
+					&& main_config.sectors[angles].end_angle != 0)
 					{
 						if(pump_is_on == false)
 						{
@@ -466,10 +466,10 @@ static void app_sectorization_task(void* arg)
 							pump_is_on = true;
 						}
 					}
-					else
-					{
-						pump_flag++;
-					}
+				}
+				else
+				{
+					pump_flag++;
 				}
 			}
 

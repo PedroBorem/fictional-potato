@@ -363,7 +363,8 @@ void gpio_actuator_shutdown(void)
 
 void gpio_actuator_pump_on(void)
 {
-	gpio_actuator_pressure_on();
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
+	//gpio_actuator_pressure_on();
 }
 
 void gpio_actuator_pump_off(void)
