@@ -116,7 +116,7 @@ void actuation_app_get_config(pivot_actions* config_out, size_t config_size)
 
 void actuation_app_set_pump(bool pump_state)
 {
-	if(pump_state == true)
+	if(pump_state)
 	{
 		gpio_actuator_pump_on(); //power on
 	}

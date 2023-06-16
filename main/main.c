@@ -502,7 +502,7 @@ static void app_peak_hours_task(void* arg)
 		if(main_config.eco_mode == true)
 		{
 			rtc_app_get_date_time(&rtcinfo);
-			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60));
+			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60)) + (RTC_UTC * 3600);
 
 			if(main_config.start_time < main_config.end_time)
 			{

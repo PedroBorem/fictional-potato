@@ -12,6 +12,8 @@
 
 #include <time.h>
 
+#define RTC_UTC	(-3)
+
 bool rtc_app_init(void);
 
 bool rtc_app_set_timestamp(time_t timestamp);
