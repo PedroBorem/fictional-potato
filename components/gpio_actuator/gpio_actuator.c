@@ -265,6 +265,7 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 			gpio_actuator_pressure_off();
+			gpio_actuator_start();
 		}
 		else if(config.watering_state == PIVOT_WET)
 		{
