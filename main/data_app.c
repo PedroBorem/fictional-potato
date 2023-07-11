@@ -21,15 +21,7 @@
 #include "esp_log.h"
 #include "esp_random.h"
 
-/**\addtogroup main
- * @{
- *
- */
-
-/**\addtogroup data_app
- * @{
- *
- */
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -83,9 +75,9 @@ esp_err_t data_app_init(void)
 			.sector_enabled = false,
 	};
 
-	const pivot_scheduling_date default_scheduling_date[SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_angle default_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
-	const pivot_history default_history[HISTORY_MAX_VALUE] = {};
+	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_scheduling_angle default_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 
 	err = nvs_data_init();
@@ -241,11 +233,11 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 
 	if(scheduling_type == data_scheduling_date)
 	{
-		pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		ret = data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 		if(ret == ESP_OK)
 		{
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
 				if(strcmp(scheduling_date[position].scheduling_id,scheduling_id) == 0)
 				{
@@ -259,11 +251,11 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 	}
 	else if(scheduling_type == data_scheduling_angle)
 	{
-		pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		ret = data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
 		if(ret == ESP_OK)
 		{
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
 				if(strcmp(scheduling_angle[position].scheduling_id,scheduling_id) == 0)
 				{
@@ -282,14 +274,14 @@ esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char*
 esp_err_t data_app_save_new_history(pivot_history new_history)
 {
 	esp_err_t ret = ESP_OK;
-	pivot_history history[HISTORY_MAX_VALUE] = {};
+	pivot_history history[CONFIG_HISTORY_MAX_VALUE] = {};
 	pivot_history history_tmp = {};
 	int i,j;
 
 	data_app_load_history(history, sizeof(history));
 	mempcpy(&history[0], &new_history, sizeof(pivot_history));
 
-    for( i = 1; i < HISTORY_MAX_VALUE; i++)
+    for( i = 1; i < CONFIG_HISTORY_MAX_VALUE; i++)
     {
         memcpy(&history_tmp, &history[i], sizeof(pivot_history));
 
@@ -309,13 +301,13 @@ esp_err_t data_app_save_new_history(pivot_history new_history)
 esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle)
 {
 	esp_err_t ret = ESP_OK;
-	pivot_history history[HISTORY_MAX_VALUE] = {};
+	pivot_history history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 	data_app_load_history(history, sizeof(history));
 
-	history[(HISTORY_MAX_VALUE - 1)].is_running = false;
-	history[(HISTORY_MAX_VALUE - 1)].end_date = end_date;
-	history[(HISTORY_MAX_VALUE - 1)].end_angle = end_angle;
+	history[(CONFIG_HISTORY_MAX_VALUE - 1)].is_running = false;
+	history[(CONFIG_HISTORY_MAX_VALUE - 1)].end_date = end_date;
+	history[(CONFIG_HISTORY_MAX_VALUE - 1)].end_angle = end_angle;
 
 	nvs_data_set(DATA_APP_LABEL_HISTORY, DATA_KEY_HISTORY, history, sizeof(history));
 
@@ -342,5 +334,3 @@ size_t data_app_get_data_size(const char* label_name, const char* key)
     return nvs_data_get_size(label_name, key);
 }
 
-/**@}*/ 	//data_app
-/** @}*/	//main

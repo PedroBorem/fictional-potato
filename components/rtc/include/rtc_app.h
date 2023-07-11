@@ -8,9 +8,8 @@
 #ifndef COMPONENTS_RTC_INCLUDE_RTC_APP_H_
 #define COMPONENTS_RTC_INCLUDE_RTC_APP_H_
 
-#include "project_config.h"
-
 #include <time.h>
+#include <stdbool.h>
 
 #define RTC_UTC	(-3)
 

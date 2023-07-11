@@ -8,12 +8,7 @@
 #ifndef COMPONENTS_RF_MODULE_INCLUDE_RF_MODULE_H_
 #define COMPONENTS_RF_MODULE_INCLUDE_RF_MODULE_H_
 
-/**
- * @file common_parser.h
- * @date June 21, 2022
- * @brief controls the flow of reception and transmission of the RF module
-*/
-
+#include "esp_err.h"
 #include "project_config.h"
 
 /**

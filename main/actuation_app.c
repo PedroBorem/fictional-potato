@@ -17,15 +17,10 @@
 /* Components include */
 #include "gpio_actuator.h"
 
-/**\addtogroup main
- * @{
- *
- */
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
-/**\addtogroup actuation_app
- * @{
- *
- */
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
 #define ACTUATION_APP_TAG			"actuation_app"
@@ -211,6 +206,3 @@ void actuation_app_task(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(3000));
 	}
 }
-
-/**@}*/ 	//actuation_app
-/** @}*/	//main

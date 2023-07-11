@@ -12,8 +12,10 @@
 #include "esp_vfs.h"
 #include "esp_spiffs.h"
 #include "http_storage.h"
+#include "http_parser.h"
 #include "http_config_parser.h"
 #include "esp_vfs.h"
+#include "log.h"
 
 //TODO : remover esses includes
 #include "common_parser.h"
@@ -23,6 +25,10 @@
 // Register SOCKET event
 #include <esp_wifi.h>
 #include <esp_event.h>
+
+#ifndef MIN
+# define MIN(a,b) ((a) < (b) ? (a) : (b))
+#endif
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -551,7 +557,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
     	char out_scheduling[1000] = {};
-    	pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+    	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
     	if(http_callback != NULL)
 		{
@@ -571,7 +577,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
     else if (strcmp(req->uri, "/scheduling/angle") == 0)
 	{
     	char out_scheduling[1000] = {};
-    	pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+    	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
     	if(http_callback != NULL)
 		{
@@ -591,7 +597,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
     else if (strcmp(req->uri, "/scheduling/off") == 0)
 	{
 		char out_scheduling[1000] = {};
-		pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 		if(http_callback != NULL)
 		{
@@ -610,8 +616,8 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
 	else if (strcmp(req->uri, "/cycles") == 0)
 	{
-		char out_history[350 * HISTORY_MAX_VALUE] = {};
-		pivot_history load_history[HISTORY_MAX_VALUE] = {};
+		char out_history[350 * CONFIG_HISTORY_MAX_VALUE] = {};
+		pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 		if(http_callback != NULL)
 		{
@@ -997,6 +1003,3 @@ static void http_generate_async_resp(void *arg)
 
 	free(arg);
 }
-
-
-

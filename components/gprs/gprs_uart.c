@@ -17,15 +17,10 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-/**\addtogroup components
- * @{
- *
- */
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
-/**\addtogroup gprs
- * @{
- *
- */
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
 #define GPRS_UART_TAG		"gprs"

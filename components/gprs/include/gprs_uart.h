@@ -8,14 +8,8 @@
 #ifndef COMPONENTS_GPRS_INCLUDE_GPRS_UART_H_
 #define COMPONENTS_GPRS_INCLUDE_GPRS_UART_H_
 
-
-/**
- * @file common_parser.h
- * @date June 21, 2022
- * @brief gprs_uart uart control
-*/
-
 #include "project_config.h"
+#include "esp_err.h"
 
 /**
  * @brief: function used with return to rf_module class

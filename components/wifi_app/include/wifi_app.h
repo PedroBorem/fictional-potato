@@ -9,6 +9,7 @@
 #define COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H
 
 #include "project_config.h"
+#include "esp_err.h"
 
 esp_err_t wifi_app_init(char* wifi_ssid);
 

@@ -22,6 +22,8 @@
 
 /* Components include */
 #include "http_api.h"
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
 /* Private definitions ------------------------------------------- */
 #define WIFI_TAG 	"wifi_app"

@@ -8,13 +8,8 @@
 #ifndef COMPONENTS_GPRS_INCLUDE_GPRS_MODULE_H_
 #define COMPONENTS_GPRS_INCLUDE_GPRS_MODULE_H_
 
-/**
- * @file common_parser.h
- * @date June 21, 2022
- * @brief controls the flow of reception and transmission of the gprs module
-*/
-
 #include "project_config.h"
+#include "esp_err.h"
 
 /**
  * @brief	start the gprs module

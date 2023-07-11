@@ -18,16 +18,11 @@
 #include "rf_uart.h"
 #include "common_parser.h"
 #include "rtc_app.h"
+#include "log.h"
 
-/**\addtogroup components
- * @{
- *
- */
+/* C base */
+#include <string.h>
 
-/**\addtogroup rf_module
- * @{
- *
- */
 /* Private definitions-------------------------------------------- */
 #define	RF_MODULE_TAG	"rf_module"
 

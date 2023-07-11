@@ -7,6 +7,7 @@
 
 #include "rtc_app.h"
 #include "rtc_ds3231.h"
+#include "log.h"
 
 #define RTC_APP_TAG "rtc_app"
 

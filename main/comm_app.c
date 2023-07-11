@@ -22,6 +22,9 @@
 #include "http_api.h"
 #include "common_parser.h"
 
+#include "FreeRTOS_defines.h"
+#include "log.h"
+
 //TODO: remover esse include
 #include "data_app.h"
 

@@ -8,13 +8,13 @@
 #ifndef COMPONENTS_RF_MODULE_INCLUDE_RF_UART_H_
 #define COMPONENTS_RF_MODULE_INCLUDE_RF_UART_H_
 
-/**
- * @file common_parser.h
- * @date June 21, 2022
- * @brief RF module uart control
-*/
+/* C base */
+#include <stdio.h>
+#include <stddef.h>
+#include <stdint.h>
 
-#include "project_config.h"
+/* include ESP32 modules */
+#include "esp_err.h"
 
 /**
  * @brief: function used with return to rf_module class

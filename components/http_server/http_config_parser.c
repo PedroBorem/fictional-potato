@@ -330,7 +330,7 @@ void http_parser_scheduling_date_to_json(pivot_scheduling_date* scheduling_date,
 	cJSON* scheduling_date_obj;
 	char int_str[20] = {};
 
-	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position ++)
 	{
 		if((strcmp(scheduling_date[position].scheduling_id,"") > 0)
 		&& (scheduling_date[position].acionts.power_state == PIVOT_ON))
@@ -411,7 +411,7 @@ void http_parser_scheduling_angle_to_json(pivot_scheduling_angle* scheduling_ang
 	cJSON* scheduling_angle_obj;
 	char int_str[20] = {};
 
-	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position ++)
 	{
 		if(strcmp(scheduling_angle[position].scheduling_id,"") > 0)
 		{
@@ -493,7 +493,7 @@ void http_parser_scheduling_date_off_to_json(pivot_scheduling_date* scheduling_d
 	cJSON* scheduling_date_obj;
 	char int_str[20] = {};
 
-	for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position ++)
+	for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position ++)
 	{
 		if((strcmp(scheduling_date[position].scheduling_id,"") > 0)
 		&& (scheduling_date[position].acionts.power_state == PIVOT_OFF))
@@ -524,7 +524,7 @@ void http_parser_history_to_json(pivot_history* history, char* out_history)
 	cJSON* history_obj;
 	char int_str[20] = {};
 
-	for(uint8_t position = 0; position < HISTORY_MAX_VALUE; position ++)
+	for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position ++)
 	{
 		if(history[position].start_date > 0)
 		{

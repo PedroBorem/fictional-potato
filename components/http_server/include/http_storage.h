@@ -9,7 +9,8 @@
 #define COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_STORAGE_H_
 
 // configuration include
-#include "project_config.h"
+#include "esp_err.h"
+
 
 /**
  * @brief	Function to initialize SPIFFS.

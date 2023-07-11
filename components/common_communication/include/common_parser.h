@@ -15,6 +15,7 @@
 */
 
 #include "project_config.h"
+#include "esp_err.h"
 
 /**
  * @brief	convert a string to a configuration structure

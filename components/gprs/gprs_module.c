@@ -17,16 +17,10 @@
 #include "gprs_uart.h"
 #include "common_parser.h"
 #include "rtc_app.h"
+#include "log.h"
 
-/**\addtogroup components
- * @{
- *
- */
+#include <string.h>
 
-/**\addtogroup gprs_module
- * @{
- *
- */
 /* Private definitions-------------------------------------------- */
 #define	GPRS_MODULE_TAG	"gprs_module"
 

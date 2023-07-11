@@ -5,23 +5,17 @@
  *      Author: brunolima
  */
 
-/**
- * @file main.c
- * @date June 15, 2022
- * @brief system main class
-*/
-
 /* Applications include */
 #include "rtc_app.h"
 #include "data_app.h"
 #include "comm_app.h"
 #include "actuation_app.h"
 #include "project_config.h"
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
-/**\addtogroup main
- * @{
- *
- */
+/* C base */
+#include <string.h>
 
 #define MAIN_TAG "main"
 
@@ -42,10 +36,10 @@ static uint16_t app_start_angle = 0xFFFF;
 static pivot_config main_config = {};
 static uint8_t main_alredy_init = 0;
 
-static pivot_scheduling_date main_scheduling_date[SCHEDULING_MAX_VALUE] = {};
-static pivot_scheduling_angle main_scheduling_angle[SCHEDULING_MAX_VALUE] = {};
-static bool scheduling_date_status[SCHEDULING_MAX_VALUE] = {};
-static bool scheduling_angle_status[SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_date main_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_angle main_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 /* Private function prototype ------------------------------------ */
 static bool app_init(void);
@@ -276,10 +270,10 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_SAVE_SCHEDULE_DATE:
 		{
-			pivot_scheduling_date scheduling_date[SCHEDULING_MAX_VALUE] = {};
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
 				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
 				{
@@ -304,7 +298,7 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_LOAD_SCHEDULE_DATE:
 		{
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE ; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE ; position++)
 			{
 				memcpy(&main_scheduling_date[position].is_running, &scheduling_date_status[position],
 						sizeof(main_scheduling_date[position].is_running));
@@ -321,10 +315,10 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_SAVE_SCHEDULE_ANGLE:
 		{
-			pivot_scheduling_angle scheduling_angle[SCHEDULING_MAX_VALUE] = {};
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
 
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
 				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
 				{
@@ -347,7 +341,7 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_LOAD_SCHEDULE_ANGLE:
 		{
-			for(uint8_t position = 0; position < SCHEDULING_MAX_VALUE ; position++)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE ; position++)
 			{
 				memcpy(&main_scheduling_angle[position].is_running, &main_scheduling_angle[position],
 						sizeof(main_scheduling_angle[position].is_running));
@@ -364,7 +358,7 @@ static void app_main_call(app_call_states state, void* buffer)
 		}
 		case CALL_LOAD_HISTORY:
 		{
-			pivot_history load_history[HISTORY_MAX_VALUE] = {};
+			pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 			data_app_load_history(load_history, sizeof(load_history));
 			memcpy(buffer, load_history, sizeof(load_history));
@@ -608,7 +602,7 @@ static void app_scheduling_task(void* arg)
 		scheduling_timestamp_now = rtc_app_get_timestamp(true);
 	}
 
-	for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+	for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 	{
 		if(scheduling_timestamp_now > main_scheduling_date[date_position].end_date
 		&& strcmp(main_scheduling_date[date_position].scheduling_id,"") > 0)
@@ -616,7 +610,7 @@ static void app_scheduling_task(void* arg)
 			data_app_delete_scheduling(data_scheduling_date, main_scheduling_date[date_position].scheduling_id);
 		}
 	}
-	for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+	for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 	{
 		if((scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date)
 		&& (scheduling_timestamp_now - main_scheduling_angle[angle_position].start_date) > 3600
@@ -633,7 +627,7 @@ static void app_scheduling_task(void* arg)
 		scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
 		// date analysis
-		for(uint8_t date_position = 0; date_position < SCHEDULING_MAX_VALUE; date_position++)
+		for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 		{
 			if(scheduling_timestamp_now > main_scheduling_date[date_position].start_date
 			&& scheduling_timestamp_now < main_scheduling_date[date_position].end_date
@@ -662,7 +656,7 @@ static void app_scheduling_task(void* arg)
 		}
 
 		// angle analysis
-		for(uint8_t angle_position = 0; angle_position < SCHEDULING_MAX_VALUE; angle_position++)
+		for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 		{
 			if(scheduling_timestamp_now > main_scheduling_angle[angle_position].start_date
 			&& strcmp(main_scheduling_angle[angle_position].scheduling_id,"") > 0)
@@ -692,4 +686,3 @@ static void app_scheduling_task(void* arg)
 	}
 }
 
-/** @}*/	//main

@@ -15,15 +15,7 @@
 #include "common_parser.h"
 #include "cJSON.h"
 
-/**\addtogroup components
- * @{
- *
- */
-
-/**\addtogroup common_parser
- * @{
- *
- */
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
 /**

@@ -5,12 +5,6 @@
  *      Author: brunolima
  */
 
-/**
- * @file rf_uart.c
- * @date June 21, 2022
- * @brief RF module uart control
-*/
-
 /* Self include */
 #include "rf_uart.h"
 
@@ -18,15 +12,14 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-/**\addtogroup components
- * @{
- *
- */
+/* FreeRTOS includes */
+#include "FreeRTOS_defines.h"
 
-/**\addtogroup rf_uart
- * @{
- *
- */
+/* C base */
+#include <strings.h>
+
+/* include components */
+#include "log.h"
 
 /* Private definitions ------------------------------------------- */
 #define RF_UART_TAG		"rf_uart"
@@ -225,6 +218,3 @@ static void rf_uart_event_task(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(20));
 	}
 }
-
-/**@}*/ 	//rf_uart
-/** @}*/	//components

@@ -16,20 +16,14 @@
 
 /* Peripherals include */
 #include <time.h>
+#include <string.h>
+
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
 /* Private definitions ------------------------------------------- */
 #define GPIO_ACT_TAG		"gpio_actuator"
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
-
-/**\addtogroup components
- * @{
- *
- */
-
-/**\addtogroup gpio_actuator
- * @{
- *
- */
 
 /* Global variables ---------------------------------------------- */
 
@@ -529,6 +523,3 @@ void actuator_read_percent(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
-
-/**@}*/ 	//actuator_app
-/** @}*/	//components
