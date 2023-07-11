@@ -19,6 +19,7 @@
 
 /* Project include */
 #include "esp_log.h"
+#include "esp_random.h"
 
 /**\addtogroup main
  * @{
@@ -163,6 +164,33 @@ esp_err_t data_app_load_config(pivot_config* out_config, size_t size)
 {
 	return nvs_data_get_blob(DATA_APP_LABEL_CONFIG, DATA_KEY_CONFIG, (void*)out_config);
 }
+
+void data_app_gen_scheduling_key(char* scheduling_id)
+{
+	char output_key[8] = "";
+	uint8_t random_number;
+	uint8_t char_position = 0;
+
+	esp_fill_random(&random_number, sizeof(random_number));
+	while(char_position < 6)
+	{
+		if((random_number >= 48 && random_number <= 57)
+		|| (random_number >= 65 && random_number <= 90)
+		|| (random_number >= 97 && random_number <= 122))
+		{
+			output_key[char_position] = random_number;
+			esp_fill_random(&random_number, sizeof(random_number));
+			char_position++;
+		}
+		else
+		{
+			esp_fill_random(&random_number, sizeof(random_number));
+		}
+	}
+
+	memcpy(scheduling_id, &output_key, strlen(output_key));
+}
+
 
 esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size)
 {

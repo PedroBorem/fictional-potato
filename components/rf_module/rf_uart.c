@@ -45,7 +45,7 @@ static QueueHandle_t rf_uart_queue = NULL;
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(const rf_uart_callback callback)
+esp_err_t rf_uart_init(rf_uart_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;

@@ -20,6 +20,10 @@
 #include "gprs_uart.h"
 #include "wifi_app.h"
 #include "http_api.h"
+#include "common_parser.h"
+
+//TODO: remover esse include
+#include "data_app.h"
 
 /**\addtogroup main
  * @{
@@ -36,24 +40,13 @@
 #define COMM_APP_SIZE_QUEUE		10
 
 /**
- *	Request types sent to the control queue
- *
- */
-typedef enum
-{
-	COMM_REQUEST_SAVE_ACTION = 0, 	/*!< Request to save a new configuration*/
-	COMM_REQUEST_READ_ACTION = 1,	/*!< Status read request*/
-	COMM_REQUEST_PIVOT_OFF = 2
-}comm_app_request_type;
-
-/**
  *	Structure sent to the control queue
  *
  */
 typedef struct
 {
-	comm_app_request_type request_type; /*!< Request types sent to the control queue*/
-	pivot_actions input_config;			/*!< Configuration input*/
+	idp_type request_idp; 			/*!< Request types sent to the control queue*/
+	char request_buffer[100];			/*!< Configuration input*/
 }comm_app_request;
 
 /* Private variables  -------------------------------------------- */
@@ -109,7 +102,7 @@ bool comm_app_init(const app_callback callback)
 			}
 			else
 			{
-				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, DATA_APP_TASK_NAME);
+				ESP_LOGE(COMM_APP_TAG, "%s, failed to create task: %s", __func__, COMM_APP_TASK_NAME);
 			}
 		}
 		else
@@ -159,6 +152,14 @@ void comm_app_send_actions(void)
 	http_server_alert_actions();
 }
 
+void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id)
+{
+	char resp_mqtt[50] = {};
+
+	common_parser_ipm_resp(idp, pivo_id, scheaduling_id, resp_mqtt);
+	gprs_module_send_idp(resp_mqtt);
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	communication reception task
@@ -173,21 +174,82 @@ void comm_app_task(void* arg)
 		//Waiting for UART event.
 		if(xQueueReceive(xQueue_comm_app, (void*)&comm_request, (TickType_t)portMAX_DELAY) == pdTRUE)
 		{
-			switch(comm_request.request_type)
+			switch(comm_request.request_idp)
 			{
-				case COMM_REQUEST_SAVE_ACTION:
-				{
-					comm_app_call(CALL_SAVE_ACTION, &comm_request.input_config);
-					break;
-				}
-				case COMM_REQUEST_READ_ACTION:
+				case IDP_0:
 				{
 					comm_app_call(CALL_READ_ACTION, NULL);
 					break;
 				}
-				case COMM_REQUEST_PIVOT_OFF:
+				case IDP_1:
+				{
+					pivot_actions action = {};
+					common_parser_string_to_action(comm_request.request_buffer, &action);
+					comm_app_call(CALL_SAVE_ACTION, &action);
+					break;
+				}
+				case IDP_2:
+				{
+					pivot_config config = {};//todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
+					pivot_scheduling_date scheduling_date = {};
+					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
+					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
+
+					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
+					break;
+				}
+				case IDP_3:
+				{
+					pivot_config config = {}; //todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
+					pivot_scheduling_angle scheduling_angle = {};
+					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
+					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
+					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_angle.scheduling_id);
+					break;
+				}
+				case IDP_4:
+				{
+					pivot_config config = {}; //todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
+					pivot_scheduling_date scheduling_date = {};
+					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
+					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
+					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
+					break;
+				}
+				case IDP_5:
+				{
+					break;
+				}
+				case IDP_6:
+				{
+					pivot_config config = {}; //todo: alterar isso
+					data_app_load_config(&config, sizeof(config));
+
+					pivot_scheduling_date scheduling_date = {};
+					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
+					comm_app_call(CALL_DELETE_SCHEDULE_DATE, &scheduling_date.scheduling_id);
+					comm_app_call(CALL_DELETE_SCHEDULE_ANGLE, &scheduling_date.scheduling_id);
+
+					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
+					break;
+				}
+				case IDP_7:
 				{
 					comm_app_call(CALL_OFF_PIVOT, NULL);
+					break;
+				}
+				case IDP_INVALID:
+				{
+					break;
+				}
+				default:
+				{
 					break;
 				}
 			}
@@ -201,36 +263,104 @@ void comm_app_task(void* arg)
 /** @}*/	//main
 
 /* Public callback ----------------------------------------------- */
-void MODULES_NOTIFY_APP(const pivot_actions config_in)
+void MODULES_NOTIFY_APP(void* notify_buffer)
+{
+
+}
+
+void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 {
 	comm_app_request comm_request = {};
+	idp_type idp = common_parser_get_idp(notify_buffer);
 
-	if(config_in.power_state == 0 && config_in.rotation == 0
-	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
+	memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
+
+	if(idp == IDP_INVALID)
 	{
-		comm_request.request_type = COMM_REQUEST_READ_ACTION;
-	}
-	else if(config_in.power_state == PIVOT_OFF && config_in.rotation == 0
-	&& config_in.watering_state == 0 && config_in.percentimeter == 0)
-	{
-		comm_request.request_type = COMM_REQUEST_PIVOT_OFF;
+		pivot_actions action = {};
+
+		if(common_parser_string_to_action(notify_buffer, &action) == ESP_OK)
+		{
+			if(action.power_state == 0 && action.rotation == 0
+			&& action.watering_state == 0 && action.percentimeter == 0)
+			{
+				//comm_request.request_idp = IDP_0;
+				comm_app_call(CALL_READ_ACTION, NULL);
+			}
+			else if(action.power_state == PIVOT_OFF && action.rotation == 0
+			&& action.watering_state == 0 && action.percentimeter == 0)
+			{
+				//comm_request.request_idp = IDP_7;
+				comm_app_call(CALL_OFF_PIVOT, NULL);
+			}
+			else
+			{
+				comm_app_call(CALL_SAVE_ACTION, &action);
+				//comm_request.request_idp = IDP_1;
+				//comm_request.request_buffer = &action;
+			}
+		}
+		else
+		{
+			ESP_LOGE(COMM_APP_TAG, "%s, Invalid RF msg", __func__);
+		}
+
+		return;
 	}
 	else
 	{
-		comm_request.request_type = COMM_REQUEST_SAVE_ACTION;
-		memcpy(&comm_request.input_config, &config_in, sizeof(comm_request.input_config));
+		comm_request.request_idp = idp;
 	}
 
-	xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+	if(xQueue_comm_app != NULL)
+	{
+		xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+	}
+	else
+	{
+		ESP_LOGW(COMM_APP_TAG, "%s, queue not yet created", __func__);
+	}
 }
 
-void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
+void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
-	MODULES_NOTIFY_APP(config_in);
-}
+	comm_app_request comm_request = {};
+	idp_type idp = common_parser_get_idp(notify_buffer);
 
-void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
-{
-	MODULES_NOTIFY_APP(config_in);
+	if(idp != IDP_INVALID)
+	{
+		comm_request.request_idp = idp;
+		memcpy(comm_request.request_buffer, notify_buffer, sizeof(comm_request.request_buffer));
+
+		if(xQueue_comm_app != NULL)
+		{
+			xQueueSend(xQueue_comm_app, &comm_request ,(TickType_t)1000);
+		}
+		else
+		{
+			ESP_LOGW(COMM_APP_TAG, "%s, queue not yet created", __func__);
+		}
+	}
+	else
+	{
+		pivot_actions action = {};
+
+		memcpy(&action, notify_buffer, sizeof(action));
+
+		if(action.power_state == 0 && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
+		{
+			comm_app_call(CALL_READ_ACTION, NULL);
+		}
+		else if(action.power_state == PIVOT_OFF && action.rotation == 0
+		&& action.watering_state == 0 && action.percentimeter == 0)
+		{
+			comm_app_call(CALL_OFF_PIVOT, NULL);
+		}
+		else
+		{
+			comm_app_call(CALL_SAVE_ACTION, &action);
+		}
+	}
 }
 

@@ -43,4 +43,6 @@ void comm_app_set_actions(const pivot_actions action, const pivot_config config,
 
 void comm_app_send_actions(void);
 
+void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id);
+
 #endif /* MAIN_INCLUDE_COMM_APP_H_ */

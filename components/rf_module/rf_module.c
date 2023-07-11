@@ -35,7 +35,7 @@
 static uint16_t rf_angle = 0xFFFF;
 
 /* Private methods  ---------------------------------------------- */
-void rf_module_call(const char* buffer, size_t buffer_size);
+void rf_module_call(char* buffer, size_t buffer_size);
 
 /* Public methods ------------------------------------------------ */
 esp_err_t rf_module_init(void)
@@ -72,12 +72,9 @@ uint16_t rf_module_get_angle(void)
  * @param	buffer[in] : received content
  * @param	buffer_size[in] : received content size
  */
-void rf_module_call(const char* buffer, size_t buffer_size)
+void rf_module_call(char* buffer, size_t buffer_size)
 {
 	esp_err_t err = ESP_OK;
-
-	// Configuration Pivot
-	pivot_actions config = {};
 
 	// GPS variables
 	time_t timestamp = 0;
@@ -105,16 +102,7 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 	}
 	else
 	{
-		// if the received message is a configuration
-		err = common_parser_string_to_config(buffer, &config);
-		if(err == ESP_OK)
-		{
-			RF_MODULE_NOTIFY_APP(config);
-		}
-		else
-		{
-			ESP_LOGE(RF_MODULE_TAG, "%s, invalid configuration", __func__);
-		}
+		RF_MODULE_NOTIFY_APP(buffer);
 	}
 }
 
@@ -123,9 +111,9 @@ void rf_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void RF_MODULE_NOTIFY_APP(const pivot_actions config_in)
+__attribute__((weak)) void RF_MODULE_NOTIFY_APP(void* notify_buffer)
 {
-	UNUSED(config_in);
+	UNUSED(notify_buffer);
 	return;
 }
 

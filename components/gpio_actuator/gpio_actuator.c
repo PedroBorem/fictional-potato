@@ -264,13 +264,13 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 		if(config.watering_state == PIVOT_DRY)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-			gpio_actuator_pump_off();
+			gpio_actuator_pressure_off();
 			gpio_actuator_start();
 		}
 		else if(config.watering_state == PIVOT_WET)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-			gpio_actuator_pump_on();
+			gpio_actuator_pressure_on();
 		}
 	}
 	else if(config.power_state == PIVOT_OFF)
@@ -363,13 +363,12 @@ void gpio_actuator_shutdown(void)
 
 void gpio_actuator_pump_on(void)
 {
-	gpio_actuator_pressure_on();
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 }
 
 void gpio_actuator_pump_off(void)
 {
 	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
-	gpio_actuator_pressure_off();
 }
 
 void gpio_actuator_pressure_on(void)
@@ -439,9 +438,7 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
 		{
-			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
-			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pump Enable",__func__);
-
+			//system on
 			gpio_actuator_start();
 			pressurizing = false;
 

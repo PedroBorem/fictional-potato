@@ -69,6 +69,15 @@ esp_err_t gprs_module_set_id(const char * gprs_id)
 	return err;
 }
 
+esp_err_t gprs_module_send_idp(const char * gprs_id)
+{
+	esp_err_t err = ESP_OK;
+	err = gprs_uart_send_event(gprs_id, strlen(gprs_id));
+
+	return err;
+}
+
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Function is triggered when something arrives in the UART
@@ -92,7 +101,7 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 	if(ptr_payload != NULL)
 	{
 		// if the received message is GPS data
-		err = common_parser_json_to_config(&ptr_payload[12], &config);
+		err = common_parser_string_to_action(&ptr_payload[12], &config);
 		if(err == ESP_OK)
 		{
 			char* ptr_timestamp = strstr(buffer, search_timestamp);
@@ -103,12 +112,12 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 				{
 					rtc_app_set_timestamp(timestamp);
 					LOG_COMM(GPRS_MODULE_TAG, "timestamp : %lld\n", (long long int)timestamp);
-					GPRS_MODULE_NOTIFY_APP(config);
+					GPRS_MODULE_NOTIFY_APP(&config);
 				}
 			}
 			else
 			{
-				ESP_LOGE(GPRS_MODULE_TAG, "%s, Timestamp invalid format", __func__);
+				GPRS_MODULE_NOTIFY_APP(&config);
 			}
 		}
 		else
@@ -118,8 +127,15 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 	}
 	else
 	{
-
-		ESP_LOGE(GPRS_MODULE_TAG, "%s, invalid received message", __func__);
+		idp_type idp = common_parser_get_idp(buffer);
+		if(idp != IDP_INVALID)
+		{
+			GPRS_MODULE_NOTIFY_APP((char*)buffer);
+		}
+		else
+		{
+			ESP_LOGE(GPRS_MODULE_TAG, "%s, invalid received message", __func__);
+		}
 	}
 }
 
@@ -128,9 +144,9 @@ void gprs_module_call(const char* buffer, size_t buffer_size)
 /*
  * This function must be implemented in the application of communication.
  */
-__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in)
+__attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 {
-	UNUSED(config_in);
+	UNUSED(notify_buffer);
 	return;
 }
 

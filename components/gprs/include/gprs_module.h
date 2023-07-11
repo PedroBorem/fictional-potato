@@ -35,6 +35,8 @@ esp_err_t gprs_module_send_event(pivot_actions config_in, uint16_t degree, const
 
 esp_err_t gprs_module_set_id(const char * gprs_id);
 
+esp_err_t gprs_module_send_idp(const char * gprs_id);
+
 /**
  * @brief	get the timestamp in seconds
  * @return	timestamp: returns the timestamp obtained via gprs
@@ -46,6 +48,6 @@ time_t gprs_module_get_timestamp(void);
  * @brief	trigger callback to each status message received (write and read)
  * @param 	config_in[in]:  configuration structure
  */
-void GPRS_MODULE_NOTIFY_APP(const pivot_actions config_in);
+void GPRS_MODULE_NOTIFY_APP(void* notify_buffer);
 
 #endif /* COMPONENTS_GPRS_INCLUDE_GPRS_MODULE_H_ */

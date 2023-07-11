@@ -29,6 +29,9 @@
 #define MAIN_REBOOT_TIMEOUT_MS		(46800000) // 3 horas
 #define MAIN_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
 
+// Apagar o define para desativar o desligamento.
+#define RELIGAMENTO
+
 /* Private variables ------------------------------------ */
 static TaskHandle_t xTask_sectorization_app = NULL;
 static TaskHandle_t xTask_peak_hours_app = NULL;
@@ -76,6 +79,8 @@ void app_main(void)
 	// reboot reset cause
 	data_app_load_timestamp(&timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
+
+#ifdef RELIGAMENTO
 	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
@@ -114,6 +119,7 @@ void app_main(void)
 		// save old history
 		data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
 	}
+#endif
 
 	// get start angle
 	app_start_angle = comm_app_get_degree();
@@ -158,7 +164,7 @@ void app_main(void)
 			timestamp_nvs = rtc_app_get_timestamp(false);
 			data_app_save_timestamp(&timestamp_nvs);
 
-			vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_TIMEOUT_MS));
+			vTaskDelay(pdMS_TO_TICKS(MAIN_SAVE_FLASH_TIME_MS));
 		}
 	}
 }
@@ -278,10 +284,18 @@ static void app_main_call(app_call_states state, void* buffer)
 				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
 				{
 					memcpy(&scheduling_date[position], buffer, sizeof(scheduling_date[position]));
+
+					// get_rtc
+					scheduling_date[position].start_date += rtc_app_get_timestamp(false);
+					scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+
+					data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
 					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
 					memcpy(main_scheduling_date, scheduling_date, sizeof(main_scheduling_date));
 
-					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_date[position].scheduling_id);
+					memcpy(buffer, &scheduling_date[position], sizeof(scheduling_date[position]));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 					break;
 				}
 			}
@@ -315,10 +329,17 @@ static void app_main_call(app_call_states state, void* buffer)
 				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
 				{
 					memcpy(&scheduling_angle[position], buffer, sizeof(scheduling_angle[position]));
+
+					// get_rtc
+					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+					data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
+
 					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
 					memcpy(main_scheduling_angle, scheduling_angle, sizeof(main_scheduling_angle));
 
-					ESP_LOGI(MAIN_TAG, "Save schedule id : %s", scheduling_angle[position].scheduling_id);
+					memcpy(buffer, &scheduling_angle[position], sizeof(scheduling_angle[position]));
+
+					ESP_LOGI(MAIN_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 					break;
 				}
 			}
@@ -432,11 +453,11 @@ static void app_sectorization_task(void* arg)
 			//TODO trocar o 4 por define
 			for(uint8_t angles = 0; angles < 4; angles++)
 			{
-				if(main_config.sectors[angles].start_angle != 0
-						&& main_config.sectors[angles].end_angle != 0)
+				if(current_angle >= main_config.sectors[angles].start_angle
+				&& current_angle <= main_config.sectors[angles].end_angle)
 				{
-					if(current_angle >= main_config.sectors[angles].start_angle
-							&& current_angle <= main_config.sectors[angles].end_angle)
+					if(main_config.sectors[angles].start_angle != 0
+					&& main_config.sectors[angles].end_angle != 0)
 					{
 						if(pump_is_on == false)
 						{
@@ -445,10 +466,10 @@ static void app_sectorization_task(void* arg)
 							pump_is_on = true;
 						}
 					}
-					else
-					{
-						pump_flag++;
-					}
+				}
+				else
+				{
+					pump_flag++;
 				}
 			}
 
@@ -481,7 +502,7 @@ static void app_peak_hours_task(void* arg)
 		if(main_config.eco_mode == true)
 		{
 			rtc_app_get_date_time(&rtcinfo);
-			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60));
+			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60)) + (RTC_UTC * 3600);
 
 			if(main_config.start_time < main_config.end_time)
 			{
