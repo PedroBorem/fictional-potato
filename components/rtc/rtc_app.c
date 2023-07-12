@@ -1,22 +1,41 @@
-/*
- * rtc_app.c
+/**
+ * @file rtc_app.c
+ * @brief RTC application implementation for managing date and time functionality.
  *
- *  Created on: 27 de nov de 2022
- *      Author: bruno
+ * This file contains the implementation of the RTC application for managing date and time functionality.
  */
 
 #include "rtc_app.h"
 #include "rtc_ds3231.h"
-#include "log.h"
+#include "esp_log.h"
 
 #define RTC_APP_TAG "rtc_app"
 
-#define RTC_SDA_PIN	36
-#define RTC_SCL_PIN	37
+/**
+ * @def RTC_SDA_PIN
+ * @brief The GPIO pin number for the RTC I2C SDA signal.
+ */
+#define RTC_SDA_PIN 36
 
+/**
+ * @def RTC_SCL_PIN
+ * @brief The GPIO pin number for the RTC I2C SCL signal.
+ */
+#define RTC_SCL_PIN 37
+
+/**
+ * @def RTC_CONFIG_TIMEZONE
+ * @brief The default time zone for the RTC configuration.
+ */
 #define RTC_CONFIG_TIMEZONE -3
 
+/**
+ * @var dev
+ * @brief The RTC I2C device structure.
+ */
 static i2c_dev_t dev = {};
+
+/* Public methods ----------------------------------- */
 
 bool rtc_app_init(void)
 {

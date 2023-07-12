@@ -1,22 +1,23 @@
-/*
- * i2cdev.c
+/**
+ * @file rtc_i2c_dev.c
+ * @brief RTC I2C device implementation.
  *
- *  Created on: 29 de nov de 2022
- *      Author: bruno
+ * This file contains the implementation of the RTC I2C device.
  */
 
+#include "rtc_i2c_dev.h"
 #include <string.h>
 #include <time.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-
-#include "driver/i2c.h"
 #include "esp_log.h"
 
-#include "i2cdev.h"
+/**
+ * @def RTC_I2C_DEV_TAG
+ * @brief The RTC_I2C_DEV_TAG used for logging related to the RTC I2C device.
+ */
+#define RTC_I2C_DEV_TAG "I2CDEV"
 
-#define TAG "I2CDEV"
+/* Public methods ----------------------------------- */
 
 esp_err_t i2c_master_init(i2c_port_t port, int sda, int scl)
 {
@@ -56,7 +57,7 @@ esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_si
     esp_err_t res = i2c_master_cmd_begin(dev->port, cmd, I2CDEV_TIMEOUT / portTICK_PERIOD_MS);
     if (res != ESP_OK)
     {
-    	ESP_LOGE(TAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+    	ESP_LOGE(RTC_I2C_DEV_TAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     i2c_cmd_link_delete(cmd);
@@ -85,7 +86,7 @@ esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_re
     esp_err_t res = i2c_master_cmd_begin(dev->port, cmd, I2CDEV_TIMEOUT / portTICK_PERIOD_MS);
     if (res != ESP_OK)
     {
-    	ESP_LOGE(TAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+    	ESP_LOGE(RTC_I2C_DEV_TAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     i2c_cmd_link_delete(cmd);

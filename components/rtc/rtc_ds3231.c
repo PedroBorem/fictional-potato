@@ -1,14 +1,25 @@
+/**
+ * @file rtc_ds3231.c
+ * @brief RTC DS3231 class implementation.
+ *
+ * This file contains the implementation of the RTC DS3231 class for interfacing with the DS3231 RTC module.
+ */
+
 #include <string.h>
 #include <time.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
-
 #include "rtc_ds3231.h"
 
+/**
+ * @brief Checks if the argument is valid.
+ *
+ * This macro checks if the argument is valid. If the argument is not valid, it returns ESP_ERR_INVALID_ARG.
+ *
+ * @param ARG The argument to check.
+ */
 #define CHECK_ARG(ARG) do { if (!ARG) return ESP_ERR_INVALID_ARG; } while (0)
 
+/* Public methods ----------------------------------- */
 uint8_t bcd2dec(uint8_t val)
 {
     return (val >> 4) * 10 + (val & 0x0f);
