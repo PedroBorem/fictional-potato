@@ -1,8 +1,9 @@
-/*
- * log.h
+/**
+ * @file log.h
+ * @date June 15, 2022
+ * @brief Creating customizable logs.
  *
- *  Created on: 14 de jun. de 2022
- *      Author: brunolima
+ * This file contains macros for creating customizable logs.
  */
 
 #ifndef COMPONENTS_UTILS_INCLUDE_LOG_H_
@@ -13,28 +14,43 @@
 #include "esp_log.h"
 
 /**
- * @file log.h
- * @date June 15, 2022
- * @brief creating customizable logs
-*/
-
+ * @def LOG_COLOR_WHITE
+ * @brief ANSI color code for white.
+ *
+ * This define specifies the ANSI color code for white, which can be used to customize log colors.
+ */
 #define LOG_COLOR_WHITE   "37"
 
 /**
- *	Communication logs
+ * @def LOG_COMM
+ * @brief Communication logs.
  *
+ * This macro is used to create communication logs with a customizable tag and message.
+ *
+ * @param tag The tag for the log message.
+ * @param ... The message or additional parameters for the log message.
  */
 #define LOG_COMM(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_CYAN) tag, __VA_ARGS__)
 
 /**
- *	Data logs
+ * @def LOG_DATA
+ * @brief Data logs.
  *
+ * This macro is used to create data logs with a customizable tag and message.
+ *
+ * @param tag The tag for the log message.
+ * @param ... The message or additional parameters for the log message.
  */
 #define LOG_DATA(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_WHITE) tag, __VA_ARGS__)
 
 /**
- *	Actuation logs
+ * @def LOG_ACTUATION
+ * @brief Actuation logs.
  *
+ * This macro is used to create actuation logs with a customizable tag and message.
+ *
+ * @param tag The tag for the log message.
+ * @param ... The message or additional parameters for the log message.
  */
 #define LOG_ACTUATION(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_PURPLE) tag, __VA_ARGS__)
 

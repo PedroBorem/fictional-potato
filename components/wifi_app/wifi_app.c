@@ -1,8 +1,10 @@
-/*
- * wifi_app.c
+/**
+ * @file wifi_app.c
+ * @date January 20, 2023
+ * @brief Wi-Fi application implementation.
  *
- *  Created on: 20 de jan de 2023
- *      Author: brunolima
+ * This file contains the implementation of the Wi-Fi application. It includes functions to start the Wi-Fi application,
+ * handle Wi-Fi events, and manage the Wi-Fi application task.
  */
 
 /* Self include */
@@ -25,30 +27,71 @@
 #include "FreeRTOS_defines.h"
 #include "log.h"
 
-/* Private definitions ------------------------------------------- */
+/** @brief Wi-Fi application tag for logging. */
 #define WIFI_TAG 	"wifi_app"
 
+/** @brief Default IP address for the Wi-Fi access point. */
 #define WIFI_DEFAULT_IP			"192.168.0.1"
+
+/** @brief Default subnet mask for the Wi-Fi access point. */
 #define WIFI_DEFAULT_MASK		"255.255.255.0"
+
+/** @brief Wi-Fi channel to use for the access point. */
 #define WIFI_CHANNEL   			7
+
+/** @brief Maximum number of stations that can be connected to the access point. */
 #define WIFI_MAX_STA_CONN       5
 
+/** @brief Size of the Wi-Fi application queue for events. */
 #define WIFI_APP_SIZE_QUEUE_EVENT	5
 
 /* Private variables ------------------------------------ */
 static char wifi_global_ssid[35] = {};
 static app_callback wifi_app_callback = NULL;
 
-/* freertos variables */
+/* FreeRTOS variables */
 static TaskHandle_t xTask_wifi_app = NULL;
 static QueueHandle_t xQueue_wifi_app = NULL;
-
 static esp_netif_t* wifi_ap_netif = NULL;
 
 /* Private function prototype ------------------------------------ */
+/**
+ * @brief Start the Wi-Fi application with the specified SSID.
+ *
+ * This function starts the Wi-Fi application with the provided SSID. It initializes the Wi-Fi network with the given SSID and password,
+ * sets the necessary configurations, and starts the Wi-Fi interface in AP mode.
+ *
+ * @param wifi_ssid The SSID of the Wi-Fi network.
+ * @return esp_err_t Returns ESP_OK if the Wi-Fi application starts successfully, otherwise an error code.
+ */
 static esp_err_t wifi_app_start(char* wifi_ssid);
+
+/**
+ * @brief Wi-Fi reloader task.
+ *
+ * This function is a task that reloads the Wi-Fi configuration when a request is received via the Wi-Fi application queue.
+ */
 static void wifi_reloader(void);
+
+/**
+ * @brief Wi-Fi application task.
+ *
+ * This function is the main task for the Wi-Fi application. It receives requests from the Wi-Fi application queue and reloads the Wi-Fi configuration accordingly.
+ *
+ * @param arg Task argument (not used).
+ */
 static void wifi_app_task(void * arg);
+
+/**
+ * @brief Wi-Fi event handler.
+ *
+ * This function is the event handler for Wi-Fi events, such as station connection and disconnection events.
+ *
+ * @param arg Event handler argument (not used).
+ * @param event_base The base of the event.
+ * @param event_id The ID of the event.
+ * @param event_data Data associated with the event.
+ */
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 

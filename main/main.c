@@ -234,7 +234,7 @@ static void app_main_call(app_call_states state, void* buffer)
 					new_history.is_running = true;
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = comm_app_get_degree();
-					memcpy(&new_history.acionts, &new_actions, sizeof(new_actions));
+					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
 					data_app_save_new_history(new_history);
 				}
 			}
@@ -382,7 +382,7 @@ static void app_main_call(app_call_states state, void* buffer)
 				new_history.is_running = true;
 				new_history.start_date = rtc_app_get_timestamp(false);
 				new_history.start_angle = comm_app_get_degree();
-				memcpy(&new_history.acionts, &manual_action, sizeof(manual_action));
+				memcpy(&new_history.actions, &manual_action, sizeof(manual_action));
 				data_app_save_new_history(new_history);
 			}
 
@@ -496,7 +496,7 @@ static void app_peak_hours_task(void* arg)
 		if(main_config.eco_mode == true)
 		{
 			rtc_app_get_date_time(&rtcinfo);
-			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60)) + (RTC_UTC * 3600);
+			current_time = ((rtcinfo.tm_hour * 3600) + (rtcinfo.tm_min * 60)) + (RTC_CONFIG_TIMEZONE * 3600);
 
 			if(main_config.start_time < main_config.end_time)
 			{
@@ -636,7 +636,7 @@ static void app_scheduling_task(void* arg)
 				if(scheduling_date_status[date_position] == false)
 				{
 					scheduling_date_status[date_position] = true;
-					app_main_call(CALL_SAVE_ACTION, &main_scheduling_date[date_position].acionts);
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_date[date_position].actions);
 					rtc_app_get_timestamp(true);
 					ESP_LOGI(MAIN_TAG, "processing schedule by date id : %s", main_scheduling_date[date_position].scheduling_id);
 				}
@@ -667,7 +667,7 @@ static void app_scheduling_task(void* arg)
 				if(scheduling_angle_status[angle_position] == false)
 				{
 					scheduling_angle_status[angle_position] = true;
-					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].acionts);
+					app_main_call(CALL_SAVE_ACTION, &main_scheduling_angle[angle_position].actions);
 					rtc_app_get_timestamp(true);
 					ESP_LOGW(MAIN_TAG, "processing schedule by angle id : %s",
 							main_scheduling_angle[angle_position].scheduling_id);

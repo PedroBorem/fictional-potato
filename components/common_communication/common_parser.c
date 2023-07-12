@@ -287,18 +287,18 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		ptr = strtok(NULL, delim);
 
 		status = ptr[0];
-		scheduling_out->acionts.rotation = status - '0';
+		scheduling_out->actions.rotation = status - '0';
 
 		status = ptr[1];
-		scheduling_out->acionts.watering_state = status - '0';
+		scheduling_out->actions.watering_state = status - '0';
 
 		status = ptr[2];
-		scheduling_out->acionts.power_state = status - '0';
+		scheduling_out->actions.power_state = status - '0';
 
 		//Percent
 		ptr = strtok(NULL, delim);
 		ptr[(strlen(ptr) - 1)] = 0x00;
-		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
+		sscanf(ptr, "%d", (int*)&scheduling_out->actions.percentimeter);
 	}
 	else if(idp == IDP_4 )
 	{
@@ -311,11 +311,11 @@ esp_err_t common_parser_string_to_scheaduling_date(char* string_in, pivot_schedu
 		scheduling_out->end_date = scheduling_out->start_date + 30;
 
 		//DWP
-		scheduling_out->acionts.rotation = PIVOT_CCW;
-		scheduling_out->acionts.watering_state = PIVOT_DRY;
-		scheduling_out->acionts.power_state = PIVOT_OFF;
+		scheduling_out->actions.rotation = PIVOT_CCW;
+		scheduling_out->actions.watering_state = PIVOT_DRY;
+		scheduling_out->actions.power_state = PIVOT_OFF;
 
-		scheduling_out->acionts.percentimeter = 0;
+		scheduling_out->actions.percentimeter = 0;
 	}
 	else if(idp == IDP_6)
 	{
@@ -351,18 +351,18 @@ esp_err_t common_parser_string_to_scheaduling_angle(char* string_in, pivot_sched
 		ptr = strtok(NULL, delim);
 
 		status = ptr[0];
-		scheduling_out->acionts.rotation = status - '0';
+		scheduling_out->actions.rotation = status - '0';
 
 		status = ptr[1];
-		scheduling_out->acionts.watering_state = status - '0';
+		scheduling_out->actions.watering_state = status - '0';
 
 		status = ptr[2];
-		scheduling_out->acionts.power_state = status - '0';
+		scheduling_out->actions.power_state = status - '0';
 
 		//Percent
 		ptr = strtok(NULL, delim);
 		ptr[(strlen(ptr) - 1)] = 0x00;
-		sscanf(ptr, "%d", (int*)&scheduling_out->acionts.percentimeter);
+		sscanf(ptr, "%d", (int*)&scheduling_out->actions.percentimeter);
 	}
 	else if(idp == IDP_5)
 	{
@@ -429,19 +429,19 @@ esp_err_t common_parser_scheaduling_date_http_to_mqtt(idp_type idp, char * gprs_
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.rotation + '0';
+		string_converted[size_str] = scheduling_in.actions.rotation + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.watering_state + '0';
+		string_converted[size_str] = scheduling_in.actions.watering_state + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.power_state + '0';
+		string_converted[size_str] = scheduling_in.actions.power_state + '0';
 		size_str = size_str + 1;
 
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		sprintf(string_timestamp, "%03d", scheduling_in.acionts.percentimeter);
+		sprintf(string_timestamp, "%03d", scheduling_in.actions.percentimeter);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);
@@ -512,19 +512,19 @@ esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, char * gprs
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.rotation + '0';
+		string_converted[size_str] = scheduling_in.actions.rotation + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.watering_state + '0';
+		string_converted[size_str] = scheduling_in.actions.watering_state + '0';
 		size_str = size_str + 1;
 
-		string_converted[size_str] = scheduling_in.acionts.power_state + '0';
+		string_converted[size_str] = scheduling_in.actions.power_state + '0';
 		size_str = size_str + 1;
 
 		string_converted[(size_str)] = '-';
 		size_str = size_str + 1;
 
-		sprintf(string_timestamp, "%03d", scheduling_in.acionts.percentimeter);
+		sprintf(string_timestamp, "%03d", scheduling_in.actions.percentimeter);
 		memcpy(&string_converted[size_str], string_timestamp, strlen(string_timestamp));
 
 		size_str = size_str + strlen(string_timestamp);

@@ -12,6 +12,13 @@
 #include <stdbool.h>
 
 /**
+ * @def RTC_CONFIG_TIMEZONE
+ * @brief The default time zone for the RTC configuration.
+ */
+#define RTC_CONFIG_TIMEZONE -3
+
+
+/**
  * @brief Initializes the RTC application.
  *
  * This function initializes the RTC application.

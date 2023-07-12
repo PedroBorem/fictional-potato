@@ -24,12 +24,6 @@
 #define RTC_SCL_PIN 37
 
 /**
- * @def RTC_CONFIG_TIMEZONE
- * @brief The default time zone for the RTC configuration.
- */
-#define RTC_CONFIG_TIMEZONE -3
-
-/**
  * @var dev
  * @brief The RTC I2C device structure.
  */
