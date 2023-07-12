@@ -1,14 +1,7 @@
-/*
- * nvs_data.c
- *
- *  Created on: 18 de set de 2022
- *      Author: bruno
- */
-
 /**
  * @file nvs_data.c
- * @brief class for direct access to flash memory (NVS)
-*/
+ * @brief Class for direct access to flash memory (NVS).
+ */
 
 /* Self include */
 #include "nvs_data.h"
@@ -21,19 +14,12 @@
 #include "esp_log.h"
 #include "string.h"
 
-/**\addtogroup components
- * @{
- *
- */
-
-/**\addtogroup nvs_data
- * @{
- *
- */
-
 /* Private definitions ------------------------------------------- */
-#define NVS_DATA_TAG	"nvs_data"
-
+/**
+ * @def NVS_DATA_TAG
+ * @brief Tag used for logging related to NVS data.
+ */
+#define NVS_DATA_TAG "nvs_data"
 
 /* Public method implementation ---------------------------------- */
 esp_err_t nvs_data_init(void)
@@ -143,5 +129,3 @@ esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* ou
 	return err;
 }
 
-/**@}*/ 	//nvs_data
-/** @}*/	//components
