@@ -1,14 +1,8 @@
-/*
- * gprs_module.c
- *
- *  Created on: 7 de ago de 2022
- *      Author: bruno
- */
 /**
  * @file gprs_module.c
  * @date June 21, 2022
- * @brief controls the flow of reception and transmission of the gprs module
-*/
+ * @brief Controls the flow of reception and transmission of the GPRS module.
+ */
 
 /* Self include */
 #include "gprs_module.h"
@@ -21,12 +15,24 @@
 
 #include <string.h>
 
-/* Private definitions-------------------------------------------- */
-#define	GPRS_MODULE_TAG	"gprs_module"
+/* Private definitions -------------------------------------------- */
+/**
+ * @def GPRS_MODULE_TAG
+ * @brief Tag used for logging related to the GPRS module.
+ */
+#define GPRS_MODULE_TAG "gprs_module"
 
-/* Private variables  -------------------------------------------- */
+/* Private variables ---------------------------------------------- */
 
-/* Private methods  ---------------------------------------------- */
+/* Private methods ------------------------------------------------ */
+/**
+ * @brief Handles the GPRS module call.
+ *
+ * This function is responsible for processing the call received from the GPRS module.
+ *
+ * @param buffer The buffer containing the call data.
+ * @param buffer_size The size of the buffer.
+ */
 void gprs_module_call(const char* buffer, size_t buffer_size);
 
 /* Public methods ------------------------------------------------ */
@@ -143,7 +149,4 @@ __attribute__((weak)) void GPRS_MODULE_NOTIFY_APP(void* notify_buffer)
 	UNUSED(notify_buffer);
 	return;
 }
-
-/**@}*/ 	//gprs_module
-/** @}*/	//components
 
