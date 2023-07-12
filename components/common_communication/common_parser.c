@@ -5,12 +5,6 @@
  *      Author: brunolima
  */
 
-/**
- * @file common_parser.c
- * @date June 21, 2022
- * @brief parse and convert incoming and outgoing messages
-*/
-
 /* Self include */
 #include "common_parser.h"
 #include "cJSON.h"
@@ -548,6 +542,3 @@ esp_err_t common_parser_scheaduling_angle_http_to_mqtt(idp_type idp, char * gprs
 
 	return err;
 }
-
-/**@}*/ 	//common_parser
-/** @}*/	//components

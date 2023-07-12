@@ -1,15 +1,8 @@
-/*
- * gpio_actuator.c
- *
- *  Created on: Jun 20, 2022
- *      Author: guilhermerossi
- */
-
 /**
  * @file gpio_actuator.c
  * @date June 20, 2022
- * @brief general gpio functions
-*/
+ * @brief Implementation of GPIO actuator control functions.
+ */
 
 /* Self include */
 #include "gpio_actuator.h"
@@ -22,7 +15,15 @@
 #include "log.h"
 
 /* Private definitions ------------------------------------------- */
+
+/**
+ * @brief Tag used for logging in the GPIO actuator module.
+ */
 #define GPIO_ACT_TAG		"gpio_actuator"
+
+/**
+ * @brief Default interrupt flag for GPIO handling.
+ */
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
 
 /* Global variables ---------------------------------------------- */
@@ -49,38 +50,39 @@ static uint64_t percent_watchdog = 0;
 static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
+
 /**
- * @brief	Perc On timer expiration callback.
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ * @brief Callback function for the expiration of the Perc On timer.
+ * @param pxTimer The timer handle
  */
 void vPercTimerOnExpire(TimerHandle_t pxTimer);
 
 /**
- * @brief	Perc Off timer expiration callback.
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ * @brief Callback function for the expiration of the Perc Off timer.
+ * @param pxTimer The timer handle
  */
 void vPercTimerOffExpire(TimerHandle_t pxTimer);
 
 /**
- * @brief	Start relays accordingly, after pressure check or dry mode
+ * @brief Start the relays accordingly after pressure check or dry mode.
  * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ *     - ESP_OK: Success
+ *     - ESP_FAIL: Fail to initialize
  */
 esp_err_t gpio_actuator_start(void);
 
 /**
- * @brief 	Water pressure application task.
- * @param	arg - [in]: task argument (default NULL)
+ * @brief Water pressure application task.
+ * @param arg Task argument (default NULL)
  */
 void actuator_wait_pressure(void* arg);
 
-
+/**
+ * @brief Percentimeter reading task.
+ * @param arg Task argument (default NULL)
+ */
 void actuator_read_percent(void* arg);
+
 
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
@@ -146,7 +148,7 @@ esp_err_t gpio_actuator_init()
 
 		if(xReturn != pdPASS || xTask_readpercent == NULL)
 		{
-			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
+			ESP_LOGE(GPIO_ACT_TAG, "%s, Failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
 			return ESP_FAIL;
 		}
 	}
@@ -335,8 +337,7 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pump_off();
 
-	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
-
+	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY));
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 	if(perc_timer_handleOn != NULL)
@@ -443,7 +444,7 @@ void actuator_wait_pressure(void* arg)
 			pressurizing = true;
 			check_start = xTaskGetTickCount();
 		}
-		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
+		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)
 		{
 			// Local shutdown
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Water Pressure timeout", __func__);
@@ -458,7 +459,7 @@ void actuator_wait_pressure(void* arg)
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-			vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
+			vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY));
 
 			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
@@ -519,7 +520,6 @@ void actuator_read_percent(void* arg)
 		}
 
 		percent_watchdog = clock();
-
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
