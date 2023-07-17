@@ -12,5 +12,9 @@
 #include "project_config.h"
 
 
+idp_type idp_parser_get(const char* string_in);
+
+void idp_parser_set(char* str_out, const char* str, ...);
+
 
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

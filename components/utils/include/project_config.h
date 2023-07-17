@@ -256,6 +256,7 @@ typedef struct __attribute__((__packed__))
 
 /**
  * @brief Main callback request states.
+ * @deprecated
  *
  * Enumeration defining the states for the main callback request.
  */

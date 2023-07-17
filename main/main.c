@@ -13,6 +13,7 @@
 #include "project_config.h"
 #include "FreeRTOS_defines.h"
 #include "log.h"
+#include "system_manager.h"
 
 /* C base */
 #include <string.h>
@@ -48,118 +49,17 @@ static void app_sectorization_task(void* arg);
 static void app_peak_hours_task(void* arg);
 static void app_scheduling_task(void* arg);
 
+
 /**
  * @brief	main class
  *
  */
 void app_main(void)
 {
-	time_t timestamp_nvs = 0;
-	time_t timestamp_now = 0;
-	pivot_config current_config = {};
-	pivot_actions current_action = {};
-
-	// init system
-	ESP_LOGI(MAIN_TAG,"starting the system ...");
-	assert(app_init());
-
-	// get configurations
-	data_app_load_config(&current_config, sizeof(current_config));
-	actuation_app_get_config(&current_action, sizeof(current_action));
-
-	// set HTTP parameters
-	comm_app_set_config(current_config);
-
-	// reboot reset cause
-	data_app_load_timestamp(&timestamp_nvs);
-	timestamp_now = rtc_app_get_timestamp(false);
-
-#ifdef RELIGAMENTO
-	if((timestamp_now - timestamp_nvs) < MAIN_REBOOT_TIMEOUT_MS)
-	{
-		esp_reset_reason_t reset_cause = esp_reset_reason();
-		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
-		{
-			data_app_load_actions(&current_action, sizeof(current_action));
-
-			LOG_DATA(MAIN_TAG, "");
-			LOG_DATA(MAIN_TAG, " ------ NVS Current Config ------");
-			LOG_DATA(MAIN_TAG, " Power state: %d", current_action.power_state);
-			LOG_DATA(MAIN_TAG, " Advance mode: %d", current_action.rotation);
-			LOG_DATA(MAIN_TAG, " Watering state: %d", current_action.watering_state);
-			LOG_DATA(MAIN_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
-			LOG_DATA(MAIN_TAG, " --------------------------------\n");
-
-			vTaskDelay(pdMS_TO_TICKS(500));
-
-			if(current_action.power_state == PIVOT_ON)
-			{
-				ESP_LOGW(MAIN_TAG,"waiting for power to stabilize ...");
-				vTaskDelay(pdMS_TO_TICKS(MAIN_REBOOT_DELAY_MS));
-				if(main_alredy_init == 0)
-				{
-					actuation_app_set_config(current_action, false);
-				}
-				else
-				{
-					// save old history
-					data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
-				}
-			}
-		}
-	}
-	else
-	{
-		// save old history
-		data_app_save_old_history(timestamp_nvs, comm_app_get_degree());
-	}
-#endif
-
-	// get start angle
-	app_start_angle = comm_app_get_degree();
-
-	// create sectorization task
-	xTaskCreate(&app_sectorization_task,
-				MAIN_APP_TASK_1_NAME,
-				MAIN_APP_STACK_1_SIZE,
-				NULL,
-				MAIN_APP_TASK_1_PRIORITY,
-				&xTask_sectorization_app);
-
-	// create peak hours task
-	xTaskCreate(&app_peak_hours_task,
-				MAIN_APP_TASK_2_NAME,
-				MAIN_APP_STACK_2_SIZE,
-				NULL,
-				MAIN_APP_TASK_2_PRIORITY,
-				&xTask_peak_hours_app);
-
-	// create peak hours task
-	xTaskCreate(&app_scheduling_task,
-				MAIN_APP_TASK_3_NAME,
-				MAIN_APP_STACK_3_SIZE,
-				NULL,
-				MAIN_APP_TASK_3_PRIORITY,
-				&xTask_scheduling_app);
-
-	memcpy(&main_config, &current_config, sizeof(main_config));
-
 	while (1)
 	{
-		// get start angle
-		if(app_start_angle == 0xFFFF)
-		{
-			app_start_angle = comm_app_get_degree();
-			vTaskDelay(pdMS_TO_TICKS(2000));
-		}
-		else
-		{
-			// save current datetime
-			timestamp_nvs = rtc_app_get_timestamp(false);
-			data_app_save_timestamp(&timestamp_nvs);
-
-			vTaskDelay(pdMS_TO_TICKS(MAIN_SAVE_FLASH_TIME_MS));
-		}
+		system_manager_callback("$00#");
+		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
 
@@ -199,7 +99,7 @@ static void app_main_call(app_call_states state, void* buffer)
 			pivot_actions actions = {};
 			pivot_config config = {};
 
-			actuation_app_get_config(&actions, sizeof(actions));
+			actuation_app_get_actions(&actions, sizeof(actions));
 			ret = data_app_load_config(&config, sizeof(config));
 
 			if(ret == ESP_OK)
@@ -222,7 +122,7 @@ static void app_main_call(app_call_states state, void* buffer)
 				data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
 
 				// act on the equipment
-				actuation_app_set_config(new_actions, false);
+				actuation_app_set_actions(new_actions, false);
 				main_alredy_init = 1;
 
 				// send current status
@@ -386,7 +286,7 @@ static void app_main_call(app_call_states state, void* buffer)
 			}
 
 			// act on the equipment
-			actuation_app_set_config(manual_action, true);
+			actuation_app_set_actions(manual_action, true);
 			main_alredy_init = 1;
 
 			// send current status
@@ -400,7 +300,7 @@ static void app_main_call(app_call_states state, void* buffer)
 		{
 			pivot_actions config_send = {};
 
-			actuation_app_get_config(&config_send, sizeof(config_send));
+			actuation_app_get_actions(&config_send, sizeof(config_send));
 			comm_app_send_event(config_send);
 
 			break;
@@ -419,7 +319,7 @@ static void app_main_call(app_call_states state, void* buffer)
 			vTaskDelay(pdMS_TO_TICKS(2000));
 
 			//get current status
-			actuation_app_get_config(&current_action, sizeof(current_action));
+			actuation_app_get_actions(&current_action, sizeof(current_action));
 			comm_app_send_event(current_action);
 
 			break;

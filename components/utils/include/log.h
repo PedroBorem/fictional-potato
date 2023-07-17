@@ -54,4 +54,15 @@
  */
 #define LOG_ACTUATION(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_PURPLE) tag, __VA_ARGS__)
 
+/**
+ * @def LOG_MANAGER
+ * @brief System manager logs.
+ *
+ * This macro is used to create actuation logs with a customizable tag and message.
+ *
+ * @param tag The tag for the log message.
+ * @param ... The message or additional parameters for the log message.
+ */
+#define LOG_MANAGER(tag,...) ESP_LOGI(LOG_COLOR(LOG_COLOR_GREEN) tag, __VA_ARGS__)
+
 #endif /* COMPONENTS_UTILS_INCLUDE_LOG_H_ */

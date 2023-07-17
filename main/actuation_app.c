@@ -67,7 +67,7 @@ bool actuation_app_init(const app_callback callback)
 	return ret;
 }
 
-void actuation_app_set_config(const pivot_actions config_in, bool alert_change)
+void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
 
@@ -86,7 +86,7 @@ void actuation_app_set_config(const pivot_actions config_in, bool alert_change)
 	}
 }
 
-void actuation_app_get_config(pivot_actions* config_out, size_t config_size)
+void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
 {
 	pivot_actions current_config = {};
 

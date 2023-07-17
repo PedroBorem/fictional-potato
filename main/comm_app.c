@@ -137,8 +137,6 @@ void comm_app_send_event(pivot_actions pivot_status)
 void comm_app_set_config(const pivot_config config)
 {
 	http_server_set_str_config(config);
-
-
 }
 
 void comm_app_set_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle)
