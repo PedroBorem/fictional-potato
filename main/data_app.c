@@ -59,13 +59,13 @@ esp_err_t data_app_init(void)
 
 	const pivot_config default_config = {
 			.pivot_id = "soil",
-			.gprs_id = "TesteInatel_5",
+			//.gprs_id = "TesteInatel_5",
 			.contactor = CONTACTOR_NA,
 			.pressure_switch = PRESSURE_SWITCH_NA,
 			.pressurization_time = 30,
 			.on_off_time = 01,
-			.eco_mode = false,
-			.sector_enabled = false,
+			//.eco_mode = false,
+			//.sector_enabled = false,
 	};
 
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -297,8 +297,6 @@ esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle)
 	pivot_history history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 	data_app_load_history(history, sizeof(history));
-
-	history[(CONFIG_HISTORY_MAX_VALUE - 1)].is_running = false;
 	history[(CONFIG_HISTORY_MAX_VALUE - 1)].end_date = end_date;
 	history[(CONFIG_HISTORY_MAX_VALUE - 1)].end_angle = end_angle;
 

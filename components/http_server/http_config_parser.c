@@ -92,6 +92,7 @@ void http_parser_action_to_json(const pivot_actions action, const pivot_config c
 	cJSON_AddItemToObject(action_root, "end_angle", cJSON_CreateString(int_str));
 
 	// ECO mode
+	/*
 	if(config.eco_mode == true)
 	{
 		cJSON_AddItemToObject(action_root, "eco", cJSON_CreateString("true"));
@@ -100,6 +101,7 @@ void http_parser_action_to_json(const pivot_actions action, const pivot_config c
 	{
 		cJSON_AddItemToObject(action_root, "eco", cJSON_CreateString("false"));
 	}
+	*/
 
 	// power state
 	if(action.power_state == PIVOT_ON)
@@ -158,10 +160,9 @@ pivot_config http_parser_config(char * request_body)
 	cJSON* subitem = cJSON_Parse(request_body);
 
 	char* pivot_id = cJSON_GetObjectItem(subitem, "pivot_id")->valuestring;
-	char* gprs_id = cJSON_GetObjectItem(subitem, "gprs_id")->valuestring;
 
 	memcpy(&config.pivot_id, pivot_id, strlen(pivot_id));
-	memcpy(&config.gprs_id, gprs_id, strlen(gprs_id));
+	//memcpy(&config.gprs_id, gprs_id, strlen(gprs_id));
 
 	if(strcmp(cJSON_GetObjectItem(subitem, "contactor_type")->valuestring, "NA") == 0)
 	{
@@ -184,6 +185,7 @@ pivot_config http_parser_config(char * request_body)
 	config.pressurization_time = (uint16_t)cJSON_GetObjectItem(subitem, "pressure_time")->valueint;
 	config.on_off_time = (uint8_t)cJSON_GetObjectItem(subitem, "turn_on_time")->valueint;
 
+	/*
 	config.eco_mode = (bool)cJSON_GetObjectItem(subitem, "eco_mode")->valueint;
 	if(config.eco_mode == true)
 	{
@@ -205,6 +207,7 @@ pivot_config http_parser_config(char * request_body)
 			config.sectors[(index)].end_angle = (uint16_t)cJSON_GetObjectItem(sectors_array, "end_angle")->valueint;
 		}
 	}
+	*/
 
 	cJSON_Delete(subitem);
 
@@ -220,7 +223,7 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	cJSON* config_root = cJSON_CreateObject();
 
 	cJSON_AddItemToObject(config_root, "pivot_id", cJSON_CreateString(config.pivot_id));
-	cJSON_AddItemToObject(config_root, "gprs_id", cJSON_CreateString(config.gprs_id));
+	//cJSON_AddItemToObject(config_root, "gprs_id", cJSON_CreateString(config.gprs_id));
 
 	if(config.contactor == CONTACTOR_NA)
 	{
@@ -247,59 +250,12 @@ void http_parser_config_to_json(pivot_config config, char* out_config)
 	sprintf(int_str, "%d", config.on_off_time );
 	cJSON_AddItemToObject(config_root, "turn_on_time", cJSON_CreateString(int_str));
 
-	if(config.eco_mode == true)
-	{
-		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("true"));
+	cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("false"));
+	cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString("0"));
+	cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString("0"));
 
-		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%lld", config.start_time );
-		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString(int_str));
+	cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("false"));
 
-		memset(int_str, 0x00, sizeof(int_str));
-		sprintf(int_str, "%lld", config.end_time );
-		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString(int_str));
-	}
-	else
-	{
-		cJSON_AddItemToObject(config_root, "eco_mode", cJSON_CreateString("false"));
-		cJSON_AddItemToObject(config_root, "eco_mode_start_time", cJSON_CreateString("0"));
-		cJSON_AddItemToObject(config_root, "eco_mode_end_time", cJSON_CreateString("0"));
-	}
-
-	if(config.sector_enabled == true)
-	{
-		cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("true"));
-
-		cJSON* array_sectors =  cJSON_CreateArray();
-		cJSON* sectors;
-
-		cJSON_AddItemToObject(config_root, "sectors", array_sectors);
-
-		uint8_t size_sectors = 4; //TODO: tamanho maximo de setores
-		for(sectors_indice = 0; sectors_indice < size_sectors; sectors_indice++)
-		{
-			if(config.sectors[sectors_indice].start_angle != 0 && config.sectors[sectors_indice].end_angle != 0)
-			{
-				cJSON_AddItemToArray(array_sectors, sectors = cJSON_CreateObject());
-
-				memset(int_str, 0x00, sizeof(int_str));
-				sprintf(int_str, "%d",config.sectors[sectors_indice].id );
-				cJSON_AddItemToObject(sectors, "id", cJSON_CreateString(int_str));
-
-				memset(int_str, 0x00, sizeof(int_str));
-				sprintf(int_str, "%d",config.sectors[sectors_indice].start_angle );
-				cJSON_AddItemToObject(sectors, "start_angle", cJSON_CreateString(int_str));
-
-				memset(int_str, 0x00, sizeof(int_str));
-				sprintf(int_str, "%d",config.sectors[sectors_indice].end_angle );
-				cJSON_AddItemToObject(sectors, "end_angle", cJSON_CreateString(int_str));
-			}
-		}
-	}
-	else
-	{
-		cJSON_AddItemToObject(config_root, "sector_enabled", cJSON_CreateString("false"));
-	}
 
 	memcpy(out_config, cJSON_Print(config_root), strlen(cJSON_Print(config_root)));
 	cJSON_Delete(config_root);
@@ -530,14 +486,8 @@ void http_parser_history_to_json(pivot_history* history, char* out_history)
 		{
 			cJSON_AddItemToArray(history_array, history_obj = cJSON_CreateObject());
 
-			if(history[position].is_running == true)
-			{
-				cJSON_AddItemToObject(history_obj, "is_running", cJSON_CreateString("true"));
-			}
-			else
-			{
-				cJSON_AddItemToObject(history_obj, "is_running", cJSON_CreateString("false"));
-			}
+			cJSON_AddItemToObject(history_obj, "is_running", cJSON_CreateString("false"));
+
 
 			memset(int_str, 0x00, sizeof(int_str));
 			sprintf(int_str, "%lld",history[position].start_date);

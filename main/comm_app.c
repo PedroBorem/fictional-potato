@@ -138,11 +138,7 @@ void comm_app_set_config(const pivot_config config)
 {
 	http_server_set_str_config(config);
 
-	if( gprs_module_set_id(config.gprs_id) == ESP_OK)
-	{
-		memset(comm_app_grps_id, 0x00, sizeof(comm_app_grps_id));
-		memcpy(comm_app_grps_id, config.gprs_id, sizeof(comm_app_grps_id));
-	}
+
 }
 
 void comm_app_set_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle)
@@ -200,7 +196,7 @@ void comm_app_task(void* arg)
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
 
-					comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
+					//comm_app_send_idp_resp(comm_request.request_idp,config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_3:
@@ -211,7 +207,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_angle scheduling_angle = {};
 					common_parser_string_to_scheaduling_angle(comm_request.request_buffer, &scheduling_angle);
 					comm_app_call(CALL_SAVE_SCHEDULE_ANGLE, &scheduling_angle);
-					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_angle.scheduling_id);
+					//comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_angle.scheduling_id);
 					break;
 				}
 				case IDP_4:
@@ -222,7 +218,7 @@ void comm_app_task(void* arg)
 					pivot_scheduling_date scheduling_date = {};
 					common_parser_string_to_scheaduling_date(comm_request.request_buffer, &scheduling_date);
 					comm_app_call(CALL_SAVE_SCHEDULE_DATE, &scheduling_date);
-					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
+					//comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_5:
@@ -239,7 +235,7 @@ void comm_app_task(void* arg)
 					comm_app_call(CALL_DELETE_SCHEDULE_DATE, &scheduling_date.scheduling_id);
 					comm_app_call(CALL_DELETE_SCHEDULE_ANGLE, &scheduling_date.scheduling_id);
 
-					comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
+					//comm_app_send_idp_resp(comm_request.request_idp, config.gprs_id, scheduling_date.scheduling_id);
 					break;
 				}
 				case IDP_7:

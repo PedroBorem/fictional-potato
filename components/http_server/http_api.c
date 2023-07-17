@@ -746,8 +746,6 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				http_ws_handler(req);
-
-				common_parser_scheaduling_date_http_to_mqtt(2, config.gprs_id, http_scheduling_date, string_send);
 				gprs_uart_send_event(string_send, strlen(string_send));
 				err = ESP_OK;
 			}
@@ -769,7 +767,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 				http_callback(CALL_SAVE_SCHEDULE_ANGLE, &http_scheduling_angle);
 				http_ws_handler(req);
 
-				common_parser_scheaduling_angle_http_to_mqtt(3, config.gprs_id, http_scheduling_angle, string_send);
+				//common_parser_scheaduling_angle_http_to_mqtt(3, config.gprs_id, http_scheduling_angle, string_send);
 				gprs_uart_send_event(string_send, strlen(string_send));
 
 				err = ESP_OK;
@@ -792,7 +790,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 				http_callback(CALL_SAVE_SCHEDULE_DATE, &http_scheduling_date);
 				http_ws_handler(req);
 
-				common_parser_scheaduling_date_http_to_mqtt(4, config.gprs_id, http_scheduling_date, string_send);
+				//common_parser_scheaduling_date_http_to_mqtt(4, config.gprs_id, http_scheduling_date, string_send);
 				gprs_uart_send_event(string_send, strlen(string_send));
 
 				err = ESP_OK;
@@ -906,7 +904,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				data_app_load_config(&config, sizeof(config));
 
 				memcpy(&scheduling_in.scheduling_id, http_parser_scheduling_delete(content), strlen(http_parser_scheduling_delete(content)));
-				common_parser_scheaduling_date_http_to_mqtt(6, config.gprs_id, scheduling_in, string_send);
+				//common_parser_scheaduling_date_http_to_mqtt(6, config.gprs_id, scheduling_in, string_send);
 				gprs_uart_send_event(string_send, strlen(string_send));
 
 				err = ESP_OK;
@@ -929,7 +927,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				data_app_load_config(&config, sizeof(config));
 
 				memcpy(&scheduling_in.scheduling_id, http_parser_scheduling_delete(content), strlen(http_parser_scheduling_delete(content)));
-				common_parser_scheaduling_date_http_to_mqtt(6, config.gprs_id, scheduling_in, string_send);
+
 				gprs_uart_send_event(string_send, strlen(string_send));
 
 				err = ESP_OK;
@@ -952,7 +950,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 				data_app_load_config(&config, sizeof(config));
 
 				memcpy(&scheduling_in.scheduling_id, http_parser_scheduling_delete(content), strlen(http_parser_scheduling_delete(content)));
-				common_parser_scheaduling_date_http_to_mqtt(6, config.gprs_id, scheduling_in, string_send);
+				//common_parser_scheaduling_date_http_to_mqtt(6, config.gprs_id, scheduling_in, string_send);
 				gprs_uart_send_event(string_send, strlen(string_send));
 
 				err = ESP_OK;

@@ -168,17 +168,48 @@ typedef struct
 typedef struct __attribute__((__packed__))
 {
     char pivot_id[30];                          /*!< Pivot ID */
-    char gprs_id[30];               /*!< GPRS ID */
-    contactor_type contactor;       /*!< Contactor type */
-    pressure_switch_type pressure_switch;   /*!< Pressure switch type */
+    contactor_type contactor;       /*!< Contactor type */ //todo: usar isso nas classes
+    pressure_switch_type pressure_switch;   /*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_off_time;            /*!< On/off time */
-    bool eco_mode;                  /*!< Eco mode enabled flag */
-    time_t start_time;              /*!< Start time */
-    time_t end_time;                /*!< End time */
-    bool sector_enabled;            /*!< Sector enabled flag */
-    pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } pivot_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the network configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char gprs_id[30];           /*!< GPRS ID */
+    char modem_apn[30]; //todo passar esse valor para o edu
+    char wifi_ssid[30]; //todo trocar o wifi por esse valor
+    char wifi_pass[30]; //todo trocar o wifi por esse valor
+} network_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the eco mode configuration parameters.
+ */
+typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
+{
+	bool eco_mode;                  /*!< Eco mode enabled flag */
+	time_t start_time;              /*!< Start time */
+	time_t end_time;                /*!< End time */
+} eco_mode_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the sectors configuration parameters.
+ */
+typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
+{
+    bool sector_enabled;            /*!< Sector enabled flag */
+    uint8_t sector_number;	//todo olhar isso na implementação
+    pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
+} sector_config;
 
 /**
  * @brief Scheduling date parameters.
@@ -215,12 +246,12 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    bool is_running;                /*!< Flag indicating if the history is running */
-    time_t start_date;              /*!< Start date */
-    time_t end_date;                /*!< End date */
+	bool is_running;
+    pivot_actions actions;          /*!< Pivot actions */
     uint16_t start_angle;           /*!< Start angle */
     uint16_t end_angle;             /*!< End angle */
-    pivot_actions actions;          /*!< Pivot actions */
+    time_t start_date;              /*!< Start date */
+    time_t end_date;                /*!< End date */
 } pivot_history;
 
 /**
