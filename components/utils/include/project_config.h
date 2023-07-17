@@ -49,21 +49,51 @@
 /* Public definitions ******************************************************/
 
 /**
- * @brief Packet Identifier.
+ * @enum idp_type
+ * @brief Enumerates different packet identifiers for communication.
  *
- * Enumeration defining packet identifier values.
+ * This enum defines packet identifiers used for communication. Each identifier represents
+ * a specific action or configuration parameter.
+ *
+ * @var IDP_0 Read actions
+ * @var IDP_1 Save actions
+ * @var IDP_2 Network configurations
+ * @var IDP_3 Pivot configurations
+ * @var IDP_4 ECO mode configuration
+ * @var IDP_5 Sector configurations
+ * @var IDP_6 New modem configurations
+ * @var IDP_7 Angle and timestamp configuration
+ * @var IDP_8 RSSI status
+ * @var IDP_9 Obtain Traceroute
+ * @var IDP_10 Obtain Noise
+ * @var IDP_11 GPRS connection status
+ * @var IDP_12 Pivot history
+ * @var IDP_13 Schedule delete
+ * @var IDP_14 Scheduling type 1 (On by date and off by date)
+ * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
+ * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
 {
-    IDP_0 = 0,              /*!< Read actions */
-    IDP_1 = 1,              /*!< Save actions */
-    IDP_2 = 2,              /*!< Scheduling type 1 (On by date and off by date) */
-    IDP_3 = 3,              /*!< Schedule type 2 (Turn on by date and turn off by angle) */
-    IDP_4 = 4,              /*!< Schedule type 3 (Only turns off by date) */
-    IDP_5 = 5,              /*!< Schedule type 4 (Only turns off by angle) */
-    IDP_6 = 6,              /*!< Schedule delete */
-    IDP_7 = 7,              /*!< Pivot off */
-    IDP_INVALID = 255       /*!< Invalid packet identifier */
+    IDP_0 = 0,
+    IDP_1,
+    IDP_2,
+    IDP_3,
+    IDP_4,
+    IDP_5,
+    IDP_6,
+    IDP_7,
+    IDP_8,
+    IDP_9,
+    IDP_10,
+    IDP_11,
+    IDP_12,
+    IDP_13,
+    IDP_14,
+    IDP_15,
+    IDP_16,
+    IDP_INVALID = 255
 } idp_type;
 
 /**

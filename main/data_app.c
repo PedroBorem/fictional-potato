@@ -1,10 +1,3 @@
-/*
- * data_app.c
- *
- *  Created on: 18 de set de 2022
- *      Author: bruno
- */
-
 /**
  * @file data_app.c
  * @date Set 18, 2022

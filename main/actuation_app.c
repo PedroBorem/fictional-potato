@@ -1,10 +1,3 @@
-/*
- * actuation_app.c
- *
- *  Created on: 22 de jul. de 2022
- *      Author: brunolima
- */
-
 /**
  * @file actuation_app.c
  * @date June 23, 2022
