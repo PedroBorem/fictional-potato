@@ -1,0 +1,229 @@
+\hypertarget{data__app_8h}{}\doxysection{main/include/data\+\_\+app.h File Reference}
+\label{data__app_8h}\index{main/include/data\_app.h@{main/include/data\_app.h}}
+
+
+memory control application  
+
+
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+Include dependency graph for data\+\_\+app.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{data__app_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=304pt]{data__app_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{data__app_8h_a93c8477aa51ac45c959e541efe4c450f}\label{data__app_8h_a93c8477aa51ac45c959e541efe4c450f}} 
+enum {\bfseries data\+\_\+scheduling\+\_\+type} \{ {\bfseries data\+\_\+scheduling\+\_\+date} = 0
+, {\bfseries data\+\_\+scheduling\+\_\+angle}
+ \}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}{data\+\_\+app\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em start all memory modules \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}{data\+\_\+app\+\_\+save\+\_\+actions}} (const pivot\+\_\+actions $\ast$action, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new action \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}{data\+\_\+app\+\_\+load\+\_\+actions}} (pivot\+\_\+actions $\ast$out\+\_\+action, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em sends the queue a request to load a current action. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}{data\+\_\+app\+\_\+save\+\_\+config}} (const pivot\+\_\+config $\ast$config, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new configuration \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}{data\+\_\+app\+\_\+load\+\_\+config}} (pivot\+\_\+config $\ast$out\+\_\+config, size\+\_\+t size)
+\begin{DoxyCompactList}\small\item\em sends the queue a request to load a configuration. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}\label{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}} 
+void {\bfseries data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key} (char $\ast$scheduling\+\_\+id)
+\item 
+\mbox{\Hypertarget{data__app_8h_a9a963c8f543a1f19f4fcc5ce74ee1fd8}\label{data__app_8h_a9a963c8f543a1f19f4fcc5ce74ee1fd8}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, const void $\ast$value, size\+\_\+t size)
+\item 
+\mbox{\Hypertarget{data__app_8h_aadcdb286fed03d5dd2cde93377e9048f}\label{data__app_8h_aadcdb286fed03d5dd2cde93377e9048f}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, void $\ast$out\+\_\+value, size\+\_\+t size)
+\item 
+\mbox{\Hypertarget{data__app_8h_a793fa3365a8785c27f8d1a2552955852}\label{data__app_8h_a793fa3365a8785c27f8d1a2552955852}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+delete\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, char $\ast$scheduling\+\_\+id)
+\item 
+\mbox{\Hypertarget{data__app_8h_ae580b38a97a6b098354d0b1ffdabf4be}\label{data__app_8h_ae580b38a97a6b098354d0b1ffdabf4be}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+new\+\_\+history} (pivot\+\_\+history new\+\_\+history)
+\item 
+\mbox{\Hypertarget{data__app_8h_ab3bc0a00591a5ba38d01ad0f608ed5c1}\label{data__app_8h_ab3bc0a00591a5ba38d01ad0f608ed5c1}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+old\+\_\+history} (time\+\_\+t end\+\_\+date, uint16\+\_\+t end\+\_\+angle)
+\item 
+\mbox{\Hypertarget{data__app_8h_aadf13d47940a1449d30fe2bebfb9d9b7}\label{data__app_8h_aadf13d47940a1449d30fe2bebfb9d9b7}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+history} (pivot\+\_\+history $\ast$out\+\_\+history, size\+\_\+t size)
+\item 
+\mbox{\Hypertarget{data__app_8h_aa047be918f994647ecc5dc84048c88ce}\label{data__app_8h_aa047be918f994647ecc5dc84048c88ce}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+timestamp} (time\+\_\+t $\ast$timestamp)
+\item 
+\mbox{\Hypertarget{data__app_8h_a9047d339c7416af15ac4bc89246d3daf}\label{data__app_8h_a9047d339c7416af15ac4bc89246d3daf}} 
+esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+timestamp} (time\+\_\+t $\ast$out\+\_\+timestamp)
+\item 
+size\+\_\+t \mbox{\hyperlink{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}{data\+\_\+app\+\_\+get\+\_\+data\+\_\+size}} (const char $\ast$label\+\_\+name, const char $\ast$key)
+\begin{DoxyCompactList}\small\item\em Gets the data size for the informed key. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+memory control application 
+
+\begin{DoxyDate}{Date}
+June 15, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}\label{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_get\_data\_size@{data\_app\_get\_data\_size}}
+\index{data\_app\_get\_data\_size@{data\_app\_get\_data\_size}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_get\_data\_size()}{data\_app\_get\_data\_size()}}
+{\footnotesize\ttfamily size\+\_\+t data\+\_\+app\+\_\+get\+\_\+data\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key }\end{DoxyParamCaption})}
+
+
+
+Gets the data size for the informed key. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em key} & -\/ access key defined in \mbox{\hyperlink{project__config_8h}{project\+\_\+config.\+h}} \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item 0\+: in case of errors
+\item Data size. 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}\label{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_init@{data\_app\_init}}
+\index{data\_app\_init@{data\_app\_init}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_init()}{data\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+start all memory modules 
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: success
+\item ESP\+\_\+\+FAIL\+: fail to initialize 
+\end{DoxyItemize}
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}\label{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_load\_actions@{data\_app\_load\_actions}}
+\index{data\_app\_load\_actions@{data\_app\_load\_actions}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_load\_actions()}{data\_app\_load\_actions()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{out\+\_\+action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+sends the queue a request to load a current action. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+\hline
+{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: success
+\item ESP\+\_\+\+FAIL\+: fail to save 
+\end{DoxyItemize}
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}\label{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_load\_config@{data\_app\_load\_config}}
+\index{data\_app\_load\_config@{data\_app\_load\_config}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_load\_config()}{data\_app\_load\_config()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+config (\begin{DoxyParamCaption}\item[{pivot\+\_\+config $\ast$}]{out\+\_\+config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+sends the queue a request to load a configuration. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+\hline
+{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: success
+\item ESP\+\_\+\+FAIL\+: fail to save 
+\end{DoxyItemize}
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}\label{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_save\_actions@{data\_app\_save\_actions}}
+\index{data\_app\_save\_actions@{data\_app\_save\_actions}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_save\_actions()}{data\_app\_save\_actions()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions $\ast$}]{action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+sends the queue a request to save a new action 
+
+
+\begin{DoxyParams}{Parameters}
+{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
+\hline
+{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: success
+\item ESP\+\_\+\+FAIL\+: fail to save 
+\end{DoxyItemize}
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}\label{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_save\_config@{data\_app\_save\_config}}
+\index{data\_app\_save\_config@{data\_app\_save\_config}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_save\_config()}{data\_app\_save\_config()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+config (\begin{DoxyParamCaption}\item[{const pivot\+\_\+config $\ast$}]{config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+
+
+
+sends the queue a request to save a new configuration 
+
+
+\begin{DoxyParams}{Parameters}
+{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
+\hline
+{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: success
+\item ESP\+\_\+\+FAIL\+: fail to save 
+\end{DoxyItemize}
+\end{DoxyReturn}

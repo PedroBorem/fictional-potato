@@ -1,0 +1,83 @@
+\hypertarget{wifi__app_8h}{}\doxysection{components/wifi\+\_\+app/include/wifi\+\_\+app.h File Reference}
+\label{wifi__app_8h}\index{components/wifi\_app/include/wifi\_app.h@{components/wifi\_app/include/wifi\_app.h}}
+
+
+Wi-\/\+Fi application functions and callbacks.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+Include dependency graph for wifi\+\_\+app.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{wifi__app_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=326pt]{wifi__app_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8h_a115c0b1f40cbd8453a9ef89d1a3c9c5b}{wifi\+\_\+app\+\_\+init}} (char $\ast$wifi\+\_\+ssid)
+\begin{DoxyCompactList}\small\item\em Initialize the Wi-\/\+Fi application. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8h_ae1f785d9aa7ad46ead54001b95a9e091}{wifi\+\_\+app\+\_\+register\+\_\+callback}} (\mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Register a callback function for Wi-\/\+Fi application events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Wi-\/\+Fi application functions and callbacks. 
+
+\begin{DoxyDate}{Date}
+January 29, 2023
+\end{DoxyDate}
+This file contains the Wi-\/\+Fi application initialization and callback registration functions. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{wifi__app_8h_a115c0b1f40cbd8453a9ef89d1a3c9c5b}\label{wifi__app_8h_a115c0b1f40cbd8453a9ef89d1a3c9c5b}} 
+\index{wifi\_app.h@{wifi\_app.h}!wifi\_app\_init@{wifi\_app\_init}}
+\index{wifi\_app\_init@{wifi\_app\_init}!wifi\_app.h@{wifi\_app.h}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_init()}{wifi\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid }\end{DoxyParamCaption})}
+
+
+
+Initialize the Wi-\/\+Fi application. 
+
+This function initializes the Wi-\/\+Fi application with the provided SSID.
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+ssid} & The SSID of the Wi-\/\+Fi network. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK if the initialization is successful, otherwise an error code. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{wifi__app_8h_ae1f785d9aa7ad46ead54001b95a9e091}\label{wifi__app_8h_ae1f785d9aa7ad46ead54001b95a9e091}} 
+\index{wifi\_app.h@{wifi\_app.h}!wifi\_app\_register\_callback@{wifi\_app\_register\_callback}}
+\index{wifi\_app\_register\_callback@{wifi\_app\_register\_callback}!wifi\_app.h@{wifi\_app.h}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_register\_callback()}{wifi\_app\_register\_callback()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+register\+\_\+callback (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Register a callback function for Wi-\/\+Fi application events. 
+
+This function registers a callback function to be called when a Wi-\/\+Fi application event occurs.
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & The callback function to be registered. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK if the registration is successful, otherwise an error code. 
+\end{DoxyReturn}

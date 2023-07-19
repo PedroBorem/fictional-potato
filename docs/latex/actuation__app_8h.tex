@@ -1,0 +1,112 @@
+\hypertarget{actuation__app_8h}{}\doxysection{main/include/actuation\+\_\+app.h File Reference}
+\label{actuation__app_8h}\index{main/include/actuation\_app.h@{main/include/actuation\_app.h}}
+
+
+actuation control class  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+Include dependency graph for actuation\+\_\+app.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{actuation__app_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=208pt]{actuation__app_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+bool \mbox{\hyperlink{actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242}{actuation\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em starts the tasks of reading and actuation of the I/O ports \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8h_ac1b2a4c561102e805732b9bd2c910b15}{actuation\+\_\+app\+\_\+set\+\_\+actions}} (const pivot\+\_\+actions config\+\_\+in, bool alert\+\_\+change)
+\begin{DoxyCompactList}\small\item\em apply the configuration to the drives \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8h_ad5a53c07829844904985cbcece00e627}{actuation\+\_\+app\+\_\+get\+\_\+actions}} (pivot\+\_\+actions $\ast$config\+\_\+out, size\+\_\+t config\+\_\+size)
+\begin{DoxyCompactList}\small\item\em read current status on IO ports \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8h_ab60deacd543170493cfb182243ea9809}\label{actuation__app_8h_ab60deacd543170493cfb182243ea9809}} 
+void {\bfseries actuation\+\_\+app\+\_\+set\+\_\+pump} (bool pump\+\_\+state)
+\item 
+\mbox{\Hypertarget{actuation__app_8h_ad4dc627155e42c8191f1179bf3340964}\label{actuation__app_8h_ad4dc627155e42c8191f1179bf3340964}} 
+void {\bfseries actuation\+\_\+app\+\_\+shutdown} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+actuation control class 
+
+\begin{DoxyDate}{Date}
+June 23, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{actuation__app_8h_ad5a53c07829844904985cbcece00e627}\label{actuation__app_8h_ad5a53c07829844904985cbcece00e627}} 
+\index{actuation\_app.h@{actuation\_app.h}!actuation\_app\_get\_actions@{actuation\_app\_get\_actions}}
+\index{actuation\_app\_get\_actions@{actuation\_app\_get\_actions}!actuation\_app.h@{actuation\_app.h}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_get\_actions()}{actuation\_app\_get\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+get\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{config\+\_\+out,  }\item[{size\+\_\+t}]{config\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+read current status on IO ports 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+out} & -\/ \mbox{[}out\mbox{]}\+: pivot configuration structure \\
+\hline
+{\em config\+\_\+length} & -\/ \mbox{[}out\mbox{]}\+: structure size \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242}\label{actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242}} 
+\index{actuation\_app.h@{actuation\_app.h}!actuation\_app\_init@{actuation\_app\_init}}
+\index{actuation\_app\_init@{actuation\_app\_init}!actuation\_app.h@{actuation\_app.h}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_init()}{actuation\_app\_init()}}
+{\footnotesize\ttfamily bool actuation\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+starts the tasks of reading and actuation of the I/O ports 
+
+
+\begin{DoxyParams}{Parameters}
+{\em app\+\_\+callback} & -\/ \mbox{[}in\mbox{]}\+: function used with return to main application class \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item true\+: success
+\item false\+: fail to initialize 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=327pt]{actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{actuation__app_8h_ac1b2a4c561102e805732b9bd2c910b15}\label{actuation__app_8h_ac1b2a4c561102e805732b9bd2c910b15}} 
+\index{actuation\_app.h@{actuation\_app.h}!actuation\_app\_set\_actions@{actuation\_app\_set\_actions}}
+\index{actuation\_app\_set\_actions@{actuation\_app\_set\_actions}!actuation\_app.h@{actuation\_app.h}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_set\_actions()}{actuation\_app\_set\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+set\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions}]{config\+\_\+in,  }\item[{bool}]{alert\+\_\+change }\end{DoxyParamCaption})}
+
+
+
+apply the configuration to the drives 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+in} & -\/ \mbox{[}in\mbox{]}\+: function used with return to main application class \\
+\hline
+\end{DoxyParams}

@@ -1,0 +1,106 @@
+\hypertarget{comm__app_8c}{}\doxysection{main/comm\+\_\+app.c File Reference}
+\label{comm__app_8c}\index{main/comm\_app.c@{main/comm\_app.c}}
+
+
+communication class control application  
+
+
+{\ttfamily \#include \char`\"{}comm\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rf\+\_\+module.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gprs\+\_\+module.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gprs\+\_\+uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}wifi\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}http\+\_\+api.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}common\+\_\+parser.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
+Include dependency graph for comm\+\_\+app.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{comm__app_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structcomm__app__request}{comm\+\_\+app\+\_\+request}}
+\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define {\bfseries COMM\+\_\+\+APP\+\_\+\+TAG}~\char`\"{}comm\+\_\+app\char`\"{}
+\item 
+\#define {\bfseries COMM\+\_\+\+APP\+\_\+\+SIZE\+\_\+\+QUEUE}~10
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{group__comm__app_ga9c6cf7f7bd25ff2c73dc36c880bbc416}{comm\+\_\+app\+\_\+task}} (void $\ast$arg)
+\begin{DoxyCompactList}\small\item\em communication reception task \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c}{comm\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em starts all communication modules \end{DoxyCompactList}\item 
+uint16\+\_\+t \mbox{\hyperlink{group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab}{comm\+\_\+app\+\_\+get\+\_\+degree}} (void)
+\begin{DoxyCompactList}\small\item\em starts all communication modules \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{group__comm__app_ga4a39378319156c06be36e4c82fe53e76}{comm\+\_\+app\+\_\+send\+\_\+event}} (pivot\+\_\+actions pivot\+\_\+status)
+\begin{DoxyCompactList}\small\item\em send events over communication interfaces \end{DoxyCompactList}\item 
+void {\bfseries comm\+\_\+app\+\_\+set\+\_\+config} (const pivot\+\_\+config config)
+\item 
+void {\bfseries comm\+\_\+app\+\_\+set\+\_\+actions} (const pivot\+\_\+actions action, const pivot\+\_\+config config, uint16\+\_\+t start\+\_\+angle, uint16\+\_\+t end\+\_\+angle)
+\item 
+void {\bfseries comm\+\_\+app\+\_\+send\+\_\+actions} (void)
+\item 
+void {\bfseries comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+resp} (\mbox{\hyperlink{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} idp, char $\ast$pivo\+\_\+id, char $\ast$scheaduling\+\_\+id)
+\item 
+\mbox{\Hypertarget{comm__app_8c_a238b4b257f8d14e4f0a103d470493a85}\label{comm__app_8c_a238b4b257f8d14e4f0a103d470493a85}} 
+void {\bfseries MODULES\+\_\+\+NOTIFY\+\_\+\+APP} (void $\ast$notify\+\_\+buffer)
+\item 
+void \mbox{\hyperlink{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}{RF\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP}} (void $\ast$notify\+\_\+buffer)
+\begin{DoxyCompactList}\small\item\em trigger callback to each status message received (write and read) \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{comm__app_8c_a8854174458bacd820fe331ca38622f55}{GPRS\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP}} (void $\ast$notify\+\_\+buffer)
+\begin{DoxyCompactList}\small\item\em Notifies the application about status messages. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+communication class control application 
+
+\begin{DoxyDate}{Date}
+June 23, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{comm__app_8c_a8854174458bacd820fe331ca38622f55}\label{comm__app_8c_a8854174458bacd820fe331ca38622f55}} 
+\index{comm\_app.c@{comm\_app.c}!GPRS\_MODULE\_NOTIFY\_APP@{GPRS\_MODULE\_NOTIFY\_APP}}
+\index{GPRS\_MODULE\_NOTIFY\_APP@{GPRS\_MODULE\_NOTIFY\_APP}!comm\_app.c@{comm\_app.c}}
+\doxysubsubsection{\texorpdfstring{GPRS\_MODULE\_NOTIFY\_APP()}{GPRS\_MODULE\_NOTIFY\_APP()}}
+{\footnotesize\ttfamily void GPRS\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP (\begin{DoxyParamCaption}\item[{void $\ast$}]{notify\+\_\+buffer }\end{DoxyParamCaption})}
+
+
+
+Notifies the application about status messages. 
+
+This function triggers a callback for each status message received (write and read).
+
+
+\begin{DoxyParams}{Parameters}
+{\em notify\+\_\+buffer} & Pointer to the notification buffer. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}\label{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}} 
+\index{comm\_app.c@{comm\_app.c}!RF\_MODULE\_NOTIFY\_APP@{RF\_MODULE\_NOTIFY\_APP}}
+\index{RF\_MODULE\_NOTIFY\_APP@{RF\_MODULE\_NOTIFY\_APP}!comm\_app.c@{comm\_app.c}}
+\doxysubsubsection{\texorpdfstring{RF\_MODULE\_NOTIFY\_APP()}{RF\_MODULE\_NOTIFY\_APP()}}
+{\footnotesize\ttfamily void RF\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP (\begin{DoxyParamCaption}\item[{void $\ast$}]{notify\+\_\+buffer }\end{DoxyParamCaption})}
+
+
+
+trigger callback to each status message received (write and read) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+in\mbox{[}in\mbox{]}} & configuration structure \\
+\hline
+\end{DoxyParams}

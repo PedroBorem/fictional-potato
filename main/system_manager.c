@@ -32,11 +32,15 @@ void system_manager_callback(char* buffer_request)
 								+ (actions.watering_state)
 								* 10 + actions.power_state);
 
-			idp_parser_set(str_out,
-					str_idp,
-					"uint16_t", dwp,
-					"uint8_t", actions.percentimeter,
-					NULL);
+
+			arg_pair_t arg_pairs[] = {
+				{ "uint8_t", &idp_request },
+				{ "uint16_t", &dwp },
+				{ "uint8_t", &actions.percentimeter },
+				{ NULL, NULL } // Marca o final do array arg_pairs
+			};
+
+			idp_parser_create_package(str_out,arg_pairs);
 
 			break;
 		}

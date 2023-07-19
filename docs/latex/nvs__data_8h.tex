@@ -1,0 +1,144 @@
+\hypertarget{nvs__data_8h}{}\doxysection{components/nvs\+\_\+data/include/nvs\+\_\+data.h File Reference}
+\label{nvs__data_8h}\index{components/nvs\_data/include/nvs\_data.h@{components/nvs\_data/include/nvs\_data.h}}
+
+
+Class for direct access to flash memory (NVS).  
+
+
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$stdint.\+h$>$}\newline
+Include dependency graph for nvs\+\_\+data.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=212pt]{nvs__data_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=320pt]{nvs__data_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8h_a9518e6186a319cf55ca290301dd7f6d5}{nvs\+\_\+data\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em Initializes the NVS data class. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8h_ad42982baba3ea3c1b35cd8ca83e2a69a}{nvs\+\_\+data\+\_\+set}} (const char $\ast$label\+\_\+name, const char $\ast$key, const void $\ast$value, size\+\_\+t length)
+\begin{DoxyCompactList}\small\item\em Sets the value in the NVS data. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79}{nvs\+\_\+data\+\_\+get\+\_\+size}} (const char $\ast$label\+\_\+name, const char $\ast$key)
+\begin{DoxyCompactList}\small\item\em Gets the size of the NVS data. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8h_a97615c98bf7f09b2021bfc2bb230d73f}{nvs\+\_\+data\+\_\+get\+\_\+blob}} (const char $\ast$label\+\_\+name, const char $\ast$key, uint8\+\_\+t $\ast$out\+\_\+value)
+\begin{DoxyCompactList}\small\item\em Gets the NVS data as a blob. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Class for direct access to flash memory (NVS). 
+
+class for direct access to flash memory (NVS)
+
+\begin{DoxyDate}{Date}
+Set 18, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{nvs__data_8h_a97615c98bf7f09b2021bfc2bb230d73f}\label{nvs__data_8h_a97615c98bf7f09b2021bfc2bb230d73f}} 
+\index{nvs\_data.h@{nvs\_data.h}!nvs\_data\_get\_blob@{nvs\_data\_get\_blob}}
+\index{nvs\_data\_get\_blob@{nvs\_data\_get\_blob}!nvs\_data.h@{nvs\_data.h}}
+\doxysubsubsection{\texorpdfstring{nvs\_data\_get\_blob()}{nvs\_data\_get\_blob()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+blob (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{out\+\_\+value }\end{DoxyParamCaption})}
+
+
+
+Gets the NVS data as a blob. 
+
+This function retrieves the NVS data as a blob under the specified label and key.
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & The label name for the NVS data. \\
+\hline
+{\em key} & The key for which to retrieve the data. \\
+\hline
+{\em out\+\_\+value} & The buffer to store the retrieved data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79}\label{nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79}} 
+\index{nvs\_data.h@{nvs\_data.h}!nvs\_data\_get\_size@{nvs\_data\_get\_size}}
+\index{nvs\_data\_get\_size@{nvs\_data\_get\_size}!nvs\_data.h@{nvs\_data.h}}
+\doxysubsubsection{\texorpdfstring{nvs\_data\_get\_size()}{nvs\_data\_get\_size()}}
+{\footnotesize\ttfamily size\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key }\end{DoxyParamCaption})}
+
+
+
+Gets the size of the NVS data. 
+
+This function retrieves the size of the NVS data under the specified label and key.
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & The label name for the NVS data. \\
+\hline
+{\em key} & The key for which to retrieve the size. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+size\+\_\+t The size of the NVS data. 
+\end{DoxyReturn}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{nvs__data_8h_a9518e6186a319cf55ca290301dd7f6d5}\label{nvs__data_8h_a9518e6186a319cf55ca290301dd7f6d5}} 
+\index{nvs\_data.h@{nvs\_data.h}!nvs\_data\_init@{nvs\_data\_init}}
+\index{nvs\_data\_init@{nvs\_data\_init}!nvs\_data.h@{nvs\_data.h}}
+\doxysubsubsection{\texorpdfstring{nvs\_data\_init()}{nvs\_data\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initializes the NVS data class. 
+
+This function initializes the NVS data class by initializing the NVS flash memory.
+
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t An error code indicating the success or failure of the initialization. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{nvs__data_8h_ad42982baba3ea3c1b35cd8ca83e2a69a}\label{nvs__data_8h_ad42982baba3ea3c1b35cd8ca83e2a69a}} 
+\index{nvs\_data.h@{nvs\_data.h}!nvs\_data\_set@{nvs\_data\_set}}
+\index{nvs\_data\_set@{nvs\_data\_set}!nvs\_data.h@{nvs\_data.h}}
+\doxysubsubsection{\texorpdfstring{nvs\_data\_set()}{nvs\_data\_set()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+set (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key,  }\item[{const void $\ast$}]{value,  }\item[{size\+\_\+t}]{length }\end{DoxyParamCaption})}
+
+
+
+Sets the value in the NVS data. 
+
+This function sets the value in the NVS data under the specified label and key.
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & The label name for the NVS data. \\
+\hline
+{\em key} & The key under which the value is stored. \\
+\hline
+{\em value} & The value to be stored. \\
+\hline
+{\em length} & The length of the value. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+\end{DoxyReturn}

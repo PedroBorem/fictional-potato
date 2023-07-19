@@ -1,0 +1,131 @@
+\hypertarget{gprs__uart_8h}{}\doxysection{components/gprs/include/gprs\+\_\+uart.h File Reference}
+\label{gprs__uart_8h}\index{components/gprs/include/gprs\_uart.h@{components/gprs/include/gprs\_uart.h}}
+
+
+Header file for GPRS UART communication functions.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+Include dependency graph for gprs\+\_\+uart.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__uart_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=330pt]{gprs__uart_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void($\ast$ \mbox{\hyperlink{gprs__uart_8h_a52b2c55dc8d3ad1c9e9e709e744991f7}{gprs\+\_\+uart\+\_\+callback}}) (const char $\ast$buffer, size\+\_\+t buffer\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Callback function used for receiving data from the GPRS UART module. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced}{gprs\+\_\+uart\+\_\+init}} (const \mbox{\hyperlink{gprs__uart_8h_a52b2c55dc8d3ad1c9e9e709e744991f7}{gprs\+\_\+uart\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Initialize the GPRS UART module. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd}{gprs\+\_\+uart\+\_\+send\+\_\+event}} (const char $\ast$event, size\+\_\+t event\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Send an event through the GPRS UART module. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Header file for GPRS UART communication functions. 
+
+\begin{DoxyDate}{Date}
+7 de agosto de 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{gprs__uart_8h_a52b2c55dc8d3ad1c9e9e709e744991f7}\label{gprs__uart_8h_a52b2c55dc8d3ad1c9e9e709e744991f7}} 
+\index{gprs\_uart.h@{gprs\_uart.h}!gprs\_uart\_callback@{gprs\_uart\_callback}}
+\index{gprs\_uart\_callback@{gprs\_uart\_callback}!gprs\_uart.h@{gprs\_uart.h}}
+\doxysubsubsection{\texorpdfstring{gprs\_uart\_callback}{gprs\_uart\_callback}}
+{\footnotesize\ttfamily typedef void($\ast$ gprs\+\_\+uart\+\_\+callback) (const char $\ast$buffer, size\+\_\+t buffer\+\_\+size)}
+
+
+
+Callback function used for receiving data from the GPRS UART module. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em buffer} & The received data buffer \\
+\hline
+{\em buffer\+\_\+size} & The size of the received data buffer \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced}\label{gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced}} 
+\index{gprs\_uart.h@{gprs\_uart.h}!gprs\_uart\_init@{gprs\_uart\_init}}
+\index{gprs\_uart\_init@{gprs\_uart\_init}!gprs\_uart.h@{gprs\_uart.h}}
+\doxysubsubsection{\texorpdfstring{gprs\_uart\_init()}{gprs\_uart\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+uart\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{gprs__uart_8h_a52b2c55dc8d3ad1c9e9e709e744991f7}{gprs\+\_\+uart\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Initialize the GPRS UART module. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & The callback function to be called when data is received \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Fail to initialize
+\item ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG\+: Invalid callback function 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd}\label{gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd}} 
+\index{gprs\_uart.h@{gprs\_uart.h}!gprs\_uart\_send\_event@{gprs\_uart\_send\_event}}
+\index{gprs\_uart\_send\_event@{gprs\_uart\_send\_event}!gprs\_uart.h@{gprs\_uart.h}}
+\doxysubsubsection{\texorpdfstring{gprs\_uart\_send\_event()}{gprs\_uart\_send\_event()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+uart\+\_\+send\+\_\+event (\begin{DoxyParamCaption}\item[{const char $\ast$}]{event,  }\item[{size\+\_\+t}]{event\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Send an event through the GPRS UART module. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em event} & The event buffer to be sent \\
+\hline
+{\em event\+\_\+size} & The size of the event buffer \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Fail to send the event 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgraph}
+\end{center}
+\end{figure}

@@ -32,7 +32,7 @@ static esp_err_t idp_parser_check_pack(const char* string_in)
 	esp_err_t ret = ESP_FAIL;
 
 	size_t str_last_position = strlen(string_in) - 1;
-	if(string_in[0] == '$' && string_in[str_last_position] == '#' )
+	if(string_in[0] == '#' && string_in[str_last_position] == '$' )
 	{
 		LOG_COMM(IDP_PARSER_TAG, "package : %s", string_in);
 		ret = ESP_OK;
@@ -65,92 +65,105 @@ idp_type idp_parser_get(const char* string_in)
 	return idp_ret;
 }
 
-void idp_parser_set(char* str_out, const char* str, ...)
+void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 {
-    va_list args;
-    va_start(args, str);
+    // Inicializar o buffer vazio
+    str_out[0] = '\0';
 
-    size_t buffer_size = strlen(str) + 1;
-    const char* current_str = str;
+    // Concatenar as strings com o traço '-' e adicionar '#'
+    strcat(str_out, "#");
 
-    // Calcula o tamanho total do buffer
-    while (current_str != NULL) {
-        if (current_str != str) {
-            buffer_size++; // Adicionar um caractere traço '-' para cada string exceto a primeira
+    for (int i = 0; arg_pairs[i].type != NULL; i++) {
+        if (i != 0) {
+            strcat(str_out, "-");
         }
 
-        if (strcmp(current_str, "int8_t") == 0) {
-            int8_t int8_arg = va_arg(args, int);
+        if (strcmp(arg_pairs[i].type, "uint8_t") == 0) {
+            uint8_t uint8_arg = * (uint8_t *) arg_pairs[i].value;
             char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRId8, int8_arg);
-            buffer_size += strlen(arg_buffer);
-        } else if (strcmp(current_str, "uint8_t") == 0) {
-            uint8_t uint8_arg = va_arg(args, int);
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRIu8, uint8_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "uint16_t") == 0) {
+            uint16_t uint16_arg = * (uint16_t *) arg_pairs[i].value;
             char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRIu8, uint8_arg);
-            buffer_size += strlen(arg_buffer);
-        } else if (strcmp(current_str, "int16_t") == 0) {
-            int16_t int16_arg = va_arg(args, int);
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRIu16, uint16_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "uint32_t") == 0) {
+            uint32_t uint32_arg = * (uint32_t *) arg_pairs[i].value;
             char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRId16, int16_arg);
-            buffer_size += strlen(arg_buffer);
-        } else if (strcmp(current_str, "uint16_t") == 0) {
-            uint16_t uint16_arg = va_arg(args, int);
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%04" PRIu32, uint32_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "int8_t") == 0) {
+            int8_t int8_arg = * (int8_t *) arg_pairs[i].value;
             char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRIu16, uint16_arg);
-            buffer_size += strlen(arg_buffer);
-        } else {
-            // Se não for nenhum dos tipos esperados, considera como uma string normal
-            buffer_size += strlen(current_str);
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRId8, int8_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "int16_t") == 0) {
+            int16_t int16_arg = * (int16_t *) arg_pairs[i].value;
+            char arg_buffer[MAX_BUFFER_SIZE];
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%04" PRId16, int16_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "int32_t") == 0) {
+            int32_t int32_arg = * (int32_t *) arg_pairs[i].value;
+            char arg_buffer[MAX_BUFFER_SIZE];
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%08" PRId32, int32_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "int") == 0) {
+            int int_arg = * (int *) arg_pairs[i].value;
+            char arg_buffer[MAX_BUFFER_SIZE];
+            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%08d", int_arg);
+            strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "string") == 0) {
+            const char* str_arg = (const char*)arg_pairs[i].value;
+            strcat(str_out, str_arg);
         }
-
-        current_str = va_arg(args, const char*);
     }
 
-    va_end(args);
+    strcat(str_out, "$"); // Adicionar '$' no final do buffer
+}
 
-    // Concatenar as strings com o traço '-' e adicionar '$' e '#'
-    str_out[0] = '\0'; // Inicializar o buffer vazio
-    strcat(str_out, "$");
-    strcat(str_out, str);
 
-    va_start(args, str);
+void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
+{
+    char* str_copy = strdup(str_arg); // Fazer uma cópia da string para evitar modificar a original
 
-    current_str = va_arg(args, const char*);
-    while (current_str != NULL) {
-        strcat(str_out, "-");
+    char* token = strtok(str_copy + 1, "-"); // Ignorar o primeiro caractere '$'
+    int index = 0;
 
-        if (strcmp(current_str, "int8_t") == 0) {
-            int8_t int8_arg = va_arg(args, int);
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRId8, int8_arg);
-            strcat(str_out, arg_buffer);
-        } else if (strcmp(current_str, "uint8_t") == 0) {
-            uint8_t uint8_arg = va_arg(args, int);
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRIu8, uint8_arg);
-            strcat(str_out, arg_buffer);
-        } else if (strcmp(current_str, "int16_t") == 0) {
-            int16_t int16_arg = va_arg(args, int);
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRId16, int16_arg);
-            strcat(str_out, arg_buffer);
-        } else if (strcmp(current_str, "uint16_t") == 0) {
-            uint16_t uint16_arg = va_arg(args, int);
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%" PRIu16, uint16_arg);
-            strcat(str_out, arg_buffer);
-        } else {
-            // Se não for nenhum dos tipos esperados, considera como uma string normal
-            strcat(str_out, current_str);
+    while (token != NULL)
+    {
+        const char* type = arg_pairs[index].type;
+
+        if (type == NULL) {
+            break;
         }
 
-        current_str = va_arg(args, const char*);
+        if (strcmp(type, "uint8_t") == 0) {
+            * (uint8_t *) arg_pairs[index].value = (uint8_t) strtoul(token, NULL, 10);
+        } else if (strcmp(type, "uint16_t") == 0) {
+            * (uint16_t *) arg_pairs[index].value = (uint16_t) strtoul(token, NULL, 10);
+        } else if (strcmp(type, "uint32_t") == 0) {
+            * (uint32_t *) arg_pairs[index].value = (uint32_t) strtoul(token, NULL, 10);
+        } else if (strcmp(type, "int8_t") == 0) {
+            * (int8_t *) arg_pairs[index].value = (int8_t) strtol(token, NULL, 10);
+        } else if (strcmp(type, "int16_t") == 0) {
+            * (int16_t *) arg_pairs[index].value = (int16_t) strtol(token, NULL, 10);
+        } else if (strcmp(type, "int32_t") == 0) {
+            * (int32_t *) arg_pairs[index].value = (int32_t) strtol(token, NULL, 10);
+        } else if (strcmp(type, "int") == 0) {
+            * (int *) arg_pairs[index].value = atoi(token);
+        } else if (strcmp(type, "string") == 0) {
+            strncpy(arg_pairs[index].value, token, 49);
+            ((char *)arg_pairs[index].value)[49] = '\0';
+        } else if (strcmp(type, "bool") == 0) {
+            * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
+        }
+
+        token = strtok(NULL, "-");
+        index++;
     }
 
-    va_end(args);
-
-    strcat(str_out, "#"); // Adicionar '#' no final do buffer
+    free(str_copy);
 }
 
 
