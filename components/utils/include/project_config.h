@@ -96,6 +96,13 @@ typedef enum
     IDP_INVALID = 255
 } idp_type;
 
+typedef enum
+{
+	COMM_GPRS = 0,
+	COMM_LORA,
+	COMM_HTTP,
+} comm_type;
+
 /**
  * @brief Pivot actions states.
  *

@@ -58,7 +58,7 @@ void app_main(void)
 {
 	while (1)
 	{
-		system_manager_callback("#00$");
+		system_manager_callback("#00$", COMM_GPRS);
 		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }

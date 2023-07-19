@@ -81,6 +81,15 @@ idp_type idp_parser_get(char* string_in)
 	return idp_ret;
 }
 
+uint16_t idp_parser_create_pwd(pivot_actions actions)
+{
+	uint16_t dwp = ((actions.rotation * 100)
+	+ (actions.watering_state)
+	* 10 + actions.power_state);
+
+	return dwp;
+}
+
 void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 {
     // Inicializar o buffer vazio

@@ -26,6 +26,9 @@ typedef struct arg_pair{
  */
 idp_type idp_parser_get(char* string_in);
 
+
+uint16_t idp_parser_create_pwd(pivot_actions actions);
+
 /**
  * @brief Create an IDP packet with the given arguments.
  *

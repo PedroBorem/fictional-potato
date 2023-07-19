@@ -8,10 +8,9 @@
 #include "idp_parser.h"
 #include "log.h"
 
-
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
-void system_manager_callback(char* buffer_request)
+void system_manager_callback(char* buffer_request, comm_type communication)
 {
 	char str_idp[5] = {};
 	char str_out[200] = {};
@@ -28,10 +27,7 @@ void system_manager_callback(char* buffer_request)
 
 			actuation_app_get_actions(&actions, sizeof(actions));
 
-			dwp = ((actions.rotation * 100)
-								+ (actions.watering_state)
-								* 10 + actions.power_state);
-
+			dwp = idp_parser_create_pwd(actions);
 
 			arg_pair_t arg_pairs[] = {
 				{ "uint8_t", &idp_request },
