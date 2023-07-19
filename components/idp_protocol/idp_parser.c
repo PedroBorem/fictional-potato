@@ -1,8 +1,10 @@
-/*
- * idp_parser.c
+/**
+ * @file idp_parser.c
+ * @brief Implementation of the IDP (Intelligent Device Protocol) parser.
  *
- *  Created on: 12 de jul. de 2023
- *      Author: bruno
+ * This file provides functions to parse IDP packets and create IDP packets
+ * with various data types.
+ *
  */
 
 /* Private inclusions -------------------------------------------- */
@@ -19,11 +21,25 @@
 #include <inttypes.h>
 
 /* Private definitions ------------------------------------------- */
+/**
+ * @brief The tag used for logging IDP parser-related messages.
+ */
 #define IDP_PARSER_TAG	"idp_parser"
 
-#define MAX_BUFFER_SIZE 200
+/**
+ * @brief The maximum size of the buffer used for creating IDP packets.
+ */
+#define IDP_MAX_PKG_SIZE 200
 
-
+/* Private function prototype ------------------------------------ */
+/**
+ * @brief Check if the received IDP packet is valid.
+ *
+ * This function checks if the received IDP packet has the correct format.
+ *
+ * @param[in] string_in The received IDP packet string.
+ * @return ESP_OK if the packet is valid, ESP_FAIL otherwise.
+ */
 static esp_err_t idp_parser_check_pack(const char* string_in);
 
 /* Private methods ----------------------------------------------- */
@@ -46,12 +62,12 @@ static esp_err_t idp_parser_check_pack(const char* string_in)
 }
 
 /* Public methods ------------------------------------------------ */
-idp_type idp_parser_get(const char* string_in)
+idp_type idp_parser_get(char* string_in)
 {
 	idp_type idp_ret = IDP_INVALID;
 
     const char delimiter[] = "-";
-	char* ptr = strtok(string_in, delimiter); //todo ajustar o const
+	char* ptr = strtok(string_in, delimiter);
 
 	if(idp_parser_check_pack(string_in) == ESP_OK)
 	{
@@ -80,38 +96,38 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 
         if (strcmp(arg_pairs[i].type, "uint8_t") == 0) {
             uint8_t uint8_arg = * (uint8_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRIu8, uint8_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRIu8, uint8_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "uint16_t") == 0) {
             uint16_t uint16_arg = * (uint16_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRIu16, uint16_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRIu16, uint16_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "uint32_t") == 0) {
             uint32_t uint32_arg = * (uint32_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%04" PRIu32, uint32_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%04" PRIu32, uint32_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int8_t") == 0) {
             int8_t int8_arg = * (int8_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%02" PRId8, int8_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRId8, int8_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int16_t") == 0) {
             int16_t int16_arg = * (int16_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%04" PRId16, int16_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%04" PRId16, int16_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int32_t") == 0) {
             int32_t int32_arg = * (int32_t *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%08" PRId32, int32_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%08" PRId32, int32_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int") == 0) {
             int int_arg = * (int *) arg_pairs[i].value;
-            char arg_buffer[MAX_BUFFER_SIZE];
-            snprintf(arg_buffer, MAX_BUFFER_SIZE, "%08d", int_arg);
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%08d", int_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "string") == 0) {
             const char* str_arg = (const char*)arg_pairs[i].value;
@@ -121,7 +137,6 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 
     strcat(str_out, "$"); // Adicionar '$' no final do buffer
 }
-
 
 void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 {
@@ -165,5 +180,4 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 
     free(str_copy);
 }
-
 
