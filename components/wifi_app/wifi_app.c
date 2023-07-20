@@ -150,7 +150,7 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 	};
 
 	wifi_config_t wifi_config = {};
-	const char* wifi_pass = "soiltech";
+	const char* wifi_pass = "soiltech"; // todo parametrizar o pass;
 
 	memset(wifi_global_ssid, 0x00, strlen(wifi_global_ssid));
 	memcpy(wifi_global_ssid, wifi_ssid, strlen(wifi_ssid));

@@ -134,28 +134,6 @@ typedef struct __attribute__((__packed__))
 } pivot_actions;
 
 /**
- * @brief Contactor type.
- *
- * Enumeration defining the contactor type.
- */
-typedef enum
-{
-    CONTACTOR_NA = 1,       /*!< Normally open (NO) contactor */
-    CONTACTOR_NF,           /*!< Normally closed (NC) contactor */
-} contactor_type;
-
-/**
- * @brief Pressure switch type.
- *
- * Enumeration defining the pressure switch type.
- */
-typedef enum
-{
-    PRESSURE_SWITCH_NA = 1, /*!< Normally open (NO) pressure switch */
-    PRESSURE_SWITCH_NF,     /*!< Normally closed (NC) pressure switch */
-} pressure_switch_type;
-
-/**
  * @brief Configuration angles.
  *
  * Structure defining the configuration angles.
@@ -175,8 +153,8 @@ typedef struct
 typedef struct __attribute__((__packed__))
 {
     char pivot_id[30];                          /*!< Pivot ID */
-    contactor_type contactor;       /*!< Contactor type */ //todo: usar isso nas classes
-    pressure_switch_type pressure_switch;   /*!< Pressure switch type *///todo usar isso nas classes
+    char contactor[30];       /*!< Contactor type */ //todo: usar isso nas classes
+    char pressure[30];   /*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_off_time;            /*!< On/off time */
 } pivot_config;
