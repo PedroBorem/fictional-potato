@@ -1,9 +1,5 @@
 
 //applications include
-#include "data_app.h"
-#include "comm_app.h"
-#include "actuation_app.h"
-
 #include "project_config.h"
 #include "idp_parser.h"
 #include "log.h"
@@ -12,6 +8,10 @@
 
 //private include
 #include <string.h>
+
+#include "actuation_app.h"
+#include "comm_app.h"
+#include "data_app.h"
 
 
 #define SYSTEM_MANAGER_TAG 	"system manager"
@@ -129,7 +129,7 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 				{ NULL, NULL }
 			};
 
-			idp_parser_create_package(str_out,arg_pairs);
+			idp_parser_create_package(str_out,arg_pairs_out);
 			// todo enviar o 06 para o edu
 
 			break;

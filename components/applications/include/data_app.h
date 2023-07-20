@@ -5,8 +5,8 @@
  *      Author: bruno
  */
 
-#ifndef MAIN_INCLUDE_DATA_APP_H_
-#define MAIN_INCLUDE_DATA_APP_H_
+#ifndef COMPONENTS_APPLICATIONS_INCLUDE_DATA_APP_H_
+#define COMPONENTS_APPLICATIONS_INCLUDE_DATA_APP_H_
 
 /**
  * @file data_app.h
@@ -101,4 +101,4 @@ esp_err_t data_app_load_timestamp(time_t* out_timestamp);
  */
 size_t data_app_get_data_size(const char* label_name, const char* key);
 
-#endif /* MAIN_INCLUDE_DATA_APP_H_ */
+#endif /* COMPONENTS_APPLICATIONS_INCLUDE_DATA_APP_H_ */

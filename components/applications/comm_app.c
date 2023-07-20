@@ -7,7 +7,6 @@
 /* Self include */
 #include "comm_app.h"
 
-/* Components include */
 #include "gprs_uart.h"
 #include "rf_uart.h"
 

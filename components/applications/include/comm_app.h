@@ -5,8 +5,8 @@
  *      Author: brunolima
  */
 
-#ifndef MAIN_INCLUDE_COMM_APP_H_
-#define MAIN_INCLUDE_COMM_APP_H_
+#ifndef COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_
+#define COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_
 
 /**
  * @file common_parser.h
@@ -45,4 +45,4 @@ void comm_app_send_actions(void);
 
 void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id);
 
-#endif /* MAIN_INCLUDE_COMM_APP_H_ */
+#endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */

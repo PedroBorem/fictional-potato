@@ -5,8 +5,8 @@
  *      Author: brunolima
  */
 
-#ifndef MAIN_INCLUDE_ACTUATION_APP_H_
-#define MAIN_INCLUDE_ACTUATION_APP_H_
+#ifndef COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_
+#define COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_
 
 /**
  * @file actuation_app.h
@@ -42,4 +42,4 @@ void actuation_app_set_pump(bool pump_state);
 
 void actuation_app_shutdown(void);
 
-#endif /* MAIN_INCLUDE_ACTUATION_APP_H_ */
+#endif /* COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_ */

@@ -7,7 +7,6 @@
 /* Self include */
 #include "data_app.h"
 
-/* NVS include */
 #include "nvs_data.h"
 
 /* Project include */

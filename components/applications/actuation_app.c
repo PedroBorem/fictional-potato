@@ -7,7 +7,6 @@
 /* Self include */
 #include "actuation_app.h"
 
-/* Components include */
 #include "gpio_actuator.h"
 
 #include "FreeRTOS_defines.h"
