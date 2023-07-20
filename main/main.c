@@ -59,7 +59,7 @@ void app_main(void)
 {
 	while (1)
 	{
-		system_manager_callback("#00$", COMM_REMOTE);
+		system_manager_callback("#01-soil_1-361-080$", COMM_REMOTE);
 		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }

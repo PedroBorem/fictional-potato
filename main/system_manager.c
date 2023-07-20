@@ -19,7 +19,7 @@
 static uint16_t system_manager_current_angle = 0xFFFF;
 
 
-void system_manager_callback(char* buffer_request, comm_type communication)
+void system_manager_callback(const char* buffer_request, comm_type communication)
 {
 	esp_err_t ret = ESP_FAIL;
 

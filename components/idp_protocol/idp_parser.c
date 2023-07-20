@@ -45,8 +45,8 @@ static bool idp_parser_check_pack(const char* string_in);
 static bool idp_parser_check_pack(const char* string_in)
 {
 	bool ret = false;
-
 	size_t str_last_position = strlen(string_in) - 1;
+
 	if(string_in[0] == '#' && string_in[str_last_position] == '$' )
 	{
 		LOG_COMM(IDP_PARSER_TAG, "package : %s", string_in);
@@ -61,21 +61,24 @@ static bool idp_parser_check_pack(const char* string_in)
 }
 
 /* Public methods ------------------------------------------------ */
-idp_type idp_parser_get(char* string_in)
+idp_type idp_parser_get(const char* string_in)
 {
 	idp_type idp_ret = IDP_INVALID;
+	char* str_copy = strdup(string_in);
 
-    const char delimiter[] = "-";
-	char* ptr = strtok(string_in, delimiter);
-
-	if(idp_parser_check_pack(string_in) == true)
+	if(idp_parser_check_pack(str_copy) == true)
 	{
+	    const char delimiter[] = "-";
+		char* ptr = strtok(str_copy, delimiter);
+
 	    sscanf(&ptr[1], "%d",(int*)&idp_ret);
 	}
 	else
 	{
 		ESP_LOGE(IDP_PARSER_TAG, "invalid idp");
 	}
+
+	free(str_copy);
 
 	return idp_ret;
 }
