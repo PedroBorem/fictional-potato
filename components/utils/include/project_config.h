@@ -140,7 +140,6 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct
 {
-    uint8_t id;             /*!< ID of the configuration angle */
     uint16_t start_angle;   /*!< Start angle of the configuration */
     uint16_t end_angle;     /*!< End angle of the configuration */
 } pivot_sectors;
@@ -179,7 +178,6 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
 {
-	bool eco_mode;                  /*!< Eco mode enabled flag */
 	time_t start_time;              /*!< Start time */
 	time_t end_time;                /*!< End time */
 } eco_mode_config;
@@ -191,7 +189,6 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
 {
-    bool sector_enabled;            /*!< Sector enabled flag */
     uint8_t sector_number;	//todo olhar isso na implementação
     pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } sector_config;

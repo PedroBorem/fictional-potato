@@ -10,6 +10,10 @@
 
 #include "rtc_app.h"
 
+//private include
+#include <string.h>
+
+
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
 void system_manager_callback(char* buffer_request, comm_type communication)
@@ -155,42 +159,123 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 		}
 		case IDP_4:
 		{
+			eco_mode_config eco_mode = {};
+
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp_request },
+				{ "uint32_t", &eco_mode.start_time }, //todo isso deve ser timestamp?
+				{ "uint32_t", &eco_mode.end_time },
+				{ NULL, NULL }
+			};
+
+			idp_parser_get_packet_data(str_out, arg_pairs);
+			// todo criar classe para salvar o eco na nvs.
+
+			// todo se eco_mode.start_time  e end forem 0 nao considero
+
+			// todo aplicar na task
 			break;
 		}
 		case IDP_5:
 		{
+			sector_config sector = {};
+
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp_request },
+				{ "uint8_t", &sector.sector_number },
+				{ "uint16_t", &sector.sectors[0].start_angle },
+				{ "uint16_t", &sector.sectors[0].end_angle },
+				{ "uint16_t", &sector.sectors[1].start_angle },
+				{ "uint16_t", &sector.sectors[1].end_angle },
+				{ "uint16_t", &sector.sectors[2].start_angle },
+				{ "uint16_t", &sector.sectors[2].end_angle },
+				{ "uint16_t", &sector.sectors[3].start_angle },
+				{ "uint16_t", &sector.sectors[3].end_angle },
+				{ NULL, NULL }
+			};
+
+			idp_parser_get_packet_data(str_out, arg_pairs);
+
+			// todo criar classe para salvar os setores na nvs.
+
+			// todo se sector_number = 0 nao tem setor
+
+			// todo aplicar na task
 			break;
 		}
 		case IDP_6:
 		{
+			// Implemented in IDP_2
 			break;
 		}
 		case IDP_7:
 		{
+			uint16_t angle;
+			time_t timestamp;
+			char utc[10] = {};
+
+			// get angle
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp_request },
+				{ "uint16_t", &angle },
+				{ "uint32_t", &timestamp },
+				{ "string", utc },
+				{ NULL, NULL }
+			};
+
+			idp_parser_get_packet_data(str_out, arg_pairs);
+			rtc_app_set_timestamp(timestamp);
+
 			break;
 		}
 		case IDP_8:
 		{
+			// Not implemented in context
 			break;
 		}
 		case IDP_9:
 		{
+			// Not implemented in context
 			break;
 		}
 		case IDP_10:
 		{
+			// Not implemented in context
 			break;
 		}
 		case IDP_11:
 		{
+			// Not implemented in context
 			break;
 		}
 		case IDP_12:
 		{
+			pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
+
+			data_app_load_history(load_history, sizeof(load_history));
+			// todo fazer tratamento para enviar
 			break;
 		}
 		case IDP_13:
 		{
+			char scheaduling_id[10] = {};
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp_request },
+				{ "string", scheaduling_id },
+				{ NULL, NULL }
+			};
+
+			idp_parser_get_packet_data(str_out, arg_pairs);
+
+			// todo fazer um delete só
+			data_app_delete_scheduling(data_scheduling_date, scheaduling_id);
+			data_app_delete_scheduling(data_scheduling_angle, scheaduling_id);
+
+			// todo notificar a task de agendamento
 			break;
 		}
 		case IDP_14:
