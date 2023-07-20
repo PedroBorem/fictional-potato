@@ -27,7 +27,7 @@
  * @var dev
  * @brief The RTC I2C device structure.
  */
-static i2c_dev_t dev = {};
+static rtc_i2c_dev_t dev = {};
 
 /* Public methods ----------------------------------- */
 

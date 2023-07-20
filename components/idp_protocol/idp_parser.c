@@ -10,7 +10,6 @@
 /* Private inclusions -------------------------------------------- */
 #include "idp_parser.h"
 #include "log.h"
-#include "esp_err.h"
 
 /* c base include */
 #include <stdio.h>
@@ -40,18 +39,18 @@
  * @param[in] string_in The received IDP packet string.
  * @return ESP_OK if the packet is valid, ESP_FAIL otherwise.
  */
-static esp_err_t idp_parser_check_pack(const char* string_in);
+static bool idp_parser_check_pack(const char* string_in);
 
 /* Private methods ----------------------------------------------- */
-static esp_err_t idp_parser_check_pack(const char* string_in)
+static bool idp_parser_check_pack(const char* string_in)
 {
-	esp_err_t ret = ESP_FAIL;
+	bool ret = false;
 
 	size_t str_last_position = strlen(string_in) - 1;
 	if(string_in[0] == '#' && string_in[str_last_position] == '$' )
 	{
 		LOG_COMM(IDP_PARSER_TAG, "package : %s", string_in);
-		ret = ESP_OK;
+		ret = true;
 	}
 	else
 	{
@@ -69,7 +68,7 @@ idp_type idp_parser_get(char* string_in)
     const char delimiter[] = "-";
 	char* ptr = strtok(string_in, delimiter);
 
-	if(idp_parser_check_pack(string_in) == ESP_OK)
+	if(idp_parser_check_pack(string_in) == true)
 	{
 	    sscanf(&ptr[1], "%d",(int*)&idp_ret);
 	}

@@ -12,10 +12,10 @@
 #include "esp_log.h"
 
 /**
- * @def RTC_I2C_DEV_TAG
- * @brief The RTC_I2C_DEV_TAG used for logging related to the RTC I2C device.
+ * @def RTC_rtc_i2c_dev_tAG
+ * @brief The RTC_rtc_i2c_dev_tAG used for logging related to the RTC I2C device.
  */
-#define RTC_I2C_DEV_TAG "I2CDEV"
+#define RTC_rtc_i2c_dev_tAG "I2CDEV"
 
 /* Public methods ----------------------------------- */
 
@@ -34,7 +34,7 @@ esp_err_t i2c_master_init(i2c_port_t port, int sda, int scl)
         return i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0);
 }
 
-esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_size, void *in_data, size_t in_size)
+esp_err_t i2c_dev_read(const rtc_i2c_dev_t *dev, const void *out_data, size_t out_size, void *in_data, size_t in_size)
 {
     if (!dev || !in_data || !in_size)
 	{
@@ -57,7 +57,7 @@ esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_si
     esp_err_t res = i2c_master_cmd_begin(dev->port, cmd, I2CDEV_TIMEOUT / portTICK_PERIOD_MS);
     if (res != ESP_OK)
     {
-    	ESP_LOGE(RTC_I2C_DEV_TAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+    	ESP_LOGE(RTC_rtc_i2c_dev_tAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     i2c_cmd_link_delete(cmd);
@@ -65,7 +65,7 @@ esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_si
     return res;
 }
 
-esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_reg_size, const void *out_data, size_t out_size)
+esp_err_t i2c_dev_write(const rtc_i2c_dev_t *dev, const void *out_reg, size_t out_reg_size, const void *out_data, size_t out_size)
 {
     if (!dev || !out_data || !out_size)
 	{
@@ -86,7 +86,7 @@ esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_re
     esp_err_t res = i2c_master_cmd_begin(dev->port, cmd, I2CDEV_TIMEOUT / portTICK_PERIOD_MS);
     if (res != ESP_OK)
     {
-    	ESP_LOGE(RTC_I2C_DEV_TAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+    	ESP_LOGE(RTC_rtc_i2c_dev_tAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     i2c_cmd_link_delete(cmd);

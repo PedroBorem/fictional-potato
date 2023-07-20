@@ -32,7 +32,7 @@ typedef struct {
     gpio_num_t sda_io_num;      // GPIO number for I2C sda signal
     gpio_num_t scl_io_num;      // GPIO number for I2C scl signal
     uint32_t clk_speed;         // I2C clock frequency for master mode
-} i2c_dev_t;
+} rtc_i2c_dev_t;
 
 /**
  * @brief Initializes the I2C master for the specified port.
@@ -58,7 +58,7 @@ esp_err_t i2c_master_init(i2c_port_t port, int sda, int scl);
  * @param in_size The size of the input data buffer.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_size, void *in_data, size_t in_size);
+esp_err_t i2c_dev_read(const rtc_i2c_dev_t *dev, const void *out_data, size_t out_size, void *in_data, size_t in_size);
 
 /**
  * @brief Writes data to the I2C device.
@@ -72,7 +72,7 @@ esp_err_t i2c_dev_read(const i2c_dev_t *dev, const void *out_data, size_t out_si
  * @param out_size The size of the output data buffer.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_reg_size, const void *out_data, size_t out_size);
+esp_err_t i2c_dev_write(const rtc_i2c_dev_t *dev, const void *out_reg, size_t out_reg_size, const void *out_data, size_t out_size);
 
 /**
  * @brief Reads data from the I2C device register.
@@ -85,7 +85,7 @@ esp_err_t i2c_dev_write(const i2c_dev_t *dev, const void *out_reg, size_t out_re
  * @param in_size The size of the input data buffer.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-inline esp_err_t i2c_dev_read_reg(const i2c_dev_t *dev, uint8_t reg, void *in_data, size_t in_size)
+inline esp_err_t i2c_dev_read_reg(const rtc_i2c_dev_t *dev, uint8_t reg, void *in_data, size_t in_size)
 {
     return i2c_dev_read(dev, &reg, 1, in_data, in_size);
 }
@@ -101,7 +101,7 @@ inline esp_err_t i2c_dev_read_reg(const i2c_dev_t *dev, uint8_t reg, void *in_da
  * @param out_size The size of the output data buffer.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-inline esp_err_t i2c_dev_write_reg(const i2c_dev_t *dev, uint8_t reg, const void *out_data, size_t out_size)
+inline esp_err_t i2c_dev_write_reg(const rtc_i2c_dev_t *dev, uint8_t reg, const void *out_data, size_t out_size)
 {
     return i2c_dev_write(dev, &reg, 1, out_data, out_size);
 }

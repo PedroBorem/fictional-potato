@@ -191,7 +191,7 @@ uint8_t dec2bcd(uint8_t val);
  * @param scl_gpio The GPIO number for the I2C SCL signal.
  * @return esp_err_t An error code indicating the success or failure of the initialization.
  */
-esp_err_t ds3231_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio);
+esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio);
 
 /**
  * @brief Sets the time on the DS3231 RTC module.
@@ -202,7 +202,7 @@ esp_err_t ds3231_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio,
  * @param time The pointer to the time structure containing the new time.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t ds3231_set_time(i2c_dev_t *dev, struct tm *time);
+esp_err_t ds3231_set_time(rtc_i2c_dev_t *dev, struct tm *time);
 
 /**
  * @brief Gets the raw temperature value from the DS3231 RTC module.
@@ -213,7 +213,7 @@ esp_err_t ds3231_set_time(i2c_dev_t *dev, struct tm *time);
  * @param temp The pointer to the variable to store the temperature value.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t ds3231_get_raw_temp(i2c_dev_t *dev, int16_t *temp);
+esp_err_t ds3231_get_raw_temp(rtc_i2c_dev_t *dev, int16_t *temp);
 
 /**
  * @brief Gets the integer part of the temperature from the DS3231 RTC module.
@@ -224,7 +224,7 @@ esp_err_t ds3231_get_raw_temp(i2c_dev_t *dev, int16_t *temp);
  * @param temp The pointer to the variable to store the temperature value.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t ds3231_get_temp_integer(i2c_dev_t *dev, int8_t *temp);
+esp_err_t ds3231_get_temp_integer(rtc_i2c_dev_t *dev, int8_t *temp);
 
 /**
  * @brief Gets the floating-point representation of the temperature from the DS3231 RTC module.
@@ -235,7 +235,7 @@ esp_err_t ds3231_get_temp_integer(i2c_dev_t *dev, int8_t *temp);
  * @param temp The pointer to the variable to store the temperature value.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t ds3231_get_temp_float(i2c_dev_t *dev, float *temp);
+esp_err_t ds3231_get_temp_float(rtc_i2c_dev_t *dev, float *temp);
 
 /**
  * @brief Gets the current time from the DS3231 RTC module.
@@ -246,6 +246,6 @@ esp_err_t ds3231_get_temp_float(i2c_dev_t *dev, float *temp);
  * @param time The pointer to the time structure to store the current time.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t ds3231_get_time(i2c_dev_t *dev, struct tm *time);
+esp_err_t ds3231_get_time(rtc_i2c_dev_t *dev, struct tm *time);
 
 #endif /* COMPONENTS_RTC_INCLUDE_RTC_DS3231_H_ */
