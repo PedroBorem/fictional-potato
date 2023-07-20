@@ -73,10 +73,6 @@ idp_type idp_parser_get(const char* string_in)
 
 	    sscanf(&ptr[1], "%d",(int*)&idp_ret);
 	}
-	else
-	{
-		ESP_LOGE(IDP_PARSER_TAG, "invalid idp");
-	}
 
 	free(str_copy);
 

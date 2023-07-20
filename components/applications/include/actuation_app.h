@@ -15,6 +15,7 @@
 */
 
 #include "project_config.h"
+#include "esp_err.h"
 
 /**
  * @brief	starts the tasks of reading and actuation of the I/O ports
@@ -23,7 +24,7 @@
  * 	- true: success
  * 	- false: fail to initialize
  */
-bool actuation_app_init(const app_callback callback);
+esp_err_t actuation_app_init(const app_callback callback);
 
 /**
  * @brief	apply the configuration to the drives

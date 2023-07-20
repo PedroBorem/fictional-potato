@@ -31,15 +31,15 @@ static rtc_i2c_dev_t dev = {};
 
 /* Public methods ----------------------------------- */
 
-bool rtc_app_init(void)
+esp_err_t rtc_app_init(void)
 {
 	// Initialize RTC
 	if( ds3231_init_desc(&dev, I2C_NUM_0, RTC_SDA_PIN, RTC_SCL_PIN) == ESP_OK)
 	{
-		return true;
+		return ESP_OK;
 	}
 
-	return false;
+	return ESP_FAIL;
 }
 
 bool rtc_app_set_timestamp(time_t timestamp)

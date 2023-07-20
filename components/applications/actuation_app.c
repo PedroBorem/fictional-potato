@@ -32,9 +32,8 @@ static pivot_actions actuation_config = {};
 void actuation_app_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-bool actuation_app_init(const app_callback callback)
+esp_err_t actuation_app_init(const app_callback callback)
 {
-	bool ret = false;
 	esp_err_t err = ESP_OK;
 
 	err = gpio_actuator_init();
@@ -49,12 +48,9 @@ bool actuation_app_init(const app_callback callback)
 								ACTUATION_APP_TASK_PRIORITY,
 								&xTask_actuation_app);
 
-		if(xReturn == pdPASS || xTask_actuation_app != NULL)
+		if(xReturn != pdPASS || xTask_actuation_app == NULL)
 		{
-			ret = true;
-		}
-		else
-		{
+			err = ESP_FAIL;
 			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, ACTUATION_APP_TASK_NAME);
 		}
 	}
@@ -63,7 +59,7 @@ bool actuation_app_init(const app_callback callback)
 		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid argument", __func__);
 	}
 
-	return ret;
+	return err;
 }
 
 void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)

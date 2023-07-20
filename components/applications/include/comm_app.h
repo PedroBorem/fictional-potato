@@ -16,6 +16,8 @@
 
 #include "project_config.h"
 
+#include "esp_err.h"
+
 /**
  * @brief	starts all communication modules
  * @param 	app_callback[in]: function used with return to main application class
@@ -23,7 +25,7 @@
  * 	- true: success
  * 	- false: fail
  */
-bool comm_app_init(const app_callback callback);
+esp_err_t comm_app_init(const app_callback callback);
 
 /**
  * @brief	starts all communication modules

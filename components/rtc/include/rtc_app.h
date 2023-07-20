@@ -11,6 +11,8 @@
 #include <time.h>
 #include <stdbool.h>
 
+#include "esp_err.h"
+
 /**
  * @def RTC_CONFIG_TIMEZONE
  * @brief The default time zone for the RTC configuration.
@@ -25,7 +27,7 @@
  *
  * @return bool True if initialization is successful, false otherwise.
  */
-bool rtc_app_init(void);
+esp_err_t rtc_app_init(void);
 
 /**
  * @brief Sets the timestamp in the RTC.

@@ -1,5 +1,6 @@
 
 //applications include
+#include "system_manager.h"
 #include "project_config.h"
 #include "idp_parser.h"
 #include "log.h"
@@ -19,7 +20,18 @@
 static uint16_t system_manager_current_angle = 0xFFFF;
 
 
-void system_manager_callback(const char* buffer_request, comm_type communication)
+static void system_manager_callback(const char* buffer_request, comm_type communication);
+
+
+void system_manager_init(void)
+{
+	ESP_ERROR_CHECK(rtc_app_init());
+	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
+	ESP_ERROR_CHECK(data_app_init());
+	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
+}
+
+static void system_manager_callback(const char* buffer_request, comm_type communication)
 {
 	esp_err_t ret = ESP_FAIL;
 

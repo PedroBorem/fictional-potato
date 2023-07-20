@@ -57,33 +57,14 @@ static void app_scheduling_task(void* arg);
  */
 void app_main(void)
 {
+	system_manager_init();
 	while (1)
 	{
-		system_manager_callback("#01-soil_1-361-080$", COMM_REMOTE);
+		//system_manager_callback("#01-soil_1-361-080$", COMM_REMOTE);
 		vTaskDelay(pdMS_TO_TICKS(2000));
 	}
 }
 
-/**
- * @brief	start all sub-applications
- * @return
- * 	- true: applications started successfully
- * 	- false: application startup failure
- */
-static bool app_init(void)
-{
-	bool ret = true;
-
-	ret &= rtc_app_init();
-	ret &= actuation_app_init(&app_main_call);
-	if(data_app_init() == ESP_FAIL)
-	{
-		ret = false;
-	}
-	ret &= comm_app_init(&app_main_call);
-
-	return ret;
-}
 
 /**
  * @brief	callback from secondary applications to the main

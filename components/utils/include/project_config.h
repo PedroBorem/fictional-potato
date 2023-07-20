@@ -267,6 +267,6 @@ typedef enum
  * @param state The state of the main callback request.
  * @param buffer The buffer containing the data associated with the request.
  */
-typedef void (*app_callback)(char* buffer_request, comm_type communication);
+typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */
