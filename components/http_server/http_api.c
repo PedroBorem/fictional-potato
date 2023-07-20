@@ -64,7 +64,8 @@ static esp_err_t http_get_handler(httpd_req_t *req);
 static esp_err_t http_post_handler(httpd_req_t *req);
 static esp_err_t http_delete_handler(httpd_req_t *req);
 
-static http_file_server_data *server_data = NULL;
+static http_file_server_data* server_data = NULL;
+static httpd_req_t* server_req = NULL;
 
 /* Public methods ------------------------------------------------ */
 esp_err_t http_server_init(void)
@@ -181,6 +182,16 @@ esp_err_t http_server_register_callback(app_callback callback)
 	return ret;
 }
 
+void http_server_send_resp(char* package)
+{
+	if(server_req != NULL)
+	{
+		httpd_resp_send(server_req, package, HTTPD_RESP_USE_STRLEN);
+	}
+
+	server_req = NULL;
+}
+
 /* Private methods ----------------------------------------------- */
 /**
  * @brief	Handler to download a file kept on the server
@@ -194,112 +205,131 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_OK;
 
+	server_req = req;
+
     if(strcmp(req->uri, "/api-status") == 0)
     {
     	LOG_COMM(HTTP_API_TAG, "get /api-status : %s", "{status_soil:200}");
 		httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
+		server_req = NULL;
     }
-    else if (strcmp(req->uri, "/actions") == 0)
+    else if (strcmp(req->uri, "/states") == 0)
 	{
 		if(http_callback != NULL)
 		{
-			http_callback("#00$", COMM_LOCAL);
+			http_callback("#00$", COMM_HTTP_GET);
 		}
 		else
 		{
 			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
+			err = ESP_FAIL;
 		}
-
-		//todo essa resposta vai ser em outro metodo
-		//LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
-    	//httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
-    else if(strcmp(req->uri, "/config") == 0)
+    else if(strcmp(req->uri, "/config/network") == 0)
 	{
 		if(http_callback != NULL)
 		{
-			http_callback("#00$", COMM_LOCAL);
+			http_callback("#02$", COMM_HTTP_GET);
 		}
 		else
 		{
 			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
+			err = ESP_FAIL;
 		}
-
-		//todo essa resposta vai ser em outro metodo
-		//LOG_COMM(HTTP_API_TAG, "get /actions : %s", http_actions);
-		//httpd_resp_send(req, http_actions, HTTPD_RESP_USE_STRLEN);
 	}
-    else if (strcmp(req->uri, "/scheduling/date") == 0)
-   	{
-    	if(http_callback != NULL)
-		{
-    		http_callback("#00$", COMM_LOCAL); //todo alterar o codigo
-		}
-		else
-		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
-		}
-
-    	// todo isso vai ser outra função
-    	//LOG_COMM(HTTP_API_TAG, "get /scheduling/date : %s", out_scheduling);
-       	//httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
-   	}
-    else if (strcmp(req->uri, "/scheduling/angle") == 0)
-	{
-    	if(http_callback != NULL)
-		{
-    		http_callback("#00$", COMM_LOCAL); //todo alterar o codigo
-		}
-		else
-		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
-		}
-
-    	// todo isso vai ser outra função
-    	//LOG_COMM(HTTP_API_TAG, "get /scheduling/angle : %s", out_scheduling);
-    	//httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
-	}
-    else if (strcmp(req->uri, "/scheduling/off") == 0)
+    else if(strcmp(req->uri, "/config/pivot") == 0)
 	{
 		if(http_callback != NULL)
 		{
-			http_callback("#00$", COMM_LOCAL); //todo alterar o codigo
+			http_callback("#03$", COMM_HTTP_GET);
 		}
 		else
 		{
 			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
+			err = ESP_FAIL;
 		}
-
-		// todo isso vai ser outra função
-		//LOG_COMM(HTTP_API_TAG, "get /scheduling/off : %s", out_scheduling);
-		//httpd_resp_send(req, out_scheduling, HTTPD_RESP_USE_STRLEN);
+	}
+    else if(strcmp(req->uri, "/config/eco") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback("#04$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
+	}
+	else if(strcmp(req->uri, "/config/sector") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback("#05$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
 	}
 	else if (strcmp(req->uri, "/cycles") == 0)
 	{
 
 		if(http_callback != NULL)
 		{
-			http_callback("#00$", COMM_LOCAL); //todo alterar o codigo
+			http_callback("#12$", COMM_HTTP_GET);
 		}
 		else
 		{
 			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			return ESP_FAIL;
+			err = ESP_FAIL;
 		}
+	}
 
-		// todo isso vai ser outra função
-		//LOG_COMM(HTTP_API_TAG, "get /cycles: %s", out_history);
-		//httpd_resp_send(req, out_history, HTTPD_RESP_USE_STRLEN);
+    else if (strcmp(req->uri, "/scheduling/date") == 0)
+   	{
+    	if(http_callback != NULL)
+		{
+    		http_callback("#14$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
+   	}
+    else if (strcmp(req->uri, "/scheduling/angle") == 0)
+	{
+    	if(http_callback != NULL)
+		{
+    		http_callback("#15$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
+	}
+    else if (strcmp(req->uri, "/scheduling/off") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback("#16$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
 	}
     else
     {
     	ESP_LOGE(HTTP_API_TAG,"invalid HTTP uri (%s)", req->uri);
-		httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid HTTP uri");
+    	httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid HTTP uri");
+		server_req = NULL;
+
+		err = ESP_FAIL;
     }
 
     return err;
@@ -337,11 +367,8 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
 		LOG_COMM(HTTP_API_TAG, "content %s", content);
 
-		http_callback(content, COMM_LOCAL);
-
-		// todo isso vai ser outra função
-		//LOG_COMM(HTTP_API_TAG, "get /cycles: %s", out_history);
-		//httpd_resp_send(req, out_history, HTTPD_RESP_USE_STRLEN);
+		server_req = req;
+		http_callback(content, COMM_HTTP_POST);
     }
 
 	return err;
@@ -371,11 +398,8 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 		LOG_COMM(HTTP_API_TAG, "URI %s", req->uri);
 		LOG_COMM(HTTP_API_TAG, "content %s", content);
 
-		http_callback(content, COMM_LOCAL);
-
-		// todo isso vai ser outra função
-		//LOG_COMM(HTTP_API_TAG, "get /cycles: %s", out_history);
-		//httpd_resp_send(req, out_history, HTTPD_RESP_USE_STRLEN);
+		server_req = req;
+		http_callback(content, COMM_HTTP_POST);
 	}
 
 	return err;

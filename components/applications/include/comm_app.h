@@ -27,24 +27,8 @@
  */
 esp_err_t comm_app_init(const app_callback callback);
 
-/**
- * @brief	starts all communication modules
- * @return 	angle: returns the current angle (degrees) received
- */
-uint16_t comm_app_get_degree(void);
+void comm_app_send_idp_pack(char* idp_pack, comm_type communication);
 
-/**
- * @brief	send events over communication interfaces
- * @param 	pivot_status[in]:  configuration structure to send
- */
-void comm_app_send_event(pivot_actions pivot_status);
-
-void comm_app_set_config(const pivot_config config);
-
-void comm_app_set_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle);
-
-void comm_app_send_actions(void);
-
-void comm_app_send_idp_resp(idp_type idp, char* pivo_id, char* scheaduling_id);
+void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */

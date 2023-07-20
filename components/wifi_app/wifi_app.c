@@ -42,8 +42,8 @@
 #define WIFI_MAX_STA_CONN       5
 
 /* Private variables ------------------------------------ */
-static char wifi_global_ssid[35] = "soil"; 		// todo alterar de acordo com que estiver na nvs
-static char wifi_global_pass[35] = "soil203";	// todo
+static char wifi_global_ssid[35] = "";
+static char wifi_global_pass[35] = "";
 
 static esp_netif_t* wifi_ap_netif = NULL;
 
@@ -90,7 +90,6 @@ esp_err_t wifi_app_init(char* wifi_ssid, char* wifi_pass)
     return ret;
 }
 
-// todo vai virar um set do wifi
 void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 {
 	strcpy(wifi_global_ssid, wifi_ssid);

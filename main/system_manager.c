@@ -17,9 +17,23 @@
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
 /* global variables */
-static uint16_t global_angle = 0xFFFF;
+uint16_t global_angle = 0xFFFF;
+static uint16_t initial_angle = 0xFFFF;
 
-static void system_manager_callback(const char* buffer_request, comm_type communication);
+static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
+
+static void system_manager_idp_00(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_01(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_02(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_03(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_04(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_05(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_07(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_12(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_13(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_14(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
 
 void system_manager_init(void)
 {
@@ -29,7 +43,7 @@ void system_manager_init(void)
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
 }
 
-static void system_manager_callback(const char* buffer_request, comm_type communication)
+static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -43,105 +57,17 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 	{
 		case IDP_0:
 		{
-			pivot_actions actions = {};
-			uint16_t dwp = 0;
-
-			actuation_app_get_actions(&actions, sizeof(actions));
-
-			dwp = idp_parser_create_pwd(actions);
-
-			arg_pair_t arg_pairs[] = {
-				{ "uint8_t", &idp_request },
-				{ "uint16_t", &dwp },
-				{ "uint8_t", &actions.percentimeter },
-				{ NULL, NULL } // TODO fazer oq falta;
-			};
-
-			idp_parser_create_package(str_out,arg_pairs);
-
-			//TODO send comm_app;
-
+			system_manager_idp_00(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_1:
 		{
-			pivot_actions new_actions = {};
-			pivot_history new_history = {};
-
-			char pivot_id[20] = {};
-			uint16_t dwp = 0;
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", pivot_id },
-				{ "uint16_t", &dwp },
-				{ "uint8_t", &new_actions.percentimeter },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			idp_parser_get_pwd(dwp, &new_actions);
-
-			ret = data_app_save_actions(&new_actions, sizeof(new_actions));
-			if(ret == ESP_OK)
-			{
-				// save old history
-				data_app_save_old_history(rtc_app_get_timestamp(false), global_angle);
-
-				// act on the equipment
-				actuation_app_set_actions(new_actions, false);
-
-				// send current status
-				// TODO comm_app_send_event(new_actions);
-
-				// save new history
-				if(new_actions.power_state != PIVOT_OFF)
-				{
-					new_history.start_date = rtc_app_get_timestamp(false);
-					new_history.start_angle = global_angle;
-					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
-					data_app_save_new_history(new_history);
-				}
-			}
-			else if(new_actions.rotation == PIVOT_UNKNOWN)
-			{
-				// TODO comm_app_send_event(new_actions);
-			}
-
+			system_manager_idp_01(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_2:
 		{
-			char pivot_id[20] = {};
-			network_config net_config = {};
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", pivot_id },
-				{ "string", &net_config.gprs_id },
-				{ "string", &net_config.modem_apn },
-				{ "string", &net_config.wifi_ssid },
-				{ "string", &net_config.wifi_pass },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			// todo ajustar o wifi com novo id e pass.
-
-			// todo criar classe para salvar network_config na nvs.
-
-			arg_pair_t arg_pairs_out[] = {
-				{ "uint8_t", &idp_request },
-				{ "string", &net_config.gprs_id },
-				{ "string", &net_config.modem_apn },
-				{ NULL, NULL }
-			};
-
-			idp_parser_create_package(str_out,arg_pairs_out);
-			// todo enviar o 06 para o edu
-
+			system_manager_idp_02(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_3:
@@ -218,11 +144,6 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 			// todo aplicar na task
 			break;
 		}
-		case IDP_6:
-		{
-			// Implemented in IDP_2
-			break;
-		}
 		case IDP_7:
 		{
 			time_t timestamp;
@@ -238,29 +159,14 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 				{ NULL, NULL }
 			};
 
+			if(initial_angle == 0xFFFF)
+			{
+				initial_angle = global_angle;
+			}
+
 			idp_parser_get_packet_data(str_out, arg_pairs);
 			rtc_app_set_timestamp(timestamp);
 
-			break;
-		}
-		case IDP_8:
-		{
-			// Not implemented in context
-			break;
-		}
-		case IDP_9:
-		{
-			// Not implemented in context
-			break;
-		}
-		case IDP_10:
-		{
-			// Not implemented in context
-			break;
-		}
-		case IDP_11:
-		{
-			// Not implemented in context
 			break;
 		}
 		case IDP_12:
@@ -309,7 +215,7 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 			};
 
 			idp_parser_get_packet_data(str_out, arg_pairs);
-			idp_parser_get_pwd(dwp, &&scheduling.actions);
+			idp_parser_get_pwd(dwp, &scheduling.actions);
 
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
@@ -354,7 +260,7 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 			};
 
 			idp_parser_get_packet_data(str_out, arg_pairs);
-			idp_parser_get_pwd(dwp, &&scheduling.actions);
+			idp_parser_get_pwd(dwp, &scheduling.actions);
 
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
@@ -363,7 +269,7 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 			{
 				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
 				{
-					memcpy(&scheduling_angle[position], scheduling, sizeof(scheduling_angle[position]));
+					memcpy(&scheduling_angle[position], &scheduling, sizeof(scheduling_angle[position]));
 
 					// get_rtc
 					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
@@ -424,4 +330,297 @@ static void system_manager_callback(const char* buffer_request, comm_type commun
 	}
 
 	LOG_MANAGER(SYSTEM_MANAGER_TAG, "%s", str_out);
+}
+
+
+
+static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
+{
+	pivot_actions actions = {};
+	char str_out[200] = {};
+	uint16_t dwp = 0;
+	uint8_t idp = 0;
+
+	actuation_app_get_actions(&actions, sizeof(actions));
+	dwp = idp_parser_create_pwd(actions);
+
+	time_t timestamp = rtc_app_get_timestamp(false);
+
+	arg_pair_t arg_pairs[] = {
+		{ "uint8_t", &idp },
+		{ "uint16_t", &dwp },
+		{ "uint8_t", &actions.percentimeter },
+		{ "uint16_t", &initial_angle },
+		{ "uint16_t", &global_angle },
+		{ "uint32_t", &timestamp },
+		{ NULL, NULL } // TODO fazer oq falta;
+	};
+
+	idp_parser_create_package(str_out,arg_pairs);
+	comm_app_send_idp_pack(str_out, comm_mode);
+}
+
+static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	{
+		esp_err_t ret = ESP_FAIL;
+		pivot_actions new_actions = {};
+		pivot_history new_history = {};
+
+		char str_out[200] = {};
+		char pivot_id[20] = {};
+		uint16_t dwp = 0;
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "uint16_t", &dwp },
+			{ "uint8_t", &new_actions.percentimeter },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(str_out, arg_pairs);
+		idp_parser_get_pwd(dwp, &new_actions);
+
+		ret = data_app_save_actions(&new_actions, sizeof(new_actions));
+		if(ret == ESP_OK)
+		{
+			// save old history
+			data_app_save_old_history(rtc_app_get_timestamp(false), global_angle);
+
+			// act on the equipment
+			actuation_app_set_actions(new_actions, false);
+
+			// send current status
+			arg_pair_t arg_pairs_ack[] =
+			{
+				{ "uint8_t", &idp },
+				{ "string", pivot_id },
+				{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs_ack);
+
+			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
+
+			// save new history
+			if(new_actions.power_state != PIVOT_OFF)
+			{
+				new_history.start_date = rtc_app_get_timestamp(false);
+				new_history.start_angle = global_angle;
+				memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
+				data_app_save_new_history(new_history);
+			}
+		}
+	}
+}
+
+static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+		char str_out[200] = {};
+		char pivot_id[20] = {};
+		network_config net_config = {};
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "string", net_config.gprs_id },
+			{ "string", net_config.modem_apn },
+			{ "string", net_config.wifi_ssid },
+			{ "string", net_config.wifi_pass },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		// todo criar classe para salvar network_config na nvs.
+		comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
+
+		// send GPRS module
+		idp = IDP_6;
+		arg_pair_t arg_pairs_2[] = {
+			{ "uint8_t", &idp },
+			{ "string", net_config.gprs_id },
+			{ "string", net_config.modem_apn },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out,arg_pairs_2);
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+		char str_out[200] = {};
+		char pivot_id[20] = {};
+		network_config net_config = {};
+		uint8_t idp = IDP_2;
+
+		// todo criar classe para ler network_config na nvs.
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "string", net_config.gprs_id },
+			{ "string", net_config.modem_apn },
+			{ "string", net_config.wifi_ssid },
+			{ "string", net_config.wifi_pass },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out,arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+	}
+}
+
+static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
+}
+
+static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST)
+	{
+
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+
+	}
+	else if(comm_mode == COMM_MQTT)
+	{
+
+	}
 }

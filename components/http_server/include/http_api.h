@@ -51,4 +51,7 @@ esp_err_t http_server_stop(httpd_handle_t http_handle);
 esp_err_t http_server_register_callback(app_callback callback);
 
 
+void http_server_send_resp(char* package);
+
+
 #endif /* COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_API_H_ */

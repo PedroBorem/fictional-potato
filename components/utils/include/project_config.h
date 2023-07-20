@@ -98,8 +98,9 @@ typedef enum
 
 typedef enum
 {
-	COMM_LOCAL = 0,
-	COMM_REMOTE,
+	COMM_HTTP_POST = 0,
+	COMM_HTTP_GET,
+	COMM_MQTT,
 } comm_type;
 
 /**
