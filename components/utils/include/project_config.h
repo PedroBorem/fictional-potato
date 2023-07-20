@@ -98,9 +98,8 @@ typedef enum
 
 typedef enum
 {
-	COMM_GPRS = 0,
-	COMM_LORA,
-	COMM_HTTP,
+	COMM_LOCAL = 0,
+	COMM_REMOTE,
 } comm_type;
 
 /**
@@ -268,6 +267,6 @@ typedef enum
  * @param state The state of the main callback request.
  * @param buffer The buffer containing the data associated with the request.
  */
-typedef void (*app_callback)(app_call_states state, void* buffer);
+typedef void (*app_callback)(char* buffer_request, comm_type communication);
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */

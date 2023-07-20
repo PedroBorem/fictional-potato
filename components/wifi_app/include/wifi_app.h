@@ -20,16 +20,8 @@
  * @param wifi_ssid The SSID of the Wi-Fi network.
  * @return esp_err_t Returns ESP_OK if the initialization is successful, otherwise an error code.
  */
-esp_err_t wifi_app_init(char* wifi_ssid);
+esp_err_t wifi_app_init(char* wifi_ssid, char* wifi_pass);
 
-/**
- * @brief Register a callback function for Wi-Fi application events.
- *
- * This function registers a callback function to be called when a Wi-Fi application event occurs.
- *
- * @param callback The callback function to be registered.
- * @return esp_err_t Returns ESP_OK if the registration is successful, otherwise an error code.
- */
-esp_err_t wifi_app_register_callback(app_callback callback);
+void wifi_app_set_config(char* wifi_ssid, char* wifi_pass);
 
 #endif /** COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H */

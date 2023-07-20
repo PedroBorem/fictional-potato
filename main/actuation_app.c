@@ -143,10 +143,10 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
 				if(current_config.power_state == PIVOT_OFF)
 				{
-					actuation_app_call(CALL_OFF_PIVOT, NULL);
+					// actuation_app_call(CALL_OFF_PIVOT, NULL);  todo resolver isso
 				}
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
+				// actuation_app_call(CALL_MANUAL_PIVOT, &current_config);  todo resolver isso
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -158,7 +158,7 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_config.watering_state == PIVOT_DRY)
 				{
-					actuation_app_call(CALL_OFF_PIVOT, NULL);
+					//actuation_app_call(CALL_OFF_PIVOT, NULL);  todo resolver isso
 				}
 				else if(current_config.watering_state == PIVOT_WET)
 				{
@@ -166,7 +166,7 @@ void actuation_app_task(void* arg)
 					//gpio_actuator_set(actuation_config);
 				}
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
+				//actuation_app_call(CALL_MANUAL_PIVOT, &current_config); todo resolver isso
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -176,7 +176,7 @@ void actuation_app_task(void* arg)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
+				//actuation_app_call(CALL_MANUAL_PIVOT, &current_config); todo resolver isso
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
@@ -187,7 +187,7 @@ void actuation_app_task(void* arg)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_call(CALL_MANUAL_PIVOT, &current_config);
+				//actuation_app_call(CALL_MANUAL_PIVOT, &current_config); todo resolver isso
 				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}

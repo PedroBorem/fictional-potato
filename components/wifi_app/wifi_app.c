@@ -24,7 +24,6 @@
 
 /* Components include */
 #include "http_api.h"
-#include "FreeRTOS_defines.h"
 #include "log.h"
 
 /** @brief Wi-Fi application tag for logging. */
@@ -42,16 +41,10 @@
 /** @brief Maximum number of stations that can be connected to the access point. */
 #define WIFI_MAX_STA_CONN       5
 
-/** @brief Size of the Wi-Fi application queue for events. */
-#define WIFI_APP_SIZE_QUEUE_EVENT	5
-
 /* Private variables ------------------------------------ */
-static char wifi_global_ssid[35] = {};
-static app_callback wifi_app_callback = NULL;
+static char wifi_global_ssid[35] = "soil"; 		// todo alterar de acordo com que estiver na nvs
+static char wifi_global_pass[35] = "soil203";	// todo
 
-/* FreeRTOS variables */
-static TaskHandle_t xTask_wifi_app = NULL;
-static QueueHandle_t xQueue_wifi_app = NULL;
 static esp_netif_t* wifi_ap_netif = NULL;
 
 /* Private function prototype ------------------------------------ */
@@ -64,7 +57,7 @@ static esp_netif_t* wifi_ap_netif = NULL;
  * @param wifi_ssid The SSID of the Wi-Fi network.
  * @return esp_err_t Returns ESP_OK if the Wi-Fi application starts successfully, otherwise an error code.
  */
-static esp_err_t wifi_app_start(char* wifi_ssid);
+esp_err_t wifi_app_start(void);
 
 /**
  * @brief Wi-Fi reloader task.
@@ -72,15 +65,6 @@ static esp_err_t wifi_app_start(char* wifi_ssid);
  * This function is a task that reloads the Wi-Fi configuration when a request is received via the Wi-Fi application queue.
  */
 static void wifi_reloader(void);
-
-/**
- * @brief Wi-Fi application task.
- *
- * This function is the main task for the Wi-Fi application. It receives requests from the Wi-Fi application queue and reloads the Wi-Fi configuration accordingly.
- *
- * @param arg Task argument (not used).
- */
-static void wifi_app_task(void * arg);
 
 /**
  * @brief Wi-Fi event handler.
@@ -96,50 +80,25 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t wifi_app_init(char* wifi_ssid)
+esp_err_t wifi_app_init(char* wifi_ssid, char* wifi_pass)
 {
 	esp_err_t ret = ESP_FAIL;
 
-	xQueue_wifi_app = xQueueCreate( WIFI_APP_SIZE_QUEUE_EVENT, WIFI_APP_SIZE_QUEUE_EVENT );
-
-	if( xQueue_wifi_app != NULL )
-	{
-		xTaskCreate(&wifi_app_task,
-					WIFI_APP_TASK_NAME,
-					WIFI_APP_STACK_SIZE,
-					NULL,
-					WIFI_APP_TASK_PRIORITY,
-					&xTask_wifi_app );
-
-		if( xTask_wifi_app != NULL )
-		{
-			ret = wifi_app_start(wifi_ssid);
-		}
-		else
-		{
-			ret = ESP_FAIL;
-		}
-	}
+	wifi_app_set_config(wifi_ssid, wifi_pass);
+	ret = wifi_app_start();
 
     return ret;
 }
 
-esp_err_t wifi_app_register_callback(app_callback callback)
+// todo vai virar um set do wifi
+void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 {
-	esp_err_t ret = ESP_FAIL;
-
-	if(callback != NULL)
-	{
-		wifi_app_callback = callback;
-		ret = ESP_OK;
-	}
-
-	return ret;
+	strcpy(wifi_global_ssid, wifi_ssid);
+	strcpy(wifi_global_pass,wifi_pass);
 }
 
-
 /* Private methods ----------------------------------------------- */
-esp_err_t wifi_app_start(char* wifi_ssid)
+esp_err_t wifi_app_start(void)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -150,15 +109,11 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 	};
 
 	wifi_config_t wifi_config = {};
-	const char* wifi_pass = "soiltech"; // todo parametrizar o pass;
 
-	memset(wifi_global_ssid, 0x00, strlen(wifi_global_ssid));
-	memcpy(wifi_global_ssid, wifi_ssid, strlen(wifi_ssid));
-
-	strcpy((char*)(wifi_config.ap.ssid), wifi_ssid);
-	wifi_config.ap.ssid_len = strlen(wifi_ssid);
+	strcpy((char*)(wifi_config.ap.ssid), wifi_global_ssid);
+	wifi_config.ap.ssid_len = strlen(wifi_global_ssid);
 	wifi_config.ap.channel = WIFI_CHANNEL;
-	strcpy((char*)(wifi_config.ap.password), wifi_pass);
+	strcpy((char*)(wifi_config.ap.password), wifi_global_pass);
 	wifi_config.ap.max_connection = WIFI_MAX_STA_CONN;
 	wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
 
@@ -186,7 +141,7 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 														NULL,
 														NULL);
 
-			if (strlen(wifi_pass) == 0)
+			if (strlen(wifi_global_pass) == 0)
 			{
 				wifi_config.ap.authmode = WIFI_AUTH_OPEN;
 			}
@@ -222,42 +177,12 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 
 static void wifi_reloader(void)
 {
-	uint8_t wifi_app_queue_req = 0;
-	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
-}
+	esp_wifi_stop();
+	esp_wifi_deinit();
+	esp_event_loop_delete_default();
+	esp_netif_deinit();
 
-static void wifi_app_task(void * arg)
-{
-	uint8_t wifi_app_queue_req;
-	while(1)
-	{
-		if( xQueueReceive(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY ) == pdTRUE )
-		{
-			if(wifi_app_callback != NULL)
-			{
-				pivot_config current_config = {};
-				wifi_app_callback(CALL_READ_CONFIG, &current_config);
-
-				if(strcmp(current_config.pivot_id, wifi_global_ssid) != 0)
-				{
-					esp_wifi_stop();
-					esp_wifi_deinit();
-					esp_event_loop_delete_default();
-					esp_netif_deinit();
-
-					wifi_app_start(current_config.pivot_id);
-				}
-			}
-			else
-			{
-				ESP_LOGE(WIFI_TAG,"unregistered HTTP callback");
-			}
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(100));
-	}
-
-	return;
+	wifi_app_start();
 }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
@@ -266,14 +191,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 	 if (event_id == WIFI_EVENT_AP_STACONNECTED)
 	{
 		wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-		LOG_COMM(WIFI_TAG, "station "MACSTR" join, AID=%d",
+		LOG_COMM(WIFI_TAG, "station " MACSTR " join, AID=%d",
 		                 MAC2STR(event->mac), event->aid);
     }
 	else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
 	{
 		wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-		LOG_COMM(WIFI_TAG, "station "MACSTR" leave, AID=%d",
-		                 MAC2STR(event->mac), event->aid);
+		LOG_COMM(WIFI_TAG, "station " MACSTR " leave, AID=%d",
+		          MAC2STR(event->mac), event->aid);
 		wifi_reloader();
     }
 }

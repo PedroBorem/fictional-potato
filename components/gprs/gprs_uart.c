@@ -50,7 +50,7 @@
 /**
  * @brief Callback function for GPRS UART events
  */
-static gprs_uart_callback gprs_callback = NULL;
+static app_callback gprs_callback = NULL;
 
 /**
  * @brief Queue handle for GPRS UART events
@@ -65,7 +65,7 @@ static QueueHandle_t gprs_uart_queue = NULL;
 static void gprs_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t gprs_uart_init(const gprs_uart_callback callback)
+esp_err_t gprs_uart_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;

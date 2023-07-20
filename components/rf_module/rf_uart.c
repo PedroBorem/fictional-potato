@@ -31,14 +31,14 @@
 #define RF_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
-static rf_uart_callback rf_callback = NULL;
+static app_callback rf_callback = NULL;
 static QueueHandle_t rf_uart_queue = NULL;
 
 /* Private function prototype ------------------------------------ */
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(rf_uart_callback callback)
+esp_err_t rf_uart_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;
@@ -154,7 +154,7 @@ static void rf_uart_event_task(void* arg)
 
 						LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
 
-						rf_callback(buff_in, aux);
+						rf_callback(buff_in, COMM_REMOTE);
 						free(buff_in);
 					}
 					break;

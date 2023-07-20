@@ -50,28 +50,5 @@ esp_err_t http_server_stop(httpd_handle_t http_handle);
  */
 esp_err_t http_server_register_callback(app_callback callback);
 
-/**
- * @brief	Set the configuration string sent when receiving a GET request
- * @param	str_config[in] - buffer in json format containing the settings
- * @return
- *  - ESP_OK : Set the configuration string successfully.
- *  - ESP_ERR_INVALID_ARG : invalid null pointer argument.
- *  - ESP_FAIL : Error converting string.
- */
-esp_err_t http_server_set_str_action(pivot_actions current_action);
-
-/**
- * @brief	Set the configuration string sent when receiving a GET request
- * @param	str_config[in] - buffer in json format containing the settings
- * @return
- *  - ESP_OK : Set the configuration string successfully.
- *  - ESP_ERR_INVALID_ARG : invalid null pointer argument.
- *  - ESP_FAIL : Error converting string.
- */
-esp_err_t http_server_set_str_config(pivot_config current_config);
-
-esp_err_t http_server_set_str_actions(const pivot_actions action, const pivot_config config, uint16_t start_angle, uint16_t end_angle);
-
-void http_server_alert_actions(void);
 
 #endif /* COMPONENTS_HTTP_SERVER_INCLUDE_HTTP_API_H_ */

@@ -196,22 +196,4 @@
  */
 #define RF_UART_TASK_PRIORITY           (tskIDLE_PRIORITY + 12)
 
-/**
- * @def WIFI_APP_TASK_NAME
- * @brief Name of the WiFi app task.
- */
-#define WIFI_APP_TASK_NAME              "WiFi app task"
-
-/**
- * @def WIFI_APP_STACK_SIZE
- * @brief Stack size of the WiFi app task.
- */
-#define WIFI_APP_STACK_SIZE             (configMINIMAL_STACK_SIZE * 4)
-
-/**
- * @def WIFI_APP_TASK_PRIORITY
- * @brief Priority of the WiFi app task.
- */
-#define WIFI_APP_TASK_PRIORITY          (tskIDLE_PRIORITY + 8)
-
 #endif /* COMPONENTS_UTILS_INCLUDE_FREERTOS_DEFINES_H_ */

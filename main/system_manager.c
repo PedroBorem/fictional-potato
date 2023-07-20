@@ -16,6 +16,9 @@
 
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
+static uint16_t system_manager_current_angle = 0xFFFF;
+
+
 void system_manager_callback(char* buffer_request, comm_type communication)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -74,7 +77,7 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 			if(ret == ESP_OK)
 			{
 				// save old history
-				data_app_save_old_history(rtc_app_get_timestamp(false), comm_app_get_degree());
+				data_app_save_old_history(rtc_app_get_timestamp(false), system_manager_current_angle);
 
 				// act on the equipment
 				actuation_app_set_actions(new_actions, false);
@@ -86,7 +89,7 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 				if(new_actions.power_state != PIVOT_OFF)
 				{
 					new_history.start_date = rtc_app_get_timestamp(false);
-					new_history.start_angle = comm_app_get_degree();
+					new_history.start_angle = system_manager_current_angle;
 					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
 					data_app_save_new_history(new_history);
 				}
@@ -212,7 +215,6 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 		}
 		case IDP_7:
 		{
-			uint16_t angle;
 			time_t timestamp;
 			char utc[10] = {};
 
@@ -220,7 +222,7 @@ void system_manager_callback(char* buffer_request, comm_type communication)
 			arg_pair_t arg_pairs[] =
 			{
 				{ "uint8_t", &idp_request },
-				{ "uint16_t", &angle },
+				{ "uint16_t", &system_manager_current_angle },
 				{ "uint32_t", &timestamp },
 				{ "string", utc },
 				{ NULL, NULL }
