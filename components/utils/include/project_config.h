@@ -269,4 +269,7 @@ typedef enum
  */
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
+
+extern uint16_t global_angle;
+
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */
