@@ -72,48 +72,12 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		}
 		case IDP_3:
 		{
-			char pivot_id[20] = {};
-			pivot_config new_config = {};
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", pivot_id },
-				{ "string", &new_config.contactor },
-				{ "string", &new_config.pressure },
-				{ "uint16_t", &new_config.pressurization_time },
-				{ "uint8_t", &new_config.on_off_time },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-
-			ret = data_app_save_config(&new_config, sizeof(new_config));
-			if(ret == ESP_OK)
-			{
-				// todo comm_app_set_config(new_config);
-			}
-
+			system_manager_idp_03(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_4:
 		{
-			eco_mode_config eco_mode = {};
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "uint32_t", &eco_mode.start_time }, //todo isso deve ser timestamp?
-				{ "uint32_t", &eco_mode.end_time },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			// todo criar classe para salvar o eco na nvs.
-
-			// todo se eco_mode.start_time  e end forem 0 nao considero
-
-			// todo aplicar na task
+			system_manager_idp_04(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_5:
@@ -441,19 +405,29 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		// todo criar classe para salvar network_config na nvs.
+		// TODO criar classe para salvar network_config na nvs.
+
 		comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
+
+		// send ACK
+		arg_pair_t arg_pairs_2[] = {
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ NULL, NULL }
+		};
+		idp_parser_create_package(str_out, arg_pairs_2);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
 
 		// send GPRS module
 		idp = IDP_6;
-		arg_pair_t arg_pairs_2[] = {
+		arg_pair_t arg_pairs_3[] = {
 			{ "uint8_t", &idp },
 			{ "string", net_config.gprs_id },
 			{ "string", net_config.modem_apn },
 			{ NULL, NULL }
 		};
 
-		idp_parser_create_package(str_out,arg_pairs_2);
+		idp_parser_create_package(str_out, arg_pairs_3);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
 	}
 	else if(comm_mode == COMM_HTTP_GET)
@@ -485,15 +459,59 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
 	{
+		char str_out[200] = {};
 
+		uint8_t idp = 0;
+		pivot_config new_config = {};
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", new_config.pivot_id },
+			{ "string", new_config.contactor },
+			{ "string", new_config.pressure },
+			{ "uint16_t", &new_config.pressurization_time },
+			{ "uint8_t", &new_config.on_off_time },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save_config(&new_config, sizeof(new_config));
+		if(ret == ESP_OK)
+		{
+			// send ACK
+			arg_pair_t arg_pairs_2[] = {
+				{ "uint8_t", &idp },
+				{ "string", new_config.pivot_id },
+				{ NULL, NULL }
+			};
+			idp_parser_create_package(str_out, arg_pairs_2);
+			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+		}
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char str_out[200] = {};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+		uint8_t idp = IDP_3;
+		pivot_config config = {};
+		data_app_load_config(&config, sizeof(config));
 
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", config.pivot_id },
+			{ "string", config.contactor },
+			{ "string", config.pressure },
+			{ "uint16_t", &config.pressurization_time },
+			{ "uint8_t", &config.on_off_time },
+			{ NULL, NULL }
+		};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 	}
 }
 
@@ -501,13 +519,35 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
 	{
+		char str_out[200] = {};
+
+		uint8_t idp = 0;
+		eco_mode_config eco_mode = {};
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint32_t", &eco_mode.start_time }, //todo isso deve ser timestamp?
+			{ "uint32_t", &eco_mode.end_time },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(str_out, arg_pairs);
+		// todo criar classe para salvar o eco na nvs.
+		// todo se eco_mode.start_time  e end forem 0 nao considero
+		// todo aplicar na task
+
+		// send ACK
+		arg_pair_t arg_pairs_2[] = {
+			{ "uint8_t", &idp },
+			{ NULL, NULL }
+		};
+		idp_parser_create_package(str_out, arg_pairs_2);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+
 
 	}
 	else if(comm_mode == COMM_HTTP_GET)
-	{
-
-	}
-	else if(comm_mode == COMM_MQTT)
 	{
 
 	}
