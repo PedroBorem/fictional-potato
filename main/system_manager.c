@@ -45,10 +45,9 @@ void system_manager_init(void)
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
 {
-	esp_err_t ret = ESP_FAIL;
+	LOG_MANAGER(SYSTEM_MANAGER_TAG, "%s", buffer_request);
 
 	char str_idp[5] = {};
-	char str_out[200] = {};
 
 	idp_type idp_request = idp_parser_get(buffer_request);
     snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
@@ -82,205 +81,37 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		}
 		case IDP_5:
 		{
-			sector_config sector = {};
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "uint8_t", &sector.sector_number },
-				{ "uint16_t", &sector.sectors[0].start_angle },
-				{ "uint16_t", &sector.sectors[0].end_angle },
-				{ "uint16_t", &sector.sectors[1].start_angle },
-				{ "uint16_t", &sector.sectors[1].end_angle },
-				{ "uint16_t", &sector.sectors[2].start_angle },
-				{ "uint16_t", &sector.sectors[2].end_angle },
-				{ "uint16_t", &sector.sectors[3].start_angle },
-				{ "uint16_t", &sector.sectors[3].end_angle },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-
-			// todo criar classe para salvar os setores na nvs.
-
-			// todo se sector_number = 0 nao tem setor
-
-			// todo aplicar na task
+			system_manager_idp_05(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_7:
 		{
-			time_t timestamp;
-			char utc[10] = {};
-
-			// get angle
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "uint16_t", &global_angle },
-				{ "uint32_t", &timestamp },
-				{ "string", utc },
-				{ NULL, NULL }
-			};
-
-			if(initial_angle == 0xFFFF)
-			{
-				initial_angle = global_angle;
-			}
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			rtc_app_set_timestamp(timestamp);
-
+			system_manager_idp_07(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_12:
 		{
-			pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
-
-			data_app_load_history(load_history, sizeof(load_history));
-			// todo fazer tratamento para enviar
+			system_manager_idp_12(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_13:
 		{
-			char scheaduling_id[10] = {};
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", scheaduling_id },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-
-			// todo fazer um delete só
-			data_app_delete_scheduling(data_scheduling_date, scheaduling_id);
-			data_app_delete_scheduling(data_scheduling_angle, scheaduling_id);
-
-			// todo notificar a task de agendamento
+			system_manager_idp_13(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_14:
 		{
-			pivot_scheduling_date scheduling = {};
-			char pivot_id[20] = {};
-			uint16_t dwp = 0;
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", pivot_id },
-				{ "string", scheduling.scheduling_id },
-				{ "uint32_t", &scheduling.start_date },
-				{ "uint32_t", &scheduling.end_date },
-				{ "uint16_t", &dwp },
-				{ "uint8_t", &scheduling.actions.percentimeter },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			idp_parser_get_pwd(dwp, &scheduling.actions);
-
-			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
-
-			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-			{
-				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
-				{
-					memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
-
-					// get_rtc
-					scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-					scheduling_date[position].end_date += rtc_app_get_timestamp(false);
-
-					data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
-
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
-					// todo notificar a classe de agendamento
-					break;
-				}
-			}
-
+			system_manager_idp_14(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_15:
 		{
-			pivot_scheduling_angle scheduling = {};
-			char pivot_id[20] = {};
-			uint16_t dwp = 0;
-
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "string", pivot_id },
-				{ "string", scheduling.scheduling_id },
-				{ "uint32_t", &scheduling.start_date },
-				{ "uint16_t", &scheduling.end_angle },
-				{ "uint16_t", &dwp },
-				{ "uint8_t", &scheduling.actions.percentimeter },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-			idp_parser_get_pwd(dwp, &scheduling.actions);
-
-			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
-
-			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-			{
-				if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
-				{
-					memcpy(&scheduling_angle[position], &scheduling, sizeof(scheduling_angle[position]));
-
-					// get_rtc
-					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
-					data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
-					data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
-
-					// todo notificar a classe de agendamento
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
-					break;
-				}
-			}
+			system_manager_idp_15(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_16:
 		{
-			pivot_scheduling_date scheduling = {};
-			arg_pair_t arg_pairs[] =
-			{
-				{ "uint8_t", &idp_request },
-				{ "uint32_t", &scheduling.end_date },
-				{ NULL, NULL }
-			};
-
-			idp_parser_get_packet_data(str_out, arg_pairs);
-
-			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
-
-			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-			{
-				if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
-				{
-					memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
-
-					// get_rtc
-					scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-					scheduling_date[position].end_date += rtc_app_get_timestamp(false);
-
-					data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-					data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
-
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
-					// todo notificar a classe de agendamento
-					break;
-				}
-			}
-
+			system_manager_idp_16(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_INVALID:
@@ -292,11 +123,7 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 			break;
 		}
 	}
-
-	LOG_MANAGER(SYSTEM_MANAGER_TAG, "%s", str_out);
 }
-
-
 
 static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 {
@@ -317,7 +144,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 		{ "uint16_t", &initial_angle },
 		{ "uint16_t", &global_angle },
 		{ "uint32_t", &timestamp },
-		{ NULL, NULL } // TODO fazer oq falta;
+		{ NULL, NULL }
 	};
 
 	idp_parser_create_package(str_out,arg_pairs);
@@ -486,6 +313,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 				{ "string", new_config.pivot_id },
 				{ NULL, NULL }
 			};
+
 			idp_parser_create_package(str_out, arg_pairs_2);
 			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
 		}
@@ -532,7 +360,7 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 			{ NULL, NULL }
 		};
 
-		idp_parser_get_packet_data(str_out, arg_pairs);
+		idp_parser_get_packet_data(buffer, arg_pairs);
 		// todo criar classe para salvar o eco na nvs.
 		// todo se eco_mode.start_time  e end forem 0 nao considero
 		// todo aplicar na task
@@ -542,14 +370,29 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 			{ "uint8_t", &idp },
 			{ NULL, NULL }
 		};
+
 		idp_parser_create_package(str_out, arg_pairs_2);
 		comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-
-
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char str_out[200] = {};
 
+		uint8_t idp = IDP_4;
+		eco_mode_config eco_mode = {};
+
+		// todo criar classe para ler na nvs.
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint32_t", &eco_mode.start_time },
+			{ "uint32_t", &eco_mode.end_time },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 	}
 }
 
@@ -557,110 +400,391 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
 	{
+		char str_out[200] = {};
 
+		uint8_t idp = 0;
+		sector_config sector = {};
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint8_t", &sector.sector_number },
+			{ "uint16_t", &sector.sectors[0].start_angle },
+			{ "uint16_t", &sector.sectors[0].end_angle },
+			{ "uint16_t", &sector.sectors[1].start_angle },
+			{ "uint16_t", &sector.sectors[1].end_angle },
+			{ "uint16_t", &sector.sectors[2].start_angle },
+			{ "uint16_t", &sector.sectors[2].end_angle },
+			{ "uint16_t", &sector.sectors[3].start_angle },
+			{ "uint16_t", &sector.sectors[3].end_angle },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+		// todo criar classe para salvar os setores na nvs.
+		// todo se sector_number = 0 nao tem setor
+		// todo aplicar na task
+
+		// send ACK
+		arg_pair_t arg_pairs_2[] = {
+			{ "uint8_t", &idp },
+			{ NULL, NULL }
+		};
+		idp_parser_create_package(str_out, arg_pairs_2);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char str_out[200] = {};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+		uint8_t idp = IDP_4;
+		sector_config sector = {};
 
+		// todo criar classe para ler na nvs.
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint8_t", &sector.sector_number },
+			{ "uint16_t", &sector.sectors[0].start_angle },
+			{ "uint16_t", &sector.sectors[0].end_angle },
+			{ "uint16_t", &sector.sectors[1].start_angle },
+			{ "uint16_t", &sector.sectors[1].end_angle },
+			{ "uint16_t", &sector.sectors[2].start_angle },
+			{ "uint16_t", &sector.sectors[2].end_angle },
+			{ "uint16_t", &sector.sectors[3].start_angle },
+			{ "uint16_t", &sector.sectors[3].end_angle },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 	}
 }
 
 static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
-	{
+	uint8_t idp = 0;
+	time_t timestamp;
+	char utc[10] = {};
 
-	}
-	else if(comm_mode == COMM_HTTP_GET)
+	// get angle
+	arg_pair_t arg_pairs[] =
 	{
+		{ "uint8_t", &idp },
+		{ "uint16_t", &global_angle },
+		{ "uint32_t", &timestamp },
+		{ "string", utc },
+		{ NULL, NULL }
+	};
 
-	}
-	else if(comm_mode == COMM_MQTT)
+	if(initial_angle == 0xFFFF)
 	{
-
+		initial_angle = global_angle;
 	}
+
+	idp_parser_get_packet_data(buffer, arg_pairs);
+	rtc_app_set_timestamp(timestamp);
 }
 
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
-	{
+	pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
-	}
-	else if(comm_mode == COMM_HTTP_GET)
-	{
-
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
-
-	}
+	data_app_load_history(load_history, sizeof(load_history));
+	// todo fazer tratamento para enviar
 }
 
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
-	{
+	char scheaduling_id[10] = {};
+	uint8_t idp = 0;
 
-	}
-	else if(comm_mode == COMM_HTTP_GET)
+	arg_pair_t arg_pairs[] =
 	{
+		{ "uint8_t", &idp },
+		{ "string", scheaduling_id },
+		{ NULL, NULL }
+	};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+	idp_parser_get_packet_data(buffer, arg_pairs);
 
-	}
+	// todo fazer um delete só
+	data_app_delete_scheduling(data_scheduling_date, scheaduling_id);
+	data_app_delete_scheduling(data_scheduling_angle, scheaduling_id);
+
+	// todo notificar a task de agendamento
 }
 
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
+		pivot_scheduling_date scheduling = {};
+		char pivot_id[20] = {};
+		uint16_t dwp = 0;
+		uint8_t idp = 0;
 
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "string", scheduling.scheduling_id },
+			{ "uint32_t", &scheduling.start_date },
+			{ "uint32_t", &scheduling.end_date },
+			{ "uint16_t", &dwp },
+			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+		idp_parser_get_pwd(dwp, &scheduling.actions);
+
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			{
+				memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
+
+				// get_rtc
+				scheduling_date[position].start_date += rtc_app_get_timestamp(false);
+				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+
+				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
+				data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
+				// todo notificar a classe de agendamento
+				break;
+			}
+		}
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char buffer_out[500] = {};
+		char pivot_id[20] = {};
+		char str_out[200] = {};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+		uint16_t dwp = 0;
+		uint8_t idp = IDP_14;
+		uint8_t scheduling_size = 0;
 
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			{
+				scheduling_size = position;
+				break;
+			}
+		}
+
+		for(uint8_t position = 0; position <= scheduling_size; position++)
+		{
+			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
+
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp },
+				{ "string", pivot_id },
+				{ "string", scheduling_date[position].scheduling_id },
+				{ "uint32_t", &scheduling_date[position].start_date },
+				{ "uint32_t", &scheduling_date[position].end_date },
+				{ "uint16_t", &dwp },
+				{ "uint8_t", &scheduling_date[position].actions.percentimeter },
+				{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs);
+
+			strcat(buffer_out, str_out);
+			strcat(buffer_out, "\n");
+		}
+
+		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
 }
 
 static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
+		pivot_scheduling_angle scheduling = {};
+		char pivot_id[20] = {};
+
+		uint16_t dwp = 0;
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "string", scheduling.scheduling_id },
+			{ "uint32_t", &scheduling.start_date },
+			{ "uint16_t", &scheduling.end_angle },
+			{ "uint16_t", &dwp },
+			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+		idp_parser_get_pwd(dwp, &scheduling.actions);
+
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
+			{
+				memcpy(&scheduling_angle[position], &scheduling, sizeof(scheduling_angle[position]));
+
+				// get_rtc
+				scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+				data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
+				data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+				// todo notificar a classe de agendamento
+				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
+				break;
+			}
+		}
 
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char buffer_out[500] = {};
+		char pivot_id[20] = {};
+		char str_out[200] = {};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+		uint16_t dwp = 0;
+		uint8_t idp = IDP_15;
+		uint8_t scheduling_size = 0;
 
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
+			{
+				scheduling_size = position;
+				break;
+			}
+		}
+
+		for(uint8_t position = 0; position <= scheduling_size; position++)
+		{
+			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
+
+			arg_pair_t arg_pairs[] =
+			{
+				{ "uint8_t", &idp },
+				{ "string", pivot_id },
+				{ "string", scheduling_angle[position].scheduling_id },
+				{ "uint32_t", &scheduling_angle[position].start_date },
+				{ "uint16_t", &scheduling_angle[position].end_angle },
+				{ "uint16_t", &dwp },
+				{ "uint8_t", &scheduling_angle[position].actions.percentimeter },
+				{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs);
+
+			strcat(buffer_out, str_out);
+			strcat(buffer_out, "\n");
+		}
+
+		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
 }
 
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
+		pivot_scheduling_date scheduling = {};
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint32_t", &scheduling.end_date },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			{
+				memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
+
+				// get_rtc
+				scheduling_date[position].start_date += rtc_app_get_timestamp(false);
+				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+
+				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
+				data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
+				// todo notificar a classe de agendamento
+				break;
+			}
+		}
 
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
+		char buffer_out[500] = {};
+		char pivot_id[20] = {};
+		char str_out[200] = {};
 
-	}
-	else if(comm_mode == COMM_MQTT)
-	{
+		uint8_t idp = IDP_16;
+		uint8_t scheduling_size = 0;
 
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			{
+				scheduling_size = position;
+				break;
+			}
+		}
+
+		for(uint8_t position = 0; position <= scheduling_size; position++)
+		{
+			if(scheduling_date[position].start_date == 0
+			&& scheduling_date[position].end_date != 0)
+			{
+				arg_pair_t arg_pairs[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", pivot_id },
+					{ "string", scheduling_date[position].scheduling_id },
+					{ "uint32_t", &scheduling_date[position].end_date },
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs);
+
+				strcat(buffer_out, str_out);
+				strcat(buffer_out, "\n");
+			}
+		}
+
+		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
 }

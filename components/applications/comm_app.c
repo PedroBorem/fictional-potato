@@ -51,6 +51,8 @@ void comm_app_send_idp_pack(char* idp_pack, comm_type communication)
 		gprs_uart_send_event(idp_pack, strlen(idp_pack));
 		rf_uart_send_event(idp_pack, strlen(idp_pack));
 	}
+
+	LOG_COMM(COMM_APP_TAG, "send %s", idp_pack);
 }
 
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
