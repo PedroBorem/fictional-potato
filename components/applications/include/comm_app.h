@@ -27,7 +27,7 @@
  */
 esp_err_t comm_app_init(const app_callback callback);
 
-void comm_app_send_idp_pack(char* idp_pack, comm_type communication);
+void comm_app_send_idp_pack(const char* idp_pack, comm_type communication);
 
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
 

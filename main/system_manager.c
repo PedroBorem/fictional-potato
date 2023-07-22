@@ -195,8 +195,15 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
 
-			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
+			if(comm_mode == COMM_HTTP_POST)
+			{
+				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+				comm_app_send_idp_pack(buffer, COMM_MQTT);
+			}
+			else
+			{
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+			}
 
 			// save new history
 			if(new_actions.power_state != PIVOT_OFF)
@@ -498,6 +505,7 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 {
 	char scheaduling_id[10] = {};
+	char str_out[200] = {};
 	uint8_t idp = 0;
 
 	arg_pair_t arg_pairs[] =
@@ -509,9 +517,26 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
 
-	// todo fazer um delete só
+	// todo fazer um delete só na classe data_app
 	data_app_delete_scheduling(data_scheduling_date, scheaduling_id);
 	data_app_delete_scheduling(data_scheduling_angle, scheaduling_id);
+
+	// send ack
+	pivot_config config = {};
+	data_app_load_config(&config, sizeof(config));
+
+	arg_pair_t arg_pairs_2[] =
+	{
+		{ "uint8_t", &idp },
+		{ "uint8_t", config.pivot_id },
+		{ "uint16_t", scheaduling_id },
+		{ NULL, NULL }
+	};
+
+	idp_parser_create_package(str_out, arg_pairs_2);
+
+	comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 
 	// todo notificar a task de agendamento
 }

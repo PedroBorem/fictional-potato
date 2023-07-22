@@ -39,20 +39,24 @@ esp_err_t comm_app_init(const app_callback callback)
 	return err;
 }
 
-void comm_app_send_idp_pack(char* idp_pack, comm_type communication)
+void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
+	char* str_copy = strdup(idp_pack);
+
 	if(communication == COMM_HTTP_POST
 	|| communication == COMM_HTTP_GET )
 	{
-		http_server_send_resp(idp_pack);
+		http_server_send_resp(str_copy);
 	}
 	else if(communication == COMM_MQTT)
 	{
-		gprs_uart_send_event(idp_pack, strlen(idp_pack));
-		rf_uart_send_event(idp_pack, strlen(idp_pack));
+		gprs_uart_send_event(str_copy, strlen(str_copy));
+		rf_uart_send_event(str_copy, strlen(str_copy));
 	}
 
-	LOG_COMM(COMM_APP_TAG, "send %s", idp_pack);
+	LOG_COMM(COMM_APP_TAG, "send %s", str_copy);
+
+	free(str_copy);
 }
 
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
