@@ -545,15 +545,15 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
+		char str_out[200] = {};
+
 		pivot_scheduling_date scheduling = {};
-		char pivot_id[20] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", pivot_id },
 			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint32_t", &scheduling.end_date },
@@ -583,6 +583,27 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 				// todo notificar a classe de agendamento
+
+				// send ack
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				arg_pair_t arg_pairs_2[] =
+				{
+					{ "uint8_t", &idp },
+					{ "uint8_t", config.pivot_id },
+					{ "uint32_t", &scheduling.start_date },
+					{ "uint32_t", &scheduling.end_date },
+					{ "uint16_t", &dwp },
+					{ "uint8_t", &scheduling.actions.percentimeter },
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs_2);
+
+				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+
 				break;
 			}
 		}
@@ -590,7 +611,6 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char buffer_out[500] = {};
-		char pivot_id[20] = {};
 		char str_out[200] = {};
 
 		uint16_t dwp = 0;
@@ -613,10 +633,13 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		{
 			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
 
+			pivot_config config = {};
+			data_app_load_config(&config, sizeof(config));
+
 			arg_pair_t arg_pairs[] =
 			{
 				{ "uint8_t", &idp },
-				{ "string", pivot_id },
+				{ "string", config.pivot_id },
 				{ "string", scheduling_date[position].scheduling_id },
 				{ "uint32_t", &scheduling_date[position].start_date },
 				{ "uint32_t", &scheduling_date[position].end_date },
@@ -639,16 +662,15 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
-		pivot_scheduling_angle scheduling = {};
-		char pivot_id[20] = {};
+		char str_out[200] = {};
 
+		pivot_scheduling_angle scheduling = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", pivot_id },
 			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint16_t", &scheduling.end_angle },
@@ -676,6 +698,26 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 
 				// todo notificar a classe de agendamento
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
+
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				arg_pair_t arg_pairs_2[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", config.pivot_id },
+					{ "string", scheduling.scheduling_id },
+					{ "uint32_t", &scheduling.start_date },
+					{ "uint16_t", &scheduling.end_angle },
+					{ "uint16_t", &dwp },
+					{ "uint8_t", &scheduling.actions.percentimeter },
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs_2);
+
+				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
 				break;
 			}
 		}
@@ -684,7 +726,6 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char buffer_out[500] = {};
-		char pivot_id[20] = {};
 		char str_out[200] = {};
 
 		uint16_t dwp = 0;
@@ -707,10 +748,13 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		{
 			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
 
+			pivot_config config = {};
+			data_app_load_config(&config, sizeof(config));
+
 			arg_pair_t arg_pairs[] =
 			{
 				{ "uint8_t", &idp },
-				{ "string", pivot_id },
+				{ "string", config.pivot_id },
 				{ "string", scheduling_angle[position].scheduling_id },
 				{ "uint32_t", &scheduling_angle[position].start_date },
 				{ "uint16_t", &scheduling_angle[position].end_angle },
@@ -733,6 +777,8 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
+		char str_out[200] = {};
+
 		pivot_scheduling_date scheduling = {};
 		uint8_t idp = 0;
 
@@ -763,15 +809,31 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 				// todo notificar a classe de agendamento
+
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
+				arg_pair_t arg_pairs_2[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", config.pivot_id },
+					{ "string", scheduling_date[position].scheduling_id },
+					{ "uint32_t", &scheduling.end_date },
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs_2);
+
+				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+
 				break;
 			}
 		}
-
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char buffer_out[500] = {};
-		char pivot_id[20] = {};
 		char str_out[200] = {};
 
 		uint8_t idp = IDP_16;
@@ -794,10 +856,13 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 			if(scheduling_date[position].start_date == 0
 			&& scheduling_date[position].end_date != 0)
 			{
+				pivot_config config = {};
+				data_app_load_config(&config, sizeof(config));
+
 				arg_pair_t arg_pairs[] =
 				{
 					{ "uint8_t", &idp },
-					{ "string", pivot_id },
+					{ "string", config.pivot_id },
 					{ "string", scheduling_date[position].scheduling_id },
 					{ "uint32_t", &scheduling_date[position].end_date },
 					{ NULL, NULL }
