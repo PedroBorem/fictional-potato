@@ -1,3 +1,9 @@
+/*
+ * system_manager.c
+ *
+ *  Created on: 31 de mai de 2022
+ *      Author: brunolima
+ */
 
 //applications include
 #include "system_manager.h"
@@ -176,11 +182,15 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 		idp_parser_get_packet_data(str_out, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
 
-		ret = data_app_save_actions(&new_actions, sizeof(new_actions));
+		ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
 		if(ret == ESP_OK)
 		{
 			// save old history
-			data_app_save_old_history(rtc_app_get_timestamp(false), global_angle);
+			pivot_history old_history = {};
+			old_history.end_date = rtc_app_get_timestamp(false);
+			old_history.end_angle = global_angle;
+
+			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 			// act on the equipment
 			actuation_app_set_actions(new_actions, false);
@@ -211,7 +221,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 				new_history.start_date = rtc_app_get_timestamp(false);
 				new_history.start_angle = global_angle;
 				memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
-				data_app_save_new_history(new_history);
+				data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
 			}
 		}
 	}
@@ -239,8 +249,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		// TODO criar classe para salvar network_config na nvs.
-
+		data_app_save(DATA_TYPE_NETWORK_CONFIG, &net_config, sizeof(net_config));
 		comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
 
 		// send ACK
@@ -271,7 +280,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		network_config net_config = {};
 		uint8_t idp = IDP_2;
 
-		// todo criar classe para ler network_config na nvs.
+		data_app_load(DATA_TYPE_NETWORK_CONFIG, &net_config);
 
 		arg_pair_t arg_pairs[] =
 		{
@@ -311,7 +320,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		esp_err_t ret = data_app_save_config(&new_config, sizeof(new_config));
+		esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 		if(ret == ESP_OK)
 		{
 			// send ACK
@@ -331,7 +340,8 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 		uint8_t idp = IDP_3;
 		pivot_config config = {};
-		data_app_load_config(&config, sizeof(config));
+
+		data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 		arg_pair_t arg_pairs[] =
 		{
@@ -368,7 +378,8 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 		};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		// todo criar classe para salvar o eco na nvs.
+		data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode, sizeof(eco_mode));
+
 		// todo se eco_mode.start_time  e end forem 0 nao considero
 		// todo aplicar na task
 
@@ -388,7 +399,7 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 		uint8_t idp = IDP_4;
 		eco_mode_config eco_mode = {};
 
-		// todo criar classe para ler na nvs.
+		data_app_load(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode);
 
 		arg_pair_t arg_pairs[] =
 		{
@@ -428,7 +439,8 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		// todo criar classe para salvar os setores na nvs.
+		data_app_save(DATA_TYPE_SECTOR_CONFIG, &sector, sizeof(sector));
+
 		// todo se sector_number = 0 nao tem setor
 		// todo aplicar na task
 
@@ -447,7 +459,7 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		uint8_t idp = IDP_4;
 		sector_config sector = {};
 
-		// todo criar classe para ler na nvs.
+		data_app_load(DATA_TYPE_SECTOR_CONFIG, &sector);
 
 		arg_pair_t arg_pairs[] =
 		{
@@ -498,7 +510,7 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 {
 	pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
-	data_app_load_history(load_history, sizeof(load_history));
+	data_app_load(DATA_TYPE_HISTORY, &load_history);
 	// todo fazer tratamento para enviar
 }
 
@@ -516,14 +528,11 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
-
-	// todo fazer um delete só na classe data_app
-	data_app_delete_scheduling(data_scheduling_date, scheaduling_id);
-	data_app_delete_scheduling(data_scheduling_angle, scheaduling_id);
+	data_app_delete(scheaduling_id);
 
 	// send ack
 	pivot_config config = {};
-	data_app_load_config(&config, sizeof(config));
+	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 	arg_pair_t arg_pairs_2[] =
 	{
@@ -566,7 +575,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		idp_parser_get_pwd(dwp, &scheduling.actions);
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -579,14 +588,14 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
 
 				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-				data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 				// todo notificar a classe de agendamento
 
 				// send ack
 				pivot_config config = {};
-				data_app_load_config(&config, sizeof(config));
+				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 				arg_pair_t arg_pairs_2[] =
 				{
@@ -618,7 +627,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -634,7 +643,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
 
 			pivot_config config = {};
-			data_app_load_config(&config, sizeof(config));
+			data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 			arg_pair_t arg_pairs[] =
 			{
@@ -683,7 +692,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		idp_parser_get_pwd(dwp, &scheduling.actions);
 
 		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+		data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -694,13 +703,13 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 				// get_rtc
 				scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
 				data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
-				data_app_save_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+				data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
 				// todo notificar a classe de agendamento
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
 				pivot_config config = {};
-				data_app_load_config(&config, sizeof(config));
+				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 				arg_pair_t arg_pairs_2[] =
 				{
@@ -733,7 +742,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_angle, scheduling_angle, sizeof(scheduling_angle));
+		data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -749,7 +758,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
 
 			pivot_config config = {};
-			data_app_load_config(&config, sizeof(config));
+			data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 			arg_pair_t arg_pairs[] =
 			{
@@ -792,7 +801,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -805,13 +814,13 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
 
 				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-				data_app_save_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 				// todo notificar a classe de agendamento
 
 				pivot_config config = {};
-				data_app_load_config(&config, sizeof(config));
+				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 				arg_pair_t arg_pairs_2[] =
 				{
@@ -840,7 +849,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load_scheduling(data_scheduling_date, scheduling_date, sizeof(scheduling_date));
+		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -857,7 +866,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 			&& scheduling_date[position].end_date != 0)
 			{
 				pivot_config config = {};
-				data_app_load_config(&config, sizeof(config));
+				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 
 				arg_pair_t arg_pairs[] =
 				{

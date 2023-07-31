@@ -16,89 +16,25 @@
 
 #include "esp_err.h"
 
-#include "project_config.h"
-
 typedef enum
 {
-	data_scheduling_date = 0,
-	data_scheduling_angle,
-}data_scheduling_type;
+	DATA_TYPE_ACTIONS = 0,
+	DATA_TYPE_PIVOT_CONFIG,
+	DATA_TYPE_NETWORK_CONFIG,
+	DATA_TYPE_ECO_MODE_CONFIG,
+	DATA_TYPE_SECTOR_CONFIG,
+	DATA_TYPE_SCHEADULING_DATE,
+	DATA_TYPE_SCHEADULING_ANGLE,
+	DATA_TYPE_HISTORY,
+	DATA_TYPE_OLD_HISTORY,
+	DATA_TYPE_TIMESTAMP,
+}data_type_t;
 
-/**
- * @brief	start all memory modules
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
- */
 esp_err_t data_app_init(void);
-
-/**
- * @brief	sends the queue a request to save a new action
- * @param 	value - [in]: content you want to save in memory.
- * @param 	size - [in]: size of content
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to save
- */
-esp_err_t data_app_save_actions(const pivot_actions* action, size_t size);
-
-/**
- * @brief	sends the queue a request to load a current action.
- * @param 	out_value - [in]: return pointer with the value read from the label.
- * @param 	size - [in]: size allocated for pointer(out_value).
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to save
- */
-esp_err_t data_app_load_actions(pivot_actions* out_action, size_t size);
-
-/**
- * @brief	sends the queue a request to save a new configuration
- * @param 	value - [in]: content you want to save in memory.
- * @param 	size - [in]: size of content
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to save
- */
-esp_err_t data_app_save_config(const pivot_config* config, size_t size);
-
-/**
- * @brief	sends the queue a request to load a configuration.
- * @param 	out_value - [in]: return pointer with the value read from the label.
- * @param 	size - [in]: size allocated for pointer(out_value).
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to save
- */
-esp_err_t data_app_load_config(pivot_config* out_config, size_t size);
-
+esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_size);
+esp_err_t data_app_load(data_type_t data_type, void* data);
+esp_err_t data_app_delete(void* data_id);
 void data_app_gen_scheduling_key(char* scheduling_id);
-
-esp_err_t data_app_save_scheduling(data_scheduling_type scheduling_type, const void* value, size_t size);
-
-esp_err_t data_app_load_scheduling(data_scheduling_type scheduling_type, void* out_value, size_t size);
-
-esp_err_t data_app_delete_scheduling(data_scheduling_type scheduling_type, char* scheduling_id);
-
-
-esp_err_t data_app_save_new_history(pivot_history new_history);
-
-esp_err_t data_app_save_old_history(time_t end_date, uint16_t end_angle);
-
-esp_err_t data_app_load_history(pivot_history* out_history, size_t size);
-
-
-esp_err_t data_app_save_timestamp(time_t* timestamp);
-
-esp_err_t data_app_load_timestamp(time_t* out_timestamp);
-
-/**
- * @brief Gets the data size for the informed key.
- * @param 	key - access key defined in project_config.h
- * @return
- *  - 0: in case of errors
- *  - Data size.
- */
-size_t data_app_get_data_size(const char* label_name, const char* key);
+size_t data_app_get_data_size(const char* label_name);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_DATA_APP_H_ */

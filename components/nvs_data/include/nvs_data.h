@@ -30,12 +30,11 @@ esp_err_t nvs_data_init(void);
  * This function sets the value in the NVS data under the specified label and key.
  *
  * @param label_name The label name for the NVS data.
- * @param key The key under which the value is stored.
  * @param value The value to be stored.
  * @param length The length of the value.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t nvs_data_set(const char* label_name, const char* key, const void* value, size_t length);
+esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length);
 
 /**
  * @brief Gets the size of the NVS data.
@@ -43,10 +42,9 @@ esp_err_t nvs_data_set(const char* label_name, const char* key, const void* valu
  * This function retrieves the size of the NVS data under the specified label and key.
  *
  * @param label_name The label name for the NVS data.
- * @param key The key for which to retrieve the size.
  * @return size_t The size of the NVS data.
  */
-size_t nvs_data_get_size(const char* label_name, const char* key);
+size_t nvs_data_get_size(const char* label_name);
 
 /**
  * @brief Gets the NVS data as a blob.
@@ -54,10 +52,9 @@ size_t nvs_data_get_size(const char* label_name, const char* key);
  * This function retrieves the NVS data as a blob under the specified label and key.
  *
  * @param label_name The label name for the NVS data.
- * @param key The key for which to retrieve the data.
  * @param out_value The buffer to store the retrieved data.
  * @return esp_err_t An error code indicating the success or failure of the operation.
  */
-esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* out_value);
+esp_err_t nvs_data_get_blob(const char* label_name, uint8_t* out_value);
 
 #endif /* COMPONENTS_NVS_DATA_INCLUDE_NVS_DATA_H_ */

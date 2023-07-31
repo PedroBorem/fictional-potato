@@ -6,19 +6,8 @@
  */
 
 /* Applications include */
-#include "rtc_app.h"
-#include "project_config.h"
 #include "FreeRTOS_defines.h"
-#include "log.h"
 #include "system_manager.h"
-
-/* C base */
-#include <string.h>
-
-#include "actuation_app.h"
-#include "comm_app.h"
-#include "data_app.h"
-
 
 /**
  * @brief	main class

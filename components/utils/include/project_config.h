@@ -237,30 +237,6 @@ typedef struct __attribute__((__packed__))
 } pivot_history;
 
 /**
- * @brief Main callback request states.
- * @deprecated
- *
- * Enumeration defining the states for the main callback request.
- */
-typedef enum
-{
-    CALL_LOAD_ACTION = 1,               /*!< Load configuration read request */
-    CALL_SAVE_ACTION,                   /*!< Save configuration read request */
-    CALL_READ_ACTION,                   /*!< Read configuration read request */
-    CALL_SAVE_CONFIG,                   /*!< Save configuration request */
-    CALL_READ_CONFIG,                   /*!< Read configuration request */
-    CALL_SAVE_SCHEDULE_DATE,            /*!< Save scheduling based on date request */
-    CALL_LOAD_SCHEDULE_DATE,            /*!< Load scheduling based on date request */
-    CALL_DELETE_SCHEDULE_DATE,          /*!< Delete scheduling based on date request */
-    CALL_SAVE_SCHEDULE_ANGLE,           /*!< Save scheduling based on angle request */
-    CALL_LOAD_SCHEDULE_ANGLE,           /*!< Load scheduling based on angle request */
-    CALL_DELETE_SCHEDULE_ANGLE,         /*!< Delete scheduling based on angle request */
-    CALL_LOAD_HISTORY,                  /*!< Load history request */
-    CALL_MANUAL_PIVOT,                  /*!< Manual pivot request */
-    CALL_OFF_PIVOT                      /*!< Pivot off request */
-} app_call_states;
-
-/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.
