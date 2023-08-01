@@ -21,6 +21,7 @@
 #include "data_app.h"
 
 #include "sectorization.h"
+#include "scheaduling.h"
 
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
@@ -49,6 +50,20 @@ void system_manager_init(void)
 	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
 	ESP_ERROR_CHECK(data_app_init());
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
+
+	// init sectors
+	sector_config sectors = {};
+	data_app_load(DATA_TYPE_SECTOR_CONFIG, &sectors);
+	sectorization_start(sectors);
+
+	// init scheduling
+	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+
+	data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+	data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+	scheduling_start(scheduling_date, scheduling_angle);
+
 }
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
@@ -518,9 +533,12 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 {
-	char scheaduling_id[10] = {};
-	char str_out[200] = {};
+	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+
 	uint8_t idp = 0;
+	char str_out[200] = {};
+	char scheaduling_id[10] = {};
 
 	arg_pair_t arg_pairs[] =
 	{
@@ -530,7 +548,13 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
+
 	data_app_delete(scheaduling_id);
+	data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+	data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+
+	scheduling_stop();
+	scheduling_start(scheduling_date, scheduling_angle);
 
 	// send ack
 	pivot_config config = {};
@@ -548,8 +572,6 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 
 	comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
 	comm_app_send_idp_pack(str_out, COMM_MQTT);
-
-	// todo notificar a task de agendamento
 }
 
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
@@ -592,8 +614,10 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
 				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
+				scheduling_stop();
+				scheduling_start(scheduling_date, NULL);
+
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
-				// todo notificar a classe de agendamento
 
 				// send ack
 				pivot_config config = {};
@@ -707,7 +731,9 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 				data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
 				data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
-				// todo notificar a classe de agendamento
+				scheduling_stop();
+				scheduling_start(NULL, scheduling_angle);
+
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
 				pivot_config config = {};
@@ -818,8 +844,10 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
 				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
+				scheduling_stop();
+				scheduling_start(scheduling_date, NULL);
+
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
-				// todo notificar a classe de agendamento
 
 				pivot_config config = {};
 				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);

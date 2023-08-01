@@ -18,9 +18,9 @@
 
 
 static TaskHandle_t xTask_sectorization = NULL;
-static uint16_t* sectorization_current_angle  = &global_angle;
 static sector_config sectorization_config = {};
 
+static uint16_t* sectorization_current_angle  = &global_angle;
 
 static void sectorization_task(void* arg)
 {

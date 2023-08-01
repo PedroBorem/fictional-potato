@@ -5,8 +5,8 @@
  * This header file defines the RTC application class for managing date and time functionality.
  */
 
-#ifndef COMPONENTS_RTC_INCLUDE_RTC_APP_H_
-#define COMPONENTS_RTC_INCLUDE_RTC_APP_H_
+#ifndef COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
+#define COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
 
 #include <time.h>
 #include <stdbool.h>
@@ -68,4 +68,4 @@ void rtc_app_get_date_time(struct tm* rtcinfo);
  */
 void rtc_show_date_time(time_t timestamp_now, uint8_t time_z);
 
-#endif /* COMPONENTS_RTC_INCLUDE_RTC_APP_H_ */
+#endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */
