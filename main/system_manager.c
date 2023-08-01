@@ -20,6 +20,8 @@
 #include "comm_app.h"
 #include "data_app.h"
 
+#include "sectorization.h"
+
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
 /* global variables */
@@ -441,8 +443,8 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		data_app_save(DATA_TYPE_SECTOR_CONFIG, &sector, sizeof(sector));
 
-		// todo se sector_number = 0 nao tem setor
-		// todo aplicar na task
+		sectorization_stop();
+		sectorization_start(sector);
 
 		// send ACK
 		arg_pair_t arg_pairs_2[] = {
