@@ -19,7 +19,6 @@
 
 #define SCHEDULING_TAG		"scheduling"
 
-
 static TaskHandle_t xTask_scheduling = NULL;
 
 static pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
