@@ -46,9 +46,20 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
 
 void system_manager_init(void)
 {
+	// rtc init
 	ESP_ERROR_CHECK(rtc_app_init());
+
+	// actuation init
 	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
+
+	// nvs init
 	ESP_ERROR_CHECK(data_app_init());
+
+	// communication modules init
+	network_config network = {};
+	data_app_load(DATA_TYPE_NETWORK_CONFIG, &network);
+
+	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
 
 	// init sectors
@@ -63,7 +74,6 @@ void system_manager_init(void)
 	data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 	data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
 	scheduling_start(scheduling_date, scheduling_angle);
-
 }
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)

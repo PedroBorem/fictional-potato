@@ -42,8 +42,8 @@
 #define WIFI_MAX_STA_CONN       5
 
 /* Private variables ------------------------------------ */
-static char wifi_global_ssid[35] = "";
-static char wifi_global_pass[35] = "";
+static char wifi_global_ssid[35] = "soil";
+static char wifi_global_pass[35] = "soil2023";
 
 static esp_netif_t* wifi_ap_netif = NULL;
 
@@ -80,11 +80,10 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t wifi_app_init(char* wifi_ssid, char* wifi_pass)
+esp_err_t wifi_app_init(void)
 {
 	esp_err_t ret = ESP_FAIL;
 
-	wifi_app_set_config(wifi_ssid, wifi_pass);
 	ret = wifi_app_start();
 
     return ret;

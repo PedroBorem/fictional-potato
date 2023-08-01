@@ -20,7 +20,7 @@
  * @param wifi_ssid The SSID of the Wi-Fi network.
  * @return esp_err_t Returns ESP_OK if the initialization is successful, otherwise an error code.
  */
-esp_err_t wifi_app_init(char* wifi_ssid, char* wifi_pass);
+esp_err_t wifi_app_init(void);
 
 void wifi_app_set_config(char* wifi_ssid, char* wifi_pass);
 

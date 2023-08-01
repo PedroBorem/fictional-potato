@@ -32,8 +32,7 @@ esp_err_t comm_app_init(const app_callback callback)
 
 	err &= http_server_register_callback(callback);
 
-	// todo ler da nvs o ssid e senha
-	err &= wifi_app_init("teste", "12345678");
+	err &= wifi_app_init();
 	err &= http_server_init();
 
 	return err;
