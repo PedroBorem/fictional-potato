@@ -27,10 +27,9 @@ static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 static uint16_t* scheduling_current_angle  = &global_angle;
-
+static app_callback scheduling_callback = NULL;
 
 static void scheduling_task(void* arg);
-static void scheduling_pivot_off(void);
 
 static void scheduling_task(void* arg)
 {
@@ -96,7 +95,15 @@ static void scheduling_task(void* arg)
 			{
 				scheduling_date_status[date_position] = false;
 				rtc_app_get_timestamp(true);
-				scheduling_pivot_off();
+
+				if(scheduling_callback != NULL)
+				{
+					scheduling_callback("#30-off$", COMM_MQTT);
+				}
+				else
+				{
+					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+				}
 
 				data_app_delete(scheduling_date[date_position].scheduling_id);
 				data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
@@ -123,7 +130,15 @@ static void scheduling_task(void* arg)
 				{
 					scheduling_angle_status[angle_position] = false;
 					rtc_app_get_timestamp(true);
-					scheduling_pivot_off();
+
+					if(scheduling_callback != NULL)
+					{
+						scheduling_callback("#30-off$", COMM_MQTT);
+					}
+					else
+					{
+						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+					}
 
 					data_app_delete(scheduling_angle[angle_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
@@ -133,29 +148,6 @@ static void scheduling_task(void* arg)
 		}
 		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 	}
-}
-
-static void scheduling_pivot_off(void)
-{
-	pivot_actions current_action = {};
-	pivot_history current_history = {};
-
-	actuation_app_shutdown();
-	current_action.power_state = PIVOT_OFF;
-	data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
-
-	// save old history
-	current_history.end_date = rtc_app_get_timestamp(false);
-	current_history.end_angle = *scheduling_current_angle;
-
-	data_app_save(DATA_TYPE_OLD_HISTORY, &current_history, sizeof(current_history));
-
-	vTaskDelay(pdMS_TO_TICKS(2000));
-
-	//get current status
-	//actuation_app_get_actions(&current_action, sizeof(current_action));
-	//comm_app_send_event(current_action);
-	//TODO enviar o pacote idp
 }
 
 void scheduling_start(pivot_scheduling_date* in_scheduling_date, pivot_scheduling_angle* in_scheduling_angle)
@@ -185,6 +177,11 @@ void scheduling_stop(void)
 		vTaskDelete(xTask_scheduling);
 		xTask_scheduling = NULL;
 	}
+}
+
+void scheduling_register_callback(const app_callback callback)
+{
+	scheduling_callback = callback;
 }
 
 

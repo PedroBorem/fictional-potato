@@ -43,6 +43,7 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 
 void system_manager_init(void)
 {
@@ -73,6 +74,7 @@ void system_manager_init(void)
 
 	data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 	data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+	scheduling_register_callback(&system_manager_callback);
 	scheduling_start(scheduling_date, scheduling_angle);
 }
 
@@ -147,6 +149,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 			system_manager_idp_16(buffer_request, comm_mode);
 			break;
 		}
+		case IDP_30:
+		{
+			system_manager_idp_30(buffer_request, comm_mode);
+			break;
+		}
 		case IDP_INVALID:
 		{
 			break;
@@ -206,7 +213,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			{ NULL, NULL }
 		};
 
-		idp_parser_get_packet_data(str_out, arg_pairs);
+		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
 
 		ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -235,7 +242,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			if(comm_mode == COMM_HTTP_POST)
 			{
 				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-				comm_app_send_idp_pack(buffer, COMM_MQTT);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
 			}
 			else
 			{
@@ -926,4 +933,95 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
+}
+
+static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
+{
+	uint8_t idp = 0;
+	char pivot_id[20] = {};
+
+	arg_pair_t arg_buffer[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", pivot_id },
+		{ NULL, NULL }
+	};
+	idp_parser_get_packet_data(buffer, arg_buffer);
+
+	if(strcmp(pivot_id, "off") == 0)
+	{
+		pivot_actions current_action = {
+				.power_state = PIVOT_OFF,
+				.rotation = PIVOT_UNKNOWN,
+				.watering_state = PIVOT_UNKNOWN,
+				.percentimeter = PIVOT_UNKNOWN,
+		};
+
+		actuation_app_shutdown();
+		data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
+
+		// save old history
+		pivot_history current_history = {};
+		current_history.end_date = rtc_app_get_timestamp(false);
+		current_history.end_angle = global_angle;
+
+		data_app_save(DATA_TYPE_OLD_HISTORY, &current_history, sizeof(current_history));
+	}
+	else
+	{
+		esp_err_t ret = ESP_FAIL;
+		pivot_actions new_actions = {};
+		pivot_history new_history = {};
+
+		uint16_t dwp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint16_t", &dwp },
+			{ "uint8_t", &new_actions.percentimeter },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+		idp_parser_get_pwd(dwp, &new_actions);
+
+		ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
+		if(ret == ESP_OK)
+		{
+			// save old history
+			pivot_history old_history = {};
+			old_history.end_date = rtc_app_get_timestamp(false);
+			old_history.end_angle = global_angle;
+
+			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
+
+			// act on the equipment
+			actuation_app_set_actions(new_actions, false);
+
+			// save new history
+			if(new_actions.power_state != PIVOT_OFF)
+			{
+				new_history.start_date = rtc_app_get_timestamp(false);
+				new_history.start_angle = global_angle;
+				memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
+				data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
+			}
+		}
+	}
+
+	// send ack
+	char str_out[200] = {};
+	pivot_config config = {};
+	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
+
+	arg_pair_t arg_pairs_ack[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", config.pivot_id },
+		{ NULL, NULL }
+	};
+
+	idp_parser_create_package(str_out, arg_pairs_ack);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 }

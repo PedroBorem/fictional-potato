@@ -93,6 +93,7 @@ typedef enum
     IDP_14,
     IDP_15,
     IDP_16,
+	IDP_30 = 30,
     IDP_INVALID = 255
 } idp_type;
 
