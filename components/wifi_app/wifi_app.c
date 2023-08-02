@@ -23,8 +23,8 @@
 #include <netdb.h>
 
 /* Components include */
-#include "http_api.h"
 #include "log.h"
+#include "FreeRTOS_defines.h"
 
 /** @brief Wi-Fi application tag for logging. */
 #define WIFI_TAG 	"wifi_app"
@@ -41,41 +41,22 @@
 /** @brief Maximum number of stations that can be connected to the access point. */
 #define WIFI_MAX_STA_CONN       5
 
+#define WIFI_APP_SIZE_QUEUE_EVENT	5
+
 /* Private variables ------------------------------------ */
 static char wifi_global_ssid[35] = "soil";
 static char wifi_global_pass[35] = "soil2023";
 
+/* freertos variables */
+static TaskHandle_t xTask_wifi_app = NULL;
+static QueueHandle_t xQueue_wifi_app = NULL;
+
 static esp_netif_t* wifi_ap_netif = NULL;
 
 /* Private function prototype ------------------------------------ */
-/**
- * @brief Start the Wi-Fi application with the specified SSID.
- *
- * This function starts the Wi-Fi application with the provided SSID. It initializes the Wi-Fi network with the given SSID and password,
- * sets the necessary configurations, and starts the Wi-Fi interface in AP mode.
- *
- * @param wifi_ssid The SSID of the Wi-Fi network.
- * @return esp_err_t Returns ESP_OK if the Wi-Fi application starts successfully, otherwise an error code.
- */
 esp_err_t wifi_app_start(void);
-
-/**
- * @brief Wi-Fi reloader task.
- *
- * This function is a task that reloads the Wi-Fi configuration when a request is received via the Wi-Fi application queue.
- */
 static void wifi_reloader(void);
-
-/**
- * @brief Wi-Fi event handler.
- *
- * This function is the event handler for Wi-Fi events, such as station connection and disconnection events.
- *
- * @param arg Event handler argument (not used).
- * @param event_base The base of the event.
- * @param event_id The ID of the event.
- * @param event_data Data associated with the event.
- */
+static void wifi_app_task(void * arg);
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
@@ -84,7 +65,26 @@ esp_err_t wifi_app_init(void)
 {
 	esp_err_t ret = ESP_FAIL;
 
-	ret = wifi_app_start();
+	xQueue_wifi_app = xQueueCreate( WIFI_APP_SIZE_QUEUE_EVENT, WIFI_APP_SIZE_QUEUE_EVENT );
+
+	if( xQueue_wifi_app != NULL )
+	{
+		xTaskCreate(&wifi_app_task,
+					WIFI_APP_TASK_NAME,
+					WIFI_APP_STACK_SIZE,
+					NULL,
+					WIFI_APP_TASK_PRIORITY,
+					&xTask_wifi_app );
+
+		if( xTask_wifi_app != NULL )
+		{
+			ret = wifi_app_start();
+		}
+		else
+		{
+			ret = ESP_FAIL;
+		}
+	}
 
     return ret;
 }
@@ -94,6 +94,7 @@ void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 	strcpy(wifi_global_ssid, wifi_ssid);
 	strcpy(wifi_global_pass,wifi_pass);
 }
+
 
 /* Private methods ----------------------------------------------- */
 esp_err_t wifi_app_start(void)
@@ -173,14 +174,32 @@ esp_err_t wifi_app_start(void)
 	return ret;
 }
 
+
 static void wifi_reloader(void)
 {
-	esp_wifi_stop();
-	esp_wifi_deinit();
-	esp_event_loop_delete_default();
-	esp_netif_deinit();
+	uint8_t wifi_app_queue_req = 0;
+	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
+}
 
-	wifi_app_start();
+static void wifi_app_task(void * arg)
+{
+	uint8_t wifi_app_queue_req;
+	while(1)
+	{
+		if( xQueueReceive(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY ) == pdTRUE )
+		{
+			esp_wifi_stop();
+			esp_wifi_deinit();
+			esp_event_loop_delete_default();
+			esp_netif_deinit();
+
+			wifi_app_start();
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(100));
+	}
+
+	return;
 }
 
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
@@ -189,14 +208,14 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 	 if (event_id == WIFI_EVENT_AP_STACONNECTED)
 	{
 		wifi_event_ap_staconnected_t* event = (wifi_event_ap_staconnected_t*) event_data;
-		LOG_COMM(WIFI_TAG, "station " MACSTR " join, AID=%d",
+		LOG_COMM(WIFI_TAG, "station "MACSTR" join, AID=%d",
 		                 MAC2STR(event->mac), event->aid);
     }
 	else if (event_id == WIFI_EVENT_AP_STADISCONNECTED)
 	{
 		wifi_event_ap_stadisconnected_t* event = (wifi_event_ap_stadisconnected_t*) event_data;
-		LOG_COMM(WIFI_TAG, "station " MACSTR " leave, AID=%d",
-		          MAC2STR(event->mac), event->aid);
+		LOG_COMM(WIFI_TAG, "station "MACSTR" leave, AID=%d",
+		                 MAC2STR(event->mac), event->aid);
 		wifi_reloader();
     }
 }
