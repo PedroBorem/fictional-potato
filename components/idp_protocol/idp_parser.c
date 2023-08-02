@@ -161,7 +161,7 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 {
     char* str_copy = strdup(str_arg); // Fazer uma cópia da string para evitar modificar a original
 
-    char* token = strtok(str_copy + 1, "-"); // Ignorar o primeiro caractere '$'
+    char* token = strtok(str_copy + 1, "-$"); // Ignorar o primeiro caractere '#' e o último caractere '$'
     int index = 0;
 
     while (token != NULL)
@@ -193,10 +193,9 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
             * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
         }
 
-        token = strtok(NULL, "-");
+        token = strtok(NULL, "-$");
         index++;
     }
 
     free(str_copy);
 }
-
