@@ -152,9 +152,9 @@ typedef struct
  */
 typedef struct __attribute__((__packed__))
 {
-    char pivot_id[30];                          /*!< Pivot ID */
-    char contactor[30];       /*!< Contactor type */ //todo: usar isso nas classes
-    char pressure[30];   /*!< Pressure switch type *///todo usar isso nas classes
+    char pivot_id[50];                          /*!< Pivot ID */
+    char contactor[50];       /*!< Contactor type */ //todo: usar isso nas classes
+    char pressure[50];   /*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_off_time;            /*!< On/off time */
 } pivot_config;
@@ -166,10 +166,10 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    char gprs_id[30];           /*!< GPRS ID */
-    char modem_apn[30]; //todo passar esse valor para o edu
-    char wifi_ssid[30]; //todo trocar o wifi por esse valor
-    char wifi_pass[30]; //todo trocar o wifi por esse valor
+    char gprs_id[50];           /*!< GPRS ID */
+    char modem_apn[50]; //todo passar esse valor para o edu
+    char wifi_ssid[50]; //todo trocar o wifi por esse valor
+    char wifi_pass[50]; //todo trocar o wifi por esse valor
 } network_config;
 
 /**
@@ -201,7 +201,7 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
  */
 typedef struct __attribute__((__packed__))
 {
-    char scheduling_id[30];         /*!< Scheduling ID */
+    char scheduling_id[50];         /*!< Scheduling ID */
     bool is_running;                /*!< Flag indicating if the scheduling is running */
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */

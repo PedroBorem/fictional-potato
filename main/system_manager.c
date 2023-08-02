@@ -200,7 +200,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 		pivot_history new_history = {};
 
 		char str_out[200] = {};
-		char pivot_id[20] = {};
+		char pivot_id[50] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
@@ -266,7 +266,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_HTTP_POST)
 	{
 		char str_out[200] = {};
-		char pivot_id[20] = {};
+		char pivot_id[50] = {};
 		network_config net_config = {};
 		uint8_t idp = 0;
 
@@ -310,7 +310,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char str_out[200] = {};
-		char pivot_id[20] = {};
+		char pivot_id[50] = {};
 		network_config net_config = {};
 		uint8_t idp = IDP_2;
 
@@ -938,7 +938,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 {
 	uint8_t idp = 0;
-	char pivot_id[20] = {};
+	char pivot_id[50] = {};
 
 	arg_pair_t arg_buffer[] =
 	{
