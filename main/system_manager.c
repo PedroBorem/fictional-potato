@@ -5,7 +5,7 @@
  *      Author: brunolima
  */
 
-//applications include
+// applications include
 #include "system_manager.h"
 #include "project_config.h"
 #include "idp_parser.h"
@@ -13,13 +13,14 @@
 
 #include "rtc_app.h"
 
-//private include
+// private include
 #include <string.h>
 
 #include "actuation_app.h"
 #include "comm_app.h"
 #include "data_app.h"
 
+#include "system_monitoring.h"
 #include "sectorization.h"
 #include "scheaduling.h"
 
@@ -55,6 +56,10 @@ void system_manager_init(void)
 
 	// nvs init
 	ESP_ERROR_CHECK(data_app_init());
+
+	// system monitoring init
+	system_monitoring_register_callback(&system_manager_callback);
+	system_monitoring_start();
 
 	// communication modules init
 	network_config network = {};
