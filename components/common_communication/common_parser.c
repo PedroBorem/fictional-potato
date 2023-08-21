@@ -113,8 +113,38 @@ esp_err_t common_parser_string_to_action(const char* string_in, pivot_actions* a
 
 	if(validate_ret >= COMMOM_PARSER_ELEMENT_NUMBER)
 	{
-		memcpy(action_out, &config, sizeof(pivot_actions));
-		err = ESP_OK;
+		//validade config
+		if(config.percentimeter >=0 && config.percentimeter <= 100)
+		{
+			if(config.power_state == PIVOT_ON
+			|| config.power_state == PIVOT_OFF)
+			{
+				if(config.rotation == PIVOT_CW
+				|| config.rotation == PIVOT_CCW)
+				{
+					if(config.watering_state == PIVOT_DRY
+					|| config.watering_state == PIVOT_WET)
+					{
+						memcpy(action_out, &config, sizeof(pivot_actions));
+						err = ESP_OK;
+					}
+				}
+				else if(config.power_state == PIVOT_OFF
+						&& config.rotation == PIVOT_UNKNOWN
+						&& config.watering_state == PIVOT_UNKNOWN)
+				{
+					memcpy(action_out, &config, sizeof(pivot_actions));
+					err = ESP_OK;
+				}
+			}
+			else if(config.power_state == PIVOT_UNKNOWN
+					&& config.rotation == PIVOT_UNKNOWN
+					&& config.watering_state == PIVOT_UNKNOWN)
+			{
+				memcpy(action_out, &config, sizeof(pivot_actions));
+				err = ESP_OK;
+			}
+		}
 	}
 
 	return err;

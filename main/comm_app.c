@@ -184,8 +184,10 @@ void comm_app_task(void* arg)
 				case IDP_1:
 				{
 					pivot_actions action = {};
-					common_parser_string_to_action(comm_request.request_buffer, &action);
-					comm_app_call(CALL_SAVE_ACTION, &action);
+					if(common_parser_string_to_action(comm_request.request_buffer, &action) == ESP_OK)
+					{
+						comm_app_call(CALL_SAVE_ACTION, &action);
+					}
 					break;
 				}
 				case IDP_2:
