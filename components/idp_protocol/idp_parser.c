@@ -45,9 +45,12 @@ static bool idp_parser_check_pack(const char* string_in);
 static bool idp_parser_check_pack(const char* string_in)
 {
 	bool ret = false;
-	size_t str_last_position = strlen(string_in) - 1;
+	char* ptr;
+	int ch = '$';
 
-	if(string_in[0] == '#' && string_in[str_last_position] == '$' )
+	ptr = strchr( string_in, ch );
+
+	if(string_in[0] == '#' && ptr != NULL )
 	{
 		LOG_COMM(IDP_PARSER_TAG, "package : %s", string_in);
 		ret = true;
