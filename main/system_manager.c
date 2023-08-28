@@ -38,6 +38,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_03(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_04(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_05(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_06(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_07(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode);
@@ -122,6 +123,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		case IDP_5:
 		{
 			system_manager_idp_05(buffer_request, comm_mode);
+			break;
+		}
+		case IDP_6:
+		{
+			system_manager_idp_06(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_7:
@@ -263,12 +269,16 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 				data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
 			}
 		}
+		else
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
+		}
 	}
 }
 
 static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -339,7 +349,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
 
@@ -401,7 +411,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
 
@@ -455,7 +465,7 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
 
@@ -518,6 +528,27 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 	}
+}
+
+static void system_manager_idp_06(const char* buffer, comm_type comm_mode)
+{
+	char str_out[200] = {};
+	network_config net_config = {};
+	uint8_t idp = 0;
+
+	data_app_load(DATA_TYPE_NETWORK_CONFIG, &net_config);
+
+	// send GPRS module
+	idp = IDP_6;
+	arg_pair_t arg_pairs_3[] = {
+		{ "uint8_t", &idp },
+		{ "string", net_config.gprs_id },
+		{ "string", net_config.modem_apn },
+		{ NULL, NULL }
+	};
+
+	idp_parser_create_package(str_out, arg_pairs_3);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 }
 
 static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
@@ -1017,13 +1048,13 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 
 	// send ack
 	char str_out[200] = {};
-	pivot_config config = {};
-	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
+	network_config config = {};
+	data_app_load(DATA_TYPE_NETWORK_CONFIG, &config);
 
 	arg_pair_t arg_pairs_ack[] =
 	{
 		{ "uint8_t", &idp },
-		{ "string", config.pivot_id },
+		{ "string", config.gprs_id },
 		{ NULL, NULL }
 	};
 
