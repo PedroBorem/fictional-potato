@@ -117,18 +117,19 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 {
 	char time_str[80];
 	struct tm tminfo;
-	time_t rawtime = (timestamp_now + (time_z*3600));
+	time_t rawtime = (timestamp_now + (time_z * 3600));
 
 	tminfo = *localtime ( &rawtime );
 
 	strftime(time_str, sizeof(time_str), "%a %Y-%m-%d %H:%M:%S %Z", &tminfo);
-	ESP_LOGI(RTC_APP_TAG, "timestamp %lld [%s]", timestamp_now, time_str);
+	ESP_LOGI(RTC_APP_TAG, "Timestamp %lld", timestamp_now);
+	ESP_LOGI(RTC_APP_TAG, "Date time [%s] GMT (%d)", time_str, time_z);
 }
 
 void rtc_app_get_str_date(time_t timestamp_now, char* str_out)
 {
 	char buff[20] = {};
-	time_t now = timestamp_now;
+	time_t now = (timestamp_now + (RTC_CONFIG_TIMEZONE * 3600)); // TODO : Alterar o rtc configurado
 
 	strftime(buff, sizeof(buff), "%d/%m/%Y", localtime(&now));
 	strcpy(str_out, buff);
@@ -137,7 +138,7 @@ void rtc_app_get_str_date(time_t timestamp_now, char* str_out)
 void rtc_app_get_str_time(time_t timestamp_now, char* str_out)
 {
 	char buff[20] = {};
-	time_t now = timestamp_now;
+	time_t now = (timestamp_now + (RTC_CONFIG_TIMEZONE * 3600));// TODO : Alterar o rtc configurado
 
 	strftime(buff, sizeof(buff), "%H:%M:%S", localtime(&now));
 	strcpy(str_out, buff);
