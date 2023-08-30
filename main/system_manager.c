@@ -199,7 +199,16 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	};
 
 	idp_parser_create_package(str_out,arg_pairs);
-	comm_app_send_idp_pack(str_out, comm_mode);
+
+	if(comm_mode == COMM_HTTP_POST)
+	{
+		comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+	else
+	{
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
 }
 
 static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
@@ -210,7 +219,6 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
-		char str_out[200] = {};
 		char pivot_id[50] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
@@ -241,24 +249,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			actuation_app_set_actions(new_actions, false);
 
 			// send current status
-			arg_pair_t arg_pairs_ack[] =
-			{
-				{ "uint8_t", &idp },
-				{ "string", pivot_id },
-				{ NULL, NULL }
-			};
-
-			idp_parser_create_package(str_out, arg_pairs_ack);
-
-			if(comm_mode == COMM_HTTP_POST)
-			{
-				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
-			}
-			else
-			{
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
-			}
+			system_manager_idp_00("#00$", comm_mode);
 
 			// save new history
 			if(new_actions.power_state != PIVOT_OFF)
