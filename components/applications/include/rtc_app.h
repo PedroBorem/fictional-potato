@@ -68,4 +68,7 @@ void rtc_app_get_date_time(struct tm* rtcinfo);
  */
 void rtc_show_date_time(time_t timestamp_now, uint8_t time_z);
 
+void rtc_app_get_str_date(time_t timestamp_now, char* str_out);
+void rtc_app_get_str_time(time_t timestamp_now, char* str_out);
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */

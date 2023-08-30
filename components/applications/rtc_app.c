@@ -9,6 +9,8 @@
 #include "rtc_ds3231.h"
 #include "esp_log.h"
 
+#include <string.h>
+
 #define RTC_APP_TAG "rtc_app"
 
 /**
@@ -122,3 +124,22 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 	strftime(time_str, sizeof(time_str), "%a %Y-%m-%d %H:%M:%S %Z", &tminfo);
 	ESP_LOGI(RTC_APP_TAG, "timestamp %lld [%s]", timestamp_now, time_str);
 }
+
+void rtc_app_get_str_date(time_t timestamp_now, char* str_out)
+{
+	char buff[20] = {};
+	time_t now = timestamp_now;
+
+	strftime(buff, sizeof(buff), "%d/%m/%Y", localtime(&now));
+	strcpy(str_out, buff);
+}
+
+void rtc_app_get_str_time(time_t timestamp_now, char* str_out)
+{
+	char buff[20] = {};
+	time_t now = timestamp_now;
+
+	strftime(buff, sizeof(buff), "%H:%M:%S", localtime(&now));
+	strcpy(str_out, buff);
+}
+

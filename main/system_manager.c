@@ -180,6 +180,8 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 {
 	pivot_actions actions = {};
 	char str_out[200] = {};
+	char str_date[20] = {};
+	char str_time[20] = {};
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
 
@@ -187,6 +189,8 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	dwp = idp_parser_create_pwd(actions);
 
 	time_t timestamp = rtc_app_get_timestamp(false);
+	rtc_app_get_str_date(timestamp, str_date);
+	rtc_app_get_str_time(timestamp, str_time);
 
 	arg_pair_t arg_pairs[] = {
 		{ "uint8_t", &idp },
@@ -194,7 +198,8 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 		{ "uint8_t", &actions.percentimeter },
 		{ "uint16_t", &initial_angle },
 		{ "uint16_t", &global_angle },
-		{ "uint32_t", &timestamp },
+		{ "string", str_date },
+		{ "string", str_time },
 		{ NULL, NULL }
 	};
 
