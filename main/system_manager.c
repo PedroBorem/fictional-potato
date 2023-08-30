@@ -192,8 +192,12 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	rtc_app_get_str_date(timestamp, str_date);
 	rtc_app_get_str_time(timestamp, str_time);
 
+	pivot_config config = {};
+	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
+
 	arg_pair_t arg_pairs[] = {
 		{ "uint8_t", &idp },
+		{ "string", config.pivot_id },
 		{ "uint16_t", &dwp },
 		{ "uint8_t", &actions.percentimeter },
 		{ "uint16_t", &initial_angle },
@@ -616,8 +620,8 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	arg_pair_t arg_pairs_2[] =
 	{
 		{ "uint8_t", &idp },
-		{ "uint8_t", config.pivot_id },
-		{ "uint16_t", scheaduling_id },
+		{ "string", config.pivot_id },
+		{ "string", scheaduling_id },
 		{ NULL, NULL }
 	};
 
@@ -683,7 +687,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				arg_pair_t arg_pairs_2[] =
 				{
 					{ "uint8_t", &idp },
-					{ "uint8_t", config.pivot_id },
+					{ "string", config.pivot_id },
 					{ "uint32_t", &scheduling.start_date },
 					{ "uint32_t", &scheduling.end_date },
 					{ "uint16_t", &dwp },
