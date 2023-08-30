@@ -587,12 +587,16 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 
 	uint8_t idp = 0;
 	char str_out[200] = {};
+	char pivot_id[50] = {};
+	char str_author[30] = {};
 	char scheaduling_id[10] = {};
 
 	arg_pair_t arg_pairs[] =
 	{
 		{ "uint8_t", &idp },
+		{ "string", pivot_id },
 		{ "string", scheaduling_id },
+		{ "string", str_author },
 		{ NULL, NULL }
 	};
 
@@ -628,6 +632,8 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
+		char pivot_id[50] = {};
+		char str_author[30] = {};
 
 		pivot_scheduling_date scheduling = {};
 		uint16_t dwp = 0;
@@ -636,11 +642,13 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id},
 			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint32_t", &scheduling.end_date },
 			{ "uint16_t", &dwp },
 			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ "string", str_author },
 			{ NULL, NULL }
 		};
 
@@ -747,19 +755,24 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
+		char pivot_id[50] = {};
+		char str_author[30] = {};
 
 		pivot_scheduling_angle scheduling = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
+
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint16_t", &scheduling.end_angle },
 			{ "uint16_t", &dwp },
 			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ "string", str_author },
 			{ NULL, NULL }
 		};
 
@@ -864,6 +877,8 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
+		char str_author[30] = {};
+		char pivot_id[50] = {};
 
 		pivot_scheduling_date scheduling = {};
 		uint8_t idp = 0;
@@ -871,7 +886,9 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "uint32_t", &scheduling.end_date },
+			{ "string", str_author },
 			{ NULL, NULL }
 		};
 
