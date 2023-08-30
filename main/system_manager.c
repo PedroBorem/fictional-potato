@@ -755,7 +755,6 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		{
 			{ "uint8_t", &idp },
 			{ "string", pivot_id },
-			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint16_t", &scheduling.end_angle },
 			{ "uint16_t", &dwp },
@@ -781,6 +780,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 				data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
 				data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
+				strcpy((char*)&scheduling.scheduling_id, (char*)&scheduling_angle[position].scheduling_id);
 				scheduling_stop();
 				scheduling_start(NULL, scheduling_angle);
 
