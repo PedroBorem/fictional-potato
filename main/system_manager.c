@@ -639,7 +639,6 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		{
 			{ "uint8_t", &idp },
 			{ "string", pivot_id},
-			{ "string", scheduling.scheduling_id },
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint32_t", &scheduling.end_date },
 			{ "uint16_t", &dwp },

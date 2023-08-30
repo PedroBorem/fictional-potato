@@ -190,8 +190,9 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         } else if (strcmp(type, "int") == 0) {
             * (int *) arg_pairs[index].value = atoi(token);
         } else if (strcmp(type, "string") == 0) {
-            strncpy(arg_pairs[index].value, token, 49);
-            ((char *)arg_pairs[index].value)[49] = '\0';
+        	uint8_t str_size = strlen(arg_pairs[index].value);
+        	strncpy(arg_pairs[index].value, token, str_size);
+            ((char *)arg_pairs[index].value)[str_size] = '\0';
         } else if (strcmp(type, "bool") == 0) {
             * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
         }
