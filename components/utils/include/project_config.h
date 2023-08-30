@@ -152,7 +152,6 @@ typedef struct
  */
 typedef struct __attribute__((__packed__))
 {
-    char pivot_id[50];                          /*!< Pivot ID */
     char contactor[50];       /*!< Contactor type */ //todo: usar isso nas classes
     char pressure[50];   /*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
@@ -167,9 +166,9 @@ typedef struct __attribute__((__packed__))
 typedef struct __attribute__((__packed__))
 {
     char gprs_id[50];           /*!< GPRS ID */
-    char modem_apn[50]; //todo passar esse valor para o edu
-    char wifi_ssid[50]; //todo trocar o wifi por esse valor
-    char wifi_pass[50]; //todo trocar o wifi por esse valor
+    char modem_apn[50];
+    char wifi_ssid[50];
+    char wifi_pass[50];
 } network_config;
 
 /**

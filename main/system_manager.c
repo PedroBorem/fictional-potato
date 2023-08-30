@@ -28,7 +28,8 @@
 
 /* global variables */
 uint16_t global_angle = 0xFFFF;
-static uint16_t initial_angle = 0xFFFF;
+static uint16_t system_initial_angle = 0xFFFF;
+static char system_id[50] = {};
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
 
@@ -65,6 +66,7 @@ void system_manager_init(void)
 	// communication modules init
 	network_config network = {};
 	data_app_load(DATA_TYPE_NETWORK_CONFIG, &network);
+	strcpy(system_id, network.gprs_id);
 
 	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
@@ -192,15 +194,12 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	rtc_app_get_str_date(timestamp, str_date);
 	rtc_app_get_str_time(timestamp, str_time);
 
-	pivot_config config = {};
-	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 	arg_pair_t arg_pairs[] = {
 		{ "uint8_t", &idp },
-		{ "string", config.pivot_id },
+		{ "string", system_id },
 		{ "uint16_t", &dwp },
 		{ "uint8_t", &actions.percentimeter },
-		{ "uint16_t", &initial_angle },
+		{ "uint16_t", &system_initial_angle },
 		{ "uint16_t", &global_angle },
 		{ "string", str_date },
 		{ "string", str_time },
@@ -281,14 +280,12 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		char str_out[200] = {};
-		char pivot_id[50] = {};
 		network_config net_config = {};
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", pivot_id },
 			{ "string", net_config.gprs_id },
 			{ "string", net_config.modem_apn },
 			{ "string", net_config.wifi_ssid },
@@ -301,10 +298,12 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		data_app_save(DATA_TYPE_NETWORK_CONFIG, &net_config, sizeof(net_config));
 		comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
 
+		strcpy(system_id, net_config.gprs_id);
+
 		// send ACK
 		arg_pair_t arg_pairs_2[] = {
 			{ "uint8_t", &idp },
-			{ "string", pivot_id },
+			{ "string", system_id },
 			{ NULL, NULL }
 		};
 		idp_parser_create_package(str_out, arg_pairs_2);
@@ -325,7 +324,6 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char str_out[200] = {};
-		char pivot_id[50] = {};
 		network_config net_config = {};
 		uint8_t idp = IDP_2;
 
@@ -334,7 +332,6 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", pivot_id },
 			{ "string", net_config.gprs_id },
 			{ "string", net_config.modem_apn },
 			{ "string", net_config.wifi_ssid },
@@ -359,7 +356,6 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", new_config.pivot_id },
 			{ "string", new_config.contactor },
 			{ "string", new_config.pressure },
 			{ "uint16_t", &new_config.pressurization_time },
@@ -375,7 +371,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			// send ACK
 			arg_pair_t arg_pairs_2[] = {
 				{ "uint8_t", &idp },
-				{ "string", new_config.pivot_id },
+				{ "string", system_id },
 				{ NULL, NULL }
 			};
 
@@ -395,7 +391,6 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
-			{ "string", config.pivot_id },
 			{ "string", config.contactor },
 			{ "string", config.pressure },
 			{ "uint16_t", &config.pressurization_time },
@@ -567,9 +562,9 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 		{ NULL, NULL }
 	};
 
-	if(initial_angle == 0xFFFF)
+	if(system_initial_angle == 0xFFFF)
 	{
-		initial_angle = global_angle;
+		system_initial_angle = global_angle;
 	}
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
@@ -614,13 +609,10 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	scheduling_start(scheduling_date, scheduling_angle);
 
 	// send ack
-	pivot_config config = {};
-	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 	arg_pair_t arg_pairs_2[] =
 	{
 		{ "uint8_t", &idp },
-		{ "string", config.pivot_id },
+		{ "string", system_id },
 		{ "string", scheaduling_id },
 		{ NULL, NULL }
 	};
@@ -681,13 +673,10 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 
 				// send ack
-				pivot_config config = {};
-				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 				arg_pair_t arg_pairs_2[] =
 				{
 					{ "uint8_t", &idp },
-					{ "string", config.pivot_id },
+					{ "string", system_id },
 					{ "uint32_t", &scheduling.start_date },
 					{ "uint32_t", &scheduling.end_date },
 					{ "uint16_t", &dwp },
@@ -729,13 +718,10 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		{
 			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
 
-			pivot_config config = {};
-			data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 			arg_pair_t arg_pairs[] =
 			{
 				{ "uint8_t", &idp },
-				{ "string", config.pivot_id },
+				{ "string", system_id },
 				{ "string", scheduling_date[position].scheduling_id },
 				{ "uint32_t", &scheduling_date[position].start_date },
 				{ "uint32_t", &scheduling_date[position].end_date },
@@ -765,7 +751,6 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		pivot_scheduling_angle scheduling = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
-
 
 		arg_pair_t arg_pairs[] =
 		{
@@ -802,13 +787,10 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
-				pivot_config config = {};
-				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 				arg_pair_t arg_pairs_2[] =
 				{
 					{ "uint8_t", &idp },
-					{ "string", config.pivot_id },
+					{ "string", system_id },
 					{ "string", scheduling.scheduling_id },
 					{ "uint32_t", &scheduling.start_date },
 					{ "uint16_t", &scheduling.end_angle },
@@ -851,13 +833,10 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 		{
 			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
 
-			pivot_config config = {};
-			data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 			arg_pair_t arg_pairs[] =
 			{
 				{ "uint8_t", &idp },
-				{ "string", config.pivot_id },
+				{ "string", system_id },
 				{ "string", scheduling_angle[position].scheduling_id },
 				{ "uint32_t", &scheduling_angle[position].start_date },
 				{ "uint16_t", &scheduling_angle[position].end_angle },
@@ -919,13 +898,10 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 
-				pivot_config config = {};
-				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 				arg_pair_t arg_pairs_2[] =
 				{
 					{ "uint8_t", &idp },
-					{ "string", config.pivot_id },
+					{ "string", system_id },
 					{ "string", scheduling_date[position].scheduling_id },
 					{ "uint32_t", &scheduling.end_date },
 					{ NULL, NULL }
@@ -965,13 +941,10 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 			if(scheduling_date[position].start_date == 0
 			&& scheduling_date[position].end_date != 0)
 			{
-				pivot_config config = {};
-				data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-
 				arg_pair_t arg_pairs[] =
 				{
 					{ "uint8_t", &idp },
-					{ "string", config.pivot_id },
+					{ "string", system_id },
 					{ "string", scheduling_date[position].scheduling_id },
 					{ "uint32_t", &scheduling_date[position].end_date },
 					{ NULL, NULL }
@@ -991,6 +964,12 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 {
 	uint8_t idp = 0;
+	uint16_t dwp = 0;
+	pivot_actions actions = {};
+
+	char str_out[200] = {};
+	char str_date[20] = {};
+	char str_time[20] = {};
 	char pivot_id[50] = {};
 
 	arg_pair_t arg_buffer[] =
@@ -1064,14 +1043,22 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 	}
 
 	// send ack
-	char str_out[200] = {};
-	network_config config = {};
-	data_app_load(DATA_TYPE_NETWORK_CONFIG, &config);
+	actuation_app_get_actions(&actions, sizeof(actions));
+	dwp = idp_parser_create_pwd(actions);
 
-	arg_pair_t arg_pairs_ack[] =
-	{
+	time_t timestamp = rtc_app_get_timestamp(false);
+	rtc_app_get_str_date(timestamp, str_date);
+	rtc_app_get_str_time(timestamp, str_time);
+
+	arg_pair_t arg_pairs_ack[] = {
 		{ "uint8_t", &idp },
-		{ "string", config.gprs_id },
+		{ "string", system_id },
+		{ "uint16_t", &dwp },
+		{ "uint8_t", &actions.percentimeter },
+		{ "uint16_t", &system_initial_angle },
+		{ "uint16_t", &global_angle },
+		{ "string", str_date },
+		{ "string", str_time },
 		{ NULL, NULL }
 	};
 

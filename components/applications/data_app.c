@@ -51,7 +51,6 @@ esp_err_t data_app_init(void)
 	};
 
 	const pivot_config default_config = {
-			.pivot_id = "soil",
 			.contactor = "NA",
 			.pressure = "NA",
 			.pressurization_time = 30,

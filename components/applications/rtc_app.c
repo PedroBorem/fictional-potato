@@ -121,7 +121,7 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 
 	tminfo = *localtime ( &rawtime );
 
-	strftime(time_str, sizeof(time_str), "%a %Y-%m-%d %H:%M:%S %Z", &tminfo);
+	strftime(time_str, sizeof(time_str), "%d/%m/%Y %H:%M:%S", &tminfo);
 	ESP_LOGI(RTC_APP_TAG, "Timestamp %lld", timestamp_now);
 	ESP_LOGI(RTC_APP_TAG, "Date time [%s] GMT (%d)", time_str, time_z);
 }
