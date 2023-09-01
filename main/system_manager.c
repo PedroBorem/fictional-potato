@@ -660,7 +660,10 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				scheduling_date[position].start_date += rtc_app_get_timestamp(false);
 				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
 
+				// gen Key
 				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
+				strcpy(scheduling.scheduling_id, (char*)&scheduling_date[position].scheduling_id);
+
 				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
 				scheduling_stop();
@@ -669,21 +672,38 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 
 				// send ack
-				arg_pair_t arg_pairs_2[] =
+				if(comm_mode == COMM_HTTP_POST)
 				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "uint32_t", &scheduling.start_date },
-					{ "uint32_t", &scheduling.end_date },
-					{ "uint16_t", &dwp },
-					{ "uint8_t", &scheduling.actions.percentimeter },
-					{ NULL, NULL }
-				};
+					arg_pair_t arg_pairs_2[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling.scheduling_id },
+						{ "uint32_t", &scheduling.start_date },
+						{ "uint32_t", &scheduling.end_date },
+						{ "uint16_t", &dwp },
+						{ "uint8_t", &scheduling.actions.percentimeter },
+						{ NULL, NULL }
+					};
 
-				idp_parser_create_package(str_out, arg_pairs_2);
+					idp_parser_create_package(str_out, arg_pairs_2);
 
-				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
+					comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+					comm_app_send_idp_pack(str_out, COMM_MQTT);
+				}
+				else if(comm_mode == COMM_MQTT)
+				{
+					arg_pair_t arg_pairs_2[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling.scheduling_id },
+						{ NULL, NULL }
+					};
+
+					idp_parser_create_package(str_out, arg_pairs_2);
+					comm_app_send_idp_pack(str_out, COMM_MQTT);
+				}
 
 				break;
 			}
@@ -894,20 +914,36 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 
-				arg_pair_t arg_pairs_2[] =
+				if(comm_mode == COMM_HTTP_POST)
 				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "string", scheduling_date[position].scheduling_id },
-					{ "uint32_t", &scheduling.end_date },
-					{ NULL, NULL }
-				};
+					arg_pair_t arg_pairs_2[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling_date[position].scheduling_id },
+						{ "uint32_t", &scheduling.end_date },
+						{ NULL, NULL }
+					};
 
-				idp_parser_create_package(str_out, arg_pairs_2);
+					idp_parser_create_package(str_out, arg_pairs_2);
 
-				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
+					comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+					comm_app_send_idp_pack(str_out, COMM_MQTT);
+				}
+				else if(comm_mode == COMM_MQTT)
+				{
+					arg_pair_t arg_pairs_2[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling_date[position].scheduling_id },
+						{ NULL, NULL }
+					};
 
+					idp_parser_create_package(str_out, arg_pairs_2);
+
+					comm_app_send_idp_pack(str_out, COMM_MQTT);
+				}
 				break;
 			}
 		}
