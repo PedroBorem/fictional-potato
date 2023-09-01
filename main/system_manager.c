@@ -182,8 +182,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 {
 	pivot_actions actions = {};
 	char str_out[200] = {};
-	char str_date[20] = {};
-	char str_time[20] = {};
+	char str_date_time[50] = {};
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
 
@@ -191,8 +190,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	dwp = idp_parser_create_pwd(actions);
 
 	time_t timestamp = rtc_app_get_timestamp(false);
-	rtc_app_get_str_date(timestamp, str_date);
-	rtc_app_get_str_time(timestamp, str_time);
+	rtc_app_get_str_date_time(timestamp, str_date_time);
 
 	arg_pair_t arg_pairs[] = {
 		{ "uint8_t", &idp },
@@ -201,8 +199,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 		{ "uint8_t", &actions.percentimeter },
 		{ "uint16_t", &system_initial_angle },
 		{ "uint16_t", &global_angle },
-		{ "string", str_date },
-		{ "string", str_time },
+		{ "string", str_date_time },
 		{ NULL, NULL }
 	};
 
@@ -967,8 +964,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 	pivot_actions actions = {};
 
 	char str_out[200] = {};
-	char str_date[20] = {};
-	char str_time[20] = {};
+	char str_date_time[50] = {};
 	char pivot_id[50] = {};
 
 	arg_pair_t arg_buffer[] =
@@ -1046,8 +1042,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 	dwp = idp_parser_create_pwd(actions);
 
 	time_t timestamp = rtc_app_get_timestamp(false);
-	rtc_app_get_str_date(timestamp, str_date);
-	rtc_app_get_str_time(timestamp, str_time);
+	rtc_app_get_str_date_time(timestamp, str_date_time);
 
 	arg_pair_t arg_pairs_ack[] = {
 		{ "uint8_t", &idp },
@@ -1056,8 +1051,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 		{ "uint8_t", &actions.percentimeter },
 		{ "uint16_t", &system_initial_angle },
 		{ "uint16_t", &global_angle },
-		{ "string", str_date },
-		{ "string", str_time },
+		{ "string", str_date_time },
 		{ NULL, NULL }
 	};
 

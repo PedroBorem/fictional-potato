@@ -126,21 +126,11 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 	ESP_LOGI(RTC_APP_TAG, "Date time [%s] GMT (%d)", time_str, time_z);
 }
 
-void rtc_app_get_str_date(time_t timestamp_now, char* str_out)
+void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out)
 {
-	char buff[20] = {};
-	time_t now = (timestamp_now + (RTC_CONFIG_TIMEZONE * 3600)); // TODO : Alterar o rtc configurado
+	char buff[50] = {};
+	time_t now = (timestamp_now + (RTC_CONFIG_TIMEZONE * 3600));
 
-	strftime(buff, sizeof(buff), "%d/%m/%Y", localtime(&now));
+	strftime(buff, sizeof(buff), "%d/%m/%Y_%H:%M:%S", localtime(&now));
 	strcpy(str_out, buff);
 }
-
-void rtc_app_get_str_time(time_t timestamp_now, char* str_out)
-{
-	char buff[20] = {};
-	time_t now = (timestamp_now + (RTC_CONFIG_TIMEZONE * 3600));// TODO : Alterar o rtc configurado
-
-	strftime(buff, sizeof(buff), "%H:%M:%S", localtime(&now));
-	strcpy(str_out, buff);
-}
-
