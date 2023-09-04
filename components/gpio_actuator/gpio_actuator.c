@@ -89,7 +89,11 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 	if(xTask_readpercent != NULL)
 	{
-		vTaskResume(xTask_readpercent);
+		if (eTaskGetState(xTask_readpercent) == eSuspended
+		|| eTaskGetState(xTask_readpercent) == eBlocked)
+		{
+			vTaskResume(xTask_readpercent);
+		}
 	}
 }
 
@@ -218,7 +222,7 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 			{
 				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-				xTimerStart(perc_timer_handleOn, 0);
+				xTimerStart(perc_timer_handleOn, 100);
 			}
 
 		}
@@ -229,13 +233,15 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 
 			if(perc_timer_handleOn != 0)
 			{
-				xTimerDelete(perc_timer_handleOn,0);
+				xTimerStop(perc_timer_handleOn, 1000);
+				xTimerDelete(perc_timer_handleOn,1000);
 				negedge_perc = 0;
 			}
 
 			if(perc_timer_handleOff != 0)
 			{
-				xTimerDelete(perc_timer_handleOff,0);
+				xTimerStop(perc_timer_handleOff, 1000);
+				xTimerDelete(perc_timer_handleOff, 1000);
 				posedge_perc = 0;
 			}
 
@@ -248,12 +254,14 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 
 			if(perc_timer_handleOn != 0)
 			{
-				xTimerDelete(perc_timer_handleOn,0);
+				xTimerStop(perc_timer_handleOn, 1000);
+				xTimerDelete(perc_timer_handleOn, 1000);
 			}
 
 			if(perc_timer_handleOff != 0)
 			{
-				xTimerDelete(perc_timer_handleOff,0);
+				xTimerStop(perc_timer_handleOff, 1000);
+				xTimerDelete(perc_timer_handleOff, 1000);
 			}
 		}
 
@@ -342,14 +350,14 @@ void gpio_actuator_shutdown(void)
 
 	if(perc_timer_handleOn != NULL)
 	{
-		xTimerStop(perc_timer_handleOn,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
+		xTimerStop(perc_timer_handleOn, 1000);
+		xTimerDelete(perc_timer_handleOn, 1000);
 		perc_timer_handleOn = NULL;
 	}
 	if(perc_timer_handleOff != NULL)
 	{
-		xTimerStop(perc_timer_handleOff,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
+		xTimerStop(perc_timer_handleOff, 1000);
+		xTimerDelete(perc_timer_handleOff, 1000);
 		perc_timer_handleOff = NULL;
 	}
 
@@ -514,7 +522,11 @@ void actuator_read_percent(void* arg)
 				{
 					perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
 					perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
-					pivot_config_read.percentimeter = perc_pct_on;
+
+					if(perc_pct_on <= 100)
+					{
+						pivot_config_read.percentimeter = perc_pct_on;
+					}
 				}
 			}
 		}

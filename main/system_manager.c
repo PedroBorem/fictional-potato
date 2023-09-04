@@ -632,6 +632,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
+		// todo alterar os arg_pairs para nomes diferentes
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },

@@ -76,7 +76,8 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	{
 		ESP_LOGW(ACTUATION_APP_TAG,"alert, manual configuration !!");
 
-		if (eTaskGetState(xTask_actuation_app) != eSuspended)
+		if (eTaskGetState(xTask_actuation_app) == eSuspended
+		|| eTaskGetState(xTask_actuation_app) == eBlocked)
 		{
 			xTaskNotifyGive(xTask_actuation_app);
 		}
@@ -84,7 +85,8 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 
 	if(actuation_first_interaction == false)
 	{
-		if (eTaskGetState(xTask_actuation_app) != eSuspended)
+		if (eTaskGetState(xTask_actuation_app) == eSuspended
+		|| eTaskGetState(xTask_actuation_app) == eBlocked)
 		{
 			xTaskNotifyGive(xTask_actuation_app);
 			actuation_first_interaction = true;
