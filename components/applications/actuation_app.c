@@ -27,6 +27,7 @@
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
 static pivot_actions actuation_config = {};
+static bool actuation_first_interaction = false;
 
 /* Private methods  ---------------------------------------------- */
 void actuation_app_task(void* arg);
@@ -74,11 +75,20 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	else
 	{
 		ESP_LOGW(ACTUATION_APP_TAG,"alert, manual configuration !!");
+
+		if (eTaskGetState(xTask_actuation_app) != eSuspended)
+		{
+			xTaskNotifyGive(xTask_actuation_app);
+		}
 	}
 
-	if (eTaskGetState(xTask_actuation_app) != eSuspended)
+	if(actuation_first_interaction == false)
 	{
-		xTaskNotifyGive(xTask_actuation_app);
+		if (eTaskGetState(xTask_actuation_app) != eSuspended)
+		{
+			xTaskNotifyGive(xTask_actuation_app);
+			actuation_first_interaction = true;
+		}
 	}
 }
 

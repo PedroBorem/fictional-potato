@@ -1020,7 +1020,11 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 				.percentimeter = PIVOT_UNKNOWN,
 		};
 
+		// act on the equipment
+		actuation_app_set_actions(current_action, true);
 		actuation_app_shutdown();
+
+		// save current config
 		data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
 
 		// save old history
@@ -1060,7 +1064,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 			// act on the equipment
-			actuation_app_set_actions(new_actions, false);
+			actuation_app_set_actions(new_actions, true);
 
 			// save new history
 			if(new_actions.power_state != PIVOT_OFF)
