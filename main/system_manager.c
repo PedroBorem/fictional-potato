@@ -169,6 +169,7 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		}
 		case IDP_INVALID:
 		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid IDP (%d)", idp_request);
 			break;
 		}
 		default:
@@ -240,34 +241,41 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
 
-		ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
-		if(ret == ESP_OK)
+		if(idp_parser_validate_actions(new_actions) == true)
 		{
-			// save old history
-			pivot_history old_history = {};
-			old_history.end_date = rtc_app_get_timestamp(false);
-			old_history.end_angle = global_angle;
-
-			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
-
-			// act on the equipment
-			actuation_app_set_actions(new_actions, false);
-
-			// send current status
-			system_manager_idp_00("#00$", comm_mode);
-
-			// save new history
-			if(new_actions.power_state != PIVOT_OFF)
+			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
+			if(ret == ESP_OK)
 			{
-				new_history.start_date = rtc_app_get_timestamp(false);
-				new_history.start_angle = global_angle;
-				memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
-				data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
+				// save old history
+				pivot_history old_history = {};
+				old_history.end_date = rtc_app_get_timestamp(false);
+				old_history.end_angle = global_angle;
+
+				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
+
+				// act on the equipment
+				actuation_app_set_actions(new_actions, false);
+
+				// send current status
+				system_manager_idp_00("#00$", comm_mode);
+
+				// save new history
+				if(new_actions.power_state != PIVOT_OFF)
+				{
+					new_history.start_date = rtc_app_get_timestamp(false);
+					new_history.start_angle = global_angle;
+					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
+					data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
+				}
+			}
+			else
+			{
+				ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
 			}
 		}
 		else
 		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid state (%s)", buffer);
 		}
 	}
 }
@@ -585,7 +593,7 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	char str_out[200] = {};
 	char pivot_id[50] = {};
 	char str_author[30] = {};
-	char scheaduling_id[10] = {};
+	char scheaduling_id[20] = {};
 
 	arg_pair_t arg_pairs[] =
 	{
@@ -657,53 +665,60 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 			{
 				memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
 
-				// get_rtc
-				scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
-
-				// gen Key
-				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-				strcpy(scheduling.scheduling_id, (char*)&scheduling_date[position].scheduling_id);
-
-				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
-
-				scheduling_stop();
-				scheduling_start(scheduling_date, NULL);
-
-				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
-
-				// send ack
-				if(comm_mode == COMM_HTTP_POST)
+				if(idp_parser_validate_actions(scheduling.actions) == true)
 				{
-					arg_pair_t arg_pairs_2[] =
+					// get_rtc
+					scheduling_date[position].start_date += rtc_app_get_timestamp(false);
+					scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+
+					// gen Key
+					data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
+					strcpy(scheduling.scheduling_id, (char*)&scheduling_date[position].scheduling_id);
+
+					data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
+
+					scheduling_stop();
+					scheduling_start(scheduling_date, NULL);
+
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
+
+					// send ack
+					if(comm_mode == COMM_HTTP_POST)
 					{
-						{ "uint8_t", &idp },
-						{ "string", system_id },
-						{ "string", scheduling.scheduling_id },
-						{ "uint32_t", &scheduling.start_date },
-						{ "uint32_t", &scheduling.end_date },
-						{ "uint16_t", &dwp },
-						{ "uint8_t", &scheduling.actions.percentimeter },
-						{ NULL, NULL }
-					};
+						arg_pair_t arg_pairs_2[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", system_id },
+							{ "string", scheduling.scheduling_id },
+							{ "uint32_t", &scheduling.start_date },
+							{ "uint32_t", &scheduling.end_date },
+							{ "uint16_t", &dwp },
+							{ "uint8_t", &scheduling.actions.percentimeter },
+							{ NULL, NULL }
+						};
 
-					idp_parser_create_package(str_out, arg_pairs_2);
+						idp_parser_create_package(str_out, arg_pairs_2);
 
-					comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-					comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
+					else if(comm_mode == COMM_MQTT)
+					{
+						arg_pair_t arg_pairs_2[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", system_id },
+							{ "string", scheduling.scheduling_id },
+							{ NULL, NULL }
+						};
+
+						idp_parser_create_package(str_out, arg_pairs_2);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
 				}
-				else if(comm_mode == COMM_MQTT)
+				else
 				{
-					arg_pair_t arg_pairs_2[] =
-					{
-						{ "uint8_t", &idp },
-						{ "string", system_id },
-						{ "string", scheduling.scheduling_id },
-						{ NULL, NULL }
-					};
-
-					idp_parser_create_package(str_out, arg_pairs_2);
-					comm_app_send_idp_pack(str_out, COMM_MQTT);
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "Scheduling invalid state (%s)", buffer);
 				}
 
 				break;
@@ -793,37 +808,44 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 			{
 				memcpy(&scheduling_angle[position], &scheduling, sizeof(scheduling_angle[position]));
 
-				// get_rtc
-				scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
-				data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
-				data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
-
-				strcpy((char*)&scheduling.scheduling_id, (char*)&scheduling_angle[position].scheduling_id);
-				scheduling_stop();
-				scheduling_start(NULL, scheduling_angle);
-
-				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
-
-				arg_pair_t arg_pairs_2[] =
+				if(idp_parser_validate_actions(scheduling.actions) == true)
 				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "string", scheduling.scheduling_id },
-					{ "uint32_t", &scheduling.start_date },
-					{ "uint16_t", &scheduling.end_angle },
-					{ "uint16_t", &dwp },
-					{ "uint8_t", &scheduling.actions.percentimeter },
-					{ NULL, NULL }
-				};
+					// get_rtc
+					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+					data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
+					data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
-				idp_parser_create_package(str_out, arg_pairs_2);
+					strcpy((char*)&scheduling.scheduling_id, (char*)&scheduling_angle[position].scheduling_id);
+					scheduling_stop();
+					scheduling_start(NULL, scheduling_angle);
 
-				comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
+
+					arg_pair_t arg_pairs_2[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling.scheduling_id },
+						{ "uint32_t", &scheduling.start_date },
+						{ "uint16_t", &scheduling.end_angle },
+						{ "uint16_t", &dwp },
+						{ "uint8_t", &scheduling.actions.percentimeter },
+						{ NULL, NULL }
+					};
+
+					idp_parser_create_package(str_out, arg_pairs_2);
+
+					comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+					comm_app_send_idp_pack(str_out, COMM_MQTT);
+				}
+				else
+				{
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "Scheduling invalid state (%s)", buffer);
+				}
+
 				break;
 			}
 		}
-
 	}
 	else if(comm_mode == COMM_HTTP_GET)
 	{
@@ -942,7 +964,6 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 					};
 
 					idp_parser_create_package(str_out, arg_pairs_2);
-
 					comm_app_send_idp_pack(str_out, COMM_MQTT);
 				}
 				break;

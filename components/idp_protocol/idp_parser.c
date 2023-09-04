@@ -82,6 +82,36 @@ idp_type idp_parser_get(const char* string_in)
 	return idp_ret;
 }
 
+bool idp_parser_validate_actions(pivot_actions actions)
+{
+	bool ret = false;
+
+	if(actions.percentimeter <= 100)
+	{
+		if(actions.power_state == PIVOT_ON
+		|| actions.power_state == PIVOT_OFF)
+		{
+			if(actions.rotation == PIVOT_CW
+			|| actions.rotation == PIVOT_CCW)
+			{
+				if(actions.watering_state == PIVOT_DRY
+				|| actions.watering_state == PIVOT_WET)
+				{
+					ret = true;
+				}
+			}
+			else if(actions.power_state == PIVOT_OFF
+					&& actions.rotation == 0 // todo trocar para define
+					&& actions.watering_state == 0)
+			{
+				ret = true;
+			}
+		}
+	}
+
+	return ret;
+}
+
 uint16_t idp_parser_create_pwd(pivot_actions actions)
 {
 	uint16_t dwp = ((actions.rotation * 100)

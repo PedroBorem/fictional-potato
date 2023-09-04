@@ -26,6 +26,7 @@ typedef struct arg_pair{
  */
 idp_type idp_parser_get(const char* string_in);
 
+bool idp_parser_validate_actions(const pivot_actions actions);
 
 uint16_t idp_parser_create_pwd(pivot_actions actions);
 
