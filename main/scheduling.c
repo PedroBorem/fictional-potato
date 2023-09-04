@@ -83,6 +83,7 @@ static void scheduling_task(void* arg)
 				if(scheduling_date_status[date_position] == false)
 				{
 					scheduling_date_status[date_position] = true;
+					// todo adicionar a chamada do system manager 01
 					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
 												sizeof(scheduling_date[date_position].actions));
 					rtc_app_get_timestamp(true);
@@ -104,7 +105,7 @@ static void scheduling_task(void* arg)
 				{
 					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
 				}
-
+				// todo adicionar a chamada do system manager 01
 				data_app_delete(scheduling_date[date_position].scheduling_id);
 				data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 			}
@@ -121,6 +122,7 @@ static void scheduling_task(void* arg)
 					scheduling_angle_status[angle_position] = true;
 					data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
 							sizeof(scheduling_angle[angle_position].actions));
+					// todo adicionar a chamada do system manager 01
 					rtc_app_get_timestamp(true);
 					ESP_LOGW(SCHEDULING_TAG, "processing schedule by angle id : %s",
 							scheduling_angle[angle_position].scheduling_id);
@@ -130,10 +132,12 @@ static void scheduling_task(void* arg)
 				{
 					scheduling_angle_status[angle_position] = false;
 					rtc_app_get_timestamp(true);
+					// todo adicionar a chamada do system manager 01
 
 					if(scheduling_callback != NULL)
 					{
-						scheduling_callback("#30-off$", COMM_MQTT);
+						//scheduling_callback("#30-off$", COMM_MQTT);
+						ESP_LOGW(SCHEDULING_TAG, "todo ...");
 					}
 					else
 					{
@@ -162,12 +166,15 @@ void scheduling_start(pivot_scheduling_date* in_scheduling_date, pivot_schedulin
 		memcpy(scheduling_angle, in_scheduling_angle, sizeof(scheduling_angle));
 	}
 
-	xTaskCreate(&scheduling_task,
+	if(xTask_scheduling == NULL)
+	{
+		xTaskCreate(&scheduling_task,
 				SCHEDULING_TASK_NAME,
 				SCHEDULING_TASK_SIZE,
 				NULL,
 				SCHEDULING_TASK_PRIORITY,
 				&xTask_scheduling);
+	}
 }
 
 void scheduling_stop(void)
@@ -181,7 +188,10 @@ void scheduling_stop(void)
 
 void scheduling_register_callback(const app_callback callback)
 {
-	scheduling_callback = callback;
+	if(callback != NULL)
+	{
+		scheduling_callback = callback;
+	}
 }
 
 
