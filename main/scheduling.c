@@ -13,6 +13,7 @@
 #include "data_app.h"
 #include "comm_app.h"
 #include "rtc_app.h"
+#include "idp_parser.h"
 
 #include <string.h>
 #include <stdbool.h>
@@ -35,7 +36,22 @@ static void scheduling_task(void* arg)
 {
 	const uint8_t angle_off_set = 5;
 
+	char pivo_id[30] = "scheduling";
+	char str_out[50] = {};
+
 	time_t scheduling_timestamp_now = 0;
+	pivot_actions actions = {};
+	uint8_t idp = IDP_1;
+	uint16_t dwp = 0;
+
+	arg_pair_t arg_pairs[] = {
+		{ "uint8_t", &idp },
+		{ "string", pivo_id },
+		{ "uint16_t", &dwp },
+		{ "uint8_t", &actions.percentimeter },
+		{ "string", pivo_id },
+		{ NULL, NULL }
+	};
 
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
@@ -82,32 +98,56 @@ static void scheduling_task(void* arg)
 			{
 				if(scheduling_date_status[date_position] == false)
 				{
-					scheduling_date_status[date_position] = true;
-					// todo adicionar a chamada do system manager 01
-					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
-												sizeof(scheduling_date[date_position].actions));
-					rtc_app_get_timestamp(true);
-					ESP_LOGI(SCHEDULING_TAG, "processing schedule by date id : %s", scheduling_date[date_position].scheduling_id);
+					if(scheduling_callback != NULL)
+					{
+						scheduling_date_status[date_position] = true;
+
+						// actuation
+						memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
+						dwp = idp_parser_create_pwd(scheduling_date[date_position].actions);
+						idp_parser_create_package(str_out, arg_pairs);
+						scheduling_callback(str_out, COMM_MQTT);
+
+
+						data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
+													sizeof(scheduling_date[date_position].actions));
+						rtc_app_get_timestamp(true);
+						ESP_LOGW(SCHEDULING_TAG, "processing schedule by date id : %s",
+								scheduling_date[date_position].scheduling_id);
+					}
+					else
+					{
+						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+					}
 				}
 			}
 			else if(scheduling_timestamp_now > scheduling_date[date_position].end_date
 			&& scheduling_date[date_position].end_date != 0
 			&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
 			{
-				scheduling_date_status[date_position] = false;
-				rtc_app_get_timestamp(true);
-
 				if(scheduling_callback != NULL)
 				{
-					scheduling_callback("#30-off$", COMM_MQTT);
+					scheduling_date_status[date_position] = false;
+					rtc_app_get_timestamp(true);
+
+					// off pivot
+					memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
+					actions.power_state = PIVOT_OFF;
+
+					dwp = idp_parser_create_pwd(actions);
+					idp_parser_create_package(str_out, arg_pairs);
+					scheduling_callback(str_out, COMM_MQTT);
+
+					data_app_delete(scheduling_date[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+
+					ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s",
+							scheduling_date[date_position].scheduling_id);
 				}
 				else
 				{
 					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
 				}
-				// todo adicionar a chamada do system manager 01
-				data_app_delete(scheduling_date[date_position].scheduling_id);
-				data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 			}
 		}
 
@@ -119,34 +159,49 @@ static void scheduling_task(void* arg)
 			{
 				if(scheduling_angle_status[angle_position] == false)
 				{
-					scheduling_angle_status[angle_position] = true;
-					data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
-							sizeof(scheduling_angle[angle_position].actions));
-					// todo adicionar a chamada do system manager 01
-					rtc_app_get_timestamp(true);
-					ESP_LOGW(SCHEDULING_TAG, "processing schedule by angle id : %s",
-							scheduling_angle[angle_position].scheduling_id);
+					if(scheduling_callback != NULL)
+					{
+						scheduling_angle_status[angle_position] = true;
+
+						// actuation
+						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
+						dwp = idp_parser_create_pwd(scheduling_angle[angle_position].actions);
+						idp_parser_create_package(str_out, arg_pairs);
+						scheduling_callback(str_out, COMM_MQTT);
+
+						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
+													sizeof(scheduling_angle[angle_position].actions));
+						rtc_app_get_timestamp(true);
+						ESP_LOGW(SCHEDULING_TAG, "processing schedule by angle id : %s",
+								scheduling_angle[angle_position].scheduling_id);
+					}
 				}
 				else if( *scheduling_current_angle > (scheduling_angle[angle_position].end_angle - angle_off_set)
 				&& *scheduling_current_angle < (scheduling_angle[angle_position].end_angle + angle_off_set ))
 				{
-					scheduling_angle_status[angle_position] = false;
-					rtc_app_get_timestamp(true);
-					// todo adicionar a chamada do system manager 01
-
 					if(scheduling_callback != NULL)
 					{
-						//scheduling_callback("#30-off$", COMM_MQTT);
-						ESP_LOGW(SCHEDULING_TAG, "todo ...");
+						scheduling_angle_status[angle_position] = false;
+						rtc_app_get_timestamp(true);
+
+						// off pivot
+						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
+						actions.power_state = PIVOT_OFF;
+
+						dwp = idp_parser_create_pwd(actions);
+						idp_parser_create_package(str_out, arg_pairs);
+						scheduling_callback(str_out, COMM_MQTT);
+
+						data_app_delete(scheduling_angle[angle_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+
+						ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
+								scheduling_date[angle_position].scheduling_id);
 					}
 					else
 					{
 						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
 					}
-
-					data_app_delete(scheduling_angle[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
-
 				}
 			}
 		}
