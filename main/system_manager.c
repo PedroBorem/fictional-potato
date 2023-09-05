@@ -554,7 +554,7 @@ static void system_manager_idp_06(const char* buffer, comm_type comm_mode)
 static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 {
 	uint8_t idp = 0;
-	time_t timestamp;
+	uint32_t timestamp;
 	char utc[10] = {};
 
 	// get angle
@@ -573,7 +573,7 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 	}
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
-	rtc_app_set_timestamp(timestamp);
+	rtc_app_set_timestamp((time_t)timestamp);
 }
 
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode)

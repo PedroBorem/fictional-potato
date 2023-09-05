@@ -220,7 +220,7 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         } else if (strcmp(type, "int") == 0) {
             * (int *) arg_pairs[index].value = atoi(token);
         } else if (strcmp(type, "string") == 0) {
-        	uint8_t str_size = strlen(arg_pairs[index].value);
+        	uint8_t str_size = strlen(token);
         	strncpy(arg_pairs[index].value, token, str_size);
             ((char *)arg_pairs[index].value)[str_size] = '\0';
         } else if (strcmp(type, "bool") == 0) {
