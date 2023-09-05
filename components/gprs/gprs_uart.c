@@ -126,8 +126,6 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
-	LOG_COMM(GPRS_UART_TAG, "send : %s", event);
-
 	if(uart_write_bytes(GPRS_UART_NUM, event, event_size) != -1)
 	{
 		LOG_COMM(GPRS_UART_TAG, "OK");
@@ -153,7 +151,6 @@ static void gprs_uart_event_task(void* arg)
 		if(xQueueReceive(gprs_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, GPRS_UART_BUF_SIZE);
-			LOG_COMM(GPRS_UART_TAG, "uart[%d] event:", GPRS_UART_NUM);
 
 			switch(event.type)
 			{

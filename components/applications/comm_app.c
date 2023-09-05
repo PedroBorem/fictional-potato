@@ -42,6 +42,8 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
 	char* str_copy = strdup(idp_pack);
 
+	LOG_COMM(COMM_APP_TAG, "send %s", str_copy);
+
 	if(communication == COMM_HTTP_POST
 	|| communication == COMM_HTTP_GET )
 	{
@@ -52,8 +54,6 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 		gprs_uart_send_event(str_copy, strlen(str_copy));
 		rf_uart_send_event(str_copy, strlen(str_copy));
 	}
-
-	LOG_COMM(COMM_APP_TAG, "send %s", str_copy);
 
 	free(str_copy);
 }

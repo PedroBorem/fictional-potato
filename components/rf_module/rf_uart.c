@@ -99,8 +99,6 @@ esp_err_t rf_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
-	LOG_COMM(RF_UART_TAG, "send : %s", event);
-
 	if(uart_write_bytes(RF_UART_NUM, event, event_size) != -1)
 	{
 		LOG_COMM(RF_UART_TAG, "OK");
@@ -126,7 +124,6 @@ static void rf_uart_event_task(void* arg)
 		if(xQueueReceive(rf_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, RF_UART_BUF_SIZE);
-			LOG_COMM(RF_UART_TAG, "uart[%d] event:", RF_UART_NUM);
 
 			switch(event.type)
 			{

@@ -52,7 +52,6 @@ static bool idp_parser_check_pack(const char* string_in)
 
 	if(string_in[0] == '#' && ptr != NULL )
 	{
-		LOG_COMM(IDP_PARSER_TAG, "package : %s", string_in);
 		ret = true;
 	}
 	else

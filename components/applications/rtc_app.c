@@ -54,14 +54,6 @@ bool rtc_app_set_timestamp(time_t timestamp)
 		time.tm_year += 1900;
 		time.tm_mon += 1;
 
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_sec=%d",time.tm_sec);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_min=%d",time.tm_min);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_hour=%d",time.tm_hour);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_wday=%d",time.tm_wday);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mday=%d",time.tm_mday);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_mon=%d",time.tm_mon);
-		ESP_LOGI(RTC_APP_TAG, "timeinfo.tm_year=%d",time.tm_year);
-
 		if (ds3231_set_time(&dev, &time) != ESP_OK)
 		{
 			ESP_LOGE(RTC_APP_TAG, "Could not set time.");
@@ -69,7 +61,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 		else
 		{
 			ret = true;
-			ESP_LOGI(RTC_APP_TAG, "Set initial date time done");
+			ESP_LOGI(RTC_APP_TAG, "Set initial date time done (%lld)", timestamp);
 		}
 	}
 

@@ -88,8 +88,6 @@ void system_manager_init(void)
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
 {
-	LOG_MANAGER(SYSTEM_MANAGER_TAG, "%s", buffer_request);
-
 	char str_idp[5] = {};
 
 	idp_type idp_request = idp_parser_get(buffer_request);
@@ -556,7 +554,7 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 	uint8_t idp = 0;
 	uint32_t timestamp;
 	char utc[10] = {};
-
+	// todo transformar em time_t (adicionar time_t no idp_parser_get_packet_data)
 	// get angle
 	arg_pair_t arg_pairs[] =
 	{
