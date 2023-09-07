@@ -14,6 +14,16 @@
 #include "driver/gpio.h"
 
 /**
+ * @brief Macro to enable the GPIO actuator system.
+ */
+#define GPIO_ACT_SYS_ENABLE			0
+
+/**
+ * @brief Macro to disable the GPIO actuator system.
+ */
+#define GPIO_ACT_SYS_DISABLE		1
+
+/**
  * @brief Macro defining the full cycle duration for the percentimeter (in milliseconds).
  */
 #define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec

@@ -27,8 +27,8 @@
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
 /* global variables */
-uint16_t global_angle = 0xFFFF;
-static uint16_t system_initial_angle = 0xFFFF;
+uint16_t global_angle = 655;
+static uint16_t system_initial_angle = 655;
 static char system_id[50] = {};
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
@@ -59,7 +59,8 @@ void system_manager_init(void)
 	// actuation init
 	pivot_config config = {};
 	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
-	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback, config));
+	actuation_app_set_config(config);
+	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
 
 	// system monitoring init
 	system_monitoring_register_callback(&system_manager_callback);
@@ -370,6 +371,9 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
+		new_config.pressurization_time = new_config.pressurization_time * 1000;
+		new_config.on_off_time = new_config.on_off_time * 1000;
+
 		esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 		if(ret == ESP_OK)
 		{
@@ -380,6 +384,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 				{ NULL, NULL }
 			};
 
+			actuation_app_set_config(new_config);
 			idp_parser_create_package(str_out, arg_pairs_2);
 			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
 		}
@@ -567,7 +572,7 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 		{ NULL, NULL }
 	};
 
-	if(system_initial_angle == 0xFFFF)
+	if(system_initial_angle == 655)
 	{
 		system_initial_angle = global_angle;
 	}

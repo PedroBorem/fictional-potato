@@ -119,15 +119,15 @@ esp_err_t gpio_actuator_init()
 	io_conf_out.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf_out);
 
-    gpio_set_level(GPIO_ACT_PIN_OFF, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_ON, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_AUX, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_CW, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_CCW, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_WATERING, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_PUMP, !gpio_act_contactor_type);
+    gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
     //input configuration
 	gpio_config_t io_conf_in = {};
@@ -236,15 +236,15 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	{
 		if(actions.rotation == PIVOT_CW)
 		{
-			gpio_set_level(GPIO_ACT_PIN_CW, gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_AUX, gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_CCW, !gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
 		}
 		else if(actions.rotation == PIVOT_CCW)
 		{
-			gpio_set_level(GPIO_ACT_PIN_CW, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_AUX, gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_CCW, gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
 		}
 
 		if(actions.percentimeter > 0 && actions.percentimeter < 100)
@@ -265,16 +265,16 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 			if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
 			{
-				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, gpio_act_contactor_type);
-				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, gpio_act_contactor_type);
+				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
 				xTimerStart(perc_timer_handleOn, 100);
 			}
 
 		}
 		else if(actions.percentimeter == 0)
 		{
-			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, !gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 
 			if(perc_timer_handleOn != 0)
 			{
@@ -294,8 +294,8 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 		}
 		else if(actions.percentimeter == 100)
 		{
-			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
 
 			if(perc_timer_handleOn != 0)
 			{
@@ -312,13 +312,13 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 		if(actions.watering_state == PIVOT_DRY)
 		{
-			gpio_set_level(GPIO_ACT_PIN_WATERING, !gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 			gpio_actuator_pressure_off();
 			gpio_actuator_start();
 		}
 		else if(actions.watering_state == PIVOT_WET)
 		{
-			gpio_set_level(GPIO_ACT_PIN_WATERING, gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
 			gpio_actuator_pressure_on();
 		}
 	}
@@ -380,18 +380,18 @@ pivot_actions gpio_actuator_get(void)
 
 void gpio_actuator_shutdown(void)
 {
-	gpio_set_level(GPIO_ACT_PIN_OFF, gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_ON, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_AUX, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_CW, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_CCW, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_WATERING, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, !gpio_act_contactor_type);
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, !gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pump_off();
 
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
-	gpio_set_level(GPIO_ACT_PIN_OFF, !gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 	if(perc_timer_handleOn != NULL)
 	{
@@ -411,12 +411,12 @@ void gpio_actuator_shutdown(void)
 
 void gpio_actuator_pump_on(void)
 {
-	gpio_set_level(GPIO_ACT_PIN_PUMP, gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 }
 
 void gpio_actuator_pump_off(void)
 {
-	gpio_set_level(GPIO_ACT_PIN_PUMP, !gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 }
 
 void gpio_actuator_pressure_on(void)
@@ -454,13 +454,13 @@ void gpio_actuator_pressure_off(void)
 /* Private methods  ---------------------------------------------- */
 void vPercTimerOnExpire(TimerHandle_t pxTimer)
 {
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, !gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	xTimerStart(perc_timer_handleOff, 1000);
 }
 
 void vPercTimerOffExpire(TimerHandle_t pxTimer)
 {
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
 	xTimerStart(perc_timer_handleOn, 1000);
 }
 
@@ -468,9 +468,9 @@ esp_err_t gpio_actuator_start(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	gpio_set_level(GPIO_ACT_PIN_ON, gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
-	gpio_set_level(GPIO_ACT_PIN_ON, !gpio_act_contactor_type);
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 
 	return err;
 }
@@ -502,19 +502,19 @@ void actuator_wait_pressure(void* arg)
 			// Local shutdown
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Water Pressure timeout", __func__);
 
-			gpio_set_level(GPIO_ACT_PIN_OFF, gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_ON, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_AUX, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_CW, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_CCW, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_WATERING, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, !gpio_act_contactor_type);
-			gpio_set_level(GPIO_ACT_PIN_PUMP, !gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
 			vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 
-			gpio_set_level(GPIO_ACT_PIN_OFF, !gpio_act_contactor_type);
+			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 			if(perc_timer_handleOn != NULL)
 			{
