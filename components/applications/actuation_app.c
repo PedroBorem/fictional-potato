@@ -27,7 +27,6 @@
 static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
 static pivot_actions actuation_config = {};
-static bool actuation_first_interaction = false;
 
 /* Private methods  ---------------------------------------------- */
 void actuation_app_task(void* arg);
@@ -80,22 +79,12 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	else
 	{
 		ESP_LOGW(ACTUATION_APP_TAG,"alert, manual configuration !!");
-
-		if (eTaskGetState(xTask_actuation_app) == eSuspended
-		|| eTaskGetState(xTask_actuation_app) == eBlocked)
-		{
-			xTaskNotifyGive(xTask_actuation_app);
-		}
 	}
 
-	if(actuation_first_interaction == false)
+	if (eTaskGetState(xTask_actuation_app) == eSuspended
+	|| eTaskGetState(xTask_actuation_app) == eBlocked)
 	{
-		if (eTaskGetState(xTask_actuation_app) == eSuspended
-		|| eTaskGetState(xTask_actuation_app) == eBlocked)
-		{
-			xTaskNotifyGive(xTask_actuation_app);
-			actuation_first_interaction = true;
-		}
+		xTaskNotifyGive(xTask_actuation_app);
 	}
 }
 
@@ -163,7 +152,6 @@ void actuation_app_task(void* arg)
 					actuation_app_manual_call(true, current_action);
 				}
 
-				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 				last_tick = xTaskGetTickCount();
 			}
 		}
@@ -184,7 +172,6 @@ void actuation_app_task(void* arg)
 				}
 
 				last_tick = xTaskGetTickCount();
-				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
 		else if(current_action.rotation != actuation_config.rotation && current_action.rotation != PIVOT_UNKNOWN)
@@ -194,7 +181,6 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
 				actuation_app_manual_call(true, current_action);
-				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
 		else if(current_action.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
@@ -205,7 +191,6 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
 				last_tick = xTaskGetTickCount();
 				actuation_app_manual_call(true, current_action);
-				ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 			}
 		}
 		else
