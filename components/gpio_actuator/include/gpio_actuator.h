@@ -14,29 +14,9 @@
 #include "driver/gpio.h"
 
 /**
- * @brief Macro to enable the GPIO actuator system.
- */
-#define GPIO_ACT_SYS_ENABLE			0
-
-/**
- * @brief Macro to disable the GPIO actuator system.
- */
-#define GPIO_ACT_SYS_DISABLE		1
-
-/**
  * @brief Macro defining the full cycle duration for the percentimeter (in milliseconds).
  */
 #define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec
-
-/**
- * @brief Macro defining the timeout duration for water pressure reading (in milliseconds).
- */
-#define GPIO_ACT_PRESSURE_TIMEOUT    	300000 //5 min
-
-/**
- * @brief Macro defining the delay duration for turning on and off relays (in milliseconds).
- */
-#define GPIO_ACT_ONOFF_DELAY			2000
 
 /**
  * @brief GPIO pin number for turning the system on.
@@ -140,6 +120,8 @@
  */
 esp_err_t gpio_actuator_init(void);
 
+esp_err_t gpio_actuator_config(pivot_config config);
+
 /**
  * @brief Sets the pivot configuration.
  * @param config The pivot configuration to set
@@ -147,7 +129,7 @@ esp_err_t gpio_actuator_init(void);
  *     - ESP_OK: Success
  *     - ESP_FAIL: Failed to set the configuration
  */
-esp_err_t gpio_actuator_set(pivot_actions config);
+esp_err_t gpio_actuator_set(pivot_actions actions);
 
 /**
  * @brief Gets the current pivot configuration.
