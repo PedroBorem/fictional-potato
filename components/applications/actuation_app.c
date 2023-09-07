@@ -34,10 +34,11 @@ void actuation_app_task(void* arg);
 void actuation_app_manual_call(bool on_off, pivot_actions current_action);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t actuation_app_init(const app_callback callback)
+esp_err_t actuation_app_init(const app_callback callback, pivot_config config)
 {
 	esp_err_t err = ESP_OK;
 
+	gpio_actuator_config(config);
 	err = gpio_actuator_init();
 	if(callback != NULL && err == ESP_OK)
 	{

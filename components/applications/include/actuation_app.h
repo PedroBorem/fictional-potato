@@ -24,7 +24,7 @@
  * 	- true: success
  * 	- false: fail to initialize
  */
-esp_err_t actuation_app_init(const app_callback callback);
+esp_err_t actuation_app_init(const app_callback callback, pivot_config config);
 
 /**
  * @brief	apply the configuration to the drives

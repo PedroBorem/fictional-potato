@@ -53,11 +53,13 @@ void system_manager_init(void)
 	// rtc init
 	ESP_ERROR_CHECK(rtc_app_init());
 
-	// actuation init
-	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
-
 	// nvs init
 	ESP_ERROR_CHECK(data_app_init());
+
+	// actuation init
+	pivot_config config = {};
+	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
+	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback, config));
 
 	// system monitoring init
 	system_monitoring_register_callback(&system_manager_callback);
