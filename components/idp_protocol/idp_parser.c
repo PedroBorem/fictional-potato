@@ -81,7 +81,7 @@ idp_type idp_parser_get(const char* string_in)
 	return idp_ret;
 }
 
-bool idp_parser_validate_actions(pivot_actions actions)
+bool idp_parser_validate_actions(const pivot_actions actions)
 {
 	bool ret = false;
 
