@@ -10,8 +10,8 @@
 
 #include "project_config.h"
 
-void scheduling_start(pivot_scheduling_date* in_scheduling_date, pivot_scheduling_angle* in_scheduling_angle);
-void scheduling_stop(void);
+void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
+void scheduling_stop(idp_type scheduling_idp);
 void scheduling_register_callback(const app_callback callback);
 
 #endif /* MAIN_INCLUDE_SCHEADULING_H_ */

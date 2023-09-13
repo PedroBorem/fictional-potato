@@ -20,22 +20,33 @@
 
 #define SCHEDULING_TAG		"scheduling"
 
-static TaskHandle_t xTask_scheduling = NULL;
+static TaskHandle_t xTask_scheduling_idp_14 = NULL;
+static TaskHandle_t xTask_scheduling_idp_15 = NULL;
+static TaskHandle_t xTask_scheduling_idp_16 = NULL;
+static TaskHandle_t xTask_scheduling_idp_17 = NULL;
 
 static pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+
 static pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+
 static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_off_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static bool scheduling_off_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 static uint16_t* scheduling_current_angle  = &global_angle;
 static app_callback scheduling_callback = NULL;
 
-static void scheduling_task(void* arg);
+static void scheduling_task_idp_14(void* arg);
+static void scheduling_task_idp_15(void* arg);
+static void scheduling_task_idp_16(void* arg);
+static void scheduling_task_idp_17(void* arg);
 
-static void scheduling_task(void* arg)
+
+static void scheduling_task_idp_14(void* arg)
 {
-	const uint8_t angle_off_set = 5;
-
 	char pivo_id[30] = "scheduling";
 	char str_out[50] = {};
 
@@ -151,6 +162,36 @@ static void scheduling_task(void* arg)
 			}
 		}
 
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+	}
+}
+
+
+
+static void scheduling_task_idp_15(void* arg)
+{
+	while(1)
+	{
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+	}
+}
+
+static void scheduling_task_idp_16(void* arg)
+{
+	const uint8_t angle_off_set = 5;
+	char pivo_id[30] = "scheduling";
+	char str_out[50] = {};
+
+	time_t scheduling_timestamp_now = 0;
+	pivot_actions actions = {};
+
+	idp_type idp = IDP_18;
+
+	while(1)
+	{
+		//get timestamp
+		scheduling_timestamp_now = rtc_app_get_timestamp(false);
+
 		// angle analysis
 		for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 		{
@@ -163,9 +204,14 @@ static void scheduling_task(void* arg)
 					{
 						scheduling_angle_status[angle_position] = true;
 
-						// actuation
+						arg_pair_t arg_pairs[] = {
+							{ "uint8_t", &idp },
+							{ "string", pivo_id },
+							{ "string", scheduling_angle[angle_position].scheduling_id},
+							{ NULL, NULL }
+						};
+
 						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
-						dwp = idp_parser_create_pwd(scheduling_angle[angle_position].actions);
 						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
@@ -188,8 +234,6 @@ static void scheduling_task(void* arg)
 						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
 						actions.power_state = PIVOT_OFF;
 
-						dwp = idp_parser_create_pwd(actions);
-						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
 						data_app_delete(scheduling_angle[angle_position].scheduling_id);
@@ -209,35 +253,137 @@ static void scheduling_task(void* arg)
 	}
 }
 
-void scheduling_start(pivot_scheduling_date* in_scheduling_date, pivot_scheduling_angle* in_scheduling_angle)
+static void scheduling_task_idp_17(void* arg)
 {
-	if(in_scheduling_date != NULL)
+	while(1)
 	{
-		memcpy(scheduling_date, in_scheduling_date, sizeof(scheduling_date));
-	}
-
-	if(in_scheduling_angle != NULL)
-	{
-		memcpy(scheduling_angle, in_scheduling_angle, sizeof(scheduling_angle));
-	}
-
-	if(xTask_scheduling == NULL)
-	{
-		xTaskCreate(&scheduling_task,
-				SCHEDULING_TASK_NAME,
-				SCHEDULING_TASK_SIZE,
-				NULL,
-				SCHEDULING_TASK_PRIORITY,
-				&xTask_scheduling);
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 	}
 }
 
-void scheduling_stop(void)
+void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 {
-	if(xTask_scheduling != NULL)
+	if(scheduling_data == NULL)
 	{
-		vTaskDelete(xTask_scheduling);
-		xTask_scheduling = NULL;
+		ESP_LOGE(SCHEDULING_TAG, "Scheduling parameter is NULL");
+		return;
+	}
+
+	switch (scheduling_idp)
+	{
+		case IDP_14:
+		{
+			memcpy(scheduling_date, scheduling_data, sizeof(scheduling_date));
+
+			if(xTask_scheduling_idp_14 == NULL)
+			{
+				xTaskCreate(&scheduling_task_idp_14,
+						"task_idp_14",
+						SCHEDULING_TASK_SIZE,
+						NULL,
+						SCHEDULING_TASK_PRIORITY,
+						&xTask_scheduling_idp_14);
+			}
+			break;
+		}
+		case IDP_15:
+		{
+			memcpy(scheduling_off_date, scheduling_data, sizeof(scheduling_off_date));
+
+			if(xTask_scheduling_idp_15 == NULL)
+			{
+				xTaskCreate(&scheduling_task_idp_15,
+						"task_idp_15",
+						SCHEDULING_TASK_SIZE,
+						NULL,
+						SCHEDULING_TASK_PRIORITY,
+						&xTask_scheduling_idp_15);
+			}
+			break;
+		}
+		case IDP_16:
+		{
+			memcpy(scheduling_angle, scheduling_data, sizeof(scheduling_angle));
+
+			if(xTask_scheduling_idp_16 == NULL)
+			{
+				xTaskCreate(&scheduling_task_idp_16,
+						"task_idp_16",
+						SCHEDULING_TASK_SIZE,
+						NULL,
+						SCHEDULING_TASK_PRIORITY,
+						&xTask_scheduling_idp_16);
+			}
+			break;
+		}
+		case IDP_17:
+		{
+			memcpy(scheduling_off_angle, scheduling_data, sizeof(scheduling_off_angle));
+
+			if(xTask_scheduling_idp_17 == NULL)
+			{
+				xTaskCreate(&scheduling_task_idp_17,
+						"task_idp_17",
+						SCHEDULING_TASK_SIZE,
+						NULL,
+						SCHEDULING_TASK_PRIORITY,
+						&xTask_scheduling_idp_17);
+			}
+			break;
+		}
+		default:
+		{
+			ESP_LOGE(SCHEDULING_TAG, "invalid scheduling idp %s", __func__);
+			break;
+		}
+	}
+}
+
+void scheduling_stop(idp_type scheduling_idp)
+{
+	switch (scheduling_idp)
+	{
+		case IDP_14:
+		{
+			if(xTask_scheduling_idp_14 != NULL)
+			{
+				vTaskDelete(xTask_scheduling_idp_14);
+				xTask_scheduling_idp_14 = NULL;
+			}
+			break;
+		}
+		case IDP_15:
+		{
+			if(xTask_scheduling_idp_15 != NULL)
+			{
+				vTaskDelete(xTask_scheduling_idp_15);
+				xTask_scheduling_idp_15 = NULL;
+			}
+			break;
+		}
+		case IDP_16:
+		{
+			if(xTask_scheduling_idp_16 != NULL)
+			{
+				vTaskDelete(xTask_scheduling_idp_16);
+				xTask_scheduling_idp_16 = NULL;
+			}
+			break;
+		}
+		case IDP_17:
+		{
+			if(xTask_scheduling_idp_17 != NULL)
+			{
+				vTaskDelete(xTask_scheduling_idp_17);
+				xTask_scheduling_idp_17 = NULL;
+			}
+			break;
+		}
+		default:
+		{
+			ESP_LOGE(SCHEDULING_TAG, "invalid scheduling idp %s", __func__);
+			break;
+		}
 	}
 }
 

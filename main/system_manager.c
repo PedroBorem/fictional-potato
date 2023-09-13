@@ -682,8 +682,8 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 
 					data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
-					scheduling_stop();
-					scheduling_start(scheduling_date, NULL);
+					scheduling_stop(idp);
+					scheduling_start(idp, scheduling_date);
 
 					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 

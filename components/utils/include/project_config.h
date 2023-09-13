@@ -93,6 +93,8 @@ typedef enum
     IDP_14,
     IDP_15,
     IDP_16,
+	IDP_17,
+	IDP_18,
 	IDP_30 = 30,
     IDP_INVALID = 255
 } idp_type;
@@ -201,11 +203,20 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 typedef struct __attribute__((__packed__))
 {
     char scheduling_id[50];         /*!< Scheduling ID */
-    bool is_running;                /*!< Flag indicating if the scheduling is running */
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
     pivot_actions actions;          /*!< Pivot actions */
 } pivot_scheduling_date;
+
+/**
+ *
+ */
+typedef struct __attribute__((__packed__))
+{
+    char scheduling_id[50];         /*!< Scheduling ID */
+    time_t end_date;                /*!< End date */
+} pivot_scheduling_off_date;
+
 
 /**
  * @brief Scheduling angle parameters.
@@ -215,11 +226,16 @@ typedef struct __attribute__((__packed__))
 typedef struct __attribute__((__packed__))
 {
     char scheduling_id[30];         /*!< Scheduling ID */
-    bool is_running;                /*!< Flag indicating if the scheduling is running */
     time_t start_date;              /*!< Start date */
     uint16_t end_angle;             /*!< End angle */
     pivot_actions actions;          /*!< Pivot actions */
 } pivot_scheduling_angle;
+
+typedef struct __attribute__((__packed__))
+{
+    char scheduling_id[30];         /*!< Scheduling ID */
+    uint16_t end_angle;             /*!< End angle */
+} pivot_scheduling_off_angle;
 
 /**
  * @brief History parameters.

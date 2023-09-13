@@ -33,7 +33,9 @@
 #define DATA_ECO_MODE_CONFIG		"eco_config"
 #define DATA_SECTOR_CONFIG			"sector_config"
 #define DATA_SCHEDULING_DATE		"s_date"
+#define DATA_SCHEDULING_OFF_DATE	"s_off_date"
 #define DATA_SCHEDULING_ANGLE		"s_angle"
+#define DATA_SCHEDULING_OFF_ANGLE	"s_off_angle"
 #define DATA_HISTORY				"history"
 #define DATA_TIMESTAMP				"timestamp"
 
@@ -67,7 +69,9 @@ esp_err_t data_app_init(void)
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_angle default_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_scheduling_off_angle default_scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 
@@ -104,9 +108,19 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SCHEADULING_DATE, &default_scheduling_date, sizeof(default_scheduling_date));
 		}
 
+		if(nvs_data_get_size(DATA_SCHEDULING_OFF_DATE) == 0)
+		{
+			data_app_save(DATA_TYPE_SCHEADULING_OFF_DATE, &default_scheduling_off_date, sizeof(default_scheduling_off_date));
+		}
+
 		if(nvs_data_get_size(DATA_SCHEDULING_ANGLE) == 0)
 		{
 			data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &default_scheduling_angle, sizeof(default_scheduling_angle));
+		}
+
+		if(nvs_data_get_size(DATA_SCHEDULING_OFF_ANGLE) == 0)
+		{
+			data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, &default_scheduling_off_angle, sizeof(default_scheduling_off_angle));
 		}
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
@@ -165,9 +179,19 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_SCHEDULING_DATE, data, data_size);
 			break;
 		}
+		case DATA_TYPE_SCHEADULING_OFF_DATE:
+		{
+			ret = nvs_data_set(DATA_SCHEDULING_OFF_DATE, data, data_size);
+			break;
+		}
 		case DATA_TYPE_SCHEADULING_ANGLE:
 		{
 			ret = nvs_data_set(DATA_SCHEDULING_ANGLE, data, data_size);
+			break;
+		}
+		case DATA_TYPE_SCHEADULING_OFF_ANGLE:
+		{
+			ret = nvs_data_set(DATA_SCHEDULING_OFF_ANGLE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -259,9 +283,19 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_SCHEDULING_DATE, data);
 			break;
 		}
+		case DATA_TYPE_SCHEADULING_OFF_DATE:
+		{
+			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_DATE, data);
+			break;
+		}
 		case DATA_TYPE_SCHEADULING_ANGLE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_ANGLE, data);
+			break;
+		}
+		case DATA_TYPE_SCHEADULING_OFF_ANGLE:
+		{
+			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_ANGLE, data);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -303,6 +337,22 @@ esp_err_t data_app_delete(void* data_id)
 		}
 	}
 
+	pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	ret = data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, scheduling_off_date);
+	if(ret == ESP_OK)
+	{
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_off_date[position].scheduling_id, data_id) == 0)
+			{
+				ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_off_date[position].scheduling_id);
+				memset(&scheduling_off_date[position], 0x00, sizeof(pivot_scheduling_off_date));
+				data_app_save(DATA_TYPE_SCHEADULING_OFF_DATE, scheduling_off_date, sizeof(scheduling_off_date));
+				return ret;
+			}
+		}
+	}
+
 	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	ret = data_app_load(DATA_TYPE_SCHEADULING_ANGLE, scheduling_angle);
 	if(ret == ESP_OK)
@@ -314,6 +364,22 @@ esp_err_t data_app_delete(void* data_id)
 				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_angle[position].scheduling_id);
 				memset(&scheduling_angle[position], 0x00, sizeof(pivot_scheduling_angle));
 				data_app_save(DATA_TYPE_SCHEADULING_ANGLE, scheduling_angle, sizeof(scheduling_angle));
+				return ret;
+			}
+		}
+	}
+
+	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	ret = data_app_load(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle);
+	if(ret == ESP_OK)
+	{
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_off_angle[position].scheduling_id, data_id) == 0)
+			{
+				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle[position].scheduling_id);
+				memset(&scheduling_off_angle[position], 0x00, sizeof(pivot_scheduling_off_angle));
+				data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle, sizeof(scheduling_off_angle));
 				return ret;
 			}
 		}
