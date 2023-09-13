@@ -52,48 +52,9 @@ static void scheduling_task_idp_14(void* arg)
 
 	time_t scheduling_timestamp_now = 0;
 	pivot_actions actions = {};
-	uint8_t idp = IDP_1;
-	uint16_t dwp = 0;
-
-	arg_pair_t arg_pairs[] = {
-		{ "uint8_t", &idp },
-		{ "string", pivo_id },
-		{ "uint16_t", &dwp },
-		{ "uint8_t", &actions.percentimeter },
-		{ "string", pivo_id },
-		{ NULL, NULL }
-	};
+	idp_type idp = IDP_18;
 
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
-	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
-
-	scheduling_timestamp_now = rtc_app_get_timestamp(true);
-
-	if(scheduling_timestamp_now == 0)
-	{
-		vTaskDelay(pdMS_TO_TICKS(15000)); // Delay RTC sync
-		scheduling_timestamp_now = rtc_app_get_timestamp(true);
-	}
-
-	for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
-	{
-		if(scheduling_timestamp_now > scheduling_date[date_position].end_date
-		&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
-		{
-			data_app_delete(scheduling_date[date_position].scheduling_id);
-			data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
-		}
-	}
-	for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
-	{
-		if((scheduling_timestamp_now > scheduling_angle[angle_position].start_date)
-		&& (scheduling_timestamp_now - scheduling_angle[angle_position].start_date) > 3600
-		&& (strcmp(scheduling_angle[angle_position].scheduling_id,"") > 0))
-		{
-			data_app_delete(scheduling_angle[angle_position].scheduling_id);
-			data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
-		}
-	}
 
 	while(1)
 	{
@@ -113,13 +74,19 @@ static void scheduling_task_idp_14(void* arg)
 					{
 						scheduling_date_status[date_position] = true;
 
-						// actuation
-						memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
-						dwp = idp_parser_create_pwd(scheduling_date[date_position].actions);
+						// create package - send IDP 18
+						arg_pair_t arg_pairs[] = {
+							{ "uint8_t", &idp },
+							{ "string", pivo_id },
+							{ "string", scheduling_date[date_position].scheduling_id},
+							{ NULL, NULL }
+						};
+
 						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
-
+						//TODO : actuation_app
+						memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
 						data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
 													sizeof(scheduling_date[date_position].actions));
 						rtc_app_get_timestamp(true);
@@ -145,9 +112,7 @@ static void scheduling_task_idp_14(void* arg)
 					memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
 					actions.power_state = PIVOT_OFF;
 
-					dwp = idp_parser_create_pwd(actions);
-					idp_parser_create_package(str_out, arg_pairs);
-					scheduling_callback(str_out, COMM_MQTT);
+					//TODO : actuation_app
 
 					data_app_delete(scheduling_date[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
@@ -166,17 +131,7 @@ static void scheduling_task_idp_14(void* arg)
 	}
 }
 
-
-
 static void scheduling_task_idp_15(void* arg)
-{
-	while(1)
-	{
-		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-	}
-}
-
-static void scheduling_task_idp_16(void* arg)
 {
 	const uint8_t angle_off_set = 5;
 	char pivo_id[30] = "scheduling";
@@ -184,8 +139,9 @@ static void scheduling_task_idp_16(void* arg)
 
 	time_t scheduling_timestamp_now = 0;
 	pivot_actions actions = {};
-
 	idp_type idp = IDP_18;
+
+	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 
 	while(1)
 	{
@@ -204,6 +160,7 @@ static void scheduling_task_idp_16(void* arg)
 					{
 						scheduling_angle_status[angle_position] = true;
 
+						// create package - send IDP 18
 						arg_pair_t arg_pairs[] = {
 							{ "uint8_t", &idp },
 							{ "string", pivo_id },
@@ -211,10 +168,11 @@ static void scheduling_task_idp_16(void* arg)
 							{ NULL, NULL }
 						};
 
-						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
 						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
+						//TODO : actuation_app
+						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
 						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
 													sizeof(scheduling_angle[angle_position].actions));
 						rtc_app_get_timestamp(true);
@@ -234,7 +192,7 @@ static void scheduling_task_idp_16(void* arg)
 						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
 						actions.power_state = PIVOT_OFF;
 
-						scheduling_callback(str_out, COMM_MQTT);
+						//TODO : actuation_app
 
 						data_app_delete(scheduling_angle[angle_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
@@ -253,11 +211,72 @@ static void scheduling_task_idp_16(void* arg)
 	}
 }
 
+static void scheduling_task_idp_16(void* arg)
+{
+	char pivo_id[30] = "scheduling";
+	char str_out[50] = {};
+
+	time_t scheduling_timestamp_now = 0;
+	pivot_actions actions = {};
+
+	uint8_t idp = IDP_18;
+
+	while(1)
+	{
+		//get timestamp
+		scheduling_timestamp_now = rtc_app_get_timestamp(false);
+
+		// angle analysis
+		for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
+		{
+			if(scheduling_timestamp_now > scheduling_date[date_position].end_date
+			&& scheduling_date[date_position].end_date != 0
+			&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+			{
+				if(scheduling_callback != NULL)
+				{
+					scheduling_off_date_status[date_position] = true;
+
+					// create package - send IDP 18
+					arg_pair_t arg_pairs[] = {
+						{ "uint8_t", &idp },
+						{ "string", pivo_id },
+						{ "string", scheduling_date[date_position].scheduling_id},
+						{ NULL, NULL }
+					};
+
+					idp_parser_create_package(str_out, arg_pairs);
+					scheduling_callback(str_out, COMM_MQTT);
+
+					//TODO : actuation_app
+
+					memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
+					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
+												sizeof(scheduling_date[date_position].actions));
+
+					data_app_delete(scheduling_date[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+
+					rtc_app_get_timestamp(true);
+					ESP_LOGW(SCHEDULING_TAG, "processing schedule by off date id : %s",
+							scheduling_date[date_position].scheduling_id);
+				}
+				else
+				{
+					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+				}
+			}
+		}
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+	}
+}
+
 static void scheduling_task_idp_17(void* arg)
 {
 	while(1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+		// todo implementar
+		vTaskDelay(pdMS_TO_TICKS(50000)); // 5 seconds
 	}
 }
 
@@ -269,11 +288,23 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		return;
 	}
 
+	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
+
 	switch (scheduling_idp)
 	{
 		case IDP_14:
 		{
 			memcpy(scheduling_date, scheduling_data, sizeof(scheduling_date));
+
+			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
+			{
+				if(scheduling_timestamp_now > scheduling_date[date_position].end_date
+				&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+				{
+					data_app_delete(scheduling_date[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+				}
+			}
 
 			if(xTask_scheduling_idp_14 == NULL)
 			{
@@ -288,7 +319,18 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_15:
 		{
-			memcpy(scheduling_off_date, scheduling_data, sizeof(scheduling_off_date));
+			memcpy(scheduling_angle, scheduling_data, sizeof(scheduling_angle));
+
+			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
+			{
+				if((scheduling_timestamp_now > scheduling_angle[angle_position].start_date)
+				&& (scheduling_timestamp_now - scheduling_angle[angle_position].start_date) > 3600
+				&& (strcmp(scheduling_angle[angle_position].scheduling_id,"") > 0))
+				{
+					data_app_delete(scheduling_angle[angle_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+				}
+			}
 
 			if(xTask_scheduling_idp_15 == NULL)
 			{
@@ -303,7 +345,17 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_16:
 		{
-			memcpy(scheduling_angle, scheduling_data, sizeof(scheduling_angle));
+			memcpy(scheduling_off_date, scheduling_data, sizeof(scheduling_off_date));
+
+			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
+			{
+				if(scheduling_timestamp_now > scheduling_off_date[date_position].end_date
+				&& strcmp(scheduling_off_date[date_position].scheduling_id,"") > 0)
+				{
+					data_app_delete(scheduling_off_date[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_off_date);
+				}
+			}
 
 			if(xTask_scheduling_idp_16 == NULL)
 			{
