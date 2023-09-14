@@ -32,9 +32,7 @@ static pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {}
 static pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
-static bool scheduling_off_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
-static bool scheduling_off_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 static uint16_t* scheduling_current_angle  = &global_angle;
 static app_callback scheduling_callback = NULL;
@@ -51,7 +49,6 @@ static void scheduling_task_idp_14(void* arg)
 	char str_out[50] = {};
 
 	time_t scheduling_timestamp_now = 0;
-	pivot_actions actions = {};
 	idp_type idp = IDP_18;
 
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
@@ -85,8 +82,9 @@ static void scheduling_task_idp_14(void* arg)
 						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
-						//TODO : actuation_app
-						memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
+						// act on the equipment
+						actuation_app_set_actions(scheduling_date[date_position].actions, false);
+
 						data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
 													sizeof(scheduling_date[date_position].actions));
 						rtc_app_get_timestamp(true);
@@ -109,10 +107,8 @@ static void scheduling_task_idp_14(void* arg)
 					rtc_app_get_timestamp(true);
 
 					// off pivot
-					memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
-					actions.power_state = PIVOT_OFF;
-
-					//TODO : actuation_app
+					scheduling_date[date_position].actions.power_state = PIVOT_OFF;
+					actuation_app_set_actions(scheduling_date[date_position].actions, false);
 
 					data_app_delete(scheduling_date[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
@@ -138,7 +134,6 @@ static void scheduling_task_idp_15(void* arg)
 	char str_out[50] = {};
 
 	time_t scheduling_timestamp_now = 0;
-	pivot_actions actions = {};
 	idp_type idp = IDP_18;
 
 	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
@@ -171,8 +166,8 @@ static void scheduling_task_idp_15(void* arg)
 						idp_parser_create_package(str_out, arg_pairs);
 						scheduling_callback(str_out, COMM_MQTT);
 
-						//TODO : actuation_app
-						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
+						// act on the equipment
+						actuation_app_set_actions(scheduling_angle[angle_position].actions, false);
 						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
 													sizeof(scheduling_angle[angle_position].actions));
 						rtc_app_get_timestamp(true);
@@ -189,10 +184,8 @@ static void scheduling_task_idp_15(void* arg)
 						rtc_app_get_timestamp(true);
 
 						// off pivot
-						memcpy(&actions, &scheduling_angle[angle_position].actions, sizeof(actions));
-						actions.power_state = PIVOT_OFF;
-
-						//TODO : actuation_app
+						scheduling_angle[angle_position].actions.power_state = PIVOT_OFF;
+						actuation_app_set_actions(scheduling_angle[angle_position].actions, false);
 
 						data_app_delete(scheduling_angle[angle_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
@@ -235,8 +228,6 @@ static void scheduling_task_idp_16(void* arg)
 			{
 				if(scheduling_callback != NULL)
 				{
-					scheduling_off_date_status[date_position] = true;
-
 					// create package - send IDP 18
 					arg_pair_t arg_pairs[] = {
 						{ "uint8_t", &idp },
@@ -248,14 +239,13 @@ static void scheduling_task_idp_16(void* arg)
 					idp_parser_create_package(str_out, arg_pairs);
 					scheduling_callback(str_out, COMM_MQTT);
 
-					//TODO : actuation_app
+					// off pivot
+					actions.power_state = PIVOT_OFF;
+					actuation_app_set_actions(actions, false);
 
-					memcpy(&actions, &scheduling_date[date_position].actions, sizeof(actions));
-					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
-												sizeof(scheduling_date[date_position].actions));
 
-					data_app_delete(scheduling_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+					data_app_delete(scheduling_off_date[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date);
 
 					rtc_app_get_timestamp(true);
 					ESP_LOGW(SCHEDULING_TAG, "processing schedule by off date id : %s",
