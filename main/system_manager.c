@@ -46,6 +46,7 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 
 void system_manager_init(void)
@@ -169,6 +170,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		case IDP_16:
 		{
 			system_manager_idp_16(buffer_request, comm_mode);
+			break;
+		}
+		case IDP_18:
+		{
+			system_manager_idp_18(buffer_request, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -847,22 +853,40 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 
 					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
-					arg_pair_t arg_pairs_2[] =
+
+					// send ack
+					if(comm_mode == COMM_HTTP_POST)
 					{
-						{ "uint8_t", &idp },
-						{ "string", system_id },
-						{ "string", scheduling.scheduling_id },
-						{ "uint32_t", &scheduling.start_date },
-						{ "uint16_t", &scheduling.end_angle },
-						{ "uint16_t", &dwp },
-						{ "uint8_t", &scheduling.actions.percentimeter },
-						{ NULL, NULL }
-					};
+						arg_pair_t arg_pairs_2[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", system_id },
+							{ "string", scheduling.scheduling_id },
+							{ "uint32_t", &scheduling.start_date },
+							{ "uint32_t", &scheduling.end_angle },
+							{ "uint16_t", &dwp },
+							{ "uint8_t", &scheduling.actions.percentimeter },
+							{ NULL, NULL }
+						};
 
-					idp_parser_create_package(str_out, arg_pairs_2);
+						idp_parser_create_package(str_out, arg_pairs_2);
 
-					comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
-					comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
+					else if(comm_mode == COMM_MQTT)
+					{
+						arg_pair_t arg_pairs_2[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", system_id },
+							{ "string", scheduling.scheduling_id },
+							{ NULL, NULL }
+						};
+
+						idp_parser_create_package(str_out, arg_pairs_2);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
 				}
 				else
 				{
@@ -1039,6 +1063,35 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
+}
+
+static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
+{
+	char str_out[200] = {};
+	char pivot_id[50] = {};
+	char scheaduling_id[10] = {};
+	uint8_t idp = 0;
+
+	arg_pair_t arg_get[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", pivot_id },
+		{ "string", scheaduling_id},
+		{ NULL, NULL }
+	};
+
+	idp_parser_get_packet_data(buffer, arg_get);
+
+	// create package - send IDP 18
+	arg_pair_t arg_send[] = {
+		{ "uint8_t", &idp },
+		{ "string", system_id },
+		{ "string", scheaduling_id},
+		{ NULL, NULL }
+	};
+
+	idp_parser_create_package(str_out, arg_send);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 }
 
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
