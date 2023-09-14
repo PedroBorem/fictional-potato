@@ -28,8 +28,11 @@
 
 /* global variables */
 uint16_t global_angle = 655;
+
+/* local variables */
 static uint16_t system_initial_angle = 655;
 static char system_id[50] = {};
+static time_t system_rtc_percent = 0;
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
 
@@ -46,6 +49,7 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_17(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 
@@ -172,6 +176,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 			system_manager_idp_16(buffer_request, comm_mode);
 			break;
 		}
+		case IDP_17:
+		{
+			system_manager_idp_17(buffer_request, comm_mode);
+			break;
+		}
 		case IDP_18:
 		{
 			system_manager_idp_18(buffer_request, comm_mode);
@@ -218,6 +227,11 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 		{ "string", str_date_time },
 		{ NULL, NULL }
 	};
+
+	if((timestamp - system_rtc_percent) < 65)
+	{
+		actions.percentimeter = CONFIG_ACTIONS_UNDEF_VALUE;
+	}
 
 	idp_parser_create_package(str_out,arg_pairs);
 
@@ -270,6 +284,9 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 
 				// act on the equipment
 				actuation_app_set_actions(new_actions, false);
+
+				// time for the percentage to stabilize
+				system_rtc_percent = rtc_app_get_timestamp(false);
 
 				// send current status
 				system_manager_idp_00("#00$", comm_mode);
@@ -853,7 +870,6 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 
 					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
-
 					// send ack
 					if(comm_mode == COMM_HTTP_POST)
 					{
@@ -987,6 +1003,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
 
+				// send ack
 				if(comm_mode == COMM_HTTP_POST)
 				{
 					arg_pair_t arg_pairs_2[] =
@@ -1063,6 +1080,11 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
+}
+
+static void system_manager_idp_17(const char* buffer, comm_type comm_mode)
+{
+	return;
 }
 
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode)

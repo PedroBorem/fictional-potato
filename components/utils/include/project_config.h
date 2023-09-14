@@ -26,7 +26,7 @@
  * This define specifies the maximum number of scheduling values allowed in the project.
  * It can be used to define the size of arrays or data structures related to scheduling.
  */
-#define CONFIG_SCHEDULING_MAX_VALUE    (10)
+#define CONFIG_SCHEDULING_MAX_VALUE   	(10)
 
 /**
  * @def CONFIG_HISTORY_MAX_VALUE
@@ -35,7 +35,7 @@
  * This define specifies the maximum number of history values allowed in the project.
  * It can be used to define the size of arrays or data structures related to history.
  */
-#define CONFIG_HISTORY_MAX_VALUE       (20)
+#define CONFIG_HISTORY_MAX_VALUE       	(20)
 
 /**
  * @def CONFIG_SECTORS_MAX_VALUE
@@ -44,7 +44,11 @@
  * This define specifies the maximum number of sectors allowed in the project.
  * It can be used to define the size of arrays or data structures related to sectors.
  */
-#define CONFIG_SECTORS_MAX_VALUE       (04)
+#define CONFIG_SECTORS_MAX_VALUE		(04)
+
+
+
+#define CONFIG_ACTIONS_UNDEF_VALUE		(655)
 
 /* Public definitions ******************************************************/
 
@@ -133,7 +137,7 @@ typedef struct __attribute__((__packed__))
     uint8_t power_state;     /*!< Power state of the pivot (PIVOT_ON or PIVOT_OFF) */
     uint8_t rotation;        /*!< Rotation mode of the pivot (PIVOT_CW or PIVOT_CCW) */
     uint8_t watering_state;  /*!< Watering state of the pivot (PIVOT_DRY or PIVOT_WET) */
-    uint8_t percentimeter;   /*!< Percentage value from 0 to 100 */
+    uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
 } pivot_actions;
 
 /**
