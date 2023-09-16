@@ -12,6 +12,8 @@
 #include "log.h"
 
 #include "rtc_app.h"
+#include "esp_system.h"
+#include "FreeRTOS_defines.h"
 
 // private include
 #include <string.h>
@@ -26,6 +28,10 @@
 
 #define SYSTEM_MANAGER_TAG 	"system manager"
 
+#define SYSTEM_REBOOT_DELAY_MS	 	(120000) // 2 minutos
+#define SYSTEM_REBOOT_TIMEOUT_MS	(46800000) // 3 horas
+#define SYSTEM_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
+
 /* global variables */
 uint16_t global_angle = 655;
 
@@ -34,6 +40,7 @@ static uint16_t system_initial_angle = 655;
 static char system_id[50] = {};
 static time_t system_rtc_percent = 0;
 
+static void system_manager_reboot(void);
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
 
 static void system_manager_idp_00(const char* buffer, comm_type comm_mode);
@@ -79,6 +86,9 @@ void system_manager_init(void)
 	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
 
+	// automatic boot
+	system_manager_reboot();
+
 	// init sectors
 	sector_config sectors = {};
 	data_app_load(DATA_TYPE_SECTOR_CONFIG, &sectors);
@@ -100,6 +110,51 @@ void system_manager_init(void)
 	scheduling_start(IDP_15,scheduling_angle);
 	scheduling_start(IDP_16,scheduling_off_date);
 	scheduling_start(IDP_17,scheduling_off_angle);
+}
+
+static void system_manager_reboot(void)
+{
+	pivot_actions current_action = {};
+
+	time_t timestamp_nvs = 0;
+	time_t timestamp_now = 0;
+
+	data_app_load(DATA_TYPE_TIMESTAMP, &timestamp_nvs);
+	timestamp_now = rtc_app_get_timestamp(false);
+
+	if((timestamp_now - timestamp_nvs) < SYSTEM_REBOOT_TIMEOUT_MS)
+	{
+		esp_reset_reason_t reset_cause = esp_reset_reason();
+		if(reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+		{
+			data_app_load(DATA_TYPE_ACTIONS, &current_action);
+
+			LOG_DATA(SYSTEM_MANAGER_TAG, "");
+			LOG_DATA(SYSTEM_MANAGER_TAG, " ------ NVS Current Config ------");
+			LOG_DATA(SYSTEM_MANAGER_TAG, " Power state: %d", current_action.power_state);
+			LOG_DATA(SYSTEM_MANAGER_TAG, " Advance mode: %d", current_action.rotation);
+			LOG_DATA(SYSTEM_MANAGER_TAG, " Watering state: %d", current_action.watering_state);
+			LOG_DATA(SYSTEM_MANAGER_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
+			LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+
+			vTaskDelay(pdMS_TO_TICKS(500));
+
+			if(current_action.power_state == PIVOT_ON)
+			{
+				ESP_LOGW(SYSTEM_MANAGER_TAG,"waiting for power to stabilize ...");
+				vTaskDelay(pdMS_TO_TICKS(SYSTEM_REBOOT_DELAY_MS));
+				actuation_app_set_actions(current_action, false);
+			}
+		}
+	}
+	/*
+	else
+	{
+		// save old history
+		data_app_save(timestamp_nvs, global_angle);
+	}
+	*/
+
 }
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
