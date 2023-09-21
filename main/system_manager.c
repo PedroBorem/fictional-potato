@@ -147,14 +147,11 @@ static void system_manager_reboot(void)
 			}
 		}
 	}
-	/*
 	else
 	{
 		// save old history
-		data_app_save(timestamp_nvs, global_angle);
+		data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 	}
-	*/
-
 }
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
