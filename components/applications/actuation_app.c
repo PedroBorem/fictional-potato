@@ -100,6 +100,10 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
 		LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state %d", current_action.watering_state);
 		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_action.percentimeter);
 
+		if(current_action.percentimeter > 100)
+		{
+			current_action.percentimeter = CONFIG_ACTIONS_UNDEF_VALUE;
+		}
 		memcpy(config_out, &current_action, config_size);
 	}
 }

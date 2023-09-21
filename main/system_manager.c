@@ -273,7 +273,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 		{ "uint8_t", &idp },
 		{ "string", system_id },
 		{ "uint16_t", &dwp },
-		{ "uint8_t", &actions.percentimeter },
+		{ "uint16_t", &actions.percentimeter },
 		{ "uint16_t", &system_initial_angle },
 		{ "uint16_t", &global_angle },
 		{ "string", str_date_time },
@@ -315,7 +315,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			{ "uint8_t", &idp },
 			{ "string", pivot_id },
 			{ "uint16_t", &dwp },
-			{ "uint8_t", &new_actions.percentimeter },
+			{ "uint16_t", &new_actions.percentimeter },
 			{ NULL, NULL }
 		};
 
@@ -749,7 +749,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint32_t", &scheduling.end_date },
 			{ "uint16_t", &dwp },
-			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ "uint16_t", &scheduling.actions.percentimeter },
 			{ "string", str_author },
 			{ NULL, NULL }
 		};
@@ -794,7 +794,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 							{ "uint32_t", &scheduling.start_date },
 							{ "uint32_t", &scheduling.end_date },
 							{ "uint16_t", &dwp },
-							{ "uint8_t", &scheduling.actions.percentimeter },
+							{ "uint16_t", &scheduling.actions.percentimeter },
 							{ NULL, NULL }
 						};
 
@@ -859,7 +859,7 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 				{ "uint32_t", &scheduling_date[position].start_date },
 				{ "uint32_t", &scheduling_date[position].end_date },
 				{ "uint16_t", &dwp },
-				{ "uint8_t", &scheduling_date[position].actions.percentimeter },
+				{ "uint16_t", &scheduling_date[position].actions.percentimeter },
 				{ NULL, NULL }
 			};
 
@@ -892,7 +892,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 			{ "uint32_t", &scheduling.start_date },
 			{ "uint16_t", &scheduling.end_angle },
 			{ "uint16_t", &dwp },
-			{ "uint8_t", &scheduling.actions.percentimeter },
+			{ "uint16_t", &scheduling.actions.percentimeter },
 			{ "string", str_author },
 			{ NULL, NULL }
 		};
@@ -933,7 +933,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 							{ "uint32_t", &scheduling.start_date },
 							{ "uint32_t", &scheduling.end_angle },
 							{ "uint16_t", &dwp },
-							{ "uint8_t", &scheduling.actions.percentimeter },
+							{ "uint16_t", &scheduling.actions.percentimeter },
 							{ NULL, NULL }
 						};
 
@@ -998,7 +998,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 				{ "uint32_t", &scheduling_angle[position].start_date },
 				{ "uint16_t", &scheduling_angle[position].end_angle },
 				{ "uint16_t", &dwp },
-				{ "uint8_t", &scheduling_angle[position].actions.percentimeter },
+				{ "uint16_t", &scheduling_angle[position].actions.percentimeter },
 				{ NULL, NULL }
 			};
 
@@ -1221,7 +1221,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 		{
 			{ "uint8_t", &idp },
 			{ "uint16_t", &dwp },
-			{ "uint8_t", &new_actions.percentimeter },
+			{ "uint16_t", &new_actions.percentimeter },
 			{ NULL, NULL }
 		};
 
@@ -1263,7 +1263,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 		{ "uint8_t", &idp },
 		{ "string", system_id },
 		{ "uint16_t", &dwp },
-		{ "uint8_t", &actions.percentimeter },
+		{ "uint16_t", &actions.percentimeter },
 		{ "uint16_t", &system_initial_angle },
 		{ "uint16_t", &global_angle },
 		{ "string", str_date_time },
