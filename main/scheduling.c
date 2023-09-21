@@ -194,7 +194,7 @@ static void scheduling_task_idp_15(void* arg)
 						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
 
 						ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
-								scheduling_date[angle_position].scheduling_id);
+								scheduling_angle[angle_position].scheduling_id);
 					}
 					else
 					{
@@ -229,9 +229,9 @@ static void scheduling_task_idp_16(void* arg)
 		// angle analysis
 		for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 		{
-			if(scheduling_timestamp_now > scheduling_date[date_position].end_date
-			&& scheduling_date[date_position].end_date != 0
-			&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+			if(scheduling_timestamp_now > scheduling_off_date[date_position].end_date
+			&& scheduling_off_date[date_position].end_date != 0
+			&& strcmp(scheduling_off_date[date_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_callback != NULL)
 				{
@@ -239,7 +239,7 @@ static void scheduling_task_idp_16(void* arg)
 					arg_pair_t arg_pairs[] = {
 						{ "uint8_t", &idp },
 						{ "string", pivo_id },
-						{ "string", scheduling_date[date_position].scheduling_id},
+						{ "string", scheduling_off_date[date_position].scheduling_id},
 						{ NULL, NULL }
 					};
 
@@ -256,7 +256,7 @@ static void scheduling_task_idp_16(void* arg)
 
 					rtc_app_get_timestamp(true);
 					ESP_LOGW(SCHEDULING_TAG, "processing schedule by off date id : %s",
-							scheduling_date[date_position].scheduling_id);
+							scheduling_off_date[date_position].scheduling_id);
 				}
 				else
 				{
