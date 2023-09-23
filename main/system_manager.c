@@ -248,7 +248,7 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		}
 		case IDP_INVALID:
 		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid IDP (%d)", idp_request);
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
 			break;
 		}
 		default:
@@ -327,6 +327,15 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 
 		if(idp_parser_validate_actions(new_actions) == true)
 		{
+			// actions = 002
+			if(new_actions.rotation == 0 && new_actions.watering_state == 0)
+			{
+				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				new_actions.percentimeter = 0;
+				new_actions.power_state = PIVOT_OFF;
+				new_actions.watering_state = PIVOT_DRY;
+			}
+
 			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
 			if(ret == ESP_OK)
 			{
@@ -917,6 +926,8 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 				{
 					// get_rtc
 					scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+
+					// gen key
 					data_app_gen_scheduling_key((char*)&scheduling_angle[position].scheduling_id);
 					data_app_save(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
@@ -1024,7 +1035,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		char str_author[30] = {};
 		char pivot_id[50] = {};
 
-		pivot_scheduling_date scheduling = {};
+		pivot_scheduling_off_date scheduling = {};
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
@@ -1038,26 +1049,25 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			if(strcmp(scheduling_off_date[position].scheduling_id, "") == 0)
 			{
-				memcpy(&scheduling_date[position], &scheduling, sizeof(scheduling_date[position]));
+				memcpy(&scheduling_off_date[position], &scheduling, sizeof(scheduling_off_date[position]));
 
 				// get_rtc
-				scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-				scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+				scheduling_off_date[position].end_date += rtc_app_get_timestamp(false);
 
-				data_app_gen_scheduling_key((char*)&scheduling_date[position].scheduling_id);
-				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_date, sizeof(scheduling_date));
+				data_app_gen_scheduling_key((char*)&scheduling_off_date[position].scheduling_id);
+				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
 
 				scheduling_stop(idp);
-				scheduling_start(idp, scheduling_date);
+				scheduling_start(idp, scheduling_off_date);
 
-				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
+				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_date[position].scheduling_id);
 
 				// send ack
 				if(comm_mode == COMM_HTTP_POST)
@@ -1066,7 +1076,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 					{
 						{ "uint8_t", &idp },
 						{ "string", system_id },
-						{ "string", scheduling_date[position].scheduling_id },
+						{ "string", scheduling_off_date[position].scheduling_id },
 						{ "uint32_t", &scheduling.end_date },
 						{ NULL, NULL }
 					};
@@ -1082,7 +1092,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 					{
 						{ "uint8_t", &idp },
 						{ "string", system_id },
-						{ "string", scheduling_date[position].scheduling_id },
+						{ "string", scheduling_off_date[position].scheduling_id },
 						{ NULL, NULL }
 					};
 

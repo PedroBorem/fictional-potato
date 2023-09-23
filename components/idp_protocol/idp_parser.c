@@ -109,7 +109,7 @@ bool idp_parser_validate_actions(const pivot_actions actions)
 				}
 			}
 			else if(actions.power_state == PIVOT_OFF
-					&& actions.rotation == 0 // todo trocar para define
+					&& actions.rotation == 0
 					&& actions.watering_state == 0)
 			{
 				ret = true;

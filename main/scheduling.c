@@ -90,6 +90,8 @@ static void scheduling_task_idp_14(void* arg)
 						rtc_app_get_timestamp(true);
 						ESP_LOGW(SCHEDULING_TAG, "processing schedule by date id : %s",
 								scheduling_date[date_position].scheduling_id);
+
+						scheduling_callback("#00$", COMM_MQTT);
 					}
 					else
 					{
@@ -107,14 +109,22 @@ static void scheduling_task_idp_14(void* arg)
 					rtc_app_get_timestamp(true);
 
 					// off pivot
+					actuation_app_get_actions(&scheduling_date[date_position].actions,
+							sizeof(scheduling_date[date_position].actions));
+					scheduling_date[date_position].actions.power_state = 0;
+					scheduling_date[date_position].actions.watering_state = PIVOT_DRY;
 					scheduling_date[date_position].actions.power_state = PIVOT_OFF;
 					actuation_app_set_actions(scheduling_date[date_position].actions, false);
 
+					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
+												sizeof(scheduling_date[date_position].actions));
 					data_app_delete(scheduling_date[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
 
 					ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s",
 							scheduling_date[date_position].scheduling_id);
+
+					scheduling_callback("#00$", COMM_MQTT);
 				}
 				else
 				{
@@ -173,6 +183,8 @@ static void scheduling_task_idp_15(void* arg)
 						rtc_app_get_timestamp(true);
 						ESP_LOGW(SCHEDULING_TAG, "processing schedule by angle id : %s",
 								scheduling_angle[angle_position].scheduling_id);
+
+						scheduling_callback("#00$", COMM_MQTT);
 					}
 				}
 				else if( *scheduling_current_angle > (scheduling_angle[angle_position].end_angle - angle_off_set)
@@ -184,14 +196,22 @@ static void scheduling_task_idp_15(void* arg)
 						rtc_app_get_timestamp(true);
 
 						// off pivot
+						actuation_app_get_actions(&scheduling_angle[angle_position].actions,
+								sizeof(scheduling_angle[angle_position].actions));
+						scheduling_angle[angle_position].actions.percentimeter = 0;
+						scheduling_angle[angle_position].actions.watering_state = PIVOT_DRY;
 						scheduling_angle[angle_position].actions.power_state = PIVOT_OFF;
 						actuation_app_set_actions(scheduling_angle[angle_position].actions, false);
 
+						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
+													sizeof(scheduling_angle[angle_position].actions));
 						data_app_delete(scheduling_angle[angle_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
 
 						ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
 								scheduling_angle[angle_position].scheduling_id);
+
+						scheduling_callback("#00$", COMM_MQTT);
 					}
 					else
 					{
@@ -241,16 +261,21 @@ static void scheduling_task_idp_16(void* arg)
 					scheduling_callback(str_out, COMM_MQTT);
 
 					// off pivot
+					actuation_app_get_actions(&actions, sizeof(actions));
+					actions.percentimeter = 0;
 					actions.power_state = PIVOT_OFF;
+					actions.watering_state = PIVOT_DRY;
 					actuation_app_set_actions(actions, false);
 
-
+					data_app_save(DATA_TYPE_ACTIONS, &actions, sizeof(actions));
 					data_app_delete(scheduling_off_date[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date);
 
 					rtc_app_get_timestamp(true);
 					ESP_LOGW(SCHEDULING_TAG, "processing schedule by off date id : %s",
 							scheduling_off_date[date_position].scheduling_id);
+
+					scheduling_callback("#00$", COMM_MQTT);
 				}
 				else
 				{

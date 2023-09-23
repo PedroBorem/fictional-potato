@@ -7,6 +7,7 @@
 /* Self include */
 #include "actuation_app.h"
 #include "gpio_actuator.h"
+#include "data_app.h"
 
 #include "FreeRTOS_defines.h"
 #include "idp_parser.h"
@@ -20,8 +21,8 @@
 // manual config timeout
 #define ACTUATION_APP_POWER_TIME			10000	// 10 sec
 #define ACTUATION_APP_WATERING_TIME			30000	// 30 sec
-#define ACTUATION_APP_ROTATION_TIME			3000	// 3 sec
-#define ACTUATION_APP_PERCENTIMETER_TIME	61000	// 1 min and 10 sec
+#define ACTUATION_APP_ROTATION_TIME			6000	// 6 sec
+#define ACTUATION_APP_PERCENTIMETER_TIME	120000	// 2 min
 
 /* Private variables  -------------------------------------------- */
 static TaskHandle_t xTask_actuation_app = NULL;
@@ -132,14 +133,32 @@ void actuation_app_shutdown(void)
  */
 void actuation_app_task(void* arg)
 {
+	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+
 	pivot_actions current_action = {};
 	TickType_t last_tick = xTaskGetTickCount();
-
-	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 	while(1)
 	{
 		current_action = gpio_actuator_get();
+		data_app_load(DATA_TYPE_ACTIONS, &actuation_config);
+
+		/*
+		LOG_DATA(ACTUATION_APP_TAG, "");
+		LOG_DATA(ACTUATION_APP_TAG, " ------ NVS Current Config ------");
+		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", current_action.power_state);
+		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", current_action.rotation);
+		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", current_action.watering_state);
+		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
+		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
+
+		LOG_DATA(ACTUATION_APP_TAG, "");
+		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", actuation_config.power_state);
+		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", actuation_config.rotation);
+		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", actuation_config.watering_state);
+		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", actuation_config.percentimeter);
+		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
+		*/
 
 		if((current_action.power_state != actuation_config.power_state)
 		&& (current_action.watering_state != PIVOT_PRESSURIZING))
@@ -160,7 +179,8 @@ void actuation_app_task(void* arg)
 			}
 		}
 		else if((current_action.watering_state != actuation_config.watering_state)
-				&& (current_action.watering_state != PIVOT_PRESSURIZING))
+				&& (current_action.watering_state != PIVOT_PRESSURIZING)
+				&& (current_action.watering_state != PIVOT_UNKNOWN))
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_WATERING_TIME)
 			{
@@ -202,7 +222,7 @@ void actuation_app_task(void* arg)
 			last_tick = xTaskGetTickCount();
 		}
 
-		vTaskDelay(pdMS_TO_TICKS(3000));
+		vTaskDelay(pdMS_TO_TICKS(10000));
 	}
 }
 
