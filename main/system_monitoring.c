@@ -22,14 +22,14 @@ static void system_monitoring_task(void* arg)
 
 	while(1)
 	{
-		vTaskDelay(pdMS_TO_TICKS(600000)); // 10 minutes
-
 		// send IDP 0 (current status)
 		system_monitoring_callback("#00$", COMM_MQTT);
 
 		// save current Timestamp
 		timestamp_now = rtc_app_get_timestamp(false);
 		data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
+
+		vTaskDelay(pdMS_TO_TICKS(600000)); // 10 minutes
 	}
 }
 
