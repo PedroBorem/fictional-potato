@@ -124,9 +124,6 @@ static void scheduling_task_idp_14(void* arg)
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-
-		// save current Timestamp
-		data_app_save(DATA_TYPE_TIMESTAMP, &scheduling_timestamp_now, sizeof(scheduling_timestamp_now));
 	}
 }
 
@@ -205,9 +202,6 @@ static void scheduling_task_idp_15(void* arg)
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-
-		// save current Timestamp
-		data_app_save(DATA_TYPE_TIMESTAMP, &scheduling_timestamp_now, sizeof(scheduling_timestamp_now));
 	}
 }
 
@@ -266,9 +260,6 @@ static void scheduling_task_idp_16(void* arg)
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-
-		// save current Timestamp
-		data_app_save(DATA_TYPE_TIMESTAMP, &scheduling_timestamp_now, sizeof(scheduling_timestamp_now));
 	}
 }
 
