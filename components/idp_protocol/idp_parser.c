@@ -39,45 +39,54 @@
  * @param[in] string_in The received IDP packet string.
  * @return ESP_OK if the packet is valid, ESP_FAIL otherwise.
  */
-static bool idp_parser_check_pack(const char* string_in);
+static bool idp_parser_check_pack(const char* string_in, char* string_out);
 
 /* Private methods ----------------------------------------------- */
-static bool idp_parser_check_pack(const char* string_in)
+static bool idp_parser_check_pack(const char* string_in, char* string_out)
 {
-	bool ret = false;
-	char* ptr;
-	int ch = '$';
+    bool ret = false;
+    int ch_1 = '#';
+    int ch_2 = '$';
 
-	ptr = strchr( string_in, ch );
+    char* ptr_1 = strchr(string_in, ch_1);
+    char* ptr_2 = strchr(string_in, ch_2);
 
-	if(string_in[0] == '#' && ptr != NULL )
-	{
-		ret = true;
-	}
-	else
-	{
-		ESP_LOGE(IDP_PARSER_TAG, "invalid package");
-	}
+    if (ptr_1 != NULL && ptr_2 != NULL
+    && (strlen(ptr_1) > strlen(ptr_2)))
+    {
+        size_t sub_len = ptr_2 - ptr_1 + 1;
 
-	return ret;
+        strncpy(string_out, ptr_1, sub_len);
+        string_out[sub_len] = '\0';
+
+        ret = true;
+    }
+    else
+    {
+    	ESP_LOGE(IDP_PARSER_TAG, "invalid package");
+    }
+
+    return ret;
 }
 
 /* Public methods ------------------------------------------------ */
-idp_type idp_parser_get(const char* string_in)
+idp_type idp_parser_get(const char* string_in, char* string_out)
 {
 	idp_type idp_ret = IDP_INVALID;
 	char* str_copy = strdup(string_in);
+	char str_sub[100] = {};
 
-	if(idp_parser_check_pack(str_copy) == true)
+	if(idp_parser_check_pack(str_copy, str_sub) == true)
 	{
+		strcpy(string_out, str_sub);
+
 	    const char delimiter[] = "-";
-		char* ptr = strtok(str_copy, delimiter);
+		char* ptr = strtok(str_sub, delimiter);
 
 	    sscanf(&ptr[1], "%d",(int*)&idp_ret);
 	}
 
 	free(str_copy);
-
 	return idp_ret;
 }
 

@@ -176,7 +176,7 @@ static void gprs_uart_event_task(void* arg)
 							}
 						}
 
-						LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
+						//LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
 
 						gprs_callback(buff_in, COMM_MQTT);
 						free(buff_in);

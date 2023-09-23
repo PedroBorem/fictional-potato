@@ -157,90 +157,93 @@ static void system_manager_reboot(void)
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
 {
 	char str_idp[5] = {};
+	char str_pkg[100] = {};
 
-	idp_type idp_request = idp_parser_get(buffer_request);
+	idp_type idp_request = idp_parser_get(buffer_request, str_pkg);
     snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
+
+    LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
 
 	switch(idp_request)
 	{
 		case IDP_0:
 		{
-			system_manager_idp_00(buffer_request, comm_mode);
+			system_manager_idp_00(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_1:
 		{
-			system_manager_idp_01(buffer_request, comm_mode);
+			system_manager_idp_01(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_2:
 		{
-			system_manager_idp_02(buffer_request, comm_mode);
+			system_manager_idp_02(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_3:
 		{
-			system_manager_idp_03(buffer_request, comm_mode);
+			system_manager_idp_03(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_4:
 		{
-			system_manager_idp_04(buffer_request, comm_mode);
+			system_manager_idp_04(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_5:
 		{
-			system_manager_idp_05(buffer_request, comm_mode);
+			system_manager_idp_05(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_6:
 		{
-			system_manager_idp_06(buffer_request, comm_mode);
+			system_manager_idp_06(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_7:
 		{
-			system_manager_idp_07(buffer_request, comm_mode);
+			system_manager_idp_07(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_12:
 		{
-			system_manager_idp_12(buffer_request, comm_mode);
+			system_manager_idp_12(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_13:
 		{
-			system_manager_idp_13(buffer_request, comm_mode);
+			system_manager_idp_13(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_14:
 		{
-			system_manager_idp_14(buffer_request, comm_mode);
+			system_manager_idp_14(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_15:
 		{
-			system_manager_idp_15(buffer_request, comm_mode);
+			system_manager_idp_15(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_16:
 		{
-			system_manager_idp_16(buffer_request, comm_mode);
+			system_manager_idp_16(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_17:
 		{
-			system_manager_idp_17(buffer_request, comm_mode);
+			system_manager_idp_17(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_18:
 		{
-			system_manager_idp_18(buffer_request, comm_mode);
+			system_manager_idp_18(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
 		{
-			system_manager_idp_30(buffer_request, comm_mode);
+			system_manager_idp_30(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_INVALID:
@@ -655,13 +658,14 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 		{ NULL, NULL }
 	};
 
+	idp_parser_get_packet_data(buffer, arg_pairs);
+	rtc_app_set_timestamp((time_t)timestamp);
+
 	if(system_initial_angle == 655)
 	{
 		system_initial_angle = global_angle;
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
 	}
-
-	idp_parser_get_packet_data(buffer, arg_pairs);
-	rtc_app_set_timestamp((time_t)timestamp);
 }
 
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode)

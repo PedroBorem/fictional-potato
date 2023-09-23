@@ -24,7 +24,7 @@ typedef struct arg_pair{
  * @param[in] string_in The received IDP packet string.
  * @return The IDP type extracted from the packet, or IDP_INVALID if the packet is invalid.
  */
-idp_type idp_parser_get(const char* string_in);
+idp_type idp_parser_get(const char* string_in, char* string_out);
 
 bool idp_parser_validate_actions(const pivot_actions actions);
 
