@@ -71,7 +71,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_angle default_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_off_angle default_scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 
@@ -369,19 +369,16 @@ esp_err_t data_app_delete(void* data_id)
 		}
 	}
 
-	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	pivot_scheduling_off_angle scheduling_off_angle = {};
 	ret = data_app_load(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle);
 	if(ret == ESP_OK)
 	{
-		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		if(strcmp(scheduling_off_angle.scheduling_id, data_id) == 0)
 		{
-			if(strcmp(scheduling_off_angle[position].scheduling_id, data_id) == 0)
-			{
-				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle[position].scheduling_id);
-				memset(&scheduling_off_angle[position], 0x00, sizeof(pivot_scheduling_off_angle));
-				data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle, sizeof(scheduling_off_angle));
-				return ret;
-			}
+			ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle.scheduling_id);
+			memset(&scheduling_off_angle, 0x00, sizeof(pivot_scheduling_off_angle));
+			data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle, sizeof(scheduling_off_angle));
+			return ret;
 		}
 	}
 
