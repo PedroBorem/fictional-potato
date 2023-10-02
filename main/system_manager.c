@@ -1062,7 +1062,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 				scheduling_off_date[position].end_date += rtc_app_get_timestamp(false);
 
 				data_app_gen_scheduling_key((char*)&scheduling_off_date[position].scheduling_id);
-				data_app_save(DATA_TYPE_SCHEADULING_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
+				data_app_save(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
 
 				scheduling_stop(idp);
 				scheduling_start(idp, scheduling_off_date);
@@ -1112,7 +1112,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+		data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -1150,6 +1150,91 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_17(const char* buffer, comm_type comm_mode)
 {
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	{
+		char str_out[200] = {};
+		char str_author[30] = {};
+		char pivot_id[50] = {};
+
+		pivot_scheduling_off_angle scheduling_off_angle = {};
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", pivot_id },
+			{ "uint16_t", &scheduling_off_angle.end_angle },
+			{ "string", str_author },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		data_app_gen_scheduling_key(scheduling_off_angle.scheduling_id);
+		data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
+
+		scheduling_stop(idp);
+		scheduling_start(idp, &scheduling_off_angle);
+
+		ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_angle.scheduling_id);
+
+		// send ack
+		if(comm_mode == COMM_HTTP_POST)
+		{
+			arg_pair_t arg_pairs_2[] =
+			{
+				{ "uint8_t", &idp },
+				{ "string", system_id },
+				{ "string", scheduling_off_angle.scheduling_id },
+				{ "uint16_t", &scheduling_off_angle.end_angle },
+				{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs_2);
+
+			comm_app_send_idp_pack(str_out, COMM_HTTP_POST);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
+		}
+		else if(comm_mode == COMM_MQTT)
+		{
+			arg_pair_t arg_pairs_2[] =
+			{
+				{ "uint8_t", &idp },
+				{ "string", system_id },
+				{ "string", scheduling_off_angle.scheduling_id },
+				{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs_2);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
+		}
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+		char buffer_out[500] = {};
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_16;
+		pivot_scheduling_off_angle scheduling_off_angle = {};
+
+		data_app_load(DATA_TYPE_SCHEADULING_OFF_ANGLE, &scheduling_off_angle);
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "string", system_id },
+			{ "string",scheduling_off_angle.scheduling_id },
+			{ "uint16_t", &scheduling_off_angle.end_angle },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out, arg_pairs);
+
+		strcat(buffer_out, str_out);
+		strcat(buffer_out, "\n");
+
+		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
+	}
+
 	return;
 }
 
