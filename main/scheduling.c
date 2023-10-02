@@ -29,7 +29,7 @@ static pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 static pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-static pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_off_angle scheduling_off_angle = {};
 
 static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -290,10 +290,55 @@ static void scheduling_task_idp_16(void* arg)
 
 static void scheduling_task_idp_17(void* arg)
 {
+	const uint8_t angle_off_set = 5;
+	pivot_actions actions = {};
+
+	char pivo_id[30] = "scheduling";
+	char str_out[50] = {};
+	uint8_t idp = IDP_18;
+
 	while(1)
 	{
-		// todo implementar
-		vTaskDelay(pdMS_TO_TICKS(50000)); // 5 seconds
+		if( *scheduling_current_angle > (scheduling_off_angle.end_angle - angle_off_set)
+		&& *scheduling_current_angle < (scheduling_off_angle.end_angle + angle_off_set )
+		&& strcmp(scheduling_off_angle.scheduling_id,"") > 0)
+		{
+			if(scheduling_callback != NULL)
+			{
+				// create package - send IDP 18
+				arg_pair_t arg_pairs[] = {
+					{ "uint8_t", &idp },
+					{ "string", pivo_id },
+					{ "string", scheduling_off_angle.scheduling_id},
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs);
+				scheduling_callback(str_out, COMM_MQTT);
+
+				// off pivot
+				actuation_app_get_actions(&actions, sizeof(actions));
+				actions.percentimeter = 0;
+				actions.watering_state = PIVOT_DRY;
+				actions.power_state = PIVOT_OFF;
+
+				actuation_app_set_actions(actions, false);
+				data_app_save(DATA_TYPE_ACTIONS, &actions, sizeof(actions));
+				data_app_delete(scheduling_off_angle.scheduling_id);
+				data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+
+				ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
+						scheduling_off_angle.scheduling_id);
+
+				scheduling_callback("#00$", COMM_MQTT);
+			}
+			else
+			{
+				ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+			}
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 	}
 }
 
@@ -387,7 +432,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_17:
 		{
-			memcpy(scheduling_off_angle, scheduling_data, sizeof(scheduling_off_angle));
+			memcpy(&scheduling_off_angle, scheduling_data, sizeof(scheduling_off_angle));
 
 			if(xTask_scheduling_idp_17 == NULL)
 			{
