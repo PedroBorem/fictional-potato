@@ -370,14 +370,14 @@ esp_err_t data_app_delete(void* data_id)
 	}
 
 	pivot_scheduling_off_angle scheduling_off_angle = {};
-	ret = data_app_load(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle);
+	ret = data_app_load(DATA_TYPE_SCHEADULING_OFF_ANGLE, &scheduling_off_angle);
 	if(ret == ESP_OK)
 	{
 		if(strcmp(scheduling_off_angle.scheduling_id, data_id) == 0)
 		{
 			ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle.scheduling_id);
 			memset(&scheduling_off_angle, 0x00, sizeof(pivot_scheduling_off_angle));
-			data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, scheduling_off_angle, sizeof(scheduling_off_angle));
+			data_app_save(DATA_TYPE_SCHEADULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
 			return ret;
 		}
 	}
