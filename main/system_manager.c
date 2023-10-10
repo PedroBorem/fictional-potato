@@ -679,10 +679,55 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 {
-	pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
+	if(comm_mode == COMM_HTTP_GET)
+	{
+		char buffer_out[500] = {};
+		char str_out[200] = {};
 
-	data_app_load(DATA_TYPE_HISTORY, &load_history);
-	// todo fazer tratamento para enviar
+		uint16_t dwp = 0;
+		uint8_t idp = IDP_12;
+		uint8_t history_size = 0;
+
+		pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_HISTORY, &load_history);
+
+//		for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
+//		{
+//			if(load_history[position].start_date != 0)
+//			{
+//				history_size = position;
+//				break;
+//			}
+//		}
+
+//		if(history_size != 0)
+//		{
+			for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
+			{
+				dwp = idp_parser_create_pwd(load_history[position].actions);
+
+				arg_pair_t arg_pairs[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", system_id },
+					{ "uint16_t", &load_history[position].start_angle },
+					{ "uint16_t", &load_history[position].end_angle },
+					{ "uint32_t", &load_history[position].start_date },
+					{ "uint32_t", &load_history[position].end_date },
+					{ "uint16_t", &dwp },
+					{ "uint16_t", &load_history[position].actions.percentimeter },
+					{ NULL, NULL }
+				};
+
+				idp_parser_create_package(str_out, arg_pairs);
+
+				strcat(buffer_out, str_out);
+				strcat(buffer_out, "\n");
+			}
+//		}
+
+		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
+	}
 }
 
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
