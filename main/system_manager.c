@@ -860,26 +860,29 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 			}
 		}
 
-		for(uint8_t position = 0; position <= scheduling_size; position++)
+		if(scheduling_size != 0)
 		{
-			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
-
-			arg_pair_t arg_pairs[] =
+			for(uint8_t position = 0; position < scheduling_size; position++)
 			{
-				{ "uint8_t", &idp },
-				{ "string", system_id },
-				{ "string", scheduling_date[position].scheduling_id },
-				{ "uint32_t", &scheduling_date[position].start_date },
-				{ "uint32_t", &scheduling_date[position].end_date },
-				{ "uint16_t", &dwp },
-				{ "uint16_t", &scheduling_date[position].actions.percentimeter },
-				{ NULL, NULL }
-			};
+				dwp = idp_parser_create_pwd(scheduling_date[position].actions);
 
-			idp_parser_create_package(str_out, arg_pairs);
+				arg_pair_t arg_pairs[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", system_id },
+					{ "string", scheduling_date[position].scheduling_id },
+					{ "uint32_t", &scheduling_date[position].start_date },
+					{ "uint32_t", &scheduling_date[position].end_date },
+					{ "uint16_t", &dwp },
+					{ "uint16_t", &scheduling_date[position].actions.percentimeter },
+					{ NULL, NULL }
+				};
 
-			strcat(buffer_out, str_out);
-			strcat(buffer_out, "\n");
+				idp_parser_create_package(str_out, arg_pairs);
+
+				strcat(buffer_out, str_out);
+				strcat(buffer_out, "\n");
+			}
 		}
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
@@ -946,7 +949,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 							{ "string", system_id },
 							{ "string", scheduling.scheduling_id },
 							{ "uint32_t", &scheduling.start_date },
-							{ "uint32_t", &scheduling.end_angle },
+							{ "uint16_t", &scheduling.end_angle },
 							{ "uint16_t", &dwp },
 							{ "uint16_t", &scheduling.actions.percentimeter },
 							{ NULL, NULL }
@@ -1001,26 +1004,29 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 			}
 		}
 
-		for(uint8_t position = 0; position <= scheduling_size; position++)
+		if(scheduling_size != 0)
 		{
-			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
-
-			arg_pair_t arg_pairs[] =
+			for(uint8_t position = 0; position < scheduling_size; position++)
 			{
-				{ "uint8_t", &idp },
-				{ "string", system_id },
-				{ "string", scheduling_angle[position].scheduling_id },
-				{ "uint32_t", &scheduling_angle[position].start_date },
-				{ "uint16_t", &scheduling_angle[position].end_angle },
-				{ "uint16_t", &dwp },
-				{ "uint16_t", &scheduling_angle[position].actions.percentimeter },
-				{ NULL, NULL }
-			};
+				dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
 
-			idp_parser_create_package(str_out, arg_pairs);
+				arg_pair_t arg_pairs[] =
+				{
+					{ "uint8_t", &idp },
+					{ "string", system_id },
+					{ "string", scheduling_angle[position].scheduling_id },
+					{ "uint32_t", &scheduling_angle[position].start_date },
+					{ "uint16_t", &scheduling_angle[position].end_angle },
+					{ "uint16_t", &dwp },
+					{ "uint16_t", &scheduling_angle[position].actions.percentimeter },
+					{ NULL, NULL }
+				};
 
-			strcat(buffer_out, str_out);
-			strcat(buffer_out, "\n");
+				idp_parser_create_package(str_out, arg_pairs);
+
+				strcat(buffer_out, str_out);
+				strcat(buffer_out, "\n");
+			}
 		}
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
@@ -1111,36 +1117,38 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		uint8_t idp = IDP_16;
 		uint8_t scheduling_size = 0;
 
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_date);
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
+			if(strcmp(scheduling_off_date[position].scheduling_id, "") == 0)
 			{
 				scheduling_size = position;
 				break;
 			}
 		}
 
-		for(uint8_t position = 0; position <= scheduling_size; position++)
+		if(scheduling_size != 0)
 		{
-			if(scheduling_date[position].start_date == 0
-			&& scheduling_date[position].end_date != 0)
+			for(uint8_t position = 0; position < scheduling_size; position++)
 			{
-				arg_pair_t arg_pairs[] =
+				if(scheduling_off_date[position].end_date != 0)
 				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "string", scheduling_date[position].scheduling_id },
-					{ "uint32_t", &scheduling_date[position].end_date },
-					{ NULL, NULL }
-				};
+					arg_pair_t arg_pairs[] =
+					{
+						{ "uint8_t", &idp },
+						{ "string", system_id },
+						{ "string", scheduling_off_date[position].scheduling_id },
+						{ "uint32_t", &scheduling_off_date[position].end_date },
+						{ NULL, NULL }
+					};
 
-				idp_parser_create_package(str_out, arg_pairs);
+					idp_parser_create_package(str_out, arg_pairs);
 
-				strcat(buffer_out, str_out);
-				strcat(buffer_out, "\n");
+					strcat(buffer_out, str_out);
+					strcat(buffer_out, "\n");
+				}
 			}
 		}
 

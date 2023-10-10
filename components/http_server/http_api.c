@@ -286,7 +286,6 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 			err = ESP_FAIL;
 		}
 	}
-
     else if (strcmp(req->uri, "/scheduling/date") == 0)
    	{
     	if(http_callback != NULL)
