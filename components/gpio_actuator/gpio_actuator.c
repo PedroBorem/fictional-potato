@@ -48,7 +48,7 @@ static uint64_t percent_watchdog = 0;
 
 /* configuration variables */
 static uint32_t gpio_act_pressure_timeout = 0;
-static uint16_t gpio_act_on_off_delay = 0;
+static uint32_t gpio_act_on_off_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
@@ -215,8 +215,9 @@ esp_err_t gpio_actuator_config(pivot_config config)
 		return err;
 	}
 
-	gpio_act_pressure_timeout = config.pressurization_time;
-	gpio_act_on_off_delay = config.on_off_time;
+	// convert sec to mili;
+	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
+	gpio_act_on_off_delay = (config.on_off_time*1000);
 
 	return ESP_OK;
 }

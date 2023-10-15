@@ -466,9 +466,6 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		new_config.pressurization_time = new_config.pressurization_time * 1000;
-		new_config.on_off_time = new_config.on_off_time * 1000;
-
 		esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 		if(ret == ESP_OK)
 		{
@@ -605,7 +602,7 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 
-		uint8_t idp = IDP_4;
+		uint8_t idp = IDP_5;
 		sector_config sector = {};
 
 		data_app_load(DATA_TYPE_SECTOR_CONFIG, &sector);
