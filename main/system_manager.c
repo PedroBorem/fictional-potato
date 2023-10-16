@@ -678,28 +678,18 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_GET)
 	{
-		char buffer_out[500] = {};
+		char buffer_out[600] = {};
 		char str_out[200] = {};
 
 		uint16_t dwp = 0;
 		uint8_t idp = IDP_12;
-		uint8_t history_size = 0;
 
 		pivot_history load_history[CONFIG_HISTORY_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_HISTORY, &load_history);
 
-//		for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
-//		{
-//			if(load_history[position].start_date != 0)
-//			{
-//				history_size = position;
-//				break;
-//			}
-//		}
-
-//		if(history_size != 0)
-//		{
-			for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
+		for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
+		{
+			if(load_history[position].end_date != 0)
 			{
 				dwp = idp_parser_create_pwd(load_history[position].actions);
 
@@ -721,7 +711,7 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 				strcat(buffer_out, str_out);
 				strcat(buffer_out, "\n");
 			}
-//		}
+		}
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
 	}
