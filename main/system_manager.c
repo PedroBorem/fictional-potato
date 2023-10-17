@@ -689,28 +689,28 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 
 		for(uint8_t position = 0; position < CONFIG_HISTORY_MAX_VALUE; position++)
 		{
-			if(load_history[position].end_date != 0)
+			//if(load_history[position].end_date != 0)
+			//{
+			dwp = idp_parser_create_pwd(load_history[position].actions);
+
+			arg_pair_t arg_pairs[] =
 			{
-				dwp = idp_parser_create_pwd(load_history[position].actions);
+				{ "uint8_t", &idp },
+				{ "string", system_id },
+				{ "uint16_t", &load_history[position].start_angle },
+				{ "uint16_t", &load_history[position].end_angle },
+				{ "uint32_t", &load_history[position].start_date },
+				{ "uint32_t", &load_history[position].end_date },
+				{ "uint16_t", &dwp },
+				{ "uint16_t", &load_history[position].actions.percentimeter },
+				{ NULL, NULL }
+			};
 
-				arg_pair_t arg_pairs[] =
-				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "uint16_t", &load_history[position].start_angle },
-					{ "uint16_t", &load_history[position].end_angle },
-					{ "uint32_t", &load_history[position].start_date },
-					{ "uint32_t", &load_history[position].end_date },
-					{ "uint16_t", &dwp },
-					{ "uint16_t", &load_history[position].actions.percentimeter },
-					{ NULL, NULL }
-				};
+			idp_parser_create_package(str_out, arg_pairs);
 
-				idp_parser_create_package(str_out, arg_pairs);
-
-				strcat(buffer_out, str_out);
-				strcat(buffer_out, "\n");
-			}
+			strcat(buffer_out, str_out);
+			strcat(buffer_out, "\n");
+			//}
 		}
 
 		comm_app_send_idp_pack(buffer_out, COMM_HTTP_GET);
