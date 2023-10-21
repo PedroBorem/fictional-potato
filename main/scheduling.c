@@ -50,6 +50,7 @@ static void scheduling_task_idp_14(void* arg)
 
 	time_t scheduling_timestamp_now = 0;
 	idp_type idp = IDP_18;
+	uint16_t dwp = 0;
 
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 
@@ -72,30 +73,43 @@ static void scheduling_task_idp_14(void* arg)
 						scheduling_date_status[date_position] = true;
 
 						// create package - send IDP 18
-						arg_pair_t arg_pairs[] = {
+						arg_pair_t arg_idp_18[] = {
 							{ "uint8_t", &idp },
 							{ "string", pivo_id },
 							{ "string", scheduling_date[date_position].scheduling_id},
 							{ NULL, NULL }
 						};
 
-						idp_parser_create_package(str_out, arg_pairs);
+						memset(str_out, 0x00, sizeof(str_out));
+						idp_parser_create_package(str_out, arg_idp_18);
 						scheduling_callback(str_out, COMM_MQTT);
 
-						// act on the equipment
-						actuation_app_set_actions(scheduling_date[date_position].actions, false);
+						// act on the equipment - send IDP 01
+						idp = IDP_1;
+						dwp = idp_parser_create_pwd(scheduling_date[date_position].actions);
 
-						data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
-													sizeof(scheduling_date[date_position].actions));
+						arg_pair_t arg_idp_01[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", SCHEDULING_TAG },
+							{ "uint16_t", &dwp },
+							{ "uint16_t", &scheduling_date[date_position].actions.percentimeter },
+							{ NULL, NULL }
+						};
+
+						memset(str_out, 0x00, sizeof(str_out));
+						idp_parser_create_package(str_out,arg_idp_01);
+						scheduling_callback(str_out, COMM_MQTT);
+
+						// log dgb
 						rtc_app_get_timestamp(true);
-						ESP_LOGW(SCHEDULING_TAG, "processing schedule by date id : %s",
-								scheduling_date[date_position].scheduling_id);
-
-						scheduling_callback("#00$", COMM_MQTT);
+						ESP_LOGW(SCHEDULING_TAG, "processing schedule by date id : %s (%s)",
+								scheduling_date[date_position].scheduling_id, __func__);
 					}
 					else
 					{
 						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+						//todo notificar falha ao executar idp 99
 					}
 				}
 			}
@@ -105,26 +119,49 @@ static void scheduling_task_idp_14(void* arg)
 			{
 				if(scheduling_callback != NULL)
 				{
-					scheduling_date_status[date_position] = false;
-					rtc_app_get_timestamp(true);
+					if(scheduling_date_status[date_position] == true)
+					{
+						scheduling_date_status[date_position] = false;
 
-					// off pivot
-					actuation_app_get_actions(&scheduling_date[date_position].actions,
-							sizeof(scheduling_date[date_position].actions));
-					scheduling_date[date_position].actions.power_state = 0;
-					scheduling_date[date_position].actions.watering_state = PIVOT_DRY;
-					scheduling_date[date_position].actions.power_state = PIVOT_OFF;
-					actuation_app_set_actions(scheduling_date[date_position].actions, false);
+						// act on the equipment - send IDP 01
+						idp = IDP_1;
+						dwp = idp_parser_create_pwd(pivot_actions_off);
+						scheduling_date[date_position].actions.percentimeter = 0;
 
-					data_app_save(DATA_TYPE_ACTIONS, &scheduling_date[date_position].actions,
-												sizeof(scheduling_date[date_position].actions));
-					data_app_delete(scheduling_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+						arg_pair_t arg_idp_01[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", SCHEDULING_TAG },
+							{ "uint16_t", &dwp },
+							{ "uint16_t", &scheduling_date[date_position].actions.percentimeter },
+							{ NULL, NULL }
+						};
 
-					ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s",
-							scheduling_date[date_position].scheduling_id);
+						memset(str_out, 0x00, sizeof(str_out));
+						idp_parser_create_package(str_out,arg_idp_01);
+						scheduling_callback(str_out, COMM_MQTT);
 
-					scheduling_callback("#00$", COMM_MQTT);
+						// delete scheaduling - send IDP 13
+						idp = IDP_13;
+
+						arg_pair_t arg_pairs[] =
+						{
+							{ "uint8_t", &idp },
+							{ "string", SCHEDULING_TAG },
+							{ "string", scheduling_date[date_position].scheduling_id },
+							{ "string", SCHEDULING_TAG },
+							{ NULL, NULL }
+						};
+
+						memset(str_out, 0x00, sizeof(str_out));
+						idp_parser_create_package(str_out,arg_idp_01);
+						scheduling_callback(str_out, COMM_MQTT);
+
+						// log dgb
+						rtc_app_get_timestamp(true);
+						ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
+								scheduling_date[date_position].scheduling_id, __func__);
+					}
 				}
 				else
 				{
