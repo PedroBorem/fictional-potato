@@ -19,6 +19,8 @@
  * compiler warnings about unused variables. */
 #define UNUSED(x)               (void)(sizeof(x))
 
+
+#define CONFIG_FW_VERSION			("v2.0.0")
 /**
  * @def CONFIG_SCHEDULING_MAX_VALUE
  * @brief Maximum number of scheduling values.
@@ -49,6 +51,10 @@
 
 
 #define CONFIG_ACTIONS_UNDEF_VALUE		(655)
+
+
+#define CONFIG_HTTP_ERROR				("400")
+#define CONFIG_HTTP_OK					("200")
 
 /* Public definitions ******************************************************/
 
@@ -100,6 +106,7 @@ typedef enum
 	IDP_17,
 	IDP_18,
 	IDP_30 = 30,
+	IDP_90 = 90,
     IDP_INVALID = 255
 } idp_type;
 

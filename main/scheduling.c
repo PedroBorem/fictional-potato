@@ -4,8 +4,8 @@
  *  Created on: 31 de jul. de 2023
  *      Author: soil-dev
  */
+#include "scheduling.h"
 
-#include "scheaduling.h"
 #include "FreeRTOS_defines.h"
 #include "log.h"
 
@@ -129,7 +129,7 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 	idp_parser_create_package(str_out,arg_idp_01);
 	scheduling_callback(str_out, COMM_MQTT);
 
-	// delete scheaduling - send IDP 13
+	// delete SCHEDULING - send IDP 13
 	idp = IDP_13;
 
 	arg_pair_t arg_idp_13[] =
@@ -338,7 +338,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
 				{
 					data_app_delete(scheduling_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_date);
+					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 				}
 			}
 
@@ -364,7 +364,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				&& (strcmp(scheduling_angle[angle_position].scheduling_id,"") > 0))
 				{
 					data_app_delete(scheduling_angle[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
+					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 				}
 			}
 
@@ -389,7 +389,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				&& strcmp(scheduling_off_date[date_position].scheduling_id,"") > 0)
 				{
 					data_app_delete(scheduling_off_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_DATE, &scheduling_off_date);
+					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_off_date);
 				}
 			}
 

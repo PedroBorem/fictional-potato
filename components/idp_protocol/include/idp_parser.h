@@ -27,6 +27,7 @@ typedef struct arg_pair{
 idp_type idp_parser_get(const char* string_in, char* string_out);
 
 bool idp_parser_validate_actions(const pivot_actions actions);
+bool idp_parser_validate_network(const network_config net_config);
 
 uint16_t idp_parser_create_pwd(pivot_actions actions);
 

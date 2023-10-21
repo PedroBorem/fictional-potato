@@ -213,6 +213,18 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 		httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
 		server_req = NULL;
     }
+    else if (strcmp(req->uri, "/version") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback("#90$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
+	}
     else if (strcmp(req->uri, "/states") == 0)
 	{
 		if(http_callback != NULL)
