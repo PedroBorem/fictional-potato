@@ -37,21 +37,125 @@ static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static uint16_t* scheduling_current_angle  = &global_angle;
 static app_callback scheduling_callback = NULL;
 
+
+static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actions actions);
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
+
 static void scheduling_task_idp_14(void* arg);
 static void scheduling_task_idp_15(void* arg);
 static void scheduling_task_idp_16(void* arg);
 static void scheduling_task_idp_17(void* arg);
 
 
-static void scheduling_task_idp_14(void* arg)
+static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actions actions)
 {
-	char pivo_id[30] = "scheduling";
+	uint8_t idp = IDP_INVALID;
+	uint16_t dwp = 0;
 	char str_out[50] = {};
 
-	time_t scheduling_timestamp_now = 0;
-	idp_type idp = IDP_18;
-	uint16_t dwp = 0;
+	// create package - send IDP 18
+	idp = IDP_18;
+	arg_pair_t arg_idp_18[] = {
+		{ "uint8_t", &idp },
+		{ "string", SCHEDULING_TAG },
+		{ "string", scheduling_id},
+		{ NULL, NULL }
+	};
 
+	memset(str_out, 0x00, sizeof(str_out));
+	idp_parser_create_package(str_out, arg_idp_18);
+	scheduling_callback(str_out, COMM_MQTT);
+
+	// act on the equipment - send IDP 01
+	idp = IDP_1;
+	dwp = idp_parser_create_pwd(actions);
+
+	arg_pair_t arg_idp_01[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", SCHEDULING_TAG },
+		{ "uint16_t", &dwp },
+		{ "uint16_t", &actions.percentimeter },
+		{ NULL, NULL }
+	};
+
+	memset(str_out, 0x00, sizeof(str_out));
+	idp_parser_create_package(str_out,arg_idp_01);
+	scheduling_callback(str_out, COMM_MQTT);
+
+	// log dgb
+	rtc_app_get_timestamp(true);
+	ESP_LOGW(SCHEDULING_TAG, "processing schedule id : %s (%s)",
+			scheduling_id, __func__);
+}
+
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server)
+{
+	uint8_t idp = IDP_INVALID;
+	uint16_t dwp = 0;
+	char str_out[50] = {};
+
+	if(scheduling_notify_server == true)
+	{
+		// create package - send IDP 18
+		idp = IDP_18;
+		arg_pair_t arg_idp_18[] = {
+			{ "uint8_t", &idp },
+			{ "string", SCHEDULING_TAG },
+			{ "string", scheduling_id},
+			{ NULL, NULL }
+		};
+
+		memset(str_out, 0x00, sizeof(str_out));
+		idp_parser_create_package(str_out, arg_idp_18);
+		scheduling_callback(str_out, COMM_MQTT);
+	}
+
+	// act on the equipment - send IDP 01
+	idp = IDP_1;
+	dwp = idp_parser_create_pwd(pivot_actions_off);
+	uint8_t percent = 0;
+
+	arg_pair_t arg_idp_01[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", SCHEDULING_TAG },
+		{ "uint16_t", &dwp },
+		{ "uint16_t", &percent },
+		{ NULL, NULL }
+	};
+
+	memset(str_out, 0x00, sizeof(str_out));
+	idp_parser_create_package(str_out,arg_idp_01);
+	scheduling_callback(str_out, COMM_MQTT);
+
+	// delete scheaduling - send IDP 13
+	idp = IDP_13;
+
+	arg_pair_t arg_idp_13[] =
+	{
+		{ "uint8_t", &idp },
+		{ "string", SCHEDULING_TAG },
+		{ "string", scheduling_id },
+		{ "string", SCHEDULING_TAG },
+		{ NULL, NULL }
+	};
+
+	memset(str_out, 0x00, sizeof(str_out));
+	idp_parser_create_package(str_out,arg_idp_13);
+	scheduling_callback(str_out, COMM_MQTT);
+
+	// log dgb
+	rtc_app_get_timestamp(true);
+	ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
+			scheduling_id, __func__);
+
+}
+
+
+static void scheduling_task_idp_14(void* arg)
+{
+	time_t scheduling_timestamp_now = 0;
 	memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 
 	while(1)
@@ -72,44 +176,13 @@ static void scheduling_task_idp_14(void* arg)
 					{
 						scheduling_date_status[date_position] = true;
 
-						// create package - send IDP 18
-						arg_pair_t arg_idp_18[] = {
-							{ "uint8_t", &idp },
-							{ "string", pivo_id },
-							{ "string", scheduling_date[date_position].scheduling_id},
-							{ NULL, NULL }
-						};
-
-						memset(str_out, 0x00, sizeof(str_out));
-						idp_parser_create_package(str_out, arg_idp_18);
-						scheduling_callback(str_out, COMM_MQTT);
-
-						// act on the equipment - send IDP 01
-						idp = IDP_1;
-						dwp = idp_parser_create_pwd(scheduling_date[date_position].actions);
-
-						arg_pair_t arg_idp_01[] =
-						{
-							{ "uint8_t", &idp },
-							{ "string", SCHEDULING_TAG },
-							{ "uint16_t", &dwp },
-							{ "uint16_t", &scheduling_date[date_position].actions.percentimeter },
-							{ NULL, NULL }
-						};
-
-						memset(str_out, 0x00, sizeof(str_out));
-						idp_parser_create_package(str_out,arg_idp_01);
-						scheduling_callback(str_out, COMM_MQTT);
-
-						// log dgb
-						rtc_app_get_timestamp(true);
-						ESP_LOGW(SCHEDULING_TAG, "processing schedule by date id : %s (%s)",
-								scheduling_date[date_position].scheduling_id, __func__);
+						scheduling_active(date_position,
+								scheduling_date[date_position].scheduling_id,
+								scheduling_date[date_position].actions);
 					}
 					else
 					{
 						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-						//todo notificar falha ao executar idp 99
 					}
 				}
 			}
@@ -122,45 +195,7 @@ static void scheduling_task_idp_14(void* arg)
 					if(scheduling_date_status[date_position] == true)
 					{
 						scheduling_date_status[date_position] = false;
-
-						// act on the equipment - send IDP 01
-						idp = IDP_1;
-						dwp = idp_parser_create_pwd(pivot_actions_off);
-						scheduling_date[date_position].actions.percentimeter = 0;
-
-						arg_pair_t arg_idp_01[] =
-						{
-							{ "uint8_t", &idp },
-							{ "string", SCHEDULING_TAG },
-							{ "uint16_t", &dwp },
-							{ "uint16_t", &scheduling_date[date_position].actions.percentimeter },
-							{ NULL, NULL }
-						};
-
-						memset(str_out, 0x00, sizeof(str_out));
-						idp_parser_create_package(str_out,arg_idp_01);
-						scheduling_callback(str_out, COMM_MQTT);
-
-						// delete scheaduling - send IDP 13
-						idp = IDP_13;
-
-						arg_pair_t arg_pairs[] =
-						{
-							{ "uint8_t", &idp },
-							{ "string", SCHEDULING_TAG },
-							{ "string", scheduling_date[date_position].scheduling_id },
-							{ "string", SCHEDULING_TAG },
-							{ NULL, NULL }
-						};
-
-						memset(str_out, 0x00, sizeof(str_out));
-						idp_parser_create_package(str_out,arg_idp_01);
-						scheduling_callback(str_out, COMM_MQTT);
-
-						// log dgb
-						rtc_app_get_timestamp(true);
-						ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
-								scheduling_date[date_position].scheduling_id, __func__);
+						scheduling_deactivate(scheduling_date[date_position].scheduling_id, false);
 					}
 				}
 				else
@@ -177,11 +212,7 @@ static void scheduling_task_idp_14(void* arg)
 static void scheduling_task_idp_15(void* arg)
 {
 	const uint8_t angle_off_set = 5;
-	char pivo_id[30] = "scheduling";
-	char str_out[50] = {};
-
 	time_t scheduling_timestamp_now = 0;
-	idp_type idp = IDP_18;
 
 	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 
@@ -202,26 +233,9 @@ static void scheduling_task_idp_15(void* arg)
 					{
 						scheduling_angle_status[angle_position] = true;
 
-						// create package - send IDP 18
-						arg_pair_t arg_pairs[] = {
-							{ "uint8_t", &idp },
-							{ "string", pivo_id },
-							{ "string", scheduling_angle[angle_position].scheduling_id},
-							{ NULL, NULL }
-						};
-
-						idp_parser_create_package(str_out, arg_pairs);
-						scheduling_callback(str_out, COMM_MQTT);
-
-						// act on the equipment
-						actuation_app_set_actions(scheduling_angle[angle_position].actions, false);
-						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
-													sizeof(scheduling_angle[angle_position].actions));
-						rtc_app_get_timestamp(true);
-						ESP_LOGW(SCHEDULING_TAG, "processing schedule by angle id : %s",
-								scheduling_angle[angle_position].scheduling_id);
-
-						scheduling_callback("#00$", COMM_MQTT);
+						scheduling_active(angle_position,
+								scheduling_angle[angle_position].scheduling_id,
+								scheduling_angle[angle_position].actions);
 					}
 				}
 				else if( *scheduling_current_angle > (scheduling_angle[angle_position].end_angle - angle_off_set)
@@ -229,26 +243,11 @@ static void scheduling_task_idp_15(void* arg)
 				{
 					if(scheduling_callback != NULL)
 					{
-						scheduling_angle_status[angle_position] = false;
-						rtc_app_get_timestamp(true);
-
-						// off pivot
-						actuation_app_get_actions(&scheduling_angle[angle_position].actions,
-								sizeof(scheduling_angle[angle_position].actions));
-						scheduling_angle[angle_position].actions.percentimeter = 0;
-						scheduling_angle[angle_position].actions.watering_state = PIVOT_DRY;
-						scheduling_angle[angle_position].actions.power_state = PIVOT_OFF;
-						actuation_app_set_actions(scheduling_angle[angle_position].actions, false);
-
-						data_app_save(DATA_TYPE_ACTIONS, &scheduling_angle[angle_position].actions,
-													sizeof(scheduling_angle[angle_position].actions));
-						data_app_delete(scheduling_angle[angle_position].scheduling_id);
-						data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
-
-						ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
-								scheduling_angle[angle_position].scheduling_id);
-
-						scheduling_callback("#00$", COMM_MQTT);
+						if(scheduling_date_status[angle_position] == true)
+						{
+							scheduling_date_status[angle_position] = false;
+							scheduling_deactivate(scheduling_angle[angle_position].scheduling_id, false);
+						}
 					}
 					else
 					{
@@ -264,13 +263,7 @@ static void scheduling_task_idp_15(void* arg)
 
 static void scheduling_task_idp_16(void* arg)
 {
-	char pivo_id[30] = "scheduling";
-	char str_out[50] = {};
-
 	time_t scheduling_timestamp_now = 0;
-	pivot_actions actions = {};
-
-	uint8_t idp = IDP_18;
 
 	while(1)
 	{
@@ -286,33 +279,7 @@ static void scheduling_task_idp_16(void* arg)
 			{
 				if(scheduling_callback != NULL)
 				{
-					// create package - send IDP 18
-					arg_pair_t arg_pairs[] = {
-						{ "uint8_t", &idp },
-						{ "string", pivo_id },
-						{ "string", scheduling_off_date[date_position].scheduling_id},
-						{ NULL, NULL }
-					};
-
-					idp_parser_create_package(str_out, arg_pairs);
-					scheduling_callback(str_out, COMM_MQTT);
-
-					// off pivot
-					actuation_app_get_actions(&actions, sizeof(actions));
-					actions.percentimeter = 0;
-					actions.power_state = PIVOT_OFF;
-					actions.watering_state = PIVOT_DRY;
-					actuation_app_set_actions(actions, false);
-
-					data_app_save(DATA_TYPE_ACTIONS, &actions, sizeof(actions));
-					data_app_delete(scheduling_off_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEADULING_OFF_DATE, &scheduling_off_date);
-
-					rtc_app_get_timestamp(true);
-					ESP_LOGW(SCHEDULING_TAG, "processing schedule by off date id : %s",
-							scheduling_off_date[date_position].scheduling_id);
-
-					scheduling_callback("#00$", COMM_MQTT);
+					scheduling_deactivate(scheduling_off_date[date_position].scheduling_id, true);
 				}
 				else
 				{
@@ -328,11 +295,6 @@ static void scheduling_task_idp_16(void* arg)
 static void scheduling_task_idp_17(void* arg)
 {
 	const uint8_t angle_off_set = 5;
-	pivot_actions actions = {};
-
-	char pivo_id[30] = "scheduling";
-	char str_out[50] = {};
-	uint8_t idp = IDP_18;
 
 	while(1)
 	{
@@ -342,32 +304,7 @@ static void scheduling_task_idp_17(void* arg)
 		{
 			if(scheduling_callback != NULL)
 			{
-				// create package - send IDP 18
-				arg_pair_t arg_pairs[] = {
-					{ "uint8_t", &idp },
-					{ "string", pivo_id },
-					{ "string", scheduling_off_angle.scheduling_id},
-					{ NULL, NULL }
-				};
-
-				idp_parser_create_package(str_out, arg_pairs);
-				scheduling_callback(str_out, COMM_MQTT);
-
-				// off pivot
-				actuation_app_get_actions(&actions, sizeof(actions));
-				actions.percentimeter = 0;
-				actions.watering_state = PIVOT_DRY;
-				actions.power_state = PIVOT_OFF;
-
-				actuation_app_set_actions(actions, false);
-				data_app_save(DATA_TYPE_ACTIONS, &actions, sizeof(actions));
-				data_app_delete(scheduling_off_angle.scheduling_id);
-				data_app_load(DATA_TYPE_SCHEADULING_ANGLE, &scheduling_angle);
-
-				ESP_LOGW(SCHEDULING_TAG, "End schedule by angle id : %s",
-						scheduling_off_angle.scheduling_id);
-
-				scheduling_callback("#00$", COMM_MQTT);
+				scheduling_deactivate(scheduling_off_angle.scheduling_id, true);
 			}
 			else
 			{
@@ -545,6 +482,3 @@ void scheduling_register_callback(const app_callback callback)
 		scheduling_callback = callback;
 	}
 }
-
-
-

@@ -29,6 +29,12 @@ static TaskHandle_t xTask_actuation_app = NULL;
 static app_callback actuation_app_call = NULL;
 static pivot_actions actuation_config = {};
 
+const pivot_actions pivot_actions_off = {
+		.power_state = PIVOT_OFF,
+		.rotation = 0,
+		.watering_state = 0,
+		.percentimeter = 0};
+
 /* Private methods  ---------------------------------------------- */
 void actuation_app_task(void* arg);
 void actuation_app_manual_call(bool on_off, pivot_actions current_action);

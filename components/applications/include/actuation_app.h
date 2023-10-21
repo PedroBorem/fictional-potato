@@ -17,9 +17,7 @@
 #include "project_config.h"
 #include "esp_err.h"
 
-
-// Declare a constante pivot_actions_off
-const pivot_actions pivot_actions_off = {PIVOT_OFF, 0, 0, 0};
+extern const pivot_actions pivot_actions_off;
 
 /**
  * @brief	starts the tasks of reading and actuation of the I/O ports
