@@ -208,6 +208,13 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
     pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } sector_config;
 
+typedef struct __attribute__((__packed__))
+{
+    uint16_t start_angle;   /*!< Start angle of the configuration */
+    uint16_t end_angle;     /*!< End angle of the configuration */
+} pivot_virtual_config;
+
+
 /**
  * @brief Scheduling date parameters.
  *
