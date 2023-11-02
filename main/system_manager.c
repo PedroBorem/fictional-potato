@@ -60,6 +60,8 @@ static void system_manager_idp_17(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_91(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_92(const char* buffer, comm_type comm_mode);
 
 void system_manager_init(void)
 {
@@ -250,6 +252,16 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		case IDP_90:
 		{
 			system_manager_idp_90(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_91:
+		{
+			system_manager_idp_91(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_92:
+		{
+			system_manager_idp_92(str_pkg, comm_mode);
 			break;
 		}
 		default:
@@ -1485,5 +1497,56 @@ static void system_manager_idp_90(const char* buffer, comm_type comm_mode)
 			idp_parser_create_package(str_out, arg_pairs_ack);
 			comm_app_send_idp_pack(str_out, COMM_MQTT);
 		}
+	}
+}
+
+static void system_manager_idp_91(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	{
+		uint8_t idp = IDP_91;
+		if(comm_mode == COMM_HTTP_POST)
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+		}
+		else
+		{
+			char str_out[200] = {};
+			arg_pair_t arg_pairs_ack[] = {
+								{ "uint8_t", &idp },
+								{ "string", system_id },
+								{ NULL, NULL }
+			};
+
+			idp_parser_create_package(str_out, arg_pairs_ack);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
+		}
+
+		vTaskDelay(pdMS_TO_TICKS(2000)); // 2 seconds
+
+		esp_restart();
+	}
+}
+
+static void system_manager_idp_92(const char* buffer, comm_type comm_mode)
+{
+	char str_out[200] = {};
+
+	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	{
+		uint8_t idp = IDP_92;
+		if(comm_mode == COMM_HTTP_POST)
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+		}
+
+		arg_pair_t arg_pairs_ack[] = {
+							{ "uint8_t", &idp },
+							{ "string", system_id },
+							{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out, arg_pairs_ack);
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
 	}
 }

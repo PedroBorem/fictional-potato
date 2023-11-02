@@ -107,6 +107,8 @@ typedef enum
 	IDP_18,
 	IDP_30 = 30,
 	IDP_90 = 90,
+	IDP_91,
+	IDP_92,
     IDP_INVALID = 255
 } idp_type;
 

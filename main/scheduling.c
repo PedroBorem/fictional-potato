@@ -152,7 +152,6 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 
 }
 
-
 static void scheduling_task_idp_14(void* arg)
 {
 	time_t scheduling_timestamp_now = 0;
