@@ -31,8 +31,8 @@ static pivot_actions actuation_config = {};
 
 const pivot_actions pivot_actions_off = {
 		.power_state = PIVOT_OFF,
-		.rotation = 0,
-		.watering_state = 0,
+		.rotation = PIVOT_CW,
+		.watering_state = PIVOT_DRY,
 		.percentimeter = 0};
 
 /* Private methods  ---------------------------------------------- */

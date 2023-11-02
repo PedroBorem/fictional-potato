@@ -114,7 +114,7 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 	// act on the equipment - send IDP 01
 	idp = IDP_1;
 	dwp = idp_parser_create_pwd(pivot_actions_off);
-	uint8_t percent = 0;
+	uint16_t percent = 0;
 
 	arg_pair_t arg_idp_01[] =
 	{
@@ -211,7 +211,7 @@ static void scheduling_task_idp_14(void* arg)
 
 static void scheduling_task_idp_15(void* arg)
 {
-	const uint8_t angle_off_set = 5;
+	const uint16_t angle_off_set = 3;
 	time_t scheduling_timestamp_now = 0;
 
 	memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
@@ -236,16 +236,22 @@ static void scheduling_task_idp_15(void* arg)
 						scheduling_active(angle_position,
 								scheduling_angle[angle_position].scheduling_id,
 								scheduling_angle[angle_position].actions);
+
+						if( *scheduling_current_angle >= scheduling_angle[angle_position].end_angle - angle_off_set
+								&& *scheduling_current_angle <= scheduling_angle[angle_position].end_angle + angle_off_set )
+						{
+							vTaskDelay(pdMS_TO_TICKS(300000)); // 5 minutes
+						}
 					}
 				}
-				else if( *scheduling_current_angle > (scheduling_angle[angle_position].end_angle - angle_off_set)
-				&& *scheduling_current_angle < (scheduling_angle[angle_position].end_angle + angle_off_set ))
+				else if( *scheduling_current_angle >= scheduling_angle[angle_position].end_angle - angle_off_set
+						&& *scheduling_current_angle <= scheduling_angle[angle_position].end_angle + angle_off_set )
 				{
 					if(scheduling_callback != NULL)
 					{
-						if(scheduling_date_status[angle_position] == true)
+						if(scheduling_angle_status[angle_position] == true)
 						{
-							scheduling_date_status[angle_position] = false;
+							scheduling_angle_status[angle_position] = false;
 							scheduling_deactivate(scheduling_angle[angle_position].scheduling_id, false);
 						}
 					}

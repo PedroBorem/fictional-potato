@@ -61,7 +61,7 @@ esp_err_t data_app_init(void)
 
 	const network_config default_network = {
 			.gprs_id = "agrishow_1",
-			.modem_apn = "apn-vazia",
+			.modem_apn = "virtueyes.com.br",
 			.wifi_ssid = "soil2023",
 			.wifi_pass = "soiltech",
 	};
