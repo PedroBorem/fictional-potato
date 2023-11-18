@@ -32,7 +32,7 @@
 #define DATA_NETWORK_CONFIG			"net_config"
 #define DATA_ECO_MODE_CONFIG		"eco_config"
 #define DATA_SECTOR_CONFIG			"sector_config"
-#define DATA_VIRTUAL_CONFIG			"virtual_config"
+#define DATA_RETURN_CONFIG			"return_config"
 #define DATA_SCHEDULING_DATE		"s_date"
 #define DATA_SCHEDULING_OFF_DATE	"s_off_date"
 #define DATA_SCHEDULING_ANGLE		"s_angle"
@@ -67,7 +67,7 @@ esp_err_t data_app_init(void)
 			.wifi_pass = "soiltech",
 	};
 
-	const pivot_virtual_config virtual_config = {};
+	const pivot_return_config return_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -105,9 +105,9 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SECTOR_CONFIG, &default_sector, sizeof(default_sector));
 		}
 
-		if(nvs_data_get_size(DATA_VIRTUAL_CONFIG) == 0)
+		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
 		{
-			data_app_save(DATA_TYPE_VIRTUAL_CONFIG, &virtual_config, sizeof(virtual_config));
+			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
 		}
 
 		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
@@ -181,9 +181,9 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_SECTOR_CONFIG, data, data_size);
 			break;
 		}
-		case DATA_TYPE_VIRTUAL_CONFIG:
+		case DATA_TYPE_RETURN_CONFIG:
 		{
-			ret = nvs_data_set(DATA_VIRTUAL_CONFIG, data, data_size);
+			ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_DATE:
@@ -290,9 +290,9 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_SECTOR_CONFIG, data);
 			break;
 		}
-		case DATA_TYPE_VIRTUAL_CONFIG:
+		case DATA_TYPE_RETURN_CONFIG:
 		{
-			ret = nvs_data_get_blob(DATA_VIRTUAL_CONFIG, data);
+			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_DATE:

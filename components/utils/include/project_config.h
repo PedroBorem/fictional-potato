@@ -167,8 +167,8 @@ typedef struct
  */
 typedef struct __attribute__((__packed__))
 {
-    char contactor[50];       /*!< Contactor type */ //todo: usar isso nas classes
-    char pressure[50];   /*!< Pressure switch type *///todo usar isso nas classes
+    char contactor[50];      		/*!< Contactor type */ //todo: usar isso nas classes
+    char pressure[50];   			/*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_off_time;            /*!< On/off time */
 } pivot_config;
@@ -212,8 +212,9 @@ typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle;   /*!< Start angle of the configuration */
     uint16_t end_angle;     /*!< End angle of the configuration */
-} pivot_virtual_config;
-
+    bool automatic_return;
+    bool water_return;
+} pivot_return_config;
 
 /**
  * @brief Scheduling date parameters.

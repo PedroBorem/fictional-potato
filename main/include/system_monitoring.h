@@ -10,7 +10,7 @@
 
 #include "project_config.h"
 
-void system_monitoring_start(void);
+void system_monitoring_start(pivot_return_config return_config, uint8_t monitoring_time);
 void system_monitoring_stop(void);
 void system_monitoring_register_callback(const app_callback callback);
 

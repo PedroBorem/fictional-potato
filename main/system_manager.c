@@ -78,8 +78,12 @@ void system_manager_init(void)
 	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
 
 	// system monitoring init
+	pivot_return_config return_config = {};
+	data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
 	system_monitoring_register_callback(&system_manager_callback);
-	system_monitoring_start();
+	system_monitoring_start(return_config, 5); //todo alterar 5 para parametro.
+	//todo fazer um idp apra ele
+
 
 	// communication modules init
 	network_config network = {};
