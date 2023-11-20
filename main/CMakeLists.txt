@@ -1,7 +1,9 @@
 idf_component_register(	SRCS 
 							"main.c"
-                    		"data_app.c"
-                    		"comm_app.c"
-                    		"actuation_app.c"
+							"eco_mode.c"
+							"system_manager.c"
+							"system_monitoring.c"
+							"sectorization.c"
+							"scheduling.c"
                     	INCLUDE_DIRS
                     		"include")

@@ -1,14 +1,7 @@
-/*
- * nvs_data.c
- *
- *  Created on: 18 de set de 2022
- *      Author: bruno
- */
-
 /**
  * @file nvs_data.c
- * @brief class for direct access to flash memory (NVS)
-*/
+ * @brief Class for direct access to flash memory (NVS).
+ */
 
 /* Self include */
 #include "nvs_data.h"
@@ -21,19 +14,12 @@
 #include "esp_log.h"
 #include "string.h"
 
-/**\addtogroup components
- * @{
- *
- */
-
-/**\addtogroup nvs_data
- * @{
- *
- */
-
 /* Private definitions ------------------------------------------- */
-#define NVS_DATA_TAG	"nvs_data"
-
+/**
+ * @def NVS_DATA_TAG
+ * @brief Tag used for logging related to NVS data.
+ */
+#define NVS_DATA_TAG "nvs_data"
 
 /* Public method implementation ---------------------------------- */
 esp_err_t nvs_data_init(void)
@@ -53,7 +39,7 @@ esp_err_t nvs_data_init(void)
 	return err;
 }
 
-esp_err_t nvs_data_set(const char* label_name, const char* key, const void* value, size_t length)
+esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length)
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
@@ -66,7 +52,7 @@ esp_err_t nvs_data_set(const char* label_name, const char* key, const void* valu
 	}
 	else if (err == ESP_OK)
 	{
-		err = nvs_set_blob(handle, key, value, length);
+		err = nvs_set_blob(handle, label_name, value, length);
 		if(err == ESP_OK)
 		{
 			 err = nvs_commit(handle);
@@ -83,7 +69,7 @@ esp_err_t nvs_data_set(const char* label_name, const char* key, const void* valu
 	return err;
 }
 
-size_t nvs_data_get_size(const char* label_name, const char* key)
+size_t nvs_data_get_size(const char* label_name)
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
@@ -92,7 +78,7 @@ size_t nvs_data_get_size(const char* label_name, const char* key)
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
 	if (err == ESP_OK)
 	{
-		err = nvs_get_blob(handle, key, NULL, &required_size);
+		err = nvs_get_blob(handle, label_name, NULL, &required_size);
 		if(err != ESP_OK)
 		{
 			required_size = 0;
@@ -104,7 +90,7 @@ size_t nvs_data_get_size(const char* label_name, const char* key)
 	return required_size;
 }
 
-esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* out_value)
+esp_err_t nvs_data_get_blob(const char* label_name, uint8_t* out_value)
 {
 	esp_err_t err = ESP_FAIL;
 	nvs_handle_t handle = (nvs_handle_t)NULL;
@@ -113,11 +99,11 @@ esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* ou
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
 	if (err == ESP_OK)
 	{
-		err = nvs_get_blob(handle, key, NULL, &required_size);
+		err = nvs_get_blob(handle, label_name, NULL, &required_size);
 		if(err == ESP_OK)
 		{
 			uint32_t* run_time = malloc(required_size + sizeof(uint32_t));
-			err = nvs_get_blob(handle, key, run_time, &required_size);
+			err = nvs_get_blob(handle, label_name, run_time, &required_size);
 			if(err == ESP_OK)
 			{
 				memcpy(out_value, (uint8_t*)run_time, required_size);
@@ -143,5 +129,3 @@ esp_err_t nvs_data_get_blob(const char* label_name, const char* key, uint8_t* ou
 	return err;
 }
 
-/**@}*/ 	//nvs_data
-/** @}*/	//components

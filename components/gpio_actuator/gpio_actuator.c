@@ -1,35 +1,30 @@
-/*
- * gpio_actuator.c
- *
- *  Created on: Jun 20, 2022
- *      Author: guilhermerossi
- */
-
 /**
  * @file gpio_actuator.c
  * @date June 20, 2022
- * @brief general gpio functions
-*/
+ * @brief Implementation of GPIO actuator control functions.
+ */
 
 /* Self include */
 #include "gpio_actuator.h"
 
 /* Peripherals include */
 #include <time.h>
+#include <string.h>
+
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
 /* Private definitions ------------------------------------------- */
+
+/**
+ * @brief Tag used for logging in the GPIO actuator module.
+ */
 #define GPIO_ACT_TAG		"gpio_actuator"
+
+/**
+ * @brief Default interrupt flag for GPIO handling.
+ */
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
-
-/**\addtogroup components
- * @{
- *
- */
-
-/**\addtogroup gpio_actuator
- * @{
- *
- */
 
 /* Global variables ---------------------------------------------- */
 
@@ -39,9 +34,9 @@ static TimerHandle_t perc_timer_handleOff = NULL;
 static TaskHandle_t xTask_waitpressure = NULL;
 static TaskHandle_t xTask_readpercent = NULL;
 
-//Configuration variables
-static pivot_actions pivot_config_read = {};
-static pivot_actions task_config_set = {};
+//actionsuration variables
+static pivot_actions pivot_actions_read = {};
+static pivot_actions task_actions_set = {};
 
 //Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -51,49 +46,60 @@ static uint32_t perc_pct_on = 0;
 static uint32_t perc_sec_on = 0;
 static uint64_t percent_watchdog = 0;
 
+/* configuration variables */
+static uint32_t gpio_act_pressure_timeout = 0;
+static uint32_t gpio_act_on_off_delay = 0;
+static bool gpio_act_contactor_type = 0;
+static bool gpio_act_pressure_type = 0;
+
 //Pressurizing flag
 static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
+
 /**
- * @brief	Perc On timer expiration callback.
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ * @brief Callback function for the expiration of the Perc On timer.
+ * @param pxTimer The timer handle
  */
 void vPercTimerOnExpire(TimerHandle_t pxTimer);
 
 /**
- * @brief	Perc Off timer expiration callback.
- * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ * @brief Callback function for the expiration of the Perc Off timer.
+ * @param pxTimer The timer handle
  */
 void vPercTimerOffExpire(TimerHandle_t pxTimer);
 
 /**
- * @brief	Start relays accordingly, after pressure check or dry mode
+ * @brief Start the relays accordingly after pressure check or dry mode.
  * @return
- * 	- ESP_OK: success
- * 	- ESP_FAIL: fail to initialize
+ *     - ESP_OK: Success
+ *     - ESP_FAIL: Fail to initialize
  */
 esp_err_t gpio_actuator_start(void);
 
 /**
- * @brief 	Water pressure application task.
- * @param	arg - [in]: task argument (default NULL)
+ * @brief Water pressure application task.
+ * @param arg Task argument (default NULL)
  */
 void actuator_wait_pressure(void* arg);
 
-
+/**
+ * @brief Percentimeter reading task.
+ * @param arg Task argument (default NULL)
+ */
 void actuator_read_percent(void* arg);
+
 
 /* Public methods ------------------------------------------------ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 	if(xTask_readpercent != NULL)
 	{
-		vTaskResume(xTask_readpercent);
+		if (eTaskGetState(xTask_readpercent) == eSuspended
+		|| eTaskGetState(xTask_readpercent) == eBlocked)
+		{
+			vTaskResume(xTask_readpercent);
+		}
 	}
 }
 
@@ -104,7 +110,7 @@ esp_err_t gpio_actuator_init()
 	perc_pct_on = 0;
 	perc_sec_on = 0;
 
-	//output configuration
+	//output actions
 	gpio_config_t io_conf_out = {};
 	io_conf_out.intr_type = GPIO_INTR_DISABLE;
 	io_conf_out.mode = GPIO_MODE_OUTPUT_OD;
@@ -152,7 +158,7 @@ esp_err_t gpio_actuator_init()
 
 		if(xReturn != pdPASS || xTask_readpercent == NULL)
 		{
-			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
+			ESP_LOGE(GPIO_ACT_TAG, "%s, Failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
 			return ESP_FAIL;
 		}
 	}
@@ -176,33 +182,73 @@ esp_err_t gpio_actuator_init()
 	return err;
 }
 
-esp_err_t gpio_actuator_set(pivot_actions config)
+esp_err_t gpio_actuator_config(pivot_config config)
+{
+	esp_err_t err = ESP_FAIL;
+
+	/* configuration variables */
+	if(strcmp(config.contactor, "NA") == 0)
+	{
+		gpio_act_contactor_type = 0;
+	}
+	else if(strcmp(config.contactor, "NF") == 0)
+	{
+		gpio_act_contactor_type = 1;
+	}
+	else
+	{
+		ESP_LOGE(GPIO_ACT_TAG,"Invalid contactor type configuration");
+		return err;
+	}
+
+	if(strcmp(config.pressure, "NA") == 0)
+	{
+		gpio_act_pressure_type = 0;
+	}
+	else if(strcmp(config.pressure, "NF") == 0)
+	{
+		gpio_act_pressure_type = 1;
+	}
+	else
+	{
+		ESP_LOGE(GPIO_ACT_TAG,"Invalid pressure type configuration");
+		return err;
+	}
+
+	// convert sec to mili;
+	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
+	gpio_act_on_off_delay = (config.on_off_time*1000);
+
+	return ESP_OK;
+}
+
+esp_err_t gpio_actuator_set(pivot_actions actions)
 {
 	esp_err_t err = ESP_FAIL;
 	int perc_sec = 0;
 
-	//task_config_set = config;
-	memcpy(&task_config_set, &config, sizeof(task_config_set));
-	perc_sec = config.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
+	//task_actions_set = actions;
+	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
+	perc_sec = actions.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 
-	if(config.power_state == PIVOT_ON)
+	if(actions.power_state == PIVOT_ON)
 	{
-		if(config.rotation == PIVOT_CW)
+		if(actions.rotation == PIVOT_CW)
 		{
 			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
 		}
-		else if(config.rotation == PIVOT_CCW)
+		else if(actions.rotation == PIVOT_CCW)
 		{
 			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
 		}
 
-		if(config.percentimeter > 0 && config.percentimeter < 100)
+		if(actions.percentimeter > 0 && actions.percentimeter < 100)
 		{
 			perc_timer_handleOn = xTimerCreate(
 					  "percTimerON", /* name */
@@ -222,58 +268,62 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 			{
 				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-				xTimerStart(perc_timer_handleOn, 0);
+				xTimerStart(perc_timer_handleOn, 100);
 			}
 
 		}
-		else if(config.percentimeter == 0)
+		else if(actions.percentimeter == 0)
 		{
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 
 			if(perc_timer_handleOn != 0)
 			{
-				xTimerDelete(perc_timer_handleOn,0);
+				xTimerStop(perc_timer_handleOn, 1000);
+				xTimerDelete(perc_timer_handleOn,1000);
 				negedge_perc = 0;
 			}
 
 			if(perc_timer_handleOff != 0)
 			{
-				xTimerDelete(perc_timer_handleOff,0);
+				xTimerStop(perc_timer_handleOff, 1000);
+				xTimerDelete(perc_timer_handleOff, 1000);
 				posedge_perc = 0;
 			}
 
-			pivot_config_read.percentimeter = 0;
+			pivot_actions_read.percentimeter = 0;
 		}
-		else if(config.percentimeter == 100)
+		else if(actions.percentimeter == 100)
 		{
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
 			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
 
 			if(perc_timer_handleOn != 0)
 			{
-				xTimerDelete(perc_timer_handleOn,0);
+				xTimerStop(perc_timer_handleOn, 1000);
+				xTimerDelete(perc_timer_handleOn, 1000);
 			}
 
 			if(perc_timer_handleOff != 0)
 			{
-				xTimerDelete(perc_timer_handleOff,0);
+				xTimerStop(perc_timer_handleOff, 1000);
+				xTimerDelete(perc_timer_handleOff, 1000);
 			}
 		}
 
-		if(config.watering_state == PIVOT_DRY)
+		if(actions.watering_state == PIVOT_DRY)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 			gpio_actuator_pressure_off();
 			gpio_actuator_start();
 		}
-		else if(config.watering_state == PIVOT_WET)
+		else if(actions.watering_state == PIVOT_WET)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
 			gpio_actuator_pressure_on();
 		}
 	}
-	else if(config.power_state == PIVOT_OFF)
+	else if(actions.power_state == PIVOT_OFF)
 	{
 		gpio_actuator_shutdown();
 	}
@@ -285,48 +335,48 @@ esp_err_t gpio_actuator_set(pivot_actions config)
 
 pivot_actions gpio_actuator_get(void)
 {
-	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == GPIO_ACT_SYS_ENABLE)
+	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == gpio_act_contactor_type)
 	{
-		pivot_config_read.rotation = PIVOT_CW;
-		pivot_config_read.power_state = PIVOT_ON;
+		pivot_actions_read.rotation = PIVOT_CW;
+		pivot_actions_read.power_state = PIVOT_ON;
 	}
-	else if(gpio_get_level(GPIO_ACT_PIN_CCW_IN) == GPIO_ACT_SYS_ENABLE)
+	else if(gpio_get_level(GPIO_ACT_PIN_CCW_IN) == gpio_act_contactor_type)
 	{
-		pivot_config_read.rotation = PIVOT_CCW;
-		pivot_config_read.power_state = PIVOT_ON;
+		pivot_actions_read.rotation = PIVOT_CCW;
+		pivot_actions_read.power_state = PIVOT_ON;
 	}
 	else
 	{
-		pivot_config_read.power_state = PIVOT_OFF;
-		pivot_config_read.rotation = PIVOT_UNKNOWN;
+		pivot_actions_read.power_state = PIVOT_OFF;
+		pivot_actions_read.rotation = PIVOT_UNKNOWN;
 	}
 
 	if(pressurizing == true)
 	{
-		pivot_config_read.watering_state = PIVOT_PRESSURIZING;
+		pivot_actions_read.watering_state = PIVOT_PRESSURIZING;
 	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
+	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 	{
-		pivot_config_read.watering_state = PIVOT_WET;
+		pivot_actions_read.watering_state = PIVOT_WET;
 	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_DISABLE)
+	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == !gpio_act_pressure_type)
 	{
-		pivot_config_read.watering_state = PIVOT_DRY;
+		pivot_actions_read.watering_state = PIVOT_DRY;
 	}
 
 	if(((clock() - percent_watchdog)/CLOCKS_PER_SEC) > 70)
 	{
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == gpio_act_contactor_type)
 		{
-			pivot_config_read.percentimeter = 100;
+			pivot_actions_read.percentimeter = 100;
 		}
-		else if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
+		else if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == !gpio_act_contactor_type)
 		{
-			pivot_config_read.percentimeter = 0;
+			pivot_actions_read.percentimeter = 0;
 		}
 	}
 
-	return pivot_config_read;
+	return pivot_actions_read;
 }
 
 void gpio_actuator_shutdown(void)
@@ -341,24 +391,23 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pump_off();
 
-	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
-
+	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 	if(perc_timer_handleOn != NULL)
 	{
-		xTimerStop(perc_timer_handleOn,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOn,portMAX_DELAY);
+		xTimerStop(perc_timer_handleOn, 1000);
+		xTimerDelete(perc_timer_handleOn, 1000);
 		perc_timer_handleOn = NULL;
 	}
 	if(perc_timer_handleOff != NULL)
 	{
-		xTimerStop(perc_timer_handleOff,portMAX_DELAY);
-		xTimerDelete(perc_timer_handleOff,portMAX_DELAY);
+		xTimerStop(perc_timer_handleOff, 1000);
+		xTimerDelete(perc_timer_handleOff, 1000);
 		perc_timer_handleOff = NULL;
 	}
 
-	pivot_config_read.percentimeter = 0;
+	pivot_actions_read.percentimeter = 0;
 }
 
 void gpio_actuator_pump_on(void)
@@ -421,7 +470,7 @@ esp_err_t gpio_actuator_start(void)
 	esp_err_t err = ESP_FAIL;
 
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-	vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY));
+	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 
 	return err;
@@ -436,7 +485,7 @@ void actuator_wait_pressure(void* arg)
 	while(1)
 	{
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
-		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == GPIO_ACT_SYS_ENABLE)
+		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			//system on
 			gpio_actuator_start();
@@ -449,7 +498,7 @@ void actuator_wait_pressure(void* arg)
 			pressurizing = true;
 			check_start = xTaskGetTickCount();
 		}
-		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > GPIO_ACT_PRESSURE_TIMEOUT)//TODO: set pressure timeout as configurable
+		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > gpio_act_pressure_timeout)
 		{
 			// Local shutdown
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Water Pressure timeout", __func__);
@@ -464,7 +513,7 @@ void actuator_wait_pressure(void* arg)
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-			vTaskDelay(pdMS_TO_TICKS(GPIO_ACT_ONOFF_DELAY)); //TODO: set param as configurable
+			vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 
 			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
@@ -481,7 +530,7 @@ void actuator_wait_pressure(void* arg)
 				perc_timer_handleOff = NULL;
 			}
 
-			pivot_config_read.percentimeter = 0;
+			pivot_actions_read.percentimeter = 0;
 			pressurizing = false;
 
 			//suspend own task
@@ -503,12 +552,12 @@ void actuator_read_percent(void* arg)
 		//suspend own task
 		vTaskSuspend(NULL);
 
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_ENABLE)
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == gpio_act_contactor_type)
 		{
 			posedge_perc = clock();
 		}
 
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == GPIO_ACT_SYS_DISABLE)
+		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == !gpio_act_contactor_type)
 		{
 			negedge_perc = clock();
 
@@ -519,16 +568,16 @@ void actuator_read_percent(void* arg)
 				{
 					perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
 					perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
-					pivot_config_read.percentimeter = perc_pct_on;
+
+					if(perc_pct_on <= 100)
+					{
+						pivot_actions_read.percentimeter = perc_pct_on;
+					}
 				}
 			}
 		}
 
 		percent_watchdog = clock();
-
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
-
-/**@}*/ 	//actuator_app
-/** @}*/	//components

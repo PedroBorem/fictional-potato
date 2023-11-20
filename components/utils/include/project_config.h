@@ -1,271 +1,291 @@
-/*
- * project_config.h
+/**
+ * @file project_config.h
+ * @brief Configuration and parameter definitions for the project.
  *
- *  Created on: 31 de mai de 2022
- *      Author: bruno
+ * This file contains configuration and parameter definitions for the project.
  */
 
 #ifndef COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_
 #define COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_
 
-/**
- * @file project_config.h
- * @date June 15, 2022
- * @brief general project settings
-*/
-
-/* Configuration include*/
-#include "sdkconfig.h"
-
 /* C base */
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stddef.h>
 #include <stdint.h>
-#include <sys/param.h>
 
-/* include FreeRTOS */
-#include "freertos/FreeRTOSConfig.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "freertos/queue.h"
-#include "freertos/semphr.h"
-#include "freertos/timers.h"
-
-/* include components */
-#include "log.h"
-
-/* include ESP32 modules */
-#include "esp_err.h"
 
 /* Some scripts may not require all the parameters passed. Use this to avoid
  * compiler warnings about unused variables. */
 #define UNUSED(x)               (void)(sizeof(x))
 
-#define SCHEDULING_MAX_VALUE	(10)
 
-#define HISTORY_MAX_VALUE	(20)
+#define CONFIG_FW_VERSION			("v2.0.0")
+/**
+ * @def CONFIG_SCHEDULING_MAX_VALUE
+ * @brief Maximum number of scheduling values.
+ *
+ * This define specifies the maximum number of scheduling values allowed in the project.
+ * It can be used to define the size of arrays or data structures related to scheduling.
+ */
+#define CONFIG_SCHEDULING_MAX_VALUE   	(10)
+
+/**
+ * @def CONFIG_HISTORY_MAX_VALUE
+ * @brief Maximum number of history values.
+ *
+ * This define specifies the maximum number of history values allowed in the project.
+ * It can be used to define the size of arrays or data structures related to history.
+ */
+#define CONFIG_HISTORY_MAX_VALUE       	(20)
+
+/**
+ * @def CONFIG_SECTORS_MAX_VALUE
+ * @brief Maximum number of sectors.
+ *
+ * This define specifies the maximum number of sectors allowed in the project.
+ * It can be used to define the size of arrays or data structures related to sectors.
+ */
+#define CONFIG_SECTORS_MAX_VALUE		(04)
+
+
+
+#define CONFIG_ACTIONS_UNDEF_VALUE		(655)
+
+
+#define CONFIG_HTTP_ERROR				("400")
+#define CONFIG_HTTP_OK					("200")
 
 /* Public definitions ******************************************************/
 
 /**
- *	Packet Identifier
+ * @enum idp_type
+ * @brief Enumerates different packet identifiers for communication.
  *
+ * This enum defines packet identifiers used for communication. Each identifier represents
+ * a specific action or configuration parameter.
+ *
+ * @var IDP_0 Read actions
+ * @var IDP_1 Save actions
+ * @var IDP_2 Network configurations
+ * @var IDP_3 Pivot configurations
+ * @var IDP_4 ECO mode configuration
+ * @var IDP_5 Sector configurations
+ * @var IDP_6 New modem configurations
+ * @var IDP_7 Angle and timestamp configuration
+ * @var IDP_8 RSSI status
+ * @var IDP_9 Obtain Traceroute
+ * @var IDP_10 Obtain Noise
+ * @var IDP_11 GPRS connection status
+ * @var IDP_12 Pivot history
+ * @var IDP_13 Schedule delete
+ * @var IDP_14 Scheduling type 1 (On by date and off by date)
+ * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
+ * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
 {
-	IDP_0 = 0,			/*!< Read actions*/
-	IDP_1 = 1,			/*!< Save actions*/
-	IDP_2 = 2,			/*!< Scheduling type 1 (On by date and off by date)*/
-	IDP_3 = 3,			/*!< Schedule type 2 (Turn on by date and turn off by angle)*/
-	IDP_4 = 4,			/*!< Schedule type 3 (Only turns off by date)*/
-	IDP_5 = 5,			/*!< Schedule type 4 (Only turns off by angle)*/
-	IDP_6 = 6,			/*!< Schedule delete*/
-	IDP_7 = 7,			/*!< Pivot off*/
-	IDP_INVALID = 255,			/*!< Schedule delete*/
-}idp_type;
+    IDP_0 = 0,
+    IDP_1,
+    IDP_2,
+    IDP_3,
+    IDP_4,
+    IDP_5,
+    IDP_6,
+    IDP_7,
+    IDP_8,
+    IDP_9,
+    IDP_10,
+    IDP_11,
+    IDP_12,
+    IDP_13,
+    IDP_14,
+    IDP_15,
+    IDP_16,
+	IDP_17,
+	IDP_18,
+	IDP_22 = 22,
+	IDP_30 = 30,
+	IDP_90 = 90,
+	IDP_91,
+	IDP_92,
+    IDP_INVALID = 255
+} idp_type;
+
+typedef enum
+{
+	COMM_HTTP_POST = 0,
+	COMM_HTTP_GET,
+	COMM_MQTT,
+} comm_type;
 
 /**
- *	Pivot actions states
+ * @brief Pivot actions states.
  *
+ * Enumeration defining pivot actions states.
  */
 typedef enum
 {
-	PIVOT_ON = 1,			/*!< Pivot on*/
-	PIVOT_OFF = 2,			/*!< Pivot off*/
-	PIVOT_CW = 3,			/*!< Pivot in ClockWise mode (advanced)*/
-	PIVOT_CCW = 4,			/*!< Pivot in Counter ClockWise mode (reverse)*/
-	PIVOT_DRY = 5,			/*!< Irrigation off*/
-	PIVOT_WET = 6,			/*!< Irrigation on*/
-	PIVOT_PRESSURIZING = 7,
-	PIVOT_UNKNOWN = 0	    /*!< Value not obtained yet*/
-}pivot_states;
+    PIVOT_ON = 1,           /*!< Pivot on */
+    PIVOT_OFF = 2,          /*!< Pivot off */
+    PIVOT_CW = 3,           /*!< Pivot in ClockWise mode (advanced) */
+    PIVOT_CCW = 4,          /*!< Pivot in Counter ClockWise mode (reverse) */
+    PIVOT_DRY = 5,          /*!< Irrigation off */
+    PIVOT_WET = 6,          /*!< Irrigation on */
+    PIVOT_PRESSURIZING = 7, /*!< Pivot pressurizing */
+    PIVOT_UNKNOWN = 8       /*!< Unknown pivot state */
+} pivot_states;
 
 /**
- *	Pivot actions parameters
+ * @brief Pivot actions parameters.
  *
+ * Structure defining pivot actions parameters.
  */
-typedef	struct __attribute__((__packed__))
+typedef struct __attribute__((__packed__))
 {
-	uint8_t power_state;	/*!< PIVOT_ON or PIVOT_OFF*/
-	uint8_t rotation;		/*!< PIVOT_CW or PIVOT_CCW*/
-	uint8_t watering_state;	/*!< PIVOT_DRY or PIVOT_WET*/ // @suppress("Type cannot be resolved")
-	uint8_t percentimeter;	/*!< Value from 0 to 100*/
-}pivot_actions;
+    uint8_t power_state;     /*!< Power state of the pivot (PIVOT_ON or PIVOT_OFF) */
+    uint8_t rotation;        /*!< Rotation mode of the pivot (PIVOT_CW or PIVOT_CCW) */
+    uint8_t watering_state;  /*!< Watering state of the pivot (PIVOT_DRY or PIVOT_WET) */
+    uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
+} pivot_actions;
+
+/**
+ * @brief Configuration angles.
+ *
+ * Structure defining the configuration angles.
+ */
+typedef struct
+{
+    uint16_t start_angle;   /*!< Start angle of the configuration */
+    uint16_t end_angle;     /*!< End angle of the configuration */
+} pivot_sectors;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char contactor[50];      		/*!< Contactor type */ //todo: usar isso nas classes
+    char pressure[50];   			/*!< Pressure switch type *///todo usar isso nas classes
+    uint16_t pressurization_time;   /*!< Pressurization time */
+    uint8_t on_off_time;            /*!< On/off time */
+    uint8_t read_time;            /*!< Read time */
+} pivot_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the network configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char gprs_id[50];           /*!< GPRS ID */
+    char modem_apn[50];
+    char wifi_ssid[50];
+    char wifi_pass[50];
+} network_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the eco mode configuration parameters.
+ */
+typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
+{
+	time_t start_time;              /*!< Start time */
+	time_t end_time;                /*!< End time */
+} eco_mode_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the sectors configuration parameters.
+ */
+typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
+{
+    uint8_t sector_number;	//todo olhar isso na implementação
+    pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
+} sector_config;
+
+typedef struct __attribute__((__packed__))
+{
+    uint16_t start_angle;   /*!< Start angle of the configuration */
+    uint16_t end_angle;     /*!< End angle of the configuration */
+    bool automatic_return;
+    bool water_return;
+} pivot_return_config;
+
+/**
+ * @brief Scheduling date parameters.
+ *
+ * Structure defining the scheduling parameters based on date.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char scheduling_id[50];         /*!< Scheduling ID */
+    time_t start_date;              /*!< Start date */
+    time_t end_date;                /*!< End date */
+    pivot_actions actions;          /*!< Pivot actions */
+} pivot_scheduling_date;
 
 /**
  *
- *
  */
-typedef enum
+typedef struct __attribute__((__packed__))
 {
-	CONTACTOR_NA = 1,
-	CONTACTOR_NF,
-}contactor_type;
+    char scheduling_id[50];         /*!< Scheduling ID */
+    time_t end_date;                /*!< End date */
+} pivot_scheduling_off_date;
+
 
 /**
+ * @brief Scheduling angle parameters.
  *
- *
+ * Structure defining the scheduling parameters based on angle.
  */
-typedef enum
+typedef struct __attribute__((__packed__))
 {
-	PRESSURE_SWITCH_NA = 1,
-	PRESSURE_SWITCH_NF,
-}pressure_switch_type;
+    char scheduling_id[30];         /*!< Scheduling ID */
+    time_t start_date;              /*!< Start date */
+    uint16_t end_angle;             /*!< End angle */
+    pivot_actions actions;          /*!< Pivot actions */
+} pivot_scheduling_angle;
+
+typedef struct __attribute__((__packed__))
+{
+    char scheduling_id[30];         /*!< Scheduling ID */
+    uint16_t end_angle;             /*!< End angle */
+} pivot_scheduling_off_angle;
 
 /**
- *	Configuration angles
+ * @brief History parameters.
  *
+ * Structure defining the history parameters.
  */
-typedef	struct
+typedef struct __attribute__((__packed__))
 {
-	uint8_t id;
-	uint16_t start_angle;
-	uint16_t end_angle;
-}pivot_sectors;
-
-/**
- *	Configuration parameters
- *
- */
-typedef	struct __attribute__((__packed__))
-{
-	char pivot_id[30];
-	char gprs_id[30];
-	contactor_type contactor;
-	pressure_switch_type pressure_switch;
-	uint16_t pressurization_time;
-	uint8_t on_off_time;
-	bool eco_mode;
-	time_t start_time;
-	time_t end_time;
-	bool sector_enabled;
-	pivot_sectors sectors[4]; //todo: ajustar o valor maximo de setores
-}pivot_config;
-
-/**
- *	scheduling date parameters
- *
- */
-typedef	struct __attribute__((__packed__))
-{
-	char scheduling_id[30];
 	bool is_running;
-	time_t start_date;
-	time_t end_date;
-	pivot_actions acionts;
-}pivot_scheduling_date;
+    pivot_actions actions;          /*!< Pivot actions */
+    uint16_t start_angle;           /*!< Start angle */
+    uint16_t end_angle;             /*!< End angle */
+    time_t start_date;              /*!< Start date */
+    time_t end_date;                /*!< End date */
+} pivot_history;
 
 /**
- *	scheduling angle parameters
+ * @brief Application callback function.
  *
- */
-typedef	struct __attribute__((__packed__))
-{
-	char scheduling_id[30];
-	bool is_running;
-	time_t start_date;
-	uint16_t end_angle;
-	pivot_actions acionts;
-}pivot_scheduling_angle;
-
-/**
- *	scheduling angle parameters
+ * Function signature for the application callback function.
  *
+ * @param state The state of the main callback request.
+ * @param buffer The buffer containing the data associated with the request.
  */
-typedef	struct __attribute__((__packed__))
-{
-	bool is_running;
-	time_t start_date;
-	time_t end_date;
-	uint16_t start_angle;
-	uint16_t end_angle;
-	pivot_actions acionts;
-}pivot_history;
+typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
-/**
- *	Main Callback request
- *
- */
-typedef enum
-{
-	CALL_LOAD_ACTION = 1,	/*!< Configuration read request*/
-	CALL_SAVE_ACTION,
-	CALL_READ_ACTION,
-	CALL_SAVE_CONFIG,
-	CALL_READ_CONFIG,
-	CALL_SAVE_SCHEDULE_DATE,
-	CALL_LOAD_SCHEDULE_DATE,
-	CALL_DELETE_SCHEDULE_DATE,
-	CALL_SAVE_SCHEDULE_ANGLE,
-	CALL_LOAD_SCHEDULE_ANGLE,
-	CALL_DELETE_SCHEDULE_ANGLE,
-	CALL_LOAD_HISTORY,
-	CALL_MANUAL_PIVOT,
-	CALL_OFF_PIVOT
-}app_call_states;
 
-/**
- * @brief: function used with return to main application class
- *
- */
-typedef void (*app_callback)(app_call_states state, void* buffer);
-
-/**\addtogroup FreeRTOS
- * @{
- *
- */
-
-/**\addtogroup Task_Definitions
- * @{
- *
- */
-#define MAIN_APP_TASK_1_NAME			"main sectorization task"
-#define MAIN_APP_STACK_1_SIZE			( configMINIMAL_STACK_SIZE * 4 )
-#define MAIN_APP_TASK_1_PRIORITY		( tskIDLE_PRIORITY + 4 )
-
-#define MAIN_APP_TASK_2_NAME			"main peak hours task"
-#define MAIN_APP_STACK_2_SIZE			( configMINIMAL_STACK_SIZE * 4 )
-#define MAIN_APP_TASK_2_PRIORITY		( tskIDLE_PRIORITY + 3 )
-
-#define MAIN_APP_TASK_3_NAME			"main scheduling task"
-#define MAIN_APP_STACK_3_SIZE			( configMINIMAL_STACK_SIZE * 6 )
-#define MAIN_APP_TASK_3_PRIORITY		( tskIDLE_PRIORITY + 3 )
-
-#define DATA_APP_TASK_NAME				"data app task"
-#define DATA_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 6 )
-#define DATA_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-
-#define COMM_APP_TASK_NAME				"comm app task"
-#define COMM_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 10 )
-#define COMM_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 2 )
-
-#define ACTUATION_APP_TASK_NAME			"actuation app task"
-#define ACTUATION_APP_STACK_SIZE		( configMINIMAL_STACK_SIZE * 6 )
-#define ACTUATION_APP_TASK_PRIORITY		( tskIDLE_PRIORITY + 3 )
-
-#define ACTUATOR_CHECK_TASK_NAME		"actuator check task"
-#define ACTUATOR_CHECK_STACK_SIZE		( configMINIMAL_STACK_SIZE * 6 )
-#define ACTUATOR_CHECK_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
-
-#define ACTUATOR_PERCENT_TASK_NAME		"actuator percent task"
-#define ACTUATOR_PERCENT_STACK_SIZE		( configMINIMAL_STACK_SIZE * 6 )
-#define ACTUATOR_PERCENT_TASK_PRIORITY	( tskIDLE_PRIORITY + 3 )
-
-#define GPRS_UART_TASK_NAME				"gprs uart task"
-#define GPRS_UART_STACK_SIZE			( configMINIMAL_STACK_SIZE * 10 )
-#define GPRS_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
-
-#define RF_UART_TASK_NAME				"rf uart task"
-#define RF_UART_STACK_SIZE				( configMINIMAL_STACK_SIZE * 10 )
-#define RF_UART_TASK_PRIORITY			( tskIDLE_PRIORITY + 12 )
-
-#define WIFI_APP_TASK_NAME				"wifi app task"
-#define WIFI_APP_STACK_SIZE				( configMINIMAL_STACK_SIZE * 4 )
-#define WIFI_APP_TASK_PRIORITY			( tskIDLE_PRIORITY + 8 )
-
-/**@}*/ 	//FreeRTOS
-/** @}*/	//Task_Definitions
+extern uint16_t global_angle;
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */

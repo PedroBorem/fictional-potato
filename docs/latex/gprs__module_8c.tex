@@ -1,0 +1,206 @@
+\hypertarget{gprs__module_8c}{}\doxysection{components/gprs/gprs\+\_\+module.c File Reference}
+\label{gprs__module_8c}\index{components/gprs/gprs\_module.c@{components/gprs/gprs\_module.c}}
+
+
+Controls the flow of reception and transmission of the GPRS module.  
+
+
+{\ttfamily \#include \char`\"{}gprs\+\_\+module.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gprs\+\_\+uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}common\+\_\+parser.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rtc\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for gprs\+\_\+module.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__module_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{gprs__module_8c_a9745a90685c85479cf39c6f34bd221b5}\label{gprs__module_8c_a9745a90685c85479cf39c6f34bd221b5}} 
+\#define \mbox{\hyperlink{gprs__module_8c_a9745a90685c85479cf39c6f34bd221b5}{GPRS\+\_\+\+MODULE\+\_\+\+TAG}}~\char`\"{}gprs\+\_\+module\char`\"{}
+\begin{DoxyCompactList}\small\item\em Tag used for logging related to the GPRS module. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca}{gprs\+\_\+module\+\_\+call}} (const char $\ast$buffer, size\+\_\+t buffer\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Handles the GPRS module call. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f}{gprs\+\_\+module\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em Initializes the GPRS module. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__module_8c_a5e5dac53ac6eb284d8e1f48b82d9da2f}{gprs\+\_\+module\+\_\+send\+\_\+event}} (pivot\+\_\+actions config\+\_\+in, uint16\+\_\+t degree, const char $\ast$gprs\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Sends an event through the GPRS module. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__module_8c_a07e8c855b07a50bc2f9700f3193a3e10}{gprs\+\_\+module\+\_\+set\+\_\+id}} (const char $\ast$gprs\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Sets the GPRS ID. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a}{gprs\+\_\+module\+\_\+send\+\_\+idp}} (const char $\ast$gprs\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Sends the GPRS IDP. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{gprs__module_8c_af9aace1b44b73111e15aa39f06f43456}\label{gprs__module_8c_af9aace1b44b73111e15aa39f06f43456}} 
+{\bfseries \+\_\+\+\_\+attribute\+\_\+\+\_\+} ((weak))
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Controls the flow of reception and transmission of the GPRS module. 
+
+\begin{DoxyDate}{Date}
+June 21, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca}\label{gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca}} 
+\index{gprs\_module.c@{gprs\_module.c}!gprs\_module\_call@{gprs\_module\_call}}
+\index{gprs\_module\_call@{gprs\_module\_call}!gprs\_module.c@{gprs\_module.c}}
+\doxysubsubsection{\texorpdfstring{gprs\_module\_call()}{gprs\_module\_call()}}
+{\footnotesize\ttfamily void gprs\+\_\+module\+\_\+call (\begin{DoxyParamCaption}\item[{const char $\ast$}]{buffer,  }\item[{size\+\_\+t}]{buffer\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Handles the GPRS module call. 
+
+Function is triggered when something arrives in the UART.
+
+This function is responsible for processing the call received from the GPRS module.
+
+
+\begin{DoxyParams}{Parameters}
+{\em buffer} & The buffer containing the call data. \\
+\hline
+{\em buffer\+\_\+size} & The size of the buffer.\\
+\hline
+{\em buffer\mbox{[}in\mbox{]}} & \+: received content \\
+\hline
+{\em buffer\+\_\+size\mbox{[}in\mbox{]}} & \+: received content size \\
+\hline
+\end{DoxyParams}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f}\label{gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f}} 
+\index{gprs\_module.c@{gprs\_module.c}!gprs\_module\_init@{gprs\_module\_init}}
+\index{gprs\_module\_init@{gprs\_module\_init}!gprs\_module.c@{gprs\_module.c}}
+\doxysubsubsection{\texorpdfstring{gprs\_module\_init()}{gprs\_module\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+module\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initializes the GPRS module. 
+
+This function initializes the GPRS module and prepares it for communication.
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Initialization successful.
+\item ESP\+\_\+\+FAIL\+: Initialization failed. 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=319pt]{gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgraph}
+\end{center}
+\end{figure}
+Here is the caller graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=309pt]{gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{gprs__module_8c_a5e5dac53ac6eb284d8e1f48b82d9da2f}\label{gprs__module_8c_a5e5dac53ac6eb284d8e1f48b82d9da2f}} 
+\index{gprs\_module.c@{gprs\_module.c}!gprs\_module\_send\_event@{gprs\_module\_send\_event}}
+\index{gprs\_module\_send\_event@{gprs\_module\_send\_event}!gprs\_module.c@{gprs\_module.c}}
+\doxysubsubsection{\texorpdfstring{gprs\_module\_send\_event()}{gprs\_module\_send\_event()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+module\+\_\+send\+\_\+event (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions}]{config\+\_\+in,  }\item[{uint16\+\_\+t}]{degree,  }\item[{const char $\ast$}]{gprs\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Sends an event through the GPRS module. 
+
+This function converts the provided configuration structure to a string and sends it through the UART.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+in} & Configuration structure to send. \\
+\hline
+{\em degree} & Degree value. \\
+\hline
+{\em gprs\+\_\+id} & GPRS ID.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Event sent successfully.
+\item ESP\+\_\+\+FAIL\+: Failed to send event. 
+\end{DoxyItemize}
+\end{DoxyReturn}
+\mbox{\Hypertarget{gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a}\label{gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a}} 
+\index{gprs\_module.c@{gprs\_module.c}!gprs\_module\_send\_idp@{gprs\_module\_send\_idp}}
+\index{gprs\_module\_send\_idp@{gprs\_module\_send\_idp}!gprs\_module.c@{gprs\_module.c}}
+\doxysubsubsection{\texorpdfstring{gprs\_module\_send\_idp()}{gprs\_module\_send\_idp()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+module\+\_\+send\+\_\+idp (\begin{DoxyParamCaption}\item[{const char $\ast$}]{gprs\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Sends the GPRS IDP. 
+
+This function sends the GPRS IDP.
+
+
+\begin{DoxyParams}{Parameters}
+{\em gprs\+\_\+id} & GPRS ID to send.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: GPRS IDP sent successfully.
+\item ESP\+\_\+\+FAIL\+: Failed to send GPRS IDP. 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{gprs__module_8c_a07e8c855b07a50bc2f9700f3193a3e10}\label{gprs__module_8c_a07e8c855b07a50bc2f9700f3193a3e10}} 
+\index{gprs\_module.c@{gprs\_module.c}!gprs\_module\_set\_id@{gprs\_module\_set\_id}}
+\index{gprs\_module\_set\_id@{gprs\_module\_set\_id}!gprs\_module.c@{gprs\_module.c}}
+\doxysubsubsection{\texorpdfstring{gprs\_module\_set\_id()}{gprs\_module\_set\_id()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gprs\+\_\+module\+\_\+set\+\_\+id (\begin{DoxyParamCaption}\item[{const char $\ast$}]{gprs\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Sets the GPRS ID. 
+
+This function sets the GPRS ID used for communication.
+
+
+\begin{DoxyParams}{Parameters}
+{\em gprs\+\_\+id} & GPRS ID to set.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: GPRS ID set successfully.
+\item ESP\+\_\+\+FAIL\+: Failed to set GPRS ID. 
+\end{DoxyItemize}
+\end{DoxyReturn}

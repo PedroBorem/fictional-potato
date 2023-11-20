@@ -5,12 +5,6 @@
  *      Author: brunolima
  */
 
-/**
- * @file rf_uart.c
- * @date June 21, 2022
- * @brief RF module uart control
-*/
-
 /* Self include */
 #include "rf_uart.h"
 
@@ -18,15 +12,14 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-/**\addtogroup components
- * @{
- *
- */
+/* FreeRTOS includes */
+#include "FreeRTOS_defines.h"
 
-/**\addtogroup rf_uart
- * @{
- *
- */
+/* C base */
+#include <strings.h>
+
+/* include components */
+#include "log.h"
 
 /* Private definitions ------------------------------------------- */
 #define RF_UART_TAG		"rf_uart"
@@ -38,14 +31,14 @@
 #define RF_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
-static rf_uart_callback rf_callback = NULL;
+static app_callback rf_callback = NULL;
 static QueueHandle_t rf_uart_queue = NULL;
 
 /* Private function prototype ------------------------------------ */
 static void rf_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t rf_uart_init(rf_uart_callback callback)
+esp_err_t rf_uart_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;
@@ -106,8 +99,6 @@ esp_err_t rf_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
-	LOG_COMM(RF_UART_TAG, "send : %s", event);
-
 	if(uart_write_bytes(RF_UART_NUM, event, event_size) != -1)
 	{
 		LOG_COMM(RF_UART_TAG, "OK");
@@ -133,7 +124,6 @@ static void rf_uart_event_task(void* arg)
 		if(xQueueReceive(rf_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, RF_UART_BUF_SIZE);
-			LOG_COMM(RF_UART_TAG, "uart[%d] event:", RF_UART_NUM);
 
 			switch(event.type)
 			{
@@ -159,9 +149,9 @@ static void rf_uart_event_task(void* arg)
 							}
 						}
 
-						LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
+						//LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
 
-						rf_callback(buff_in, aux);
+						rf_callback(buff_in, COMM_MQTT);
 						free(buff_in);
 					}
 					break;
@@ -225,6 +215,3 @@ static void rf_uart_event_task(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(20));
 	}
 }
-
-/**@}*/ 	//rf_uart
-/** @}*/	//components

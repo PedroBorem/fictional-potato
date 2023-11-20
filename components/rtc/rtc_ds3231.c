@@ -1,14 +1,25 @@
+/**
+ * @file rtc_ds3231.c
+ * @brief RTC DS3231 class implementation.
+ *
+ * This file contains the implementation of the RTC DS3231 class for interfacing with the DS3231 RTC module.
+ */
+
 #include <string.h>
 #include <time.h>
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
-#include "esp_log.h"
-
 #include "rtc_ds3231.h"
 
+/**
+ * @brief Checks if the argument is valid.
+ *
+ * This macro checks if the argument is valid. If the argument is not valid, it returns ESP_ERR_INVALID_ARG.
+ *
+ * @param ARG The argument to check.
+ */
 #define CHECK_ARG(ARG) do { if (!ARG) return ESP_ERR_INVALID_ARG; } while (0)
 
+/* Public methods ----------------------------------- */
 uint8_t bcd2dec(uint8_t val)
 {
     return (val >> 4) * 10 + (val & 0x0f);
@@ -19,7 +30,7 @@ uint8_t dec2bcd(uint8_t val)
     return ((val / 10) << 4) + (val % 10);
 }
 
-esp_err_t ds3231_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
+esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
 {
     CHECK_ARG(dev);
 
@@ -31,7 +42,7 @@ esp_err_t ds3231_init_desc(i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio,
     return i2c_master_init(port, sda_gpio, scl_gpio);
 }
 
-esp_err_t ds3231_set_time(i2c_dev_t *dev, struct tm *time)
+esp_err_t ds3231_set_time(rtc_i2c_dev_t *dev, struct tm *time)
 {
     CHECK_ARG(dev);
     CHECK_ARG(time);
@@ -52,7 +63,7 @@ esp_err_t ds3231_set_time(i2c_dev_t *dev, struct tm *time)
     return i2c_dev_write_reg(dev, DS3231_ADDR_TIME, data, 7);
 }
 
-esp_err_t ds3231_get_raw_temp(i2c_dev_t *dev, int16_t *temp)
+esp_err_t ds3231_get_raw_temp(rtc_i2c_dev_t *dev, int16_t *temp)
 {
     CHECK_ARG(dev);
     CHECK_ARG(temp);
@@ -66,7 +77,7 @@ esp_err_t ds3231_get_raw_temp(i2c_dev_t *dev, int16_t *temp)
     return res;
 }
 
-esp_err_t ds3231_get_temp_integer(i2c_dev_t *dev, int8_t *temp)
+esp_err_t ds3231_get_temp_integer(rtc_i2c_dev_t *dev, int8_t *temp)
 {
     CHECK_ARG(temp);
 
@@ -79,7 +90,7 @@ esp_err_t ds3231_get_temp_integer(i2c_dev_t *dev, int8_t *temp)
     return res;
 }
 
-esp_err_t ds3231_get_temp_float(i2c_dev_t *dev, float *temp)
+esp_err_t ds3231_get_temp_float(rtc_i2c_dev_t *dev, float *temp)
 {
     CHECK_ARG(temp);
 
@@ -92,7 +103,7 @@ esp_err_t ds3231_get_temp_float(i2c_dev_t *dev, float *temp)
     return res;
 }
 
-esp_err_t ds3231_get_time(i2c_dev_t *dev, struct tm *time)
+esp_err_t ds3231_get_time(rtc_i2c_dev_t *dev, struct tm *time)
 {
     CHECK_ARG(dev);
     CHECK_ARG(time);

@@ -1,8 +1,10 @@
-/*
- * wifi_app.c
+/**
+ * @file wifi_app.c
+ * @date January 20, 2023
+ * @brief Wi-Fi application implementation.
  *
- *  Created on: 20 de jan de 2023
- *      Author: brunolima
+ * This file contains the implementation of the Wi-Fi application. It includes functions to start the Wi-Fi application,
+ * handle Wi-Fi events, and manage the Wi-Fi application task.
  */
 
 /* Self include */
@@ -21,21 +23,29 @@
 #include <netdb.h>
 
 /* Components include */
-#include "http_api.h"
+#include "log.h"
+#include "FreeRTOS_defines.h"
 
-/* Private definitions ------------------------------------------- */
+/** @brief Wi-Fi application tag for logging. */
 #define WIFI_TAG 	"wifi_app"
 
+/** @brief Default IP address for the Wi-Fi access point. */
 #define WIFI_DEFAULT_IP			"192.168.0.1"
+
+/** @brief Default subnet mask for the Wi-Fi access point. */
 #define WIFI_DEFAULT_MASK		"255.255.255.0"
+
+/** @brief Wi-Fi channel to use for the access point. */
 #define WIFI_CHANNEL   			7
+
+/** @brief Maximum number of stations that can be connected to the access point. */
 #define WIFI_MAX_STA_CONN       5
 
 #define WIFI_APP_SIZE_QUEUE_EVENT	5
 
 /* Private variables ------------------------------------ */
-static char wifi_global_ssid[35] = {};
-static app_callback wifi_app_callback = NULL;
+static char wifi_global_ssid[35] = "soil";
+static char wifi_global_pass[35] = "soil2023";
 
 /* freertos variables */
 static TaskHandle_t xTask_wifi_app = NULL;
@@ -44,14 +54,14 @@ static QueueHandle_t xQueue_wifi_app = NULL;
 static esp_netif_t* wifi_ap_netif = NULL;
 
 /* Private function prototype ------------------------------------ */
-static esp_err_t wifi_app_start(char* wifi_ssid);
+esp_err_t wifi_app_start(void);
 static void wifi_reloader(void);
 static void wifi_app_task(void * arg);
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t wifi_app_init(char* wifi_ssid)
+esp_err_t wifi_app_init(void)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -68,7 +78,7 @@ esp_err_t wifi_app_init(char* wifi_ssid)
 
 		if( xTask_wifi_app != NULL )
 		{
-			ret = wifi_app_start(wifi_ssid);
+			ret = wifi_app_start();
 		}
 		else
 		{
@@ -79,22 +89,15 @@ esp_err_t wifi_app_init(char* wifi_ssid)
     return ret;
 }
 
-esp_err_t wifi_app_register_callback(app_callback callback)
+void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 {
-	esp_err_t ret = ESP_FAIL;
-
-	if(callback != NULL)
-	{
-		wifi_app_callback = callback;
-		ret = ESP_OK;
-	}
-
-	return ret;
+	strcpy(wifi_global_ssid, wifi_ssid);
+	strcpy(wifi_global_pass,wifi_pass);
 }
 
 
 /* Private methods ----------------------------------------------- */
-esp_err_t wifi_app_start(char* wifi_ssid)
+esp_err_t wifi_app_start(void)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -105,15 +108,11 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 	};
 
 	wifi_config_t wifi_config = {};
-	const char* wifi_pass = "soiltech";
 
-	memset(wifi_global_ssid, 0x00, strlen(wifi_global_ssid));
-	memcpy(wifi_global_ssid, wifi_ssid, strlen(wifi_ssid));
-
-	strcpy((char*)(wifi_config.ap.ssid), wifi_ssid);
-	wifi_config.ap.ssid_len = strlen(wifi_ssid);
+	strcpy((char*)(wifi_config.ap.ssid), wifi_global_ssid);
+	wifi_config.ap.ssid_len = strlen(wifi_global_ssid);
 	wifi_config.ap.channel = WIFI_CHANNEL;
-	strcpy((char*)(wifi_config.ap.password), wifi_pass);
+	strcpy((char*)(wifi_config.ap.password), wifi_global_pass);
 	wifi_config.ap.max_connection = WIFI_MAX_STA_CONN;
 	wifi_config.ap.authmode = WIFI_AUTH_WPA_WPA2_PSK;
 
@@ -141,7 +140,7 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 														NULL,
 														NULL);
 
-			if (strlen(wifi_pass) == 0)
+			if (strlen(wifi_global_pass) == 0)
 			{
 				wifi_config.ap.authmode = WIFI_AUTH_OPEN;
 			}
@@ -175,6 +174,7 @@ esp_err_t wifi_app_start(char* wifi_ssid)
 	return ret;
 }
 
+
 static void wifi_reloader(void)
 {
 	uint8_t wifi_app_queue_req = 0;
@@ -188,25 +188,12 @@ static void wifi_app_task(void * arg)
 	{
 		if( xQueueReceive(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY ) == pdTRUE )
 		{
-			if(wifi_app_callback != NULL)
-			{
-				pivot_config current_config = {};
-				wifi_app_callback(CALL_READ_CONFIG, &current_config);
+			esp_wifi_stop();
+			esp_wifi_deinit();
+			esp_event_loop_delete_default();
+			esp_netif_deinit();
 
-				if(strcmp(current_config.pivot_id, wifi_global_ssid) != 0)
-				{
-					esp_wifi_stop();
-					esp_wifi_deinit();
-					esp_event_loop_delete_default();
-					esp_netif_deinit();
-
-					wifi_app_start(current_config.pivot_id);
-				}
-			}
-			else
-			{
-				ESP_LOGE(WIFI_TAG,"unregistered HTTP callback");
-			}
+			wifi_app_start();
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(100));

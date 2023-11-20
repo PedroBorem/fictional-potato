@@ -1,0 +1,135 @@
+\hypertarget{log_8h}{}\doxysection{components/utils/include/log.h File Reference}
+\label{log_8h}\index{components/utils/include/log.h@{components/utils/include/log.h}}
+
+
+Creating customizable logs.  
+
+
+{\ttfamily \#include $<$inttypes.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+log.\+h\char`\"{}}\newline
+Include dependency graph for log.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=226pt]{log_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{log_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\#define \mbox{\hyperlink{log_8h_ae3f3712508ba0255140a606aa1f42a39}{LOG\+\_\+\+COLOR\+\_\+\+WHITE}}~\char`\"{}37\char`\"{}
+\begin{DoxyCompactList}\small\item\em ANSI color code for white. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{log_8h_a051a06a739b5a2221c8d002a384487a7}{LOG\+\_\+\+COMM}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+CYAN) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
+\begin{DoxyCompactList}\small\item\em Communication logs. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{log_8h_a133fa6bdafff549c2e379f61b127e42b}{LOG\+\_\+\+DATA}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(\mbox{\hyperlink{log_8h_ae3f3712508ba0255140a606aa1f42a39}{LOG\+\_\+\+COLOR\+\_\+\+WHITE}}) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
+\begin{DoxyCompactList}\small\item\em Data logs. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{log_8h_af621f89ed247c0fef5741211bade9738}{LOG\+\_\+\+ACTUATION}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+PURPLE) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
+\begin{DoxyCompactList}\small\item\em Actuation logs. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}{LOG\+\_\+\+MANAGER}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+GREEN) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
+\begin{DoxyCompactList}\small\item\em System manager logs. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Creating customizable logs. 
+
+\begin{DoxyDate}{Date}
+June 15, 2022
+\end{DoxyDate}
+This file contains macros for creating customizable logs. 
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{log_8h_af621f89ed247c0fef5741211bade9738}\label{log_8h_af621f89ed247c0fef5741211bade9738}} 
+\index{log.h@{log.h}!LOG\_ACTUATION@{LOG\_ACTUATION}}
+\index{LOG\_ACTUATION@{LOG\_ACTUATION}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_ACTUATION}{LOG\_ACTUATION}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+ACTUATION(\begin{DoxyParamCaption}\item[{}]{tag,  }\item[{}]{... }\end{DoxyParamCaption})~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+PURPLE) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)}
+
+
+
+Actuation logs. 
+
+This macro is used to create actuation logs with a customizable tag and message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tag} & The tag for the log message. \\
+\hline
+{\em ...} & The message or additional parameters for the log message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{log_8h_ae3f3712508ba0255140a606aa1f42a39}\label{log_8h_ae3f3712508ba0255140a606aa1f42a39}} 
+\index{log.h@{log.h}!LOG\_COLOR\_WHITE@{LOG\_COLOR\_WHITE}}
+\index{LOG\_COLOR\_WHITE@{LOG\_COLOR\_WHITE}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_COLOR\_WHITE}{LOG\_COLOR\_WHITE}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+COLOR\+\_\+\+WHITE~\char`\"{}37\char`\"{}}
+
+
+
+ANSI color code for white. 
+
+This define specifies the ANSI color code for white, which can be used to customize log colors. \mbox{\Hypertarget{log_8h_a051a06a739b5a2221c8d002a384487a7}\label{log_8h_a051a06a739b5a2221c8d002a384487a7}} 
+\index{log.h@{log.h}!LOG\_COMM@{LOG\_COMM}}
+\index{LOG\_COMM@{LOG\_COMM}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_COMM}{LOG\_COMM}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+COMM(\begin{DoxyParamCaption}\item[{}]{tag,  }\item[{}]{... }\end{DoxyParamCaption})~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+CYAN) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)}
+
+
+
+Communication logs. 
+
+This macro is used to create communication logs with a customizable tag and message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tag} & The tag for the log message. \\
+\hline
+{\em ...} & The message or additional parameters for the log message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{log_8h_a133fa6bdafff549c2e379f61b127e42b}\label{log_8h_a133fa6bdafff549c2e379f61b127e42b}} 
+\index{log.h@{log.h}!LOG\_DATA@{LOG\_DATA}}
+\index{LOG\_DATA@{LOG\_DATA}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_DATA}{LOG\_DATA}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+DATA(\begin{DoxyParamCaption}\item[{}]{tag,  }\item[{}]{... }\end{DoxyParamCaption})~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(\mbox{\hyperlink{log_8h_ae3f3712508ba0255140a606aa1f42a39}{LOG\+\_\+\+COLOR\+\_\+\+WHITE}}) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)}
+
+
+
+Data logs. 
+
+This macro is used to create data logs with a customizable tag and message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tag} & The tag for the log message. \\
+\hline
+{\em ...} & The message or additional parameters for the log message. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}\label{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}} 
+\index{log.h@{log.h}!LOG\_MANAGER@{LOG\_MANAGER}}
+\index{LOG\_MANAGER@{LOG\_MANAGER}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_MANAGER}{LOG\_MANAGER}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+MANAGER(\begin{DoxyParamCaption}\item[{}]{tag,  }\item[{}]{... }\end{DoxyParamCaption})~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+GREEN) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)}
+
+
+
+System manager logs. 
+
+This macro is used to create actuation logs with a customizable tag and message.
+
+
+\begin{DoxyParams}{Parameters}
+{\em tag} & The tag for the log message. \\
+\hline
+{\em ...} & The message or additional parameters for the log message. \\
+\hline
+\end{DoxyParams}

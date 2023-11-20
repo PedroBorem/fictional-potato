@@ -1,0 +1,143 @@
+\hypertarget{actuation__app_8c}{}\doxysection{main/actuation\+\_\+app.c File Reference}
+\label{actuation__app_8c}\index{main/actuation\_app.c@{main/actuation\_app.c}}
+
+
+actuation control class  
+
+
+{\ttfamily \#include \char`\"{}actuation\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio\+\_\+actuator.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for actuation\+\_\+app.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{actuation__app_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{actuation__app_8c_af0c6adb6a3834dd0e90d69971cef02ec}\label{actuation__app_8c_af0c6adb6a3834dd0e90d69971cef02ec}} 
+\#define {\bfseries ACTUATION\+\_\+\+APP\+\_\+\+TAG}~\char`\"{}actuation\+\_\+app\char`\"{}
+\item 
+\mbox{\Hypertarget{actuation__app_8c_ae9328057dab5589853e5dad115719d99}\label{actuation__app_8c_ae9328057dab5589853e5dad115719d99}} 
+\#define {\bfseries ACTUATION\+\_\+\+APP\+\_\+\+POWER\+\_\+\+TIME}~10000
+\item 
+\mbox{\Hypertarget{actuation__app_8c_a57f1082d2d9d523ddbf3045e0e1076df}\label{actuation__app_8c_a57f1082d2d9d523ddbf3045e0e1076df}} 
+\#define {\bfseries ACTUATION\+\_\+\+APP\+\_\+\+WATERING\+\_\+\+TIME}~30000
+\item 
+\mbox{\Hypertarget{actuation__app_8c_a7200005fafc96430e9d4fc254bbc7d73}\label{actuation__app_8c_a7200005fafc96430e9d4fc254bbc7d73}} 
+\#define {\bfseries ACTUATION\+\_\+\+APP\+\_\+\+ROTATION\+\_\+\+TIME}~3000
+\item 
+\mbox{\Hypertarget{actuation__app_8c_a01ecf89ca91dc092449f482c0b41d812}\label{actuation__app_8c_a01ecf89ca91dc092449f482c0b41d812}} 
+\#define {\bfseries ACTUATION\+\_\+\+APP\+\_\+\+PERCENTIMETER\+\_\+\+TIME}~61000
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}{actuation\+\_\+app\+\_\+task}} (void $\ast$arg)
+\begin{DoxyCompactList}\small\item\em Task responsible for monitoring possible changes in equipment status. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242}{actuation\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em starts the tasks of reading and actuation of the I/O ports \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}{actuation\+\_\+app\+\_\+set\+\_\+actions}} (const pivot\+\_\+actions config\+\_\+in, bool alert\+\_\+change)
+\begin{DoxyCompactList}\small\item\em apply the configuration to the drives \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ad5a53c07829844904985cbcece00e627}{actuation\+\_\+app\+\_\+get\+\_\+actions}} (pivot\+\_\+actions $\ast$config\+\_\+out, size\+\_\+t config\+\_\+size)
+\begin{DoxyCompactList}\small\item\em read current status on IO ports \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8c_ab60deacd543170493cfb182243ea9809}\label{actuation__app_8c_ab60deacd543170493cfb182243ea9809}} 
+void {\bfseries actuation\+\_\+app\+\_\+set\+\_\+pump} (bool pump\+\_\+state)
+\item 
+\mbox{\Hypertarget{actuation__app_8c_ad4dc627155e42c8191f1179bf3340964}\label{actuation__app_8c_ad4dc627155e42c8191f1179bf3340964}} 
+void {\bfseries actuation\+\_\+app\+\_\+shutdown} (void)
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+actuation control class 
+
+\begin{DoxyDate}{Date}
+June 23, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{actuation__app_8c_ad5a53c07829844904985cbcece00e627}\label{actuation__app_8c_ad5a53c07829844904985cbcece00e627}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_get\_actions@{actuation\_app\_get\_actions}}
+\index{actuation\_app\_get\_actions@{actuation\_app\_get\_actions}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_get\_actions()}{actuation\_app\_get\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+get\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{config\+\_\+out,  }\item[{size\+\_\+t}]{config\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+read current status on IO ports 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+out} & -\/ \mbox{[}out\mbox{]}\+: pivot configuration structure \\
+\hline
+{\em config\+\_\+length} & -\/ \mbox{[}out\mbox{]}\+: structure size \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242}\label{actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_init@{actuation\_app\_init}}
+\index{actuation\_app\_init@{actuation\_app\_init}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_init()}{actuation\_app\_init()}}
+{\footnotesize\ttfamily bool actuation\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+starts the tasks of reading and actuation of the I/O ports 
+
+
+\begin{DoxyParams}{Parameters}
+{\em app\+\_\+callback} & -\/ \mbox{[}in\mbox{]}\+: function used with return to main application class \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item true\+: success
+\item false\+: fail to initialize 
+\end{DoxyItemize}
+\end{DoxyReturn}
+Here is the call graph for this function\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=327pt]{actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cgraph}
+\end{center}
+\end{figure}
+\mbox{\Hypertarget{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}\label{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_set\_actions@{actuation\_app\_set\_actions}}
+\index{actuation\_app\_set\_actions@{actuation\_app\_set\_actions}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_set\_actions()}{actuation\_app\_set\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+set\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions}]{config\+\_\+in,  }\item[{bool}]{alert\+\_\+change }\end{DoxyParamCaption})}
+
+
+
+apply the configuration to the drives 
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+in} & -\/ \mbox{[}in\mbox{]}\+: function used with return to main application class \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}\label{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_task@{actuation\_app\_task}}
+\index{actuation\_app\_task@{actuation\_app\_task}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_task()}{actuation\_app\_task()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+task (\begin{DoxyParamCaption}\item[{void $\ast$}]{arg }\end{DoxyParamCaption})}
+
+
+
+Task responsible for monitoring possible changes in equipment status. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em arg} & -\/ \mbox{[}in\mbox{]}\+: task argument (default NULL) \\
+\hline
+\end{DoxyParams}

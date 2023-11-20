@@ -1,0 +1,139 @@
+\hypertarget{_free_r_t_o_s__defines_8h}{}\doxysection{components/utils/include/\+Free\+RTOS\+\_\+defines.h File Reference}
+\label{_free_r_t_o_s__defines_8h}\index{components/utils/include/FreeRTOS\_defines.h@{components/utils/include/FreeRTOS\_defines.h}}
+
+
+Defines for Free\+RTOS tasks and priorities.  
+
+
+{\ttfamily \#include \char`\"{}freertos/\+Free\+RTOSConfig.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}freertos/\+Free\+RTOS.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}freertos/task.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}freertos/queue.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}freertos/timers.\+h\char`\"{}}\newline
+Include dependency graph for Free\+RTOS\+\_\+defines.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{_free_r_t_o_s__defines_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{_free_r_t_o_s__defines_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_acf9884cad4ed43b57a336fe0453012eb}\label{_free_r_t_o_s__defines_8h_acf9884cad4ed43b57a336fe0453012eb}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_acf9884cad4ed43b57a336fe0453012eb}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+1\+\_\+\+NAME}}~\char`\"{}main sectorization task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the main sectorization task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_aeeab273dbd514cff2350204ed3f263ca}\label{_free_r_t_o_s__defines_8h_aeeab273dbd514cff2350204ed3f263ca}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_aeeab273dbd514cff2350204ed3f263ca}{MAIN\+\_\+\+APP\+\_\+\+STACK\+\_\+1\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 4)
+\begin{DoxyCompactList}\small\item\em Stack size of the main sectorization task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a595a99a6a1794bedcafd434f7e9c64a2}\label{_free_r_t_o_s__defines_8h_a595a99a6a1794bedcafd434f7e9c64a2}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a595a99a6a1794bedcafd434f7e9c64a2}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+1\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 4)
+\begin{DoxyCompactList}\small\item\em Priority of the main sectorization task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_aac81d81ccc47acccf9fb2a00c7a54131}\label{_free_r_t_o_s__defines_8h_aac81d81ccc47acccf9fb2a00c7a54131}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_aac81d81ccc47acccf9fb2a00c7a54131}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+2\+\_\+\+NAME}}~\char`\"{}main peak hours task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the main peak hours task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a5d5849d734a4d659a103c0d9ae62e66c}\label{_free_r_t_o_s__defines_8h_a5d5849d734a4d659a103c0d9ae62e66c}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a5d5849d734a4d659a103c0d9ae62e66c}{MAIN\+\_\+\+APP\+\_\+\+STACK\+\_\+2\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 4)
+\begin{DoxyCompactList}\small\item\em Stack size of the main peak hours task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a0775ce657f8feb1ee3a9c8e461deb515}\label{_free_r_t_o_s__defines_8h_a0775ce657f8feb1ee3a9c8e461deb515}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a0775ce657f8feb1ee3a9c8e461deb515}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+2\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 3)
+\begin{DoxyCompactList}\small\item\em Priority of the main peak hours task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a817cfadd82c4974a2b4b1a592ae126cf}\label{_free_r_t_o_s__defines_8h_a817cfadd82c4974a2b4b1a592ae126cf}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a817cfadd82c4974a2b4b1a592ae126cf}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+3\+\_\+\+NAME}}~\char`\"{}main scheduling task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the main scheduling task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a249e7ba70d6de795269c296dcd308a15}\label{_free_r_t_o_s__defines_8h_a249e7ba70d6de795269c296dcd308a15}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a249e7ba70d6de795269c296dcd308a15}{MAIN\+\_\+\+APP\+\_\+\+STACK\+\_\+3\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 6)
+\begin{DoxyCompactList}\small\item\em Stack size of the main scheduling task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a6f18742db6ff29ec6b88a77aab8fb077}\label{_free_r_t_o_s__defines_8h_a6f18742db6ff29ec6b88a77aab8fb077}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a6f18742db6ff29ec6b88a77aab8fb077}{MAIN\+\_\+\+APP\+\_\+\+TASK\+\_\+3\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 3)
+\begin{DoxyCompactList}\small\item\em Priority of the main scheduling task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a5729ab34a631cd15c11dd3fbc490a44c}\label{_free_r_t_o_s__defines_8h_a5729ab34a631cd15c11dd3fbc490a44c}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a5729ab34a631cd15c11dd3fbc490a44c}{DATA\+\_\+\+APP\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}data app task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the data app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_aacfd0578f15904aa67527af0df6c648e}\label{_free_r_t_o_s__defines_8h_aacfd0578f15904aa67527af0df6c648e}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_aacfd0578f15904aa67527af0df6c648e}{DATA\+\_\+\+APP\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 6)
+\begin{DoxyCompactList}\small\item\em Stack size of the data app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a49989302aeadcd1e6fe4f126b3839d56}\label{_free_r_t_o_s__defines_8h_a49989302aeadcd1e6fe4f126b3839d56}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a49989302aeadcd1e6fe4f126b3839d56}{DATA\+\_\+\+APP\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 2)
+\begin{DoxyCompactList}\small\item\em Priority of the data app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a000f2d71f185e6847145abaf8a3420b9}\label{_free_r_t_o_s__defines_8h_a000f2d71f185e6847145abaf8a3420b9}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a000f2d71f185e6847145abaf8a3420b9}{COMM\+\_\+\+APP\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}comm app task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the comm app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ae4f42b405f9a7a15e936874ec9c15b6e}\label{_free_r_t_o_s__defines_8h_ae4f42b405f9a7a15e936874ec9c15b6e}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ae4f42b405f9a7a15e936874ec9c15b6e}{COMM\+\_\+\+APP\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 10)
+\begin{DoxyCompactList}\small\item\em Stack size of the comm app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ab8b941715856815503c365e66af7e635}\label{_free_r_t_o_s__defines_8h_ab8b941715856815503c365e66af7e635}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ab8b941715856815503c365e66af7e635}{COMM\+\_\+\+APP\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 2)
+\begin{DoxyCompactList}\small\item\em Priority of the comm app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a9970e01a17cff95d50777f706750f6c6}\label{_free_r_t_o_s__defines_8h_a9970e01a17cff95d50777f706750f6c6}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a9970e01a17cff95d50777f706750f6c6}{ACTUATION\+\_\+\+APP\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}actuation app task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the actuation app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a2b7c1fc12bd0d5f6d279d72c3405bf30}\label{_free_r_t_o_s__defines_8h_a2b7c1fc12bd0d5f6d279d72c3405bf30}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a2b7c1fc12bd0d5f6d279d72c3405bf30}{ACTUATION\+\_\+\+APP\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 6)
+\begin{DoxyCompactList}\small\item\em Stack size of the actuation app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ae07520a0bf3e6f685710243104003f73}\label{_free_r_t_o_s__defines_8h_ae07520a0bf3e6f685710243104003f73}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ae07520a0bf3e6f685710243104003f73}{ACTUATION\+\_\+\+APP\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 3)
+\begin{DoxyCompactList}\small\item\em Priority of the actuation app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a8c70a0b26e78fc877a03ba623f80d955}\label{_free_r_t_o_s__defines_8h_a8c70a0b26e78fc877a03ba623f80d955}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a8c70a0b26e78fc877a03ba623f80d955}{ACTUATOR\+\_\+\+CHECK\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}actuator check task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the actuator check task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ad67bec36ffdcea2eff39933e4a7a0e26}\label{_free_r_t_o_s__defines_8h_ad67bec36ffdcea2eff39933e4a7a0e26}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ad67bec36ffdcea2eff39933e4a7a0e26}{ACTUATOR\+\_\+\+CHECK\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 6)
+\begin{DoxyCompactList}\small\item\em Stack size of the actuator check task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_aff4d7d2cdfbfcaaabadbbb6dd5217728}\label{_free_r_t_o_s__defines_8h_aff4d7d2cdfbfcaaabadbbb6dd5217728}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_aff4d7d2cdfbfcaaabadbbb6dd5217728}{ACTUATOR\+\_\+\+CHECK\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 3)
+\begin{DoxyCompactList}\small\item\em Priority of the actuator check task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_afc5e23bd60f186ec0c713195efcbb60c}\label{_free_r_t_o_s__defines_8h_afc5e23bd60f186ec0c713195efcbb60c}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_afc5e23bd60f186ec0c713195efcbb60c}{ACTUATOR\+\_\+\+PERCENT\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}actuator percent task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the actuator percent task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a30cc0798aa1d6067ff4b5ebf2594803c}\label{_free_r_t_o_s__defines_8h_a30cc0798aa1d6067ff4b5ebf2594803c}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a30cc0798aa1d6067ff4b5ebf2594803c}{ACTUATOR\+\_\+\+PERCENT\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 6)
+\begin{DoxyCompactList}\small\item\em Stack size of the actuator percent task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a282efd8b449e7c6449bfa837176f49f9}\label{_free_r_t_o_s__defines_8h_a282efd8b449e7c6449bfa837176f49f9}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a282efd8b449e7c6449bfa837176f49f9}{ACTUATOR\+\_\+\+PERCENT\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 3)
+\begin{DoxyCompactList}\small\item\em Priority of the actuator percent task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a6eca0c054f50f18af1e5c8264616415a}\label{_free_r_t_o_s__defines_8h_a6eca0c054f50f18af1e5c8264616415a}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a6eca0c054f50f18af1e5c8264616415a}{GPRS\+\_\+\+UART\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}GPRS UART task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the GPRS UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a002d129908a5a11c78e56be66afd863e}\label{_free_r_t_o_s__defines_8h_a002d129908a5a11c78e56be66afd863e}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a002d129908a5a11c78e56be66afd863e}{GPRS\+\_\+\+UART\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 10)
+\begin{DoxyCompactList}\small\item\em Stack size of the GPRS UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ac8270d60830dd1c73440685aa79be86e}\label{_free_r_t_o_s__defines_8h_ac8270d60830dd1c73440685aa79be86e}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ac8270d60830dd1c73440685aa79be86e}{GPRS\+\_\+\+UART\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 12)
+\begin{DoxyCompactList}\small\item\em Priority of the GPRS UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a7a03cf434dc59be55135d81b841da762}\label{_free_r_t_o_s__defines_8h_a7a03cf434dc59be55135d81b841da762}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a7a03cf434dc59be55135d81b841da762}{RF\+\_\+\+UART\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}RF UART task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the RF UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ace803b03d9914ceaea88c02c7c40444d}\label{_free_r_t_o_s__defines_8h_ace803b03d9914ceaea88c02c7c40444d}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ace803b03d9914ceaea88c02c7c40444d}{RF\+\_\+\+UART\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 10)
+\begin{DoxyCompactList}\small\item\em Stack size of the RF UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_aaf549c556db60d35e69fdf2c78fbf538}\label{_free_r_t_o_s__defines_8h_aaf549c556db60d35e69fdf2c78fbf538}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_aaf549c556db60d35e69fdf2c78fbf538}{RF\+\_\+\+UART\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 12)
+\begin{DoxyCompactList}\small\item\em Priority of the RF UART task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_ad422c0f786d429b3c9d5e6c825f9e735}\label{_free_r_t_o_s__defines_8h_ad422c0f786d429b3c9d5e6c825f9e735}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_ad422c0f786d429b3c9d5e6c825f9e735}{WIFI\+\_\+\+APP\+\_\+\+TASK\+\_\+\+NAME}}~\char`\"{}Wi\+Fi app task\char`\"{}
+\begin{DoxyCompactList}\small\item\em Name of the Wi\+Fi app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_a9ab3a951573d8bba34787f6e9ccaf712}\label{_free_r_t_o_s__defines_8h_a9ab3a951573d8bba34787f6e9ccaf712}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_a9ab3a951573d8bba34787f6e9ccaf712}{WIFI\+\_\+\+APP\+\_\+\+STACK\+\_\+\+SIZE}}~(config\+MINIMAL\+\_\+\+STACK\+\_\+\+SIZE $\ast$ 4)
+\begin{DoxyCompactList}\small\item\em Stack size of the Wi\+Fi app task. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{_free_r_t_o_s__defines_8h_add4ff0a0d043ddea662056112d3f155e}\label{_free_r_t_o_s__defines_8h_add4ff0a0d043ddea662056112d3f155e}} 
+\#define \mbox{\hyperlink{_free_r_t_o_s__defines_8h_add4ff0a0d043ddea662056112d3f155e}{WIFI\+\_\+\+APP\+\_\+\+TASK\+\_\+\+PRIORITY}}~(tsk\+IDLE\+\_\+\+PRIORITY + 8)
+\begin{DoxyCompactList}\small\item\em Priority of the Wi\+Fi app task. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Defines for Free\+RTOS tasks and priorities. 
+
+\begin{DoxyDate}{Date}
+July 11, 2023
+\end{DoxyDate}
+This file contains defines for Free\+RTOS tasks and priorities used in the application. 

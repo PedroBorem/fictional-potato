@@ -1,15 +1,8 @@
-/*
- * gprs.c
- *
- *  Created on: 7 de ago de 2022
- *      Author: bruno
- */
-
 /**
  * @file gprs.c
  * @date June 21, 2022
- * @brief GPRS uart control
-*/
+ * @brief GPRS UART control
+ */
 
 /* Self include */
 #include "gprs_uart.h"
@@ -17,40 +10,67 @@
 #include "driver/uart.h"
 #include "driver/gpio.h"
 
-/**\addtogroup components
- * @{
- *
- */
+#include "FreeRTOS_defines.h"
+#include "log.h"
 
-/**\addtogroup gprs
- * @{
- *
- */
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
+/**
+ * @def GPRS_UART_TAG
+ * @brief Tag used for logging in the GPRS module
+ */
 #define GPRS_UART_TAG		"gprs"
 
+/**
+ * @def GPRS_UART_NUM
+ * @brief UART number used for GPRS communication
+ */
 #define GPRS_UART_NUM 		UART_NUM_1
+
+/**
+ * @def GPRS_UART_TX_NUM
+ * @brief GPIO number used for GPRS UART TX pin
+ */
 #define GPRS_UART_TX_NUM 	GPIO_NUM_17
+
+/**
+ * @def GPRS_UART_RX_NUM
+ * @brief GPIO number used for GPRS UART RX pin
+ */
 #define GPRS_UART_RX_NUM	GPIO_NUM_18
 
+/**
+ * @def GPRS_UART_BUF_SIZE
+ * @brief Size of the GPRS UART buffer
+ */
 #define GPRS_UART_BUF_SIZE 	(1024)
 
 /* Private variables  -------------------------------------------- */
-static gprs_uart_callback gprs_callback = NULL;
+/**
+ * @brief Callback function for GPRS UART events
+ */
+static app_callback gprs_callback = NULL;
+
+/**
+ * @brief Queue handle for GPRS UART events
+ */
 static QueueHandle_t gprs_uart_queue = NULL;
 
 /* Private function prototype ------------------------------------ */
+/**
+ * @brief Task to handle GPRS UART events
+ * @param arg User-defined argument passed to the task
+ */
 static void gprs_uart_event_task(void* arg);
 
 /* Public methods ------------------------------------------------ */
-esp_err_t gprs_uart_init(const gprs_uart_callback callback)
+esp_err_t gprs_uart_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 	BaseType_t xReturn = pdPASS;
 
 	// Configure parameters of an UART driver, communication pins and install the driver
-
 	const uart_config_t uart_config = {
 		.baud_rate = 115200,
 		.data_bits = UART_DATA_8_BITS,
@@ -106,8 +126,6 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 {
 	esp_err_t err = ESP_FAIL;
 
-	LOG_COMM(GPRS_UART_TAG, "send : %s", event);
-
 	if(uart_write_bytes(GPRS_UART_NUM, event, event_size) != -1)
 	{
 		LOG_COMM(GPRS_UART_TAG, "OK");
@@ -133,7 +151,6 @@ static void gprs_uart_event_task(void* arg)
 		if(xQueueReceive(gprs_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
 		{
 			bzero(dtmp, GPRS_UART_BUF_SIZE);
-			LOG_COMM(GPRS_UART_TAG, "uart[%d] event:", GPRS_UART_NUM);
 
 			switch(event.type)
 			{
@@ -141,12 +158,28 @@ static void gprs_uart_event_task(void* arg)
 				{
 					if(event.size > 0 && event.size < 3000) // 3 KB
 					{
+						char* buff_in = (char*)malloc(event.size);
+						int aux = 0;
+
 						//Event of UART receving data
 						uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
 						LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
-						LOG_COMM(GPRS_UART_TAG, "data dtmp : %s", (char*)dtmp);
 
-						gprs_callback((char*)dtmp, event.size);
+						for(int char_position = 0; char_position < event.size; char_position++)
+						{
+							// 0x7F = ASCII space
+							// 0x1A <= ASCII C^ values
+							if(dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+							{
+								buff_in[aux] = dtmp[char_position];
+								aux ++;
+							}
+						}
+
+						//LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
+
+						gprs_callback(buff_in, COMM_MQTT);
+						free(buff_in);
 					}
 					break;
 				}
@@ -209,6 +242,3 @@ static void gprs_uart_event_task(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(20));
 	}
 }
-
-/**@}*/ 	//gprs
-/** @}*/	//components
