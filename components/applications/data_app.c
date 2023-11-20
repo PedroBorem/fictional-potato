@@ -58,6 +58,7 @@ esp_err_t data_app_init(void)
 			.pressure = "NA",
 			.pressurization_time = 30,
 			.on_off_time = 1,
+			.read_time = 10
 	};
 
 	const network_config default_network = {

@@ -37,6 +37,7 @@ uint16_t global_angle = 655;
 
 /* local variables */
 static char system_id[50] = {};
+static uint8_t system_read_time = 0;
 static time_t system_rtc_percent = 0;
 static uint16_t system_initial_angle = 655;
 
@@ -58,6 +59,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_22(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char* buffer, comm_type comm_mode);
@@ -78,12 +80,11 @@ void system_manager_init(void)
 	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
 
 	// system monitoring init
+	system_read_time = config.read_time;
 	pivot_return_config return_config = {};
 	data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
 	system_monitoring_register_callback(&system_manager_callback);
-	system_monitoring_start(return_config, 5); //todo alterar 5 para parametro.
-	//todo fazer um idp apra ele
-
+	system_monitoring_start(return_config, system_read_time);
 
 	// communication modules init
 	network_config network = {};
@@ -246,6 +247,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		case IDP_18:
 		{
 			system_manager_idp_18(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_22:
+		{
+			system_manager_idp_22(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -488,6 +494,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", new_config.pressure },
 			{ "uint16_t", &new_config.pressurization_time },
 			{ "uint8_t", &new_config.on_off_time },
+			{ "uint8_t", &new_config.read_time },
 			{ NULL, NULL }
 		};
 
@@ -499,6 +506,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 			actuation_app_set_config(new_config);
+			system_read_time = new_config.read_time;
 		}
 		else
 		{
@@ -521,6 +529,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", config.pressure },
 			{ "uint16_t", &config.pressurization_time },
 			{ "uint8_t", &config.on_off_time },
+			{ "uint8_t", &config.read_time },
 			{ NULL, NULL }
 		};
 
@@ -1367,6 +1376,63 @@ static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
 
 		idp_parser_create_package(str_out, arg_send);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+}
+
+static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
+	{
+		uint8_t idp = 0;
+		pivot_return_config return_config = {};
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint16_t", &return_config.start_angle },
+			{ "uint16_t", &return_config.end_angle },
+			{ "bool", &return_config.automatic_return },
+			{ "bool", &return_config.water_return },
+			{ NULL, NULL }
+		};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		if(ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			system_monitoring_stop();
+			system_monitoring_start(return_config, system_read_time);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+		}
+	}
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_3;
+		pivot_return_config return_config = {};
+
+		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+
+		arg_pair_t arg_pairs[] =
+		{
+			{ "uint8_t", &idp },
+			{ "uint16_t", &return_config.start_angle },
+			{ "uint16_t", &return_config.end_angle },
+			{ "bool", &return_config.automatic_return },
+			{ "bool", &return_config.water_return },
+			{ NULL, NULL }
+		};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 	}
 }
 

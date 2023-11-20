@@ -4,10 +4,6 @@
  *  Created on: 4 de ago. de 2023
  *      Author: soil-dev
  */
-
-/// fazer um notify take e give para o monitoramento.
-
-
 #include "system_monitoring.h"
 
 #include "FreeRTOS_defines.h"
@@ -21,7 +17,11 @@
 
 #include <string.h>
 
+/* Private definitions ------------------------------------------- */
+
 #define SYSTEM_MONITORING_TAG	"system monitoring"
+
+#define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
 
 typedef enum {
 	SYSTEM_PAUSE = 0,
@@ -29,11 +29,13 @@ typedef enum {
 	SYSTEM_RETURN,
 }system_monitoring_states;
 
+/* Private variables  -------------------------------------------- */
+
 static system_monitoring_states system_states = SYSTEM_RUNNING;
 static bool system_monitoring_bacK_flag = false;
 
-
-static TaskHandle_t xTask_monitoring = NULL;
+static TaskHandle_t xTask_system_monitoring = NULL;
+static TimerHandle_t system_monitoring_timer_handle = NULL;
 static app_callback system_monitoring_callback = NULL;
 
 static uint8_t system_monitoring_delay = 10;
@@ -42,9 +44,10 @@ static pivot_return_config system_monitoring_config = {};
 static uint16_t* system_monitoring_current_angle  = &global_angle;
 
 
+/* Private methods ----------------------------------- */
 static void system_monitoring_actuation(void);
 static void system_monitoring_task(void* arg);
-
+static void system_monitoring_timer(TimerHandle_t pxTimer);
 
 static void system_monitoring_actuation(void)
 {
@@ -170,35 +173,39 @@ static void system_monitoring_task(void* arg)
 
 		}
 
-
-		vTaskDelay(pdMS_TO_TICKS(60000)); // 1 minutes todo aumentar depois
-
-		/*
-		if(false)
-		{
-			// isso passara a ser um timer...
-			// send IDP 0 (current status)
-			system_monitoring_callback("#00$", COMM_MQTT);
-
-			// save current Timestamp
-			timestamp_now = rtc_app_get_timestamp(false);
-			data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
-
-			vTaskDelay(pdMS_TO_TICKS(60000 * system_monitoring_delay)); // 10 minutes
-		}
-		*/
+		vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
 	}
 }
 
+static void system_monitoring_timer(TimerHandle_t pxTimer)
+{
+	// send IDP 0 (current status)
+	system_monitoring_callback("#00$", COMM_MQTT);
+
+	// save current Timestamp
+	time_t timestamp_now = rtc_app_get_timestamp(false);
+	data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
+}
+
+/* Public methods ----------------------------------- */
+
 void system_monitoring_start(const pivot_return_config return_config, uint8_t monitoring_time)
 {
+	system_monitoring_stop();
 
 	if(monitoring_time > 0)
 	{
 		system_monitoring_delay = monitoring_time;
-	}
-	// start timer
 
+		system_monitoring_timer_handle = xTimerCreate(
+							  "system_timer", /* name */
+							  pdMS_TO_TICKS(system_monitoring_delay * 60000), /* period/time */
+							  pdTRUE, /* auto reload */
+							  (void*)0, /* timer ID */
+							  system_monitoring_timer); /* callback */
+
+		xTimerStart(system_monitoring_timer_handle, 1000);
+	}
 
 	if(return_config.start_angle == 0 && return_config.end_angle == 0)
 	{
@@ -212,16 +219,23 @@ void system_monitoring_start(const pivot_return_config return_config, uint8_t mo
 					SYSTEM_MONITORING_TASK_SIZE,
 					NULL,
 					SYSTEM_MONITORING_TASK_PRIORITY,
-					&xTask_monitoring);
+					&xTask_system_monitoring);
 	}
 }
 
 void system_monitoring_stop(void)
 {
-	if(xTask_monitoring != NULL)
+	if(xTask_system_monitoring != NULL)
 	{
-		vTaskDelete(xTask_monitoring);
-		xTask_monitoring = NULL;
+		vTaskDelete(xTask_system_monitoring);
+		xTask_system_monitoring = NULL;
+	}
+
+	if(system_monitoring_timer_handle != NULL)
+	{
+		xTimerStop(system_monitoring_timer_handle,portMAX_DELAY);
+		xTimerDelete(system_monitoring_timer_handle,portMAX_DELAY);
+		system_monitoring_timer_handle = NULL;
 	}
 }
 
@@ -229,6 +243,3 @@ void system_monitoring_register_callback(const app_callback callback)
 {
 	system_monitoring_callback = callback;
 }
-
-
-

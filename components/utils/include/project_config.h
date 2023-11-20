@@ -105,6 +105,7 @@ typedef enum
     IDP_16,
 	IDP_17,
 	IDP_18,
+	IDP_22 = 22,
 	IDP_30 = 30,
 	IDP_90 = 90,
 	IDP_91,
@@ -171,6 +172,7 @@ typedef struct __attribute__((__packed__))
     char pressure[50];   			/*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_off_time;            /*!< On/off time */
+    uint8_t read_time;            /*!< Read time */
 } pivot_config;
 
 /**
