@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <time.h>
 
 /* Some scripts may not require all the parameters passed. Use this to avoid
  * compiler warnings about unused variables. */

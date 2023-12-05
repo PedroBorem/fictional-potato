@@ -25,11 +25,11 @@ static TaskHandle_t xTask_scheduling_idp_15 = NULL;
 static TaskHandle_t xTask_scheduling_idp_16 = NULL;
 static TaskHandle_t xTask_scheduling_idp_17 = NULL;
 
-static pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-static pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_date scheduling_date_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_off_date scheduling_off_date_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
-static pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-static pivot_scheduling_off_angle scheduling_off_angle = {};
+static pivot_scheduling_angle scheduling_angle_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_off_angle scheduling_off_angle_current = {};
 
 static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -165,9 +165,9 @@ static void scheduling_task_idp_14(void* arg)
 		// date analysis
 		for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 		{
-			if(scheduling_timestamp_now > scheduling_date[date_position].start_date
-			&& scheduling_timestamp_now < scheduling_date[date_position].end_date
-			&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+			if(scheduling_timestamp_now > scheduling_date_current[date_position].start_date
+			&& scheduling_timestamp_now < scheduling_date_current[date_position].end_date
+			&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_date_status[date_position] == false)
 				{
@@ -176,8 +176,8 @@ static void scheduling_task_idp_14(void* arg)
 						scheduling_date_status[date_position] = true;
 
 						scheduling_active(date_position,
-								scheduling_date[date_position].scheduling_id,
-								scheduling_date[date_position].actions);
+								scheduling_date_current[date_position].scheduling_id,
+								scheduling_date_current[date_position].actions);
 					}
 					else
 					{
@@ -185,16 +185,16 @@ static void scheduling_task_idp_14(void* arg)
 					}
 				}
 			}
-			else if(scheduling_timestamp_now > scheduling_date[date_position].end_date
-			&& scheduling_date[date_position].end_date != 0
-			&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+			else if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date
+			&& scheduling_date_current[date_position].end_date != 0
+			&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_callback != NULL)
 				{
 					if(scheduling_date_status[date_position] == true)
 					{
 						scheduling_date_status[date_position] = false;
-						scheduling_deactivate(scheduling_date[date_position].scheduling_id, false);
+						scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
 					}
 				}
 				else
@@ -223,8 +223,8 @@ static void scheduling_task_idp_15(void* arg)
 		// angle analysis
 		for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 		{
-			if(scheduling_timestamp_now > scheduling_angle[angle_position].start_date
-			&& strcmp(scheduling_angle[angle_position].scheduling_id,"") > 0)
+			if(scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date
+			&& strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_angle_status[angle_position] == false)
 				{
@@ -233,25 +233,25 @@ static void scheduling_task_idp_15(void* arg)
 						scheduling_angle_status[angle_position] = true;
 
 						scheduling_active(angle_position,
-								scheduling_angle[angle_position].scheduling_id,
-								scheduling_angle[angle_position].actions);
+								scheduling_angle_current[angle_position].scheduling_id,
+								scheduling_angle_current[angle_position].actions);
 
-						if( *scheduling_current_angle >= scheduling_angle[angle_position].end_angle - angle_off_set
-								&& *scheduling_current_angle <= scheduling_angle[angle_position].end_angle + angle_off_set )
+						if( *scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
+								&& *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set )
 						{
 							vTaskDelay(pdMS_TO_TICKS(300000)); // 5 minutes
 						}
 					}
 				}
-				else if( *scheduling_current_angle >= scheduling_angle[angle_position].end_angle - angle_off_set
-						&& *scheduling_current_angle <= scheduling_angle[angle_position].end_angle + angle_off_set )
+				else if( *scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
+						&& *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set )
 				{
 					if(scheduling_callback != NULL)
 					{
 						if(scheduling_angle_status[angle_position] == true)
 						{
 							scheduling_angle_status[angle_position] = false;
-							scheduling_deactivate(scheduling_angle[angle_position].scheduling_id, false);
+							scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
 						}
 					}
 					else
@@ -278,13 +278,13 @@ static void scheduling_task_idp_16(void* arg)
 		// angle analysis
 		for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 		{
-			if(scheduling_timestamp_now > scheduling_off_date[date_position].end_date
-			&& scheduling_off_date[date_position].end_date != 0
-			&& strcmp(scheduling_off_date[date_position].scheduling_id,"") > 0)
+			if(scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
+			&& scheduling_off_date_current[date_position].end_date != 0
+			&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
 			{
 				if(scheduling_callback != NULL)
 				{
-					scheduling_deactivate(scheduling_off_date[date_position].scheduling_id, true);
+					scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
 				}
 				else
 				{
@@ -303,13 +303,13 @@ static void scheduling_task_idp_17(void* arg)
 
 	while(1)
 	{
-		if( *scheduling_current_angle > (scheduling_off_angle.end_angle - angle_off_set)
-		&& *scheduling_current_angle < (scheduling_off_angle.end_angle + angle_off_set )
-		&& strcmp(scheduling_off_angle.scheduling_id,"") > 0)
+		if( *scheduling_current_angle > (scheduling_off_angle_current.end_angle - angle_off_set)
+		&& *scheduling_current_angle < (scheduling_off_angle_current.end_angle + angle_off_set )
+		&& strcmp(scheduling_off_angle_current.scheduling_id,"") > 0)
 		{
 			if(scheduling_callback != NULL)
 			{
-				scheduling_deactivate(scheduling_off_angle.scheduling_id, true);
+				scheduling_deactivate(scheduling_off_angle_current.scheduling_id, true);
 			}
 			else
 			{
@@ -335,15 +335,15 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 	{
 		case IDP_14:
 		{
-			memcpy(scheduling_date, scheduling_data, sizeof(scheduling_date));
+			memcpy(scheduling_date_current, scheduling_data, sizeof(scheduling_date_current));
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-				if(scheduling_timestamp_now > scheduling_date[date_position].end_date
-				&& strcmp(scheduling_date[date_position].scheduling_id,"") > 0)
+				if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date
+				&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete(scheduling_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+					data_app_delete(scheduling_date_current[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
 				}
 			}
 
@@ -356,20 +356,24 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_14);
 			}
+			else
+			{
+				vTaskResume(xTask_scheduling_idp_14);
+			}
 			break;
 		}
 		case IDP_15:
 		{
-			memcpy(scheduling_angle, scheduling_data, sizeof(scheduling_angle));
+			memcpy(scheduling_angle_current, scheduling_data, sizeof(scheduling_angle_current));
 
 			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-				if((scheduling_timestamp_now > scheduling_angle[angle_position].start_date)
-				&& (scheduling_timestamp_now - scheduling_angle[angle_position].start_date) > 3600
-				&& (strcmp(scheduling_angle[angle_position].scheduling_id,"") > 0))
+				if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
+				&& (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
+				&& (strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0))
 				{
-					data_app_delete(scheduling_angle[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+					data_app_delete(scheduling_angle_current[angle_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
 				}
 			}
 
@@ -382,19 +386,23 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_15);
 			}
+			else
+			{
+				vTaskResume(xTask_scheduling_idp_15);
+			}
 			break;
 		}
 		case IDP_16:
 		{
-			memcpy(scheduling_off_date, scheduling_data, sizeof(scheduling_off_date));
+			memcpy(scheduling_off_date_current, scheduling_data, sizeof(scheduling_off_date_current));
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-				if(scheduling_timestamp_now > scheduling_off_date[date_position].end_date
-				&& strcmp(scheduling_off_date[date_position].scheduling_id,"") > 0)
+				if(scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
+				&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete(scheduling_off_date[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_off_date);
+					data_app_delete(scheduling_off_date_current[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_off_date_current);
 				}
 			}
 
@@ -407,11 +415,15 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_16);
 			}
+			else
+			{
+				vTaskResume(xTask_scheduling_idp_16);
+			}
 			break;
 		}
 		case IDP_17:
 		{
-			memcpy(&scheduling_off_angle, scheduling_data, sizeof(scheduling_off_angle));
+			memcpy(&scheduling_off_angle_current, scheduling_data, sizeof(scheduling_off_angle_current));
 
 			if(xTask_scheduling_idp_17 == NULL)
 			{
@@ -421,6 +433,10 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						NULL,
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_17);
+			}
+			else
+			{
+				vTaskResume(xTask_scheduling_idp_17);
 			}
 			break;
 		}
@@ -440,8 +456,7 @@ void scheduling_stop(idp_type scheduling_idp)
 		{
 			if(xTask_scheduling_idp_14 != NULL)
 			{
-				vTaskDelete(xTask_scheduling_idp_14);
-				xTask_scheduling_idp_14 = NULL;
+				vTaskSuspend(xTask_scheduling_idp_14);
 			}
 			break;
 		}
@@ -449,8 +464,7 @@ void scheduling_stop(idp_type scheduling_idp)
 		{
 			if(xTask_scheduling_idp_15 != NULL)
 			{
-				vTaskDelete(xTask_scheduling_idp_15);
-				xTask_scheduling_idp_15 = NULL;
+				vTaskSuspend(xTask_scheduling_idp_15);
 			}
 			break;
 		}
@@ -458,8 +472,7 @@ void scheduling_stop(idp_type scheduling_idp)
 		{
 			if(xTask_scheduling_idp_16 != NULL)
 			{
-				vTaskDelete(xTask_scheduling_idp_16);
-				xTask_scheduling_idp_16 = NULL;
+				vTaskSuspend(xTask_scheduling_idp_16);
 			}
 			break;
 		}
@@ -467,8 +480,7 @@ void scheduling_stop(idp_type scheduling_idp)
 		{
 			if(xTask_scheduling_idp_17 != NULL)
 			{
-				vTaskDelete(xTask_scheduling_idp_17);
-				xTask_scheduling_idp_17 = NULL;
+				vTaskSuspend(xTask_scheduling_idp_17);
 			}
 			break;
 		}
