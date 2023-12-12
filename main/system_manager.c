@@ -346,13 +346,17 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 
 		if(idp_parser_validate_actions(new_actions) == true)
 		{
-			// actions = 002
-			if(new_actions.rotation == 0 && new_actions.watering_state == 0)
+			if(new_actions.power_state == PIVOT_OFF)
 			{
-				actuation_app_get_actions(&new_actions, sizeof(new_actions));
-				new_actions.percentimeter = 0;
-				new_actions.power_state = PIVOT_OFF;
-				new_actions.watering_state = PIVOT_DRY;
+				system_initial_angle = global_angle;
+
+				if(new_actions.rotation == 0 && new_actions.watering_state == 0)
+				{
+					actuation_app_get_actions(&new_actions, sizeof(new_actions));
+					new_actions.percentimeter = 0;
+					new_actions.power_state = PIVOT_OFF;
+					new_actions.watering_state = PIVOT_DRY;
+				}
 			}
 
 			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
