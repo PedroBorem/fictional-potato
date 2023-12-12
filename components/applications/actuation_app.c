@@ -149,23 +149,6 @@ void actuation_app_task(void* arg)
 		current_action = gpio_actuator_get();
 		data_app_load(DATA_TYPE_ACTIONS, &actuation_config);
 
-		/*
-		LOG_DATA(ACTUATION_APP_TAG, "");
-		LOG_DATA(ACTUATION_APP_TAG, " ------ NVS Current Config ------");
-		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", current_action.power_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", current_action.rotation);
-		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", current_action.watering_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
-		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
-
-		LOG_DATA(ACTUATION_APP_TAG, "");
-		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", actuation_config.power_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", actuation_config.rotation);
-		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", actuation_config.watering_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", actuation_config.percentimeter);
-		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
-		*/
-
 		if((current_action.power_state != actuation_config.power_state)
 		&& (current_action.watering_state != PIVOT_PRESSURIZING))
 		{

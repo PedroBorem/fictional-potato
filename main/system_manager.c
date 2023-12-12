@@ -41,8 +41,11 @@ static uint8_t system_read_time = 0;
 static time_t system_rtc_percent = 0;
 static uint16_t system_initial_angle = 655;
 
+static TimerHandle_t system_timer = NULL;
+
 static void system_manager_reboot(void);
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode);
+static void system_manager_timer_callback(TimerHandle_t pxTimer);
 
 static void system_manager_idp_00(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char* buffer, comm_type comm_mode);
@@ -118,6 +121,13 @@ void system_manager_init(void)
 	scheduling_start(IDP_15,scheduling_angle);
 	scheduling_start(IDP_16,scheduling_off_date);
 	scheduling_start(IDP_17,scheduling_off_angle);
+
+	system_timer = xTimerCreate(
+			  "system_timer", /* name */
+			  pdMS_TO_TICKS(60000), /* period/time */
+			  pdFALSE, /* auto reload */
+			  (void*)0, /* timer ID */
+			  system_manager_timer_callback); /* callback */
 }
 
 static void system_manager_reboot(void)
@@ -160,6 +170,11 @@ static void system_manager_reboot(void)
 		// save old history
 		data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 	}
+}
+
+static void system_manager_timer_callback(TimerHandle_t pxTimer)
+{
+	system_manager_idp_00(NULL, COMM_MQTT);
 }
 
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
@@ -410,6 +425,12 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			}
 
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid state (%s)", buffer);
+		}
+
+		// start timer percent and pressure
+		if(system_timer != NULL)
+		{
+			xTimerStart(system_timer, 1000);
 		}
 	}
 }
