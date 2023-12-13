@@ -228,7 +228,7 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 				memcpy(&history[j+1], &history_tmp, sizeof(pivot_history));
 			}
 
-			ret = nvs_data_set(DATA_HISTORY, history, data_size);
+			ret = nvs_data_set(DATA_HISTORY, &history, sizeof(history));
 			break;
 		}
 		case DATA_TYPE_OLD_HISTORY:
@@ -243,7 +243,7 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			history[CONFIG_HISTORY_MAX_VALUE - 1].end_date = history_tmp.end_date;
 			history[CONFIG_HISTORY_MAX_VALUE - 1].end_angle = history_tmp.end_angle;
 
-			ret = nvs_data_set(DATA_HISTORY, history, data_size);
+			ret = nvs_data_set(DATA_HISTORY, &history, sizeof(history));
 			break;
 		}
 		case DATA_TYPE_TIMESTAMP:
