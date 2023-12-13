@@ -335,7 +335,7 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 	return ret;
 }
 
-esp_err_t data_app_delete(void* data_id)
+esp_err_t data_app_delete_scheduling(char* scheduling_id)
 {
 	esp_err_t ret = ESP_FAIL;
 
@@ -345,15 +345,14 @@ esp_err_t data_app_delete(void* data_id)
 	{
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_date[position].scheduling_id, data_id) == 0)
+			if(strcmp(scheduling_date[position].scheduling_id, scheduling_id) == 0)
 			{
 				ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_date[position].scheduling_id);
 
 				pivot_scheduling_date scheduling_delete = {};
 				memcpy(&scheduling_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
-				return ret;
+				return data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 			}
 		}
 	}
@@ -364,21 +363,14 @@ esp_err_t data_app_delete(void* data_id)
 	{
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_off_date[position].scheduling_id, data_id) == 0)
+			if(strcmp(scheduling_off_date[position].scheduling_id, scheduling_id) == 0)
 			{
 				ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_off_date[position].scheduling_id);
-
-				printf("antes off data %s\n", scheduling_off_date[position].scheduling_id);
-				printf("antes off data %s\n", scheduling_off_date[position + 1].scheduling_id);
 
 				pivot_scheduling_off_date scheduling_delete = {};
 				memcpy(&scheduling_off_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				printf("depois off data %s\n", scheduling_off_date[position].scheduling_id);
-				printf("depois off data %s\n", scheduling_off_date[position + 1].scheduling_id);
-
-				data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
-				return ret;
+				return data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
 			}
 		}
 	}
@@ -389,15 +381,14 @@ esp_err_t data_app_delete(void* data_id)
 	{
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_angle[position].scheduling_id, data_id) == 0)
+			if(strcmp(scheduling_angle[position].scheduling_id, scheduling_id) == 0)
 			{
 				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_angle[position].scheduling_id);
 
 				pivot_scheduling_angle scheduling_delete = {};
 				memcpy(&scheduling_angle[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
-				return ret;
+				return data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 			}
 		}
 	}
@@ -406,15 +397,14 @@ esp_err_t data_app_delete(void* data_id)
 	ret = data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 	if(ret == ESP_OK)
 	{
-		if(strcmp(scheduling_off_angle.scheduling_id, data_id) == 0)
+		if(strcmp(scheduling_off_angle.scheduling_id, scheduling_id) == 0)
 		{
 			ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle.scheduling_id);
 
 			pivot_scheduling_off_angle scheduling_delete = {};
 			memcpy(&scheduling_off_angle, &scheduling_delete, sizeof(scheduling_delete));
 
-			data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
-			return ret;
+			return data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
 		}
 	}
 

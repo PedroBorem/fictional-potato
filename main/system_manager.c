@@ -836,9 +836,6 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 
-			for(int i = 0 ; i < CONFIG_SCHEDULING_MAX_VALUE; i++)
-				printf("system %s \n", scheduling_off_date[i].scheduling_id);
-
 			scheduling_stop(IDP_14);
 			scheduling_stop(IDP_15);
 			scheduling_stop(IDP_16);
@@ -1258,7 +1255,6 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			printf("system %s %d \n", scheduling_off_date[position].scheduling_id, position);
 			if(strcmp(scheduling_off_date[position].scheduling_id, "") == 0)
 			{
 				scheduling_size = position;

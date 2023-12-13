@@ -36,7 +36,7 @@ typedef enum
 esp_err_t data_app_init(void);
 esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_size);
 esp_err_t data_app_load(data_type_t data_type, void* data);
-esp_err_t data_app_delete(void* data_id);
+esp_err_t data_app_delete_scheduling(char* scheduling_id);
 void data_app_gen_scheduling_key(char* scheduling_id);
 size_t data_app_get_data_size(const char* label_name);
 
