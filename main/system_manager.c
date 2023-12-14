@@ -808,7 +808,7 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 		};
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		esp_err_t err = data_app_delete(scheduling_id);
+		esp_err_t err = data_app_delete_scheduling(scheduling_id);
 		if(err == ESP_OK)
 		{
 			// send ack

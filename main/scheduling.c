@@ -342,7 +342,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date
 				&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete(scheduling_date_current[date_position].scheduling_id);
+					data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
 				}
 			}
@@ -372,7 +372,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				&& (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
 				&& (strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0))
 				{
-					data_app_delete(scheduling_angle_current[angle_position].scheduling_id);
+					data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
 				}
 			}
@@ -401,7 +401,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				if(scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
 				&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete(scheduling_off_date_current[date_position].scheduling_id);
+					data_app_delete_scheduling(scheduling_off_date_current[date_position].scheduling_id);
 					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_off_date_current);
 				}
 			}
