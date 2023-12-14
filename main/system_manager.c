@@ -967,26 +967,16 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 
 		uint16_t dwp = 0;
 		uint8_t idp = IDP_14;
-		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_date[position].scheduling_id, "") == 0)
-			{
-				scheduling_size = position;
-				break;
-			}
-		}
+			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
 
-		if(scheduling_size != 0)
-		{
-			for(uint8_t position = 0; position < scheduling_size; position++)
+			if(dwp != 0)
 			{
-				dwp = idp_parser_create_pwd(scheduling_date[position].actions);
-
 				arg_pair_t arg_pairs[] =
 				{
 					{ "uint8_t", &idp },
@@ -1116,26 +1106,16 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 
 		uint16_t dwp = 0;
 		uint8_t idp = IDP_15;
-		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_angle[position].scheduling_id, "") == 0)
-			{
-				scheduling_size = position;
-				break;
-			}
-		}
+			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
 
-		if(scheduling_size != 0)
-		{
-			for(uint8_t position = 0; position < scheduling_size; position++)
+			if(dwp != 0)
 			{
-				dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
-
 				arg_pair_t arg_pairs[] =
 				{
 					{ "uint8_t", &idp },
@@ -1248,25 +1228,15 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 		char str_out[200] = {};
 
 		uint8_t idp = IDP_16;
-		uint8_t scheduling_size = 0;
 
 		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(strcmp(scheduling_off_date[position].scheduling_id, "") == 0)
+			if(scheduling_off_date[position].end_date != 0)
 			{
-				scheduling_size = position;
-				break;
-			}
-		}
-
-		if(scheduling_size != 0)
-		{
-			for(uint8_t position = 0; position < scheduling_size; position++)
-			{
-				if(scheduling_off_date[position].end_date != 0)
+				if(scheduling_off_date[position].end_date != 0 )
 				{
 					arg_pair_t arg_pairs[] =
 					{

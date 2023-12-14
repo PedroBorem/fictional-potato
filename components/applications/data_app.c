@@ -15,7 +15,6 @@
 
 /* C base */
 #include <string.h>
-#include <stdlib.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -40,11 +39,6 @@
 #define DATA_SCHEDULING_OFF_ANGLE	"s_off_angle"
 #define DATA_HISTORY				"history"
 #define DATA_TIMESTAMP				"timestamp"
-
-/* static methods ------------------------------------------------ */
-static int data_app_sort(const void * buffer_target, const void *buffer_compare) {
-    return strcmp(((pivot_scheduling_date *)buffer_target)->scheduling_id, ((pivot_scheduling_date *)buffer_compare)->scheduling_id);
-}
 
 /* Public methods ------------------------------------------------ */
 esp_err_t data_app_init(void)
@@ -357,8 +351,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_date scheduling_delete = {};
 				memcpy(&scheduling_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				qsort(scheduling_date, CONFIG_SCHEDULING_MAX_VALUE, sizeof(pivot_scheduling_date), data_app_sort);
-
 				return data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 			}
 		}
@@ -377,8 +369,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_off_date scheduling_delete = {};
 				memcpy(&scheduling_off_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				qsort(scheduling_off_date, CONFIG_SCHEDULING_MAX_VALUE, sizeof(pivot_scheduling_off_date), data_app_sort);
-
 				return data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
 			}
 		}
@@ -396,8 +386,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 
 				pivot_scheduling_angle scheduling_delete = {};
 				memcpy(&scheduling_angle[position], &scheduling_delete, sizeof(scheduling_delete));
-
-				qsort(scheduling_angle, CONFIG_SCHEDULING_MAX_VALUE, sizeof(pivot_scheduling_angle), data_app_sort);
 
 				return data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 			}
