@@ -381,6 +381,8 @@ pivot_actions gpio_actuator_get(void)
 
 void gpio_actuator_shutdown(void)
 {
+	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
@@ -391,7 +393,7 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pump_off();
 
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+	vTaskDelay(pdMS_TO_TICKS(500));
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 	if(perc_timer_handleOn != NULL)
@@ -469,8 +471,9 @@ esp_err_t gpio_actuator_start(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+	vTaskDelay(pdMS_TO_TICKS(500));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 
 	return err;
