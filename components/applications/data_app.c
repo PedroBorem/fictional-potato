@@ -242,7 +242,13 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			history[CONFIG_HISTORY_MAX_VALUE - 1].end_date = history_tmp.end_date;
 			history[CONFIG_HISTORY_MAX_VALUE - 1].end_angle = history_tmp.end_angle;
 
-			ret = nvs_data_set(DATA_HISTORY, &history, sizeof(history));
+			//adjust firt interation
+			if(history[CONFIG_HISTORY_MAX_VALUE - 1].start_date != 0)
+			{
+				nvs_data_set(DATA_HISTORY, &history, sizeof(history));
+			}
+
+			ret = ESP_OK;
 			break;
 		}
 		case DATA_TYPE_TIMESTAMP:
