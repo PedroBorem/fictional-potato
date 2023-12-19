@@ -836,11 +836,6 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 
-			scheduling_stop(IDP_14);
-			scheduling_stop(IDP_15);
-			scheduling_stop(IDP_16);
-			scheduling_stop(IDP_17);
-
 			scheduling_start(IDP_14, &scheduling_date);
 			scheduling_start(IDP_15, &scheduling_angle);
 			scheduling_start(IDP_16, &scheduling_off_date);
@@ -907,7 +902,6 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 
 					data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
-					scheduling_stop(idp);
 					scheduling_start(idp, scheduling_date);
 
 					// send ack
@@ -1046,7 +1040,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 					data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 
 					strcpy((char*)&scheduling.scheduling_id, (char*)&scheduling_angle[position].scheduling_id);
-					scheduling_stop(idp);
+
 					scheduling_start(idp, scheduling_angle);
 
 					// send ack
@@ -1182,7 +1176,6 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 				data_app_gen_scheduling_key((char*)&scheduling_off_date[position].scheduling_id);
 				data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
 
-				scheduling_stop(idp);
 				scheduling_start(idp, scheduling_off_date);
 
 				ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_date[position].scheduling_id);
@@ -1284,7 +1277,6 @@ static void system_manager_idp_17(const char* buffer, comm_type comm_mode)
 		data_app_gen_scheduling_key(scheduling_off_angle.scheduling_id);
 		data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
 
-		scheduling_stop(idp);
 		scheduling_start(idp, &scheduling_off_angle);
 
 		ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_angle.scheduling_id);

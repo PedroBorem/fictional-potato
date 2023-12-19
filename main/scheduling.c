@@ -46,12 +46,17 @@ static void scheduling_task_idp_15(void* arg);
 static void scheduling_task_idp_16(void* arg);
 static void scheduling_task_idp_17(void* arg);
 
-
 static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actions actions)
 {
 	uint8_t idp = IDP_INVALID;
 	uint16_t dwp = 0;
 	char str_out[50] = {};
+
+	if(scheduling_callback == NULL)
+	{
+		ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+		return;
+	}
 
 	// create package - send IDP 18
 	idp = IDP_18;
@@ -94,6 +99,13 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 	uint8_t idp = IDP_INVALID;
 	uint16_t dwp = 0;
 	char str_out[50] = {};
+
+
+	if(scheduling_callback == NULL)
+	{
+		ESP_LOGE(SCHEDULING_TAG, "invalid callback");
+		return;
+	}
 
 	if(scheduling_notify_server == true)
 	{
@@ -171,36 +183,16 @@ static void scheduling_task_idp_14(void* arg)
 			{
 				if(scheduling_date_status[date_position] == false)
 				{
-					if(scheduling_callback != NULL)
-					{
-						scheduling_date_status[date_position] = true;
-
-						scheduling_active(date_position,
-								scheduling_date_current[date_position].scheduling_id,
-								scheduling_date_current[date_position].actions);
-					}
-					else
-					{
-						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-					}
+					scheduling_date_status[date_position] = true;
+					scheduling_active(date_position,
+							scheduling_date_current[date_position].scheduling_id,
+							scheduling_date_current[date_position].actions);
 				}
 			}
-			else if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date
-			&& scheduling_date_current[date_position].end_date != 0
-			&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
+			else if(scheduling_date_status[date_position] == true)
 			{
-				if(scheduling_callback != NULL)
-				{
-					if(scheduling_date_status[date_position] == true)
-					{
-						scheduling_date_status[date_position] = false;
-						scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
-					}
-				}
-				else
-				{
-					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-				}
+				scheduling_date_status[date_position] = false;
+				scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
 			}
 		}
 
@@ -228,10 +220,7 @@ static void scheduling_task_idp_15(void* arg)
 			{
 				if(scheduling_angle_status[angle_position] == false)
 				{
-					if(scheduling_callback != NULL)
-					{
 						scheduling_angle_status[angle_position] = true;
-
 						scheduling_active(angle_position,
 								scheduling_angle_current[angle_position].scheduling_id,
 								scheduling_angle_current[angle_position].actions);
@@ -241,23 +230,12 @@ static void scheduling_task_idp_15(void* arg)
 						{
 							vTaskDelay(pdMS_TO_TICKS(300000)); // 5 minutes
 						}
-					}
 				}
 				else if( *scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
 						&& *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set )
 				{
-					if(scheduling_callback != NULL)
-					{
-						if(scheduling_angle_status[angle_position] == true)
-						{
-							scheduling_angle_status[angle_position] = false;
-							scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
-						}
-					}
-					else
-					{
-						ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-					}
+					scheduling_angle_status[angle_position] = false;
+					scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
 				}
 			}
 		}
@@ -282,14 +260,7 @@ static void scheduling_task_idp_16(void* arg)
 			&& scheduling_off_date_current[date_position].end_date != 0
 			&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
 			{
-				if(scheduling_callback != NULL)
-				{
-					scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
-				}
-				else
-				{
-					ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-				}
+				scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
 			}
 		}
 
@@ -307,14 +278,7 @@ static void scheduling_task_idp_17(void* arg)
 		&& *scheduling_current_angle < (scheduling_off_angle_current.end_angle + angle_off_set )
 		&& strcmp(scheduling_off_angle_current.scheduling_id,"") > 0)
 		{
-			if(scheduling_callback != NULL)
-			{
-				scheduling_deactivate(scheduling_off_angle_current.scheduling_id, true);
-			}
-			else
-			{
-				ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-			}
+			scheduling_deactivate(scheduling_off_angle_current.scheduling_id, true);
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
@@ -335,6 +299,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 	{
 		case IDP_14:
 		{
+			memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 			memcpy(scheduling_date_current, scheduling_data, sizeof(scheduling_date_current));
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
@@ -356,14 +321,12 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_14);
 			}
-			else
-			{
-				vTaskResume(xTask_scheduling_idp_14);
-			}
+
 			break;
 		}
 		case IDP_15:
 		{
+			memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 			memcpy(scheduling_angle_current, scheduling_data, sizeof(scheduling_angle_current));
 
 			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
@@ -386,10 +349,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_15);
 			}
-			else
-			{
-				vTaskResume(xTask_scheduling_idp_15);
-			}
+
 			break;
 		}
 		case IDP_16:
@@ -415,10 +375,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_16);
 			}
-			else
-			{
-				vTaskResume(xTask_scheduling_idp_16);
-			}
+
 			break;
 		}
 		case IDP_17:
@@ -434,54 +391,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 						SCHEDULING_TASK_PRIORITY,
 						&xTask_scheduling_idp_17);
 			}
-			else
-			{
-				vTaskResume(xTask_scheduling_idp_17);
-			}
-			break;
-		}
-		default:
-		{
-			ESP_LOGE(SCHEDULING_TAG, "invalid scheduling idp %s", __func__);
-			break;
-		}
-	}
-}
 
-void scheduling_stop(idp_type scheduling_idp)
-{
-	switch (scheduling_idp)
-	{
-		case IDP_14:
-		{
-			if(xTask_scheduling_idp_14 != NULL)
-			{
-				vTaskSuspend(xTask_scheduling_idp_14);
-			}
-			break;
-		}
-		case IDP_15:
-		{
-			if(xTask_scheduling_idp_15 != NULL)
-			{
-				vTaskSuspend(xTask_scheduling_idp_15);
-			}
-			break;
-		}
-		case IDP_16:
-		{
-			if(xTask_scheduling_idp_16 != NULL)
-			{
-				vTaskSuspend(xTask_scheduling_idp_16);
-			}
-			break;
-		}
-		case IDP_17:
-		{
-			if(xTask_scheduling_idp_17 != NULL)
-			{
-				vTaskSuspend(xTask_scheduling_idp_17);
-			}
 			break;
 		}
 		default:
