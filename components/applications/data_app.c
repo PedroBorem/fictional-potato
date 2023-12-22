@@ -1,7 +1,7 @@
 /**
  * @file data_app.c
  * @date Set 18, 2022
- * @brief memory control application
+ * @brief Memory control application.
 */
 
 /* Self include */
@@ -16,31 +16,88 @@
 /* C base */
 #include <string.h>
 
-/* Private definitions ------------------------------------------- */
 /**
- * class log tag
- *
+ * @def DATA_APP_TAG
+ * @brief Class log tag.
  */
-#define DATA_APP_TAG			"data_app"
+#define DATA_APP_TAG "data_app"
 
 /**
- * NVS access space
- *
+ * @def DATA_ACTION
+ * @brief NVS access space for action data.
  */
-#define DATA_ACTION					"action"
-#define DATA_PIVOT_CONFIG			"pivot_config"
-#define DATA_NETWORK_CONFIG			"net_config"
-#define DATA_ECO_MODE_CONFIG		"eco_config"
-#define DATA_SECTOR_CONFIG			"sector_config"
-#define DATA_RETURN_CONFIG			"return_config"
-#define DATA_SCHEDULING_DATE		"s_date"
-#define DATA_SCHEDULING_OFF_DATE	"s_off_date"
-#define DATA_SCHEDULING_ANGLE		"s_angle"
-#define DATA_SCHEDULING_OFF_ANGLE	"s_off_angle"
-#define DATA_HISTORY				"history"
-#define DATA_TIMESTAMP				"timestamp"
+#define DATA_ACTION "action"
 
-/* Public methods ------------------------------------------------ */
+/**
+ * @def DATA_PIVOT_CONFIG
+ * @brief NVS access space for pivot configuration data.
+ */
+#define DATA_PIVOT_CONFIG "pivot_config"
+
+/**
+ * @def DATA_NETWORK_CONFIG
+ * @brief NVS access space for network configuration data.
+ */
+#define DATA_NETWORK_CONFIG "net_config"
+
+/**
+ * @def DATA_ECO_MODE_CONFIG
+ * @brief NVS access space for eco mode configuration data.
+ */
+#define DATA_ECO_MODE_CONFIG "eco_config"
+
+/**
+ * @def DATA_SECTOR_CONFIG
+ * @brief NVS access space for sector configuration data.
+ */
+#define DATA_SECTOR_CONFIG "sector_config"
+
+/**
+ * @def DATA_RETURN_CONFIG
+ * @brief NVS access space for return configuration data.
+ */
+#define DATA_RETURN_CONFIG "return_config"
+
+/**
+ * @def DATA_SCHEDULING_DATE
+ * @brief NVS access space for scheduling date data.
+ */
+#define DATA_SCHEDULING_DATE "s_date"
+
+/**
+ * @def DATA_SCHEDULING_OFF_DATE
+ * @brief NVS access space for scheduling off date data.
+ */
+#define DATA_SCHEDULING_OFF_DATE "s_off_date"
+
+/**
+ * @def DATA_SCHEDULING_ANGLE
+ * @brief NVS access space for scheduling angle data.
+ */
+#define DATA_SCHEDULING_ANGLE "s_angle"
+
+/**
+ * @def DATA_SCHEDULING_OFF_ANGLE
+ * @brief NVS access space for scheduling off angle data.
+ */
+#define DATA_SCHEDULING_OFF_ANGLE "s_off_angle"
+
+/**
+ * @def DATA_HISTORY
+ * @brief NVS access space for history data.
+ */
+#define DATA_HISTORY "history"
+
+/**
+ * @def DATA_TIMESTAMP
+ * @brief NVS access space for timestamp data.
+ */
+#define DATA_TIMESTAMP "timestamp"
+
+/**
+ * @brief Initializes the data application.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t data_app_init(void)
 {
 	esp_err_t err = ESP_FAIL;
@@ -150,6 +207,13 @@ esp_err_t data_app_init(void)
 	return err;
 }
 
+/**
+ * @brief Saves data to the NVS based on the specified data type.
+ * @param data_type Data type identifier.
+ * @param data Pointer to the data to be saved.
+ * @param data_size Size of the data.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_size)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -265,6 +329,12 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 	return ret;
 }
 
+/**
+ * @brief Loads data from the NVS based on the specified data type.
+ * @param data_type Data type identifier.
+ * @param data Pointer to store the loaded data.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t data_app_load(data_type_t data_type, void* data)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -340,6 +410,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 	return ret;
 }
 
+/**
+ * @brief Deletes scheduling data based on the provided scheduling ID.
+ * @param scheduling_id Scheduling ID to identify the data to be deleted.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t data_app_delete_scheduling(char* scheduling_id)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -416,6 +491,11 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 	return ret;
 }
 
+
+/**
+ * @brief Generates a scheduling key.
+ * @param scheduling_id Pointer to store the generated scheduling key.
+ */
 void data_app_gen_scheduling_key(char* scheduling_id)
 {
 	char output_key[8] = "";
@@ -442,6 +522,11 @@ void data_app_gen_scheduling_key(char* scheduling_id)
 	memcpy(scheduling_id, &output_key, strlen(output_key));
 }
 
+/**
+ * @brief Gets the size of the data stored in the NVS based on the label name.
+ * @param label_name Label name to identify the data.
+ * @return size_t Size of the data.
+ */
 size_t data_app_get_data_size(const char* label_name)
 {
     return nvs_data_get_size(label_name);

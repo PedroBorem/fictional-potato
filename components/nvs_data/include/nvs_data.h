@@ -1,16 +1,13 @@
 /**
  * @file nvs_data.h
  * @brief Class for direct access to flash memory (NVS).
+ *
+ * This file defines the interface for the NVS Data class, which provides functions
+ * for direct access to flash memory using the Non-Volatile Storage (NVS) API.
  */
 
 #ifndef COMPONENTS_NVS_DATA_INCLUDE_NVS_DATA_H_
 #define COMPONENTS_NVS_DATA_INCLUDE_NVS_DATA_H_
-
-/**
- * @file nvs_data.h
- * @date Set 18, 2022
- * @brief class for direct access to flash memory (NVS)
-*/
 
 #include "esp_err.h"
 #include <stdint.h>

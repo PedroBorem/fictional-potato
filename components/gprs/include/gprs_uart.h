@@ -1,6 +1,5 @@
 /**
  * @file gprs_uart.h
- * @date 7 de agosto de 2022
  * @brief Header file for GPRS UART communication functions.
  */
 
@@ -12,7 +11,11 @@
 
 /**
  * @brief Initialize the GPRS UART module.
- * @param callback The callback function to be called when data is received
+ *
+ * This function initializes the GPRS UART module, setting up the UART communication for GPRS.
+ *
+ * @param callback The callback function to be called when data is received.
+ *
  * @return
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
@@ -22,8 +25,12 @@ esp_err_t gprs_uart_init(const app_callback callback);
 
 /**
  * @brief Send an event through the GPRS UART module.
- * @param event The event buffer to be sent
- * @param event_size The size of the event buffer
+ *
+ * This function sends an event buffer through the GPRS UART module.
+ *
+ * @param event The event buffer to be sent.
+ * @param event_size The size of the event buffer.
+ *
  * @return
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to send the event

@@ -23,7 +23,7 @@
 /**
  * @brief The tag used for logging IDP parser-related messages.
  */
-#define IDP_PARSER_TAG	"idp_parser"
+#define IDP_PARSER_TAG  "idp_parser"
 
 /**
  * @brief The maximum size of the buffer used for creating IDP packets.
@@ -42,6 +42,16 @@
 static bool idp_parser_check_pack(const char* string_in, char* string_out);
 
 /* Private methods ----------------------------------------------- */
+
+/**
+ * @brief Check if the received IDP packet is valid.
+ *
+ * This function checks if the received IDP packet has the correct format.
+ *
+ * @param[in] string_in The received IDP packet string.
+ * @param[out] string_out The valid IDP packet string.
+ * @return true if the packet is valid, false otherwise.
+ */
 static bool idp_parser_check_pack(const char* string_in, char* string_out)
 {
     bool ret = false;
@@ -70,6 +80,15 @@ static bool idp_parser_check_pack(const char* string_in, char* string_out)
 }
 
 /* Public methods ------------------------------------------------ */
+/**
+ * @brief Get the IDP type from the given string.
+ *
+ * This function extracts the IDP type from the received IDP packet string.
+ *
+ * @param[in] string_in The received IDP packet string.
+ * @param[out] string_out The extracted IDP type as a string.
+ * @return The IDP type as an `idp_type` enum.
+ */
 idp_type idp_parser_get(const char* string_in, char* string_out)
 {
 	idp_type idp_ret = IDP_INVALID;
@@ -90,6 +109,14 @@ idp_type idp_parser_get(const char* string_in, char* string_out)
 	return idp_ret;
 }
 
+/**
+ * @brief Validate the actions in a pivot_actions structure.
+ *
+ * This function validates the actions in a `pivot_actions` structure to ensure they are within valid ranges.
+ *
+ * @param[in] actions The `pivot_actions` structure to validate.
+ * @return true if the actions are valid, false otherwise.
+ */
 bool idp_parser_validate_actions(const pivot_actions actions)
 {
 	bool ret = false;
@@ -120,6 +147,14 @@ bool idp_parser_validate_actions(const pivot_actions actions)
 	return ret;
 }
 
+/**
+ * @brief Validate the network configuration.
+ *
+ * This function validates the network configuration to ensure all necessary fields are filled.
+ *
+ * @param[in] net_config The network configuration to validate.
+ * @return true if the configuration is valid, false otherwise.
+ */
 bool idp_parser_validate_network(const network_config net_config)
 {
 	bool ret = false;
@@ -133,6 +168,14 @@ bool idp_parser_validate_network(const network_config net_config)
 	return ret;
 }
 
+/**
+ * @brief Create a password from the actions in a `pivot_actions` structure.
+ *
+ * This function creates a password from the actions in a `pivot_actions` structure.
+ *
+ * @param[in] actions The `pivot_actions` structure.
+ * @return The generated password.
+ */
 uint16_t idp_parser_create_pwd(pivot_actions actions)
 {
 	uint16_t dwp = ((actions.rotation * 100)
@@ -142,7 +185,14 @@ uint16_t idp_parser_create_pwd(pivot_actions actions)
 	return dwp;
 }
 
-
+/**
+ * @brief Get the `pivot_actions` structure from a password.
+ *
+ * This function extracts the `pivot_actions` structure from a password.
+ *
+ * @param[in] pwd The password to extract from.
+ * @param[out] actions The extracted `pivot_actions` structure.
+ */
 void idp_parser_get_pwd(uint16_t pwd, pivot_actions* actions)
 {
 	actions->power_state = pwd % 10;
@@ -154,6 +204,14 @@ void idp_parser_get_pwd(uint16_t pwd, pivot_actions* actions)
 	actions->rotation = pwd;
 }
 
+/**
+ * @brief Create an IDP package from an array of argument pairs.
+ *
+ * This function creates an IDP package from an array of argument pairs.
+ *
+ * @param[out] str_out The created IDP package string.
+ * @param[in] arg_pairs The array of argument pairs.
+ */
 void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 {
     // Inicializar o buffer vazio
@@ -211,6 +269,14 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
     strcat(str_out, "$"); // Adicionar '$' no final do buffer
 }
 
+/**
+ * @brief Get the data from an IDP package string.
+ *
+ * This function extracts data from an IDP package string and fills an array of argument pairs.
+ *
+ * @param[in] str_arg The IDP package string.
+ * @param[out] arg_pairs The array of argument pairs to fill.
+ */
 void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 {
     char* str_copy = strdup(str_arg); // Fazer uma cópia da string para evitar modificar a original

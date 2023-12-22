@@ -20,16 +20,38 @@
 #define CHECK_ARG(ARG) do { if (!ARG) return ESP_ERR_INVALID_ARG; } while (0)
 
 /* Public methods ----------------------------------- */
+
+/**
+ * @brief Convert binary-coded decimal to decimal.
+ *
+ * @param val Binary-coded decimal value.
+ * @return Decimal value.
+ */
 uint8_t bcd2dec(uint8_t val)
 {
     return (val >> 4) * 10 + (val & 0x0f);
 }
 
+/**
+ * @brief Convert decimal to binary-coded decimal.
+ *
+ * @param val Decimal value.
+ * @return Binary-coded decimal value.
+ */
 uint8_t dec2bcd(uint8_t val)
 {
     return ((val / 10) << 4) + (val % 10);
 }
 
+/**
+ * @brief Initialize the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param port I2C port number.
+ * @param sda_gpio GPIO number for SDA.
+ * @param scl_gpio GPIO number for SCL.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
 {
     CHECK_ARG(dev);
@@ -42,6 +64,13 @@ esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_g
     return i2c_master_init(port, sda_gpio, scl_gpio);
 }
 
+/**
+ * @brief Set the time on the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param time Pointer to the structure containing time information.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_set_time(rtc_i2c_dev_t *dev, struct tm *time)
 {
     CHECK_ARG(dev);
@@ -63,6 +92,13 @@ esp_err_t ds3231_set_time(rtc_i2c_dev_t *dev, struct tm *time)
     return i2c_dev_write_reg(dev, DS3231_ADDR_TIME, data, 7);
 }
 
+/**
+ * @brief Get the raw temperature from the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param temp Pointer to the variable to store the temperature.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_get_raw_temp(rtc_i2c_dev_t *dev, int16_t *temp)
 {
     CHECK_ARG(dev);
@@ -77,6 +113,13 @@ esp_err_t ds3231_get_raw_temp(rtc_i2c_dev_t *dev, int16_t *temp)
     return res;
 }
 
+/**
+ * @brief Get the temperature as an integer from the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param temp Pointer to the variable to store the temperature.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_get_temp_integer(rtc_i2c_dev_t *dev, int8_t *temp)
 {
     CHECK_ARG(temp);
@@ -90,6 +133,13 @@ esp_err_t ds3231_get_temp_integer(rtc_i2c_dev_t *dev, int8_t *temp)
     return res;
 }
 
+/**
+ * @brief Get the temperature as a floating-point number from the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param temp Pointer to the variable to store the temperature.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_get_temp_float(rtc_i2c_dev_t *dev, float *temp)
 {
     CHECK_ARG(temp);
@@ -103,6 +153,13 @@ esp_err_t ds3231_get_temp_float(rtc_i2c_dev_t *dev, float *temp)
     return res;
 }
 
+/**
+ * @brief Get the time from the DS3231 RTC device.
+ *
+ * @param dev Pointer to the RTC device structure.
+ * @param time Pointer to the structure to store the time information.
+ * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
+ */
 esp_err_t ds3231_get_time(rtc_i2c_dev_t *dev, struct tm *time)
 {
     CHECK_ARG(dev);
@@ -112,7 +169,7 @@ esp_err_t ds3231_get_time(rtc_i2c_dev_t *dev, struct tm *time)
 
     /* read time */
     esp_err_t res = i2c_dev_read_reg(dev, DS3231_ADDR_TIME, data, 7);
-        if (res != ESP_OK) return res;
+    if (res != ESP_OK) return res;
 
     /* convert to unix time structure */
     time->tm_sec = bcd2dec(data[0]);
@@ -124,7 +181,8 @@ esp_err_t ds3231_get_time(rtc_i2c_dev_t *dev, struct tm *time)
         /* AM/PM? */
         if (data[2] & DS3231_PM_FLAG) time->tm_hour += 12;
     }
-    else time->tm_hour = bcd2dec(data[2]); /* 24H */
+    else
+        time->tm_hour = bcd2dec(data[2]); /* 24H */
     time->tm_wday = bcd2dec(data[3]) - 1;
     time->tm_mday = bcd2dec(data[4]);
     time->tm_mon  = bcd2dec(data[5] & DS3231_MONTH_MASK) - 1;

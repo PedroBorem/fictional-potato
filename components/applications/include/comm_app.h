@@ -9,9 +9,9 @@
 #define COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_
 
 /**
- * @file common_parser.h
+ * @file comm_app.h
  * @date June 23, 2022
- * @brief communication class control application
+ * @brief Communication class control application.
 */
 
 #include "project_config.h"
@@ -19,16 +19,42 @@
 #include "esp_err.h"
 
 /**
- * @brief	starts all communication modules
- * @param 	app_callback[in]: function used with return to main application class
+ * @defgroup CommApp Communication Application
+ * @{
+ */
+
+/**
+ * @brief Initializes all communication modules.
+ * @param callback [in]: Function used with return to the main application class.
  * @return
- * 	- true: success
- * 	- false: fail
+ *  - ESP_OK: Success
+ *  - ESP_FAIL: Fail
+ * 
+ * This function initializes all communication modules and registers a callback
+ * function to be used in the main application class.
  */
 esp_err_t comm_app_init(const app_callback callback);
 
+/**
+ * @brief Sends an IDP package using the specified communication type.
+ * @param idp_pack [in]: IDP package to send.
+ * @param communication [in]: Type of communication (e.g., COMM_MQTT, COMM_WIFI).
+ * 
+ * This function sends an IDP package using the specified communication type.
+ */
 void comm_app_send_idp_pack(const char* idp_pack, comm_type communication);
 
+/**
+ * @brief Configures the Wi-Fi settings.
+ * @param wifi_ssid [in]: Wi-Fi SSID.
+ * @param wifi_pass [in]: Wi-Fi password.
+ * 
+ * This function configures the Wi-Fi settings for the communication module.
+ */
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
+
+/**
+ * @}
+ */
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */

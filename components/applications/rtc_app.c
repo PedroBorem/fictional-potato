@@ -11,6 +11,10 @@
 
 #include <string.h>
 
+/**
+ * @def RTC_APP_TAG
+ * @brief Log tag for RTC application.
+ */
 #define RTC_APP_TAG "rtc_app"
 
 /**
@@ -33,6 +37,13 @@ static rtc_i2c_dev_t dev = {};
 
 /* Public methods ----------------------------------- */
 
+/**
+ * @brief Initializes the RTC application.
+ *
+ * This function initializes the RTC application by configuring the RTC I2C device.
+ *
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t rtc_app_init(void)
 {
 	// Initialize RTC
@@ -44,11 +55,19 @@ esp_err_t rtc_app_init(void)
 	return ESP_FAIL;
 }
 
+/**
+ * @brief Sets the timestamp in the RTC.
+ *
+ * This function sets the timestamp in the RTC with the specified timestamp value.
+ *
+ * @param timestamp The timestamp value to set.
+ * @return bool True if setting the timestamp is successful, false otherwise.
+ */
 bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	if(timestamp > 1670123456) // date : 04/12/2022
+	if(timestamp > 1670123456) // date: 04/12/2022
 	{
 		struct tm time = *localtime(&timestamp); //obs time + 1900
 		time.tm_year += 1900;
@@ -68,6 +87,14 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	return ret;
 }
 
+/**
+ * @brief Gets the timestamp from the RTC.
+ *
+ * This function retrieves the timestamp from the RTC.
+ *
+ * @param rtc_show_dt Flag indicating whether to display the date and time in local time.
+ * @return time_t The timestamp value.
+ */
 time_t rtc_app_get_timestamp(bool rtc_show_dt)
 {
 	struct tm rtcinfo = {0};
@@ -93,6 +120,13 @@ time_t rtc_app_get_timestamp(bool rtc_show_dt)
 	return timestamp_now;
 }
 
+/**
+ * @brief Gets the date and time from the RTC.
+ *
+ * This function retrieves the date and time from the RTC and stores it in the specified time structure.
+ *
+ * @param rtcinfo The pointer to the time structure to store the date and time.
+ */
 void rtc_app_get_date_time(struct tm* rtcinfo)
 {
 	if(rtcinfo == NULL)
@@ -105,6 +139,14 @@ void rtc_app_get_date_time(struct tm* rtcinfo)
 	}
 }
 
+/**
+ * @brief Displays the date and time.
+ *
+ * This function displays the date and time based on the specified timestamp and time zone.
+ *
+ * @param timestamp_now The timestamp value.
+ * @param time_z The time zone.
+ */
 void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 {
 	char time_str[80];
@@ -118,6 +160,14 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 	ESP_LOGI(RTC_APP_TAG, "Date time [%s] GMT (%d)", time_str, time_z);
 }
 
+/**
+ * @brief Gets the date and time in string format.
+ *
+ * This function retrieves the date and time from the RTC and formats it as a string.
+ *
+ * @param timestamp_now The timestamp value.
+ * @param str_out Pointer to the output string buffer.
+ */
 void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out)
 {
 	char buff[50] = {};

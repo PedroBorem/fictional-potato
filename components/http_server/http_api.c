@@ -1,8 +1,9 @@
-/*
- * http_server.c
+/**
+ * @file http_server.c
+ * @brief HTTP Server implementation for handling server initialization, start, stop, and callbacks.
  *
- *  Created on: 20 de jan de 2023
- *      Author: bruno
+ * This file provides functions to handle HTTP server operations, such as initialization, starting, stopping,
+ * and handling various HTTP methods (GET, POST, DELETE) along with callback registration.
  */
 
 /* Self include */
@@ -32,7 +33,7 @@
 
 /* Private variables  -------------------------------------------- */
 /**
- * data structure for HTTP transmission
+ * Data structure for HTTP transmission
  *
  */
 typedef struct
@@ -42,7 +43,7 @@ typedef struct
 
     /* Scratch buffer for temporary storage during file transfer */
     char scratch[HTTP_SCRATCH_BUFSIZE];
-}http_file_server_data; //todo analisar se podemos remover isso
+} http_file_server_data; //todo analisar se podemos remover isso
 
 /*
  * Structure holding server handle
@@ -54,7 +55,7 @@ struct async_resp_arg {
     int fd;
 };
 
-// callback pointer
+// Callback pointer
 static app_callback http_callback = NULL;
 
 static httpd_handle_t server = NULL;
@@ -68,6 +69,17 @@ static http_file_server_data* server_data = NULL;
 static httpd_req_t* server_req = NULL;
 
 /* Public methods ------------------------------------------------ */
+/**
+ * @brief Initialize the HTTP server memory and variables.
+ *
+ * This function initializes the HTTP server memory and variables, including file system setup.
+ *
+ * @return
+ *  - ESP_OK: Success.
+ *  - ESP_FAIL: Failed to mount or format filesystem.
+ *  - ESP_ERR_NOT_FOUND - Failed to initialize SPIFFS.
+ *  - ESP_ERR_NO_MEM - Failed to allocate memory for server data.
+ */
 esp_err_t http_server_init(void)
 {
     esp_err_t err = ESP_OK;
@@ -86,6 +98,17 @@ esp_err_t http_server_init(void)
     return err;
 }
 
+/**
+ * @brief Start the HTTP server.
+ *
+ * This function starts the HTTP server.
+ *
+ * @return
+ *  - ESP_OK: Success.
+ *  - ESP_FAIL: Failed to start file server.
+ *  - ESP_ERR_INVALID_STATE - File server already started.
+ *  - ESP_ERR_NO_MEM - Failed to allocate memory for server data.
+ */
 httpd_handle_t http_server_start(void)
 {
 	const char* base_path = "/data";
@@ -148,6 +171,17 @@ httpd_handle_t http_server_start(void)
     return http_handle;
 }
 
+/**
+ * @brief Stop the HTTP server.
+ *
+ * This function stops the HTTP server.
+ *
+ * @param http_handle The handle to the HTTP server.
+ * @return
+ *  - ESP_OK: Server stopped successfully.
+ *  - ESP_ERR_INVALID_ARG: Handle argument is Null.
+ *  - ESP_ERR_INVALID_STATE: HTTP server not started.
+ */
 esp_err_t http_server_stop(httpd_handle_t http_handle)
 {
 	esp_err_t ret = ESP_ERR_INVALID_STATE;
@@ -169,6 +203,16 @@ esp_err_t http_server_stop(httpd_handle_t http_handle)
     return ret;
 }
 
+/**
+ * @brief Register the HTTP event callback.
+ *
+ * This function registers the HTTP event callback.
+ *
+ * @param callback The event callback function.
+ * @return
+ *  - ESP_OK: Callback registered successfully.
+ *  - ESP_FAIL: Invalid null pointer argument.
+ */
 esp_err_t http_server_register_callback(app_callback callback)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -182,6 +226,13 @@ esp_err_t http_server_register_callback(app_callback callback)
 	return ret;
 }
 
+/**
+ * @brief Send a response through the HTTP server.
+ *
+ * This function sends a response through the HTTP server.
+ *
+ * @param package The response package to be sent.
+ */
 void http_server_send_resp(char* package)
 {
 	if(server_req != NULL)
@@ -194,61 +245,61 @@ void http_server_send_resp(char* package)
 
 /* Private methods ----------------------------------------------- */
 /**
- * @brief	Handler to download a file kept on the server
+ * @brief	Handler to download a file kept on the server.
  * @param
  *  - req[in/out] - HTTP Request Data Structure.
  * @return
- *  - ESP_OK : On success
- *  - ESP_FAIL : fail to get handler
+ *  - ESP_OK: On success.
+ *  - ESP_FAIL: Fail to get handler.
  */
 static esp_err_t http_get_handler(httpd_req_t *req)
 {
-	esp_err_t err = ESP_OK;
+    esp_err_t err = ESP_OK;
 
-	server_req = req;
+    server_req = req;
 
-    if(strcmp(req->uri, "/api-status") == 0)
+    if (strcmp(req->uri, "/api-status") == 0)
     {
-    	LOG_COMM(HTTP_API_TAG, "get /api-status : %s", "{status_soil:200}");
-		httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
-		server_req = NULL;
+        LOG_COMM(HTTP_API_TAG, "get /api-status : %s", "{status_soil:200}");
+        httpd_resp_send(req, "{status_soil:200}", HTTPD_RESP_USE_STRLEN);
+        server_req = NULL;
     }
     else if (strcmp(req->uri, "/version") == 0)
-	{
-		if(http_callback != NULL)
-		{
-			http_callback("#90$", COMM_HTTP_GET);
-		}
-		else
-		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			err = ESP_FAIL;
-		}
-	}
+    {
+        if (http_callback != NULL)
+        {
+            http_callback("#90$", COMM_HTTP_GET);
+        }
+        else
+        {
+            ESP_LOGE(HTTP_API_TAG, "unregistered HTTP callback");
+            err = ESP_FAIL;
+        }
+    }
     else if (strcmp(req->uri, "/states") == 0)
-	{
-		if(http_callback != NULL)
-		{
-			http_callback("#00$", COMM_HTTP_GET);
-		}
-		else
-		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			err = ESP_FAIL;
-		}
-	}
-    else if(strcmp(req->uri, "/config/network") == 0)
-	{
-		if(http_callback != NULL)
-		{
-			http_callback("#02$", COMM_HTTP_GET);
-		}
-		else
-		{
-			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
-			err = ESP_FAIL;
-		}
-	}
+    {
+        if (http_callback != NULL)
+        {
+            http_callback("#00$", COMM_HTTP_GET);
+        }
+        else
+        {
+            ESP_LOGE(HTTP_API_TAG, "unregistered HTTP callback");
+            err = ESP_FAIL;
+        }
+    }
+    else if (strcmp(req->uri, "/config/network") == 0)
+    {
+        if (http_callback != NULL)
+        {
+            http_callback("#02$", COMM_HTTP_GET);
+        }
+        else
+        {
+            ESP_LOGE(HTTP_API_TAG, "unregistered HTTP callback");
+            err = ESP_FAIL;
+        }
+    }
     else if(strcmp(req->uri, "/config/pivot") == 0)
 	{
 		if(http_callback != NULL)
@@ -336,23 +387,23 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 	}
     else
     {
-    	ESP_LOGE(HTTP_API_TAG,"invalid HTTP uri (%s)", req->uri);
-    	httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid HTTP uri");
-		server_req = NULL;
+        ESP_LOGE(HTTP_API_TAG, "invalid HTTP uri (%s)", req->uri);
+        httpd_resp_send_err(req, HTTPD_500_INTERNAL_SERVER_ERROR, "Invalid HTTP uri");
+        server_req = NULL;
 
-		err = ESP_FAIL;
+        err = ESP_FAIL;
     }
 
     return err;
 }
 
 /**
- * @brief	Handler to  a file from the server
+ * @brief	Handler to upload a file to the server.
  * @param
  *  - req[in/out] - HTTP Request Data Structure.
  * @return
- *  - ESP_OK : On success
- *  - ESP_FAIL : fail to get submit
+ *  - ESP_OK: On success.
+ *  - ESP_FAIL: Fail to get submit.
  */
 static esp_err_t http_post_handler(httpd_req_t *req)
 {
@@ -385,6 +436,14 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 	return err;
 }
 
+/**
+ * @brief	Handler to delete a file from the server.
+ * @param
+ *  - req[in/out] - HTTP Request Data Structure.
+ * @return
+ *  - ESP_OK: On success.
+ *  - ESP_FAIL: Fail to get handler.
+ */
 static esp_err_t http_delete_handler(httpd_req_t *req)
 {
 	esp_err_t err = ESP_FAIL;

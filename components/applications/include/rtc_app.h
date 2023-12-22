@@ -19,13 +19,12 @@
  */
 #define RTC_CONFIG_TIMEZONE -3
 
-
 /**
  * @brief Initializes the RTC application.
  *
  * This function initializes the RTC application.
  *
- * @return bool True if initialization is successful, false otherwise.
+ * @return esp_err_t Error code indicating the success of the operation.
  */
 esp_err_t rtc_app_init(void);
 
@@ -68,6 +67,14 @@ void rtc_app_get_date_time(struct tm* rtcinfo);
  */
 void rtc_show_date_time(time_t timestamp_now, uint8_t time_z);
 
+/**
+ * @brief Gets the date and time in string format.
+ *
+ * This function retrieves the date and time from the RTC and formats it as a string.
+ *
+ * @param timestamp_now The timestamp value.
+ * @param str_out Pointer to the output string buffer.
+ */
 void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */
