@@ -1,11 +1,14 @@
-/*
- * system_manager.c
+/**
+ * @file system_manager.c
+ * @brief Source file for the system manager module.
  *
- *  Created on: 31 de mai de 2022
- *      Author: brunolima
+ * This module initializes and manages various components of the system, including actuation, communication, scheduling, and sectorization.
+ *
+ * @date 31 de mai de 2022
+ * @author brunolima
  */
 
-// applications include
+// Include header files
 #include "system_manager.h"
 #include "project_config.h"
 #include "idp_parser.h"
@@ -15,7 +18,7 @@
 #include "esp_system.h"
 #include "FreeRTOS_defines.h"
 
-// private include
+// Private includes
 #include <string.h>
 
 #include "actuation_app.h"
@@ -26,21 +29,54 @@
 #include "system_monitoring.h"
 #include "sectorization.h"
 
-#define SYSTEM_MANAGER_TAG 	"system manager"
+/** @def SYSTEM_MANAGER_TAG
+ *  @brief Log tag for the system manager module.
+ */
+#define SYSTEM_MANAGER_TAG  "system manager"
 
-#define SYSTEM_REBOOT_DELAY_MS	 	(120000) // 2 minutos
-#define SYSTEM_REBOOT_TIMEOUT_MS	(46800000) // 3 horas
-#define SYSTEM_SAVE_FLASH_TIME_MS 	(600000) // 10 minutos
+/** @def SYSTEM_REBOOT_DELAY_MS
+ *  @brief Delay time (in milliseconds) for system reboot.
+ */
+#define SYSTEM_REBOOT_DELAY_MS  (120000) // 2 minutes
 
-/* global variables */
+/** @def SYSTEM_REBOOT_TIMEOUT_MS
+ *  @brief Timeout duration (in milliseconds) for system reboot.
+ */
+#define SYSTEM_REBOOT_TIMEOUT_MS (46800000) // 3 hours
+
+/** @def SYSTEM_SAVE_FLASH_TIME_MS
+ *  @brief Time interval (in milliseconds) for saving data to flash memory.
+ */
+#define SYSTEM_SAVE_FLASH_TIME_MS   (600000) // 10 minutes
+
+/** @var global_angle
+ *  @brief Global variable for the current angle.
+ */
 uint16_t global_angle = 655;
 
-/* local variables */
+/** @var system_id
+ *  @brief Local variable for the system ID.
+ */
 static char system_id[50] = {};
+
+/** @var system_read_time
+ *  @brief Local variable for the system read time.
+ */
 static uint8_t system_read_time = 0;
+
+/** @var system_rtc_percent
+ *  @brief Local variable for the RTC percentage.
+ */
 static time_t system_rtc_percent = 0;
+
+/** @var system_initial_angle
+ *  @brief Local variable for the initial angle.
+ */
 static uint16_t system_initial_angle = 655;
 
+/** @var system_timer
+ *  @brief Timer handle for the system manager.
+ */
 static TimerHandle_t system_timer = NULL;
 
 static void system_manager_reboot(void);
@@ -68,6 +104,12 @@ static void system_manager_idp_90(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char* buffer, comm_type comm_mode);
 
+/**
+ * @brief Initializes the system manager module.
+ *
+ * This function initializes various components of the system, including RTC, data storage, actuation, communication, sectorization, and scheduling.
+ * It also triggers an automatic reboot based on certain conditions.
+ */
 void system_manager_init(void)
 {
 	// rtc init
@@ -130,6 +172,13 @@ void system_manager_init(void)
 			  system_manager_timer_callback); /* callback */
 }
 
+/**
+ * @brief Performs a system reboot based on certain conditions.
+ *
+ * This function checks the timestamp stored in non-volatile storage (NVS) and, if certain conditions are met, performs a system reboot.
+ * It waits for the power to stabilize if the system is powered on and then sets the actions accordingly.
+ * The timestamp is saved to NVS to keep track of the last reboot.
+ */
 static void system_manager_reboot(void)
 {
 	pivot_actions current_action = {};
@@ -172,11 +221,26 @@ static void system_manager_reboot(void)
 	}
 }
 
+/**
+ * @brief Callback function for the system manager timer.
+ *
+ * This function is called when the system manager timer expires.
+ *
+ * @param pxTimer The timer handle.
+ */
 static void system_manager_timer_callback(TimerHandle_t pxTimer)
 {
 	system_manager_idp_00(NULL, COMM_MQTT);
 }
 
+/**
+ * @brief Callback function for the system manager.
+ *
+ * This function is called when a request is received by the system manager.
+ *
+ * @param buffer_request The buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_MQTT, COMM_HTTP).
+ */
 static void system_manager_callback(const char* buffer_request, comm_type comm_mode)
 {
 	char str_idp[5] = {};
@@ -298,6 +362,14 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 	}
 }
 
+/**
+ * @brief Handle IDP package type 0.
+ *
+ * This function handles IDP package type 0, extracting relevant data and sending the response.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
 static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
@@ -335,6 +407,14 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 1.
+ *
+ * This function handles IDP package type 1, validates the data, saves the state, and sends the response.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_POST, COMM_MQTT).
+ */
 static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -436,6 +516,14 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 2.
+ *
+ * This function handles IDP package type 2, either saving network configuration or retrieving it based on the communication mode.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
+ */
 static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
@@ -506,6 +594,14 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 3.
+ *
+ * This function handles IDP package type 3, saving or retrieving pivot configuration based on the communication mode.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
+ */
 static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
@@ -565,6 +661,14 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 4.
+ *
+ * This function handles IDP package type 4, saving or retrieving eco mode configuration based on the communication mode.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
+ */
 static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
@@ -620,6 +724,14 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 5.
+ *
+ * This function handles IDP package type 5, saving or retrieving sector configuration based on the communication mode.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
+ */
 static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST)
@@ -686,6 +798,14 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 6.
+ *
+ * This function handles IDP package type 6 for MQTT communication, sending GPRS module information.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_MQTT).
+ */
 static void system_manager_idp_06(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_MQTT)
@@ -710,6 +830,14 @@ static void system_manager_idp_06(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 7.
+ *
+ * This function handles IDP package type 7 for MQTT communication, updating the system with angle and timestamp information.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_MQTT).
+ */
 static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_MQTT)
@@ -739,6 +867,14 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handle IDP package type 12.
+ *
+ * This function handles IDP package type 12, providing historical data for HTTP GET requests.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET).
+ */
 static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_GET)
@@ -782,6 +918,14 @@ static void system_manager_idp_12(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 13 requests for scheduling deletion.
+ *
+ * This function handles the deletion of schedules based on the provided parameters.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -853,6 +997,14 @@ static void system_manager_idp_13(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 14 requests for scheduling creation.
+ *
+ * This function handles the creation of schedules based on the provided parameters.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -865,7 +1017,6 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
-		// todo alterar os arg_pairs para nomes diferentes
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
@@ -994,6 +1145,14 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 15 requests for angle scheduling creation.
+ *
+ * This function handles the creation of angle-based schedules.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -1133,6 +1292,14 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 16 requests for scheduling off-dates creation.
+ *
+ * This function handles the creation of schedules with off-dates.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -1252,6 +1419,14 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 17 requests for scheduling off-angles creation.
+ *
+ * This function handles the creation of schedules with off-angles.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_17(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -1341,6 +1516,14 @@ static void system_manager_idp_17(const char* buffer, comm_type comm_mode)
 	return;
 }
 
+/**
+ * @brief Handles IDP 18 requests for schedule deletion.
+ *
+ * This function handles the deletion of schedules based on provided parameters.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (MQTT).
+ */
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_MQTT)
@@ -1373,6 +1556,14 @@ static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 22 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
@@ -1430,6 +1621,14 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 30 requests for system actions.
+ *
+ * This function handles system actions based on the provided parameters.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (MQTT).
+ */
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_MQTT)
@@ -1539,6 +1738,14 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 90 requests for firmware version retrieval.
+ *
+ * This function retrieves the firmware version.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_90(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
@@ -1564,6 +1771,14 @@ static void system_manager_idp_90(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 91 requests for system reboot.
+ *
+ * This function handles system reboot requests.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_91(const char* buffer, comm_type comm_mode)
 {
 	if(comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
@@ -1592,6 +1807,14 @@ static void system_manager_idp_91(const char* buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 92 requests for system restart.
+ *
+ * This function handles system restart requests.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_92(const char* buffer, comm_type comm_mode)
 {
 	char str_out[200] = {};
