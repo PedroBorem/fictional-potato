@@ -1,5 +1,5 @@
-\hypertarget{project__config_8h}{}\doxysection{components/utils/include/project\+\_\+config.h File Reference}
-\label{project__config_8h}\index{components/utils/include/project\_config.h@{components/utils/include/project\_config.h}}
+\hypertarget{project__config_8h}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/utils/include/project\+\_\+config.h File Reference}
+\label{project__config_8h}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/project\_config.h@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/project\_config.h}}
 
 
 Configuration and parameter definitions for the project.  
@@ -9,16 +9,15 @@ Configuration and parameter definitions for the project.
 {\ttfamily \#include $<$stdio.\+h$>$}\newline
 {\ttfamily \#include $<$stddef.\+h$>$}\newline
 {\ttfamily \#include $<$stdint.\+h$>$}\newline
-Include dependency graph for project\+\_\+config.\+h\+:
-\nopagebreak
+{\ttfamily \#include $<$time.\+h$>$}\newline
+Include dependency graph for project\+\_\+config.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
 \includegraphics[width=350pt]{project__config_8h__incl}
 \end{center}
 \end{figure}
-This graph shows which files directly or indirectly include this file\+:
-\nopagebreak
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -36,21 +35,29 @@ struct \mbox{\hyperlink{structpivot__sectors}{pivot\+\_\+sectors}}
 \mbox{\Hypertarget{project__config_8h_a86d500a34c624c2cae56bc25a31b12f3}\label{project__config_8h_a86d500a34c624c2cae56bc25a31b12f3}} 
 \#define {\bfseries UNUSED}(x)~(void)(sizeof(x))
 \item 
-\#define \mbox{\hyperlink{project__config_8h_a9e676762900f9ddf8c8d1354b0fb330e}{CONFIG\+\_\+\+SCHEDULING\+\_\+\+MAX\+\_\+\+VALUE}}~(10)
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaf9e21dd00963e07390c14a7d103dbde7}{CONFIG\+\_\+\+FW\+\_\+\+VERSION}}~(\char`\"{}v2.\+0.\+0\char`\"{})
+\begin{DoxyCompactList}\small\item\em Firmware version. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga9e676762900f9ddf8c8d1354b0fb330e}{CONFIG\+\_\+\+SCHEDULING\+\_\+\+MAX\+\_\+\+VALUE}}~(10)
 \begin{DoxyCompactList}\small\item\em Maximum number of scheduling values. \end{DoxyCompactList}\item 
-\#define \mbox{\hyperlink{project__config_8h_a607ae8cced38a31b5d90b2580c8c1136}{CONFIG\+\_\+\+HISTORY\+\_\+\+MAX\+\_\+\+VALUE}}~(20)
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga607ae8cced38a31b5d90b2580c8c1136}{CONFIG\+\_\+\+HISTORY\+\_\+\+MAX\+\_\+\+VALUE}}~(20)
 \begin{DoxyCompactList}\small\item\em Maximum number of history values. \end{DoxyCompactList}\item 
-\#define \mbox{\hyperlink{project__config_8h_adc6d74838d21c80a237f85eee780bbaf}{CONFIG\+\_\+\+SECTORS\+\_\+\+MAX\+\_\+\+VALUE}}~(04)
-\begin{DoxyCompactList}\small\item\em Maximum number of sectors. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc6d74838d21c80a237f85eee780bbaf}{CONFIG\+\_\+\+SECTORS\+\_\+\+MAX\+\_\+\+VALUE}}~(04)
+\begin{DoxyCompactList}\small\item\em Maximum number of sectors. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc4f50d599c396c227cac19ceb884d7a}{CONFIG\+\_\+\+ACTIONS\+\_\+\+UNDEF\+\_\+\+VALUE}}~(655)
+\begin{DoxyCompactList}\small\item\em Undefined value for actions. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga82248faefca122c1a4b1111763aebfba}{CONFIG\+\_\+\+HTTP\+\_\+\+ERROR}}~(\char`\"{}400\char`\"{})
+\begin{DoxyCompactList}\small\item\em HTTP error response code. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gae733db163fff089a2e0dcf942cc5dae3}{CONFIG\+\_\+\+HTTP\+\_\+\+OK}}~(\char`\"{}200\char`\"{})
+\begin{DoxyCompactList}\small\item\em HTTP OK response code. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Typedefs}
 \begin{DoxyCompactItemize}
 \item 
-typedef void($\ast$ \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}}) (\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021e}{app\+\_\+call\+\_\+states}} state, void $\ast$buffer)
+typedef void($\ast$ \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}) (const char $\ast$buffer\+\_\+request, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} communication)
 \begin{DoxyCompactList}\small\item\em Application callback function. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Enumerations}
 \begin{DoxyCompactItemize}
 \item 
-enum \mbox{\hyperlink{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} \{ \newline
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} \{ \newline
 {\bfseries IDP\+\_\+0} = 0
 , {\bfseries IDP\+\_\+1}
 , {\bfseries IDP\+\_\+2}
@@ -72,401 +79,70 @@ enum \mbox{\hyperlink{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}{idp\
 , {\bfseries IDP\+\_\+15}
 , \newline
 {\bfseries IDP\+\_\+16}
-, {\bfseries IDP\+\_\+\+INVALID} = 255
+, {\bfseries IDP\+\_\+17}
+, {\bfseries IDP\+\_\+18}
+, {\bfseries IDP\+\_\+22} = 22
+, \newline
+{\bfseries IDP\+\_\+30} = 30
+, {\bfseries IDP\+\_\+90} = 90
+, {\bfseries IDP\+\_\+91}
+, {\bfseries IDP\+\_\+92}
+, \newline
+{\bfseries IDP\+\_\+\+INVALID} = 255
  \}
 \begin{DoxyCompactList}\small\item\em Enumerates different packet identifiers for communication. \end{DoxyCompactList}\item 
-enum \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ad}{pivot\+\_\+states}} \{ \newline
-\mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}{PIVOT\+\_\+\+ON}} = 1
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}{PIVOT\+\_\+\+OFF}} = 2
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}{PIVOT\+\_\+\+CW}} = 3
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}{PIVOT\+\_\+\+CCW}} = 4
-, \newline
-\mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}{PIVOT\+\_\+\+DRY}} = 5
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}{PIVOT\+\_\+\+WET}} = 6
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}{PIVOT\+\_\+\+PRESSURIZING}} = 7
-, \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}{PIVOT\+\_\+\+UNKNOWN}} = 0
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} \{ {\bfseries COMM\+\_\+\+HTTP\+\_\+\+POST} = 0
+, {\bfseries COMM\+\_\+\+HTTP\+\_\+\+GET}
+, {\bfseries COMM\+\_\+\+MQTT}
  \}
-\begin{DoxyCompactList}\small\item\em Pivot actions states. \end{DoxyCompactList}\item 
-enum \mbox{\hyperlink{project__config_8h_a31692bbad4732efeed6e78bb3ce42483}{contactor\+\_\+type}} \{ \mbox{\hyperlink{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a72a5bc867f069535371d7aa3f1ea201e}{CONTACTOR\+\_\+\+NA}} = 1
-, \mbox{\hyperlink{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a17c2329100d95d1935883a3224ffaa67}{CONTACTOR\+\_\+\+NF}}
- \}
-\begin{DoxyCompactList}\small\item\em Contactor type. \end{DoxyCompactList}\item 
-enum \mbox{\hyperlink{project__config_8h_aa57432d74005b511fcac8fe55129b19b}{pressure\+\_\+switch\+\_\+type}} \{ \mbox{\hyperlink{project__config_8h_aa57432d74005b511fcac8fe55129b19ba1140781a5b6f38ecd8bd4102b303deb7}{PRESSURE\+\_\+\+SWITCH\+\_\+\+NA}} = 1
-, \mbox{\hyperlink{project__config_8h_aa57432d74005b511fcac8fe55129b19ba92e91c9143b95ee7d6a053daf45e53e8}{PRESSURE\+\_\+\+SWITCH\+\_\+\+NF}}
- \}
-\begin{DoxyCompactList}\small\item\em Pressure switch type. \end{DoxyCompactList}\item 
-enum \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021e}{app\+\_\+call\+\_\+states}} \{ \newline
-\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea14ec75367c548e995b95448f8693d2dc}{CALL\+\_\+\+LOAD\+\_\+\+ACTION}} = 1
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea505de5b8ccf964d3c8313fcdd4846c28}{CALL\+\_\+\+SAVE\+\_\+\+ACTION}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021eaaa6009ded08e9a096861db8e8ea10b6f}{CALL\+\_\+\+READ\+\_\+\+ACTION}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021eaa5a8484b19960ee359b80f2ee10aef68}{CALL\+\_\+\+SAVE\+\_\+\+CONFIG}}
+\begin{DoxyCompactList}\small\item\em Enumerates different communication types. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga352837298b8df9cea8ac12ff12e228ad}{pivot\+\_\+states}} \{ \newline
+\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}{PIVOT\+\_\+\+ON}} = 1
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}{PIVOT\+\_\+\+OFF}} = 2
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}{PIVOT\+\_\+\+CW}} = 3
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}{PIVOT\+\_\+\+CCW}} = 4
 , \newline
-\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea202d5c5ba54f0c56d45d8b2977de1ba1}{CALL\+\_\+\+READ\+\_\+\+CONFIG}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea6cd09d6a7df753b2e9642c98b7d9dbff}{CALL\+\_\+\+SAVE\+\_\+\+SCHEDULE\+\_\+\+DATE}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021eacc08a9ef5ca5b19224526764e208d365}{CALL\+\_\+\+LOAD\+\_\+\+SCHEDULE\+\_\+\+DATE}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ead265886cbabce655afc341c452bce851}{CALL\+\_\+\+DELETE\+\_\+\+SCHEDULE\+\_\+\+DATE}}
-, \newline
-\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea90d9d4f09abbb1bcb62383f66f9a689e}{CALL\+\_\+\+SAVE\+\_\+\+SCHEDULE\+\_\+\+ANGLE}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea3d6246fe2ba510324ca0a48a37534e23}{CALL\+\_\+\+LOAD\+\_\+\+SCHEDULE\+\_\+\+ANGLE}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea9177ceb594210f829f1d30e27baadd7f}{CALL\+\_\+\+DELETE\+\_\+\+SCHEDULE\+\_\+\+ANGLE}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021ea2122c66757234249e9ea9c4772326972}{CALL\+\_\+\+LOAD\+\_\+\+HISTORY}}
-, \newline
-\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021eab75cc30ebd5b28049268f2958d149709}{CALL\+\_\+\+MANUAL\+\_\+\+PIVOT}}
-, \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021eaf53a872a529556c2f962bd61e21d29c3}{CALL\+\_\+\+OFF\+\_\+\+PIVOT}}
+\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}{PIVOT\+\_\+\+DRY}} = 5
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}{PIVOT\+\_\+\+WET}} = 6
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}{PIVOT\+\_\+\+PRESSURIZING}} = 7
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}{PIVOT\+\_\+\+UNKNOWN}} = 8
  \}
-\begin{DoxyCompactList}\small\item\em Main callback request states. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Pivot actions states. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-struct \mbox{\hyperlink{project__config_8h_ad09246453a4dabd919c7541484046a87}{\+\_\+\+\_\+attribute\+\_\+\+\_\+}} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
+struct \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gad09246453a4dabd919c7541484046a87}{\+\_\+\+\_\+attribute\+\_\+\+\_\+}} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
 \begin{DoxyCompactList}\small\item\em Pivot actions parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Variables}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{project__config_8h_a1cf43e68bcd6bb2e5c4e022e39e297b7}\label{project__config_8h_a1cf43e68bcd6bb2e5c4e022e39e297b7}} 
 {\bfseries pivot\+\_\+actions}
 \item 
-\mbox{\Hypertarget{project__config_8h_aa1f367c9abfa9e2b2347080c4abef1fa}\label{project__config_8h_aa1f367c9abfa9e2b2347080c4abef1fa}} 
 {\bfseries pivot\+\_\+config}
 \item 
-\mbox{\Hypertarget{project__config_8h_ac10c1bcc2fe34cf2a7c94eae56456081}\label{project__config_8h_ac10c1bcc2fe34cf2a7c94eae56456081}} 
 {\bfseries network\+\_\+config}
 \item 
-\mbox{\Hypertarget{project__config_8h_a769f160157f66e936b3508848967a7e7}\label{project__config_8h_a769f160157f66e936b3508848967a7e7}} 
 {\bfseries eco\+\_\+mode\+\_\+config}
 \item 
-\mbox{\Hypertarget{project__config_8h_ac99a2578d2beb14665f95be7a7884ec9}\label{project__config_8h_ac99a2578d2beb14665f95be7a7884ec9}} 
 {\bfseries sector\+\_\+config}
 \item 
-\mbox{\Hypertarget{project__config_8h_a7e38ab74825934d542c4198c59d45a36}\label{project__config_8h_a7e38ab74825934d542c4198c59d45a36}} 
+{\bfseries pivot\+\_\+return\+\_\+config}
+\item 
 {\bfseries pivot\+\_\+scheduling\+\_\+date}
 \item 
-\mbox{\Hypertarget{project__config_8h_a467a533c67e784e079e40e8b443b2c23}\label{project__config_8h_a467a533c67e784e079e40e8b443b2c23}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+off\+\_\+date}
+\item 
 {\bfseries pivot\+\_\+scheduling\+\_\+angle}
 \item 
-\mbox{\Hypertarget{project__config_8h_a15d3f47d3218061bb32e4e09a7e4f233}\label{project__config_8h_a15d3f47d3218061bb32e4e09a7e4f233}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+off\+\_\+angle}
+\item 
 {\bfseries pivot\+\_\+history}
-\end{DoxyCompactItemize}
+\item 
+uint16\+\_\+t \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga445bd0f9b82eb3459b30e00dd688e867}{global\+\_\+angle}}
+\begin{DoxyCompactList}\small\item\em Global angle variable. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
 Configuration and parameter definitions for the project. 
 
 This file contains configuration and parameter definitions for the project. 
-
-\doxysubsection{Macro Definition Documentation}
-\mbox{\Hypertarget{project__config_8h_a607ae8cced38a31b5d90b2580c8c1136}\label{project__config_8h_a607ae8cced38a31b5d90b2580c8c1136}} 
-\index{project\_config.h@{project\_config.h}!CONFIG\_HISTORY\_MAX\_VALUE@{CONFIG\_HISTORY\_MAX\_VALUE}}
-\index{CONFIG\_HISTORY\_MAX\_VALUE@{CONFIG\_HISTORY\_MAX\_VALUE}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{CONFIG\_HISTORY\_MAX\_VALUE}{CONFIG\_HISTORY\_MAX\_VALUE}}
-{\footnotesize\ttfamily \#define CONFIG\+\_\+\+HISTORY\+\_\+\+MAX\+\_\+\+VALUE~(20)}
-
-
-
-Maximum number of history values. 
-
-This define specifies the maximum number of history values allowed in the project. It can be used to define the size of arrays or data structures related to history. \mbox{\Hypertarget{project__config_8h_a9e676762900f9ddf8c8d1354b0fb330e}\label{project__config_8h_a9e676762900f9ddf8c8d1354b0fb330e}} 
-\index{project\_config.h@{project\_config.h}!CONFIG\_SCHEDULING\_MAX\_VALUE@{CONFIG\_SCHEDULING\_MAX\_VALUE}}
-\index{CONFIG\_SCHEDULING\_MAX\_VALUE@{CONFIG\_SCHEDULING\_MAX\_VALUE}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{CONFIG\_SCHEDULING\_MAX\_VALUE}{CONFIG\_SCHEDULING\_MAX\_VALUE}}
-{\footnotesize\ttfamily \#define CONFIG\+\_\+\+SCHEDULING\+\_\+\+MAX\+\_\+\+VALUE~(10)}
-
-
-
-Maximum number of scheduling values. 
-
-This define specifies the maximum number of scheduling values allowed in the project. It can be used to define the size of arrays or data structures related to scheduling. \mbox{\Hypertarget{project__config_8h_adc6d74838d21c80a237f85eee780bbaf}\label{project__config_8h_adc6d74838d21c80a237f85eee780bbaf}} 
-\index{project\_config.h@{project\_config.h}!CONFIG\_SECTORS\_MAX\_VALUE@{CONFIG\_SECTORS\_MAX\_VALUE}}
-\index{CONFIG\_SECTORS\_MAX\_VALUE@{CONFIG\_SECTORS\_MAX\_VALUE}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{CONFIG\_SECTORS\_MAX\_VALUE}{CONFIG\_SECTORS\_MAX\_VALUE}}
-{\footnotesize\ttfamily \#define CONFIG\+\_\+\+SECTORS\+\_\+\+MAX\+\_\+\+VALUE~(04)}
-
-
-
-Maximum number of sectors. 
-
-This define specifies the maximum number of sectors allowed in the project. It can be used to define the size of arrays or data structures related to sectors. 
-
-\doxysubsection{Typedef Documentation}
-\mbox{\Hypertarget{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}\label{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}} 
-\index{project\_config.h@{project\_config.h}!app\_callback@{app\_callback}}
-\index{app\_callback@{app\_callback}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{app\_callback}{app\_callback}}
-{\footnotesize\ttfamily typedef void($\ast$ app\+\_\+callback) (\mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021e}{app\+\_\+call\+\_\+states}} state, void $\ast$buffer)}
-
-
-
-Application callback function. 
-
-Function signature for the application callback function.
-
-
-\begin{DoxyParams}{Parameters}
-{\em state} & The state of the main callback request. \\
-\hline
-{\em buffer} & The buffer containing the data associated with the request. \\
-\hline
-\end{DoxyParams}
-
-
-\doxysubsection{Enumeration Type Documentation}
-\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021e}\label{project__config_8h_a27f470238d2158238326b2c2c01a021e}} 
-\index{project\_config.h@{project\_config.h}!app\_call\_states@{app\_call\_states}}
-\index{app\_call\_states@{app\_call\_states}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{app\_call\_states}{app\_call\_states}}
-{\footnotesize\ttfamily enum \mbox{\hyperlink{project__config_8h_a27f470238d2158238326b2c2c01a021e}{app\+\_\+call\+\_\+states}}}
-
-
-
-Main callback request states. 
-
-\begin{DoxyRefDesc}{Deprecated}
-\item[\mbox{\hyperlink{deprecated__deprecated000001}{Deprecated}}]\end{DoxyRefDesc}
-
-
-Enumeration defining the states for the main callback request. \begin{DoxyEnumFields}{Enumerator}
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_LOAD\_ACTION@{CALL\_LOAD\_ACTION}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_LOAD\_ACTION@{CALL\_LOAD\_ACTION}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea14ec75367c548e995b95448f8693d2dc}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea14ec75367c548e995b95448f8693d2dc}} 
-CALL\+\_\+\+LOAD\+\_\+\+ACTION&Load configuration read request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_SAVE\_ACTION@{CALL\_SAVE\_ACTION}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_SAVE\_ACTION@{CALL\_SAVE\_ACTION}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea505de5b8ccf964d3c8313fcdd4846c28}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea505de5b8ccf964d3c8313fcdd4846c28}} 
-CALL\+\_\+\+SAVE\+\_\+\+ACTION&Save configuration read request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_READ\_ACTION@{CALL\_READ\_ACTION}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_READ\_ACTION@{CALL\_READ\_ACTION}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021eaaa6009ded08e9a096861db8e8ea10b6f}\label{project__config_8h_a27f470238d2158238326b2c2c01a021eaaa6009ded08e9a096861db8e8ea10b6f}} 
-CALL\+\_\+\+READ\+\_\+\+ACTION&Read configuration read request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_SAVE\_CONFIG@{CALL\_SAVE\_CONFIG}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_SAVE\_CONFIG@{CALL\_SAVE\_CONFIG}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021eaa5a8484b19960ee359b80f2ee10aef68}\label{project__config_8h_a27f470238d2158238326b2c2c01a021eaa5a8484b19960ee359b80f2ee10aef68}} 
-CALL\+\_\+\+SAVE\+\_\+\+CONFIG&Save configuration request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_READ\_CONFIG@{CALL\_READ\_CONFIG}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_READ\_CONFIG@{CALL\_READ\_CONFIG}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea202d5c5ba54f0c56d45d8b2977de1ba1}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea202d5c5ba54f0c56d45d8b2977de1ba1}} 
-CALL\+\_\+\+READ\+\_\+\+CONFIG&Read configuration request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_SAVE\_SCHEDULE\_DATE@{CALL\_SAVE\_SCHEDULE\_DATE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_SAVE\_SCHEDULE\_DATE@{CALL\_SAVE\_SCHEDULE\_DATE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea6cd09d6a7df753b2e9642c98b7d9dbff}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea6cd09d6a7df753b2e9642c98b7d9dbff}} 
-CALL\+\_\+\+SAVE\+\_\+\+SCHEDULE\+\_\+\+DATE&Save scheduling based on date request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_LOAD\_SCHEDULE\_DATE@{CALL\_LOAD\_SCHEDULE\_DATE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_LOAD\_SCHEDULE\_DATE@{CALL\_LOAD\_SCHEDULE\_DATE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021eacc08a9ef5ca5b19224526764e208d365}\label{project__config_8h_a27f470238d2158238326b2c2c01a021eacc08a9ef5ca5b19224526764e208d365}} 
-CALL\+\_\+\+LOAD\+\_\+\+SCHEDULE\+\_\+\+DATE&Load scheduling based on date request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_DELETE\_SCHEDULE\_DATE@{CALL\_DELETE\_SCHEDULE\_DATE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_DELETE\_SCHEDULE\_DATE@{CALL\_DELETE\_SCHEDULE\_DATE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ead265886cbabce655afc341c452bce851}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ead265886cbabce655afc341c452bce851}} 
-CALL\+\_\+\+DELETE\+\_\+\+SCHEDULE\+\_\+\+DATE&Delete scheduling based on date request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_SAVE\_SCHEDULE\_ANGLE@{CALL\_SAVE\_SCHEDULE\_ANGLE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_SAVE\_SCHEDULE\_ANGLE@{CALL\_SAVE\_SCHEDULE\_ANGLE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea90d9d4f09abbb1bcb62383f66f9a689e}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea90d9d4f09abbb1bcb62383f66f9a689e}} 
-CALL\+\_\+\+SAVE\+\_\+\+SCHEDULE\+\_\+\+ANGLE&Save scheduling based on angle request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_LOAD\_SCHEDULE\_ANGLE@{CALL\_LOAD\_SCHEDULE\_ANGLE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_LOAD\_SCHEDULE\_ANGLE@{CALL\_LOAD\_SCHEDULE\_ANGLE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea3d6246fe2ba510324ca0a48a37534e23}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea3d6246fe2ba510324ca0a48a37534e23}} 
-CALL\+\_\+\+LOAD\+\_\+\+SCHEDULE\+\_\+\+ANGLE&Load scheduling based on angle request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_DELETE\_SCHEDULE\_ANGLE@{CALL\_DELETE\_SCHEDULE\_ANGLE}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_DELETE\_SCHEDULE\_ANGLE@{CALL\_DELETE\_SCHEDULE\_ANGLE}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea9177ceb594210f829f1d30e27baadd7f}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea9177ceb594210f829f1d30e27baadd7f}} 
-CALL\+\_\+\+DELETE\+\_\+\+SCHEDULE\+\_\+\+ANGLE&Delete scheduling based on angle request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_LOAD\_HISTORY@{CALL\_LOAD\_HISTORY}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_LOAD\_HISTORY@{CALL\_LOAD\_HISTORY}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021ea2122c66757234249e9ea9c4772326972}\label{project__config_8h_a27f470238d2158238326b2c2c01a021ea2122c66757234249e9ea9c4772326972}} 
-CALL\+\_\+\+LOAD\+\_\+\+HISTORY&Load history request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_MANUAL\_PIVOT@{CALL\_MANUAL\_PIVOT}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_MANUAL\_PIVOT@{CALL\_MANUAL\_PIVOT}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021eab75cc30ebd5b28049268f2958d149709}\label{project__config_8h_a27f470238d2158238326b2c2c01a021eab75cc30ebd5b28049268f2958d149709}} 
-CALL\+\_\+\+MANUAL\+\_\+\+PIVOT&Manual pivot request \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CALL\_OFF\_PIVOT@{CALL\_OFF\_PIVOT}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CALL\_OFF\_PIVOT@{CALL\_OFF\_PIVOT}}}\mbox{\Hypertarget{project__config_8h_a27f470238d2158238326b2c2c01a021eaf53a872a529556c2f962bd61e21d29c3}\label{project__config_8h_a27f470238d2158238326b2c2c01a021eaf53a872a529556c2f962bd61e21d29c3}} 
-CALL\+\_\+\+OFF\+\_\+\+PIVOT&Pivot off request \\
-\hline
-
-\end{DoxyEnumFields}
-\mbox{\Hypertarget{project__config_8h_a31692bbad4732efeed6e78bb3ce42483}\label{project__config_8h_a31692bbad4732efeed6e78bb3ce42483}} 
-\index{project\_config.h@{project\_config.h}!contactor\_type@{contactor\_type}}
-\index{contactor\_type@{contactor\_type}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{contactor\_type}{contactor\_type}}
-{\footnotesize\ttfamily enum \mbox{\hyperlink{project__config_8h_a31692bbad4732efeed6e78bb3ce42483}{contactor\+\_\+type}}}
-
-
-
-Contactor type. 
-
-Enumeration defining the contactor type. \begin{DoxyEnumFields}{Enumerator}
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CONTACTOR\_NA@{CONTACTOR\_NA}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CONTACTOR\_NA@{CONTACTOR\_NA}}}\mbox{\Hypertarget{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a72a5bc867f069535371d7aa3f1ea201e}\label{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a72a5bc867f069535371d7aa3f1ea201e}} 
-CONTACTOR\+\_\+\+NA&Normally open (NO) contactor \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{CONTACTOR\_NF@{CONTACTOR\_NF}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!CONTACTOR\_NF@{CONTACTOR\_NF}}}\mbox{\Hypertarget{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a17c2329100d95d1935883a3224ffaa67}\label{project__config_8h_a31692bbad4732efeed6e78bb3ce42483a17c2329100d95d1935883a3224ffaa67}} 
-CONTACTOR\+\_\+\+NF&Normally closed (NC) contactor \\
-\hline
-
-\end{DoxyEnumFields}
-\mbox{\Hypertarget{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}\label{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}} 
-\index{project\_config.h@{project\_config.h}!idp\_type@{idp\_type}}
-\index{idp\_type@{idp\_type}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{idp\_type}{idp\_type}}
-{\footnotesize\ttfamily enum \mbox{\hyperlink{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}}}
-
-
-
-Enumerates different packet identifiers for communication. 
-
-This enum defines packet identifiers used for communication. Each identifier represents a specific action or configuration parameter. \mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ad}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ad}} 
-\index{project\_config.h@{project\_config.h}!pivot\_states@{pivot\_states}}
-\index{pivot\_states@{pivot\_states}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{pivot\_states}{pivot\_states}}
-{\footnotesize\ttfamily enum \mbox{\hyperlink{project__config_8h_a352837298b8df9cea8ac12ff12e228ad}{pivot\+\_\+states}}}
-
-
-
-Pivot actions states. 
-
-Enumeration defining pivot actions states. \begin{DoxyEnumFields}{Enumerator}
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_ON@{PIVOT\_ON}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_ON@{PIVOT\_ON}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}} 
-PIVOT\+\_\+\+ON&Pivot on \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_OFF@{PIVOT\_OFF}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_OFF@{PIVOT\_OFF}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}} 
-PIVOT\+\_\+\+OFF&Pivot off \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_CW@{PIVOT\_CW}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_CW@{PIVOT\_CW}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}} 
-PIVOT\+\_\+\+CW&Pivot in Clock\+Wise mode (advanced) \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_CCW@{PIVOT\_CCW}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_CCW@{PIVOT\_CCW}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}} 
-PIVOT\+\_\+\+CCW&Pivot in Counter Clock\+Wise mode (reverse) \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_DRY@{PIVOT\_DRY}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_DRY@{PIVOT\_DRY}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}} 
-PIVOT\+\_\+\+DRY&Irrigation off \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_WET@{PIVOT\_WET}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_WET@{PIVOT\_WET}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}} 
-PIVOT\+\_\+\+WET&Irrigation on \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_PRESSURIZING@{PIVOT\_PRESSURIZING}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_PRESSURIZING@{PIVOT\_PRESSURIZING}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}} 
-PIVOT\+\_\+\+PRESSURIZING&Pivot pressurizing \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_UNKNOWN@{PIVOT\_UNKNOWN}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PIVOT\_UNKNOWN@{PIVOT\_UNKNOWN}}}\mbox{\Hypertarget{project__config_8h_a352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}\label{project__config_8h_a352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}} 
-PIVOT\+\_\+\+UNKNOWN&Unknown pivot state \\
-\hline
-
-\end{DoxyEnumFields}
-\mbox{\Hypertarget{project__config_8h_aa57432d74005b511fcac8fe55129b19b}\label{project__config_8h_aa57432d74005b511fcac8fe55129b19b}} 
-\index{project\_config.h@{project\_config.h}!pressure\_switch\_type@{pressure\_switch\_type}}
-\index{pressure\_switch\_type@{pressure\_switch\_type}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{pressure\_switch\_type}{pressure\_switch\_type}}
-{\footnotesize\ttfamily enum \mbox{\hyperlink{project__config_8h_aa57432d74005b511fcac8fe55129b19b}{pressure\+\_\+switch\+\_\+type}}}
-
-
-
-Pressure switch type. 
-
-Enumeration defining the pressure switch type. \begin{DoxyEnumFields}{Enumerator}
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PRESSURE\_SWITCH\_NA@{PRESSURE\_SWITCH\_NA}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PRESSURE\_SWITCH\_NA@{PRESSURE\_SWITCH\_NA}}}\mbox{\Hypertarget{project__config_8h_aa57432d74005b511fcac8fe55129b19ba1140781a5b6f38ecd8bd4102b303deb7}\label{project__config_8h_aa57432d74005b511fcac8fe55129b19ba1140781a5b6f38ecd8bd4102b303deb7}} 
-PRESSURE\+\_\+\+SWITCH\+\_\+\+NA&Normally open (NO) pressure switch \\
-\hline
-
-\raisebox{\heightof{T}}[0pt][0pt]{\index{PRESSURE\_SWITCH\_NF@{PRESSURE\_SWITCH\_NF}!project\_config.h@{project\_config.h}}\index{project\_config.h@{project\_config.h}!PRESSURE\_SWITCH\_NF@{PRESSURE\_SWITCH\_NF}}}\mbox{\Hypertarget{project__config_8h_aa57432d74005b511fcac8fe55129b19ba92e91c9143b95ee7d6a053daf45e53e8}\label{project__config_8h_aa57432d74005b511fcac8fe55129b19ba92e91c9143b95ee7d6a053daf45e53e8}} 
-PRESSURE\+\_\+\+SWITCH\+\_\+\+NF&Normally closed (NC) pressure switch \\
-\hline
-
-\end{DoxyEnumFields}
-
-
-\doxysubsection{Function Documentation}
-\mbox{\Hypertarget{project__config_8h_ad09246453a4dabd919c7541484046a87}\label{project__config_8h_ad09246453a4dabd919c7541484046a87}} 
-\index{project\_config.h@{project\_config.h}!\_\_attribute\_\_@{\_\_attribute\_\_}}
-\index{\_\_attribute\_\_@{\_\_attribute\_\_}!project\_config.h@{project\_config.h}}
-\doxysubsubsection{\texorpdfstring{\_\_attribute\_\_()}{\_\_attribute\_\_()}}
-{\footnotesize\ttfamily struct \+\_\+\+\_\+attribute\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{(\+\_\+\+\_\+packed\+\_\+\+\_\+)}]{ }\end{DoxyParamCaption})}
-
-
-
-Pivot actions parameters. 
-
-History parameters.
-
-Scheduling angle parameters.
-
-Scheduling date parameters.
-
-Configuration parameters.
-
-Structure defining pivot actions parameters.
-
-Structure defining the configuration parameters.
-
-Structure defining the network configuration parameters.
-
-Structure defining the eco mode configuration parameters.
-
-Structure defining the sectors configuration parameters.
-
-Structure defining the scheduling parameters based on date.
-
-Structure defining the scheduling parameters based on angle.
-
-Structure defining the history parameters. $<$ Power state of the pivot (PIVOT\+\_\+\+ON or PIVOT\+\_\+\+OFF)
-
-$<$ Rotation mode of the pivot (PIVOT\+\_\+\+CW or PIVOT\+\_\+\+CCW)
-
-$<$ Watering state of the pivot (PIVOT\+\_\+\+DRY or PIVOT\+\_\+\+WET)
-
-$<$ Percentage value from 0 to 100
-
-$<$ Pivot ID
-
-$<$ Contactor type
-
-$<$ Pressure switch type
-
-$<$ Pressurization time
-
-$<$ On/off time
-
-$<$ GPRS ID
-
-$<$ Eco mode enabled flag
-
-$<$ Start time
-
-$<$ End time
-
-$<$ Sector enabled flag
-
-$<$ Array of pivot sectors
-
-$<$ Scheduling ID
-
-$<$ Flag indicating if the scheduling is running
-
-$<$ Start date
-
-$<$ End date
-
-$<$ Pivot actions
-
-$<$ Scheduling ID
-
-$<$ Flag indicating if the scheduling is running
-
-$<$ Start date
-
-$<$ End angle
-
-$<$ Pivot actions
-
-$<$ Pivot actions
-
-$<$ Start angle
-
-$<$ End angle
-
-$<$ Start date
-
-$<$ End date

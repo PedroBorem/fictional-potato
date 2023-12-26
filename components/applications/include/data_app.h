@@ -17,11 +17,6 @@
 #include "esp_err.h"
 
 /**
- * @defgroup DataApp Data Application
- * @{
- */
-
-/**
  * @brief Enumeration defining various data types used in the application.
  * @enum data_type_t
  * 
@@ -100,9 +95,5 @@ void data_app_gen_scheduling_key(char* scheduling_id);
  * This function gets the size of data associated with a given label name.
  */
 size_t data_app_get_data_size(const char* label_name);
-
-/**
- * @}
- */
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_DATA_APP_H_ */

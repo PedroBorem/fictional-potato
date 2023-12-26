@@ -1,0 +1,93 @@
+\hypertarget{scheduling_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/main/scheduling.c File Reference}
+\label{scheduling_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/scheduling.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/scheduling.c}}
+
+
+Implementation of the Scheduling module.  
+
+
+{\ttfamily \#include \char`\"{}scheduling.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}actuation\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}comm\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rtc\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}idp\+\_\+parser.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$stdbool.\+h$>$}\newline
+Include dependency graph for scheduling.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{scheduling_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{scheduling_8c_a156dc015d3b5c23602df1a73609938ca}\label{scheduling_8c_a156dc015d3b5c23602df1a73609938ca}} 
+\#define {\bfseries SCHEDULING\+\_\+\+TAG}~\char`\"{}scheduling\char`\"{}
+\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{scheduling_8c_a8bec87a8b35da157436f2f75adcb72d7}{scheduling\+\_\+start}} (\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} scheduling\+\_\+idp, void $\ast$scheduling\+\_\+data)
+\begin{DoxyCompactList}\small\item\em Starts a scheduling task based on the provided IDP and data. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{scheduling_8c_a03ab66e84fb4682f56b0f3099ccfa4ac}{scheduling\+\_\+register\+\_\+callback}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Registers a callback function for scheduling events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Implementation of the Scheduling module. 
+
+\begin{DoxyAuthor}{Author}
+soil-\/dev 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+31 de jul. de 2023 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{scheduling_8c_a03ab66e84fb4682f56b0f3099ccfa4ac}\label{scheduling_8c_a03ab66e84fb4682f56b0f3099ccfa4ac}} 
+\index{scheduling.c@{scheduling.c}!scheduling\_register\_callback@{scheduling\_register\_callback}}
+\index{scheduling\_register\_callback@{scheduling\_register\_callback}!scheduling.c@{scheduling.c}}
+\doxysubsubsection{\texorpdfstring{scheduling\_register\_callback()}{scheduling\_register\_callback()}}
+{\footnotesize\ttfamily void scheduling\+\_\+register\+\_\+callback (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Registers a callback function for scheduling events. 
+
+This function allows the registration of a callback function that will be invoked for scheduling events. The callback function is used to communicate with other modules or external systems.
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & The callback function to be registered.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+The function checks for null values in the callback parameter. 
+\end{DoxyNote}
+\mbox{\Hypertarget{scheduling_8c_a8bec87a8b35da157436f2f75adcb72d7}\label{scheduling_8c_a8bec87a8b35da157436f2f75adcb72d7}} 
+\index{scheduling.c@{scheduling.c}!scheduling\_start@{scheduling\_start}}
+\index{scheduling\_start@{scheduling\_start}!scheduling.c@{scheduling.c}}
+\doxysubsubsection{\texorpdfstring{scheduling\_start()}{scheduling\_start()}}
+{\footnotesize\ttfamily void scheduling\+\_\+start (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}}}]{scheduling\+\_\+idp,  }\item[{void $\ast$}]{scheduling\+\_\+data }\end{DoxyParamCaption})}
+
+
+
+Starts a scheduling task based on the provided IDP and data. 
+
+This function initiates a scheduling task based on the given IDP (Inter\+Device Protocol) and the associated data. The task is selected according to the IDP, and the data is used to configure and execute the task.
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduling\+\_\+idp} & The Inter\+Device Protocol identifier for scheduling. \\
+\hline
+{\em scheduling\+\_\+data} & Pointer to the data structure associated with the scheduling task.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+The function checks for null values in the scheduling\+\_\+data parameter and logs an error if found. 
+\end{DoxyNote}

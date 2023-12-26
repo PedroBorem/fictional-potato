@@ -1,0 +1,121 @@
+\hypertarget{comm__app_8h}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/applications/include/comm\+\_\+app.h File Reference}
+\label{comm__app_8h}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/comm\_app.h@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/comm\_app.h}}
+
+
+Communication class control application.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+Include dependency graph for comm\+\_\+app.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{comm__app_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{comm__app_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{comm__app_8h_a9134ec73eaf995517b7e7234f41c111f}{comm\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Initializes all communication modules. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{comm__app_8h_a3178877d2786138b147e70ea9d8f406a}{comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+pack}} (const char $\ast$idp\+\_\+pack, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} communication)
+\begin{DoxyCompactList}\small\item\em Sends an IDP package using the specified communication type. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{comm__app_8h_a5f74637d7451d35430288c692cd94e08}{comm\+\_\+app\+\_\+wifi\+\_\+config}} (char $\ast$wifi\+\_\+ssid, char $\ast$wifi\+\_\+pass)
+\begin{DoxyCompactList}\small\item\em Configures the Wi-\/\+Fi settings. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Communication class control application. 
+
+\begin{DoxyDate}{Date}
+June 23, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{comm__app_8h_a9134ec73eaf995517b7e7234f41c111f}\label{comm__app_8h_a9134ec73eaf995517b7e7234f41c111f}} 
+\index{comm\_app.h@{comm\_app.h}!comm\_app\_init@{comm\_app\_init}}
+\index{comm\_app\_init@{comm\_app\_init}!comm\_app.h@{comm\_app.h}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_init()}{comm\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t comm\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Initializes all communication modules. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & \mbox{[}in\mbox{]}\+: Function used with return to the main application class. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Fail
+\end{DoxyItemize}
+\end{DoxyReturn}
+This function initializes all communication modules and registers a callback function to be used in the main application class.
+
+Initializes all communication modules.
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & \mbox{[}in\mbox{]}\+: Callback function for communication events. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the initialization.
+\end{DoxyReturn}
+This function initializes various communication modules and registers a callback function to be used for communication events. \mbox{\Hypertarget{comm__app_8h_a3178877d2786138b147e70ea9d8f406a}\label{comm__app_8h_a3178877d2786138b147e70ea9d8f406a}} 
+\index{comm\_app.h@{comm\_app.h}!comm\_app\_send\_idp\_pack@{comm\_app\_send\_idp\_pack}}
+\index{comm\_app\_send\_idp\_pack@{comm\_app\_send\_idp\_pack}!comm\_app.h@{comm\_app.h}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_send\_idp\_pack()}{comm\_app\_send\_idp\_pack()}}
+{\footnotesize\ttfamily void comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+pack (\begin{DoxyParamCaption}\item[{const char $\ast$}]{idp\+\_\+pack,  }\item[{\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}}}]{communication }\end{DoxyParamCaption})}
+
+
+
+Sends an IDP package using the specified communication type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em idp\+\_\+pack} & \mbox{[}in\mbox{]}\+: IDP package to send. \\
+\hline
+{\em communication} & \mbox{[}in\mbox{]}\+: Type of communication (e.\+g., COMM\+\_\+\+MQTT, COMM\+\_\+\+WIFI).\\
+\hline
+\end{DoxyParams}
+This function sends an IDP package using the specified communication type.
+
+
+\begin{DoxyParams}{Parameters}
+{\em idp\+\_\+pack} & \mbox{[}in\mbox{]}\+: IDP package to send. \\
+\hline
+{\em communication} & \mbox{[}in\mbox{]}\+: Type of communication (e.\+g., COMM\+\_\+\+MQTT, COMM\+\_\+\+HTTP\+\_\+\+POST).\\
+\hline
+\end{DoxyParams}
+This function sends an IDP package using the specified communication type. If the communication type is HTTP, it uses the HTTP server; if MQTT, it uses GPRS and RF UART. \mbox{\Hypertarget{comm__app_8h_a5f74637d7451d35430288c692cd94e08}\label{comm__app_8h_a5f74637d7451d35430288c692cd94e08}} 
+\index{comm\_app.h@{comm\_app.h}!comm\_app\_wifi\_config@{comm\_app\_wifi\_config}}
+\index{comm\_app\_wifi\_config@{comm\_app\_wifi\_config}!comm\_app.h@{comm\_app.h}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_wifi\_config()}{comm\_app\_wifi\_config()}}
+{\footnotesize\ttfamily void comm\+\_\+app\+\_\+wifi\+\_\+config (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid,  }\item[{char $\ast$}]{wifi\+\_\+pass }\end{DoxyParamCaption})}
+
+
+
+Configures the Wi-\/\+Fi settings. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+ssid} & \mbox{[}in\mbox{]}\+: Wi-\/\+Fi SSID. \\
+\hline
+{\em wifi\+\_\+pass} & \mbox{[}in\mbox{]}\+: Wi-\/\+Fi password.\\
+\hline
+\end{DoxyParams}
+This function configures the Wi-\/\+Fi settings for the communication module. 

@@ -1,119 +1,224 @@
-\hypertarget{data__app_8h}{}\doxysection{main/include/data\+\_\+app.h File Reference}
-\label{data__app_8h}\index{main/include/data\_app.h@{main/include/data\_app.h}}
+\hypertarget{data__app_8h}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/applications/include/data\+\_\+app.h File Reference}
+\label{data__app_8h}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/data\_app.h@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/data\_app.h}}
 
 
-memory control application  
+Memory control application.  
 
 
 {\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
-Include dependency graph for data\+\_\+app.\+h\+:
-\nopagebreak
+Include dependency graph for data\+\_\+app.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=350pt]{data__app_8h__incl}
+\includegraphics[width=253pt]{data__app_8h__incl}
 \end{center}
 \end{figure}
-This graph shows which files directly or indirectly include this file\+:
-\nopagebreak
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=304pt]{data__app_8h__dep__incl}
+\includegraphics[width=350pt]{data__app_8h__dep__incl}
 \end{center}
 \end{figure}
 \doxysubsection*{Enumerations}
 \begin{DoxyCompactItemize}
 \item 
-\mbox{\Hypertarget{data__app_8h_a93c8477aa51ac45c959e541efe4c450f}\label{data__app_8h_a93c8477aa51ac45c959e541efe4c450f}} 
-enum {\bfseries data\+\_\+scheduling\+\_\+type} \{ {\bfseries data\+\_\+scheduling\+\_\+date} = 0
-, {\bfseries data\+\_\+scheduling\+\_\+angle}
+enum \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}} \{ \newline
+\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a9ca1cef7353348834707ce05a4d33352}{DATA\+\_\+\+TYPE\+\_\+\+ACTIONS}} = 0
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a577ca6d16e8d06638fc28e195162bd1e}{DATA\+\_\+\+TYPE\+\_\+\+PIVOT\+\_\+\+CONFIG}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5ad4fef265377b2c1d0037e237ef554ec6}{DATA\+\_\+\+TYPE\+\_\+\+NETWORK\+\_\+\+CONFIG}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a2e6e80526a9e447e18ba15636c128434}{DATA\+\_\+\+TYPE\+\_\+\+ECO\+\_\+\+MODE\+\_\+\+CONFIG}}
+, \newline
+\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a822f36584544ac17b94df9ae03184281}{DATA\+\_\+\+TYPE\+\_\+\+SECTOR\+\_\+\+CONFIG}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a245235d64b9742f0ee120f0734bd6b5b}{DATA\+\_\+\+TYPE\+\_\+\+RETURN\+\_\+\+CONFIG}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a307f43febc6605f28e09931d88f63537}{DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+DATE}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5af7774e01dba123925c8f029c149601b9}{DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+DATE}}
+, \newline
+\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a91a75814f3c517717860c2b13752f5b6}{DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+ANGLE}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a669cdb27e7931f1db975ef1000e857ba}{DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+ANGLE}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a864143713d4429e94c2ccc3e43fd7460}{DATA\+\_\+\+TYPE\+\_\+\+HISTORY}}
+, \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a3c85fa74bfcbd74e9bcd3687526c9df4}{DATA\+\_\+\+TYPE\+\_\+\+OLD\+\_\+\+HISTORY}}
+, \newline
+\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a189834166a80b84b9b3424551b9b36b0}{DATA\+\_\+\+TYPE\+\_\+\+TIMESTAMP}}
  \}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Enumeration defining various data types used in the application. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
 esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}{data\+\_\+app\+\_\+init}} (void)
-\begin{DoxyCompactList}\small\item\em start all memory modules \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}{data\+\_\+app\+\_\+save\+\_\+actions}} (const pivot\+\_\+actions $\ast$action, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new action \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}{data\+\_\+app\+\_\+load\+\_\+actions}} (pivot\+\_\+actions $\ast$out\+\_\+action, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to load a current action. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}{data\+\_\+app\+\_\+save\+\_\+config}} (const pivot\+\_\+config $\ast$config, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new configuration \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}{data\+\_\+app\+\_\+load\+\_\+config}} (pivot\+\_\+config $\ast$out\+\_\+config, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to load a configuration. \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}\label{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}} 
-void {\bfseries data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key} (char $\ast$scheduling\+\_\+id)
-\item 
-\mbox{\Hypertarget{data__app_8h_a9a963c8f543a1f19f4fcc5ce74ee1fd8}\label{data__app_8h_a9a963c8f543a1f19f4fcc5ce74ee1fd8}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, const void $\ast$value, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8h_aadcdb286fed03d5dd2cde93377e9048f}\label{data__app_8h_aadcdb286fed03d5dd2cde93377e9048f}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, void $\ast$out\+\_\+value, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8h_a793fa3365a8785c27f8d1a2552955852}\label{data__app_8h_a793fa3365a8785c27f8d1a2552955852}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+delete\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, char $\ast$scheduling\+\_\+id)
-\item 
-\mbox{\Hypertarget{data__app_8h_ae580b38a97a6b098354d0b1ffdabf4be}\label{data__app_8h_ae580b38a97a6b098354d0b1ffdabf4be}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+new\+\_\+history} (pivot\+\_\+history new\+\_\+history)
-\item 
-\mbox{\Hypertarget{data__app_8h_ab3bc0a00591a5ba38d01ad0f608ed5c1}\label{data__app_8h_ab3bc0a00591a5ba38d01ad0f608ed5c1}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+old\+\_\+history} (time\+\_\+t end\+\_\+date, uint16\+\_\+t end\+\_\+angle)
-\item 
-\mbox{\Hypertarget{data__app_8h_aadf13d47940a1449d30fe2bebfb9d9b7}\label{data__app_8h_aadf13d47940a1449d30fe2bebfb9d9b7}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+history} (pivot\+\_\+history $\ast$out\+\_\+history, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8h_aa047be918f994647ecc5dc84048c88ce}\label{data__app_8h_aa047be918f994647ecc5dc84048c88ce}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+timestamp} (time\+\_\+t $\ast$timestamp)
-\item 
-\mbox{\Hypertarget{data__app_8h_a9047d339c7416af15ac4bc89246d3daf}\label{data__app_8h_a9047d339c7416af15ac4bc89246d3daf}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+timestamp} (time\+\_\+t $\ast$out\+\_\+timestamp)
-\item 
-size\+\_\+t \mbox{\hyperlink{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}{data\+\_\+app\+\_\+get\+\_\+data\+\_\+size}} (const char $\ast$label\+\_\+name, const char $\ast$key)
-\begin{DoxyCompactList}\small\item\em Gets the data size for the informed key. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Initializes the data application. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a88cc47a5ab7baf22c4d32a8a71ff1747}{data\+\_\+app\+\_\+save}} (\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}} data\+\_\+type, const void $\ast$data, size\+\_\+t data\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Saves data of a specific type. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_a3d87368774b5fc85240b7b826e48465b}{data\+\_\+app\+\_\+load}} (\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}} data\+\_\+type, void $\ast$data)
+\begin{DoxyCompactList}\small\item\em Loads data of a specific type. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8h_adc004ba6267e3b08268a2cdb0f990a48}{data\+\_\+app\+\_\+delete\+\_\+scheduling}} (char $\ast$scheduling\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Deletes scheduling data based on the scheduling ID. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}{data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key}} (char $\ast$scheduling\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Generates a scheduling key based on the current timestamp. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{data__app_8h_aa99a3c97fbf8362267e3342110f16a11}{data\+\_\+app\+\_\+get\+\_\+data\+\_\+size}} (const char $\ast$label\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Gets the size of data associated with a given label name. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-memory control application 
+Memory control application. 
 
 \begin{DoxyDate}{Date}
 June 15, 2022 
 \end{DoxyDate}
 
 
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}} 
+\index{data\_app.h@{data\_app.h}!data\_type\_t@{data\_type\_t}}
+\index{data\_type\_t@{data\_type\_t}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_type\_t}{data\_type\_t}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}}}
+
+
+
+Enumeration defining various data types used in the application. 
+
+This enumeration represents the different types of data that can be managed by the data application. Each value corresponds to a specific data type. \begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_ACTIONS@{DATA\_TYPE\_ACTIONS}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_ACTIONS@{DATA\_TYPE\_ACTIONS}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a9ca1cef7353348834707ce05a4d33352}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a9ca1cef7353348834707ce05a4d33352}} 
+DATA\+\_\+\+TYPE\+\_\+\+ACTIONS&Actions data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_PIVOT\_CONFIG@{DATA\_TYPE\_PIVOT\_CONFIG}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_PIVOT\_CONFIG@{DATA\_TYPE\_PIVOT\_CONFIG}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a577ca6d16e8d06638fc28e195162bd1e}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a577ca6d16e8d06638fc28e195162bd1e}} 
+DATA\+\_\+\+TYPE\+\_\+\+PIVOT\+\_\+\+CONFIG&Pivot configuration data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_NETWORK\_CONFIG@{DATA\_TYPE\_NETWORK\_CONFIG}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_NETWORK\_CONFIG@{DATA\_TYPE\_NETWORK\_CONFIG}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5ad4fef265377b2c1d0037e237ef554ec6}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5ad4fef265377b2c1d0037e237ef554ec6}} 
+DATA\+\_\+\+TYPE\+\_\+\+NETWORK\+\_\+\+CONFIG&Network configuration data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_ECO\_MODE\_CONFIG@{DATA\_TYPE\_ECO\_MODE\_CONFIG}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_ECO\_MODE\_CONFIG@{DATA\_TYPE\_ECO\_MODE\_CONFIG}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a2e6e80526a9e447e18ba15636c128434}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a2e6e80526a9e447e18ba15636c128434}} 
+DATA\+\_\+\+TYPE\+\_\+\+ECO\+\_\+\+MODE\+\_\+\+CONFIG&Eco mode configuration data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_SECTOR\_CONFIG@{DATA\_TYPE\_SECTOR\_CONFIG}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_SECTOR\_CONFIG@{DATA\_TYPE\_SECTOR\_CONFIG}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a822f36584544ac17b94df9ae03184281}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a822f36584544ac17b94df9ae03184281}} 
+DATA\+\_\+\+TYPE\+\_\+\+SECTOR\+\_\+\+CONFIG&Sector configuration data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_RETURN\_CONFIG@{DATA\_TYPE\_RETURN\_CONFIG}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_RETURN\_CONFIG@{DATA\_TYPE\_RETURN\_CONFIG}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a245235d64b9742f0ee120f0734bd6b5b}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a245235d64b9742f0ee120f0734bd6b5b}} 
+DATA\+\_\+\+TYPE\+\_\+\+RETURN\+\_\+\+CONFIG&Return configuration data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_SCHEDULING\_DATE@{DATA\_TYPE\_SCHEDULING\_DATE}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_SCHEDULING\_DATE@{DATA\_TYPE\_SCHEDULING\_DATE}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a307f43febc6605f28e09931d88f63537}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a307f43febc6605f28e09931d88f63537}} 
+DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+DATE&Scheduling date data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_SCHEDULING\_OFF\_DATE@{DATA\_TYPE\_SCHEDULING\_OFF\_DATE}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_SCHEDULING\_OFF\_DATE@{DATA\_TYPE\_SCHEDULING\_OFF\_DATE}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5af7774e01dba123925c8f029c149601b9}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5af7774e01dba123925c8f029c149601b9}} 
+DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+DATE&Scheduling off date data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_SCHEDULING\_ANGLE@{DATA\_TYPE\_SCHEDULING\_ANGLE}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_SCHEDULING\_ANGLE@{DATA\_TYPE\_SCHEDULING\_ANGLE}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a91a75814f3c517717860c2b13752f5b6}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a91a75814f3c517717860c2b13752f5b6}} 
+DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+ANGLE&Scheduling angle data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE@{DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE@{DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a669cdb27e7931f1db975ef1000e857ba}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a669cdb27e7931f1db975ef1000e857ba}} 
+DATA\+\_\+\+TYPE\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+ANGLE&Scheduling off angle data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_HISTORY@{DATA\_TYPE\_HISTORY}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_HISTORY@{DATA\_TYPE\_HISTORY}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a864143713d4429e94c2ccc3e43fd7460}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a864143713d4429e94c2ccc3e43fd7460}} 
+DATA\+\_\+\+TYPE\+\_\+\+HISTORY&History data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_OLD\_HISTORY@{DATA\_TYPE\_OLD\_HISTORY}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_OLD\_HISTORY@{DATA\_TYPE\_OLD\_HISTORY}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a3c85fa74bfcbd74e9bcd3687526c9df4}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a3c85fa74bfcbd74e9bcd3687526c9df4}} 
+DATA\+\_\+\+TYPE\+\_\+\+OLD\+\_\+\+HISTORY&Old history data type. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{DATA\_TYPE\_TIMESTAMP@{DATA\_TYPE\_TIMESTAMP}!data\_app.h@{data\_app.h}}\index{data\_app.h@{data\_app.h}!DATA\_TYPE\_TIMESTAMP@{DATA\_TYPE\_TIMESTAMP}}}\mbox{\Hypertarget{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a189834166a80b84b9b3424551b9b36b0}\label{data__app_8h_a49b5dfea31023fcd165ce36384234dc5a189834166a80b84b9b3424551b9b36b0}} 
+DATA\+\_\+\+TYPE\+\_\+\+TIMESTAMP&Timestamp data type. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}\label{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc}} 
-\index{data\_app.h@{data\_app.h}!data\_app\_get\_data\_size@{data\_app\_get\_data\_size}}
-\index{data\_app\_get\_data\_size@{data\_app\_get\_data\_size}!data\_app.h@{data\_app.h}}
-\doxysubsubsection{\texorpdfstring{data\_app\_get\_data\_size()}{data\_app\_get\_data\_size()}}
-{\footnotesize\ttfamily size\+\_\+t data\+\_\+app\+\_\+get\+\_\+data\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{data__app_8h_adc004ba6267e3b08268a2cdb0f990a48}\label{data__app_8h_adc004ba6267e3b08268a2cdb0f990a48}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_delete\_scheduling@{data\_app\_delete\_scheduling}}
+\index{data\_app\_delete\_scheduling@{data\_app\_delete\_scheduling}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_delete\_scheduling()}{data\_app\_delete\_scheduling()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+delete\+\_\+scheduling (\begin{DoxyParamCaption}\item[{char $\ast$}]{scheduling\+\_\+id }\end{DoxyParamCaption})}
 
 
 
-Gets the data size for the informed key. 
+Deletes scheduling data based on the scheduling ID. 
 
 
 \begin{DoxyParams}{Parameters}
-{\em key} & -\/ access key defined in \mbox{\hyperlink{project__config_8h}{project\+\_\+config.\+h}} \\
+{\em scheduling\+\_\+id} & \mbox{[}in\mbox{]}\+: Scheduling ID to delete. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item 0\+: in case of errors
-\item Data size. 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the delete operation.
 \end{DoxyReturn}
-Here is the call graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=350pt]{data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph}
-\end{center}
-\end{figure}
+This function deletes scheduling data based on the scheduling ID.
+
+Deletes scheduling data based on the scheduling ID.
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduling\+\_\+id} & Scheduling ID to identify the data to be deleted. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}\label{data__app_8h_afaa0d189caf561ea6d32929e14ffd042}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_gen\_scheduling\_key@{data\_app\_gen\_scheduling\_key}}
+\index{data\_app\_gen\_scheduling\_key@{data\_app\_gen\_scheduling\_key}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_gen\_scheduling\_key()}{data\_app\_gen\_scheduling\_key()}}
+{\footnotesize\ttfamily void data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key (\begin{DoxyParamCaption}\item[{char $\ast$}]{scheduling\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Generates a scheduling key based on the current timestamp. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduling\+\_\+id} & \mbox{[}out\mbox{]}\+: Buffer to store the generated scheduling ID.\\
+\hline
+\end{DoxyParams}
+This function generates a scheduling key based on the current timestamp.
+
+Generates a scheduling key based on the current timestamp.
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduling\+\_\+id} & Pointer to store the generated scheduling key. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{data__app_8h_aa99a3c97fbf8362267e3342110f16a11}\label{data__app_8h_aa99a3c97fbf8362267e3342110f16a11}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_get\_data\_size@{data\_app\_get\_data\_size}}
+\index{data\_app\_get\_data\_size@{data\_app\_get\_data\_size}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_get\_data\_size()}{data\_app\_get\_data\_size()}}
+{\footnotesize\ttfamily size\+\_\+t data\+\_\+app\+\_\+get\+\_\+data\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name }\end{DoxyParamCaption})}
+
+
+
+Gets the size of data associated with a given label name. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & \mbox{[}in\mbox{]}\+: Label name for which to get the data size. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+size\+\_\+t\+: Size of the data associated with the label name.
+\end{DoxyReturn}
+This function gets the size of data associated with a given label name.
+
+Gets the size of data associated with a given label name.
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & Label name to identify the data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+size\+\_\+t Size of the data. 
+\end{DoxyReturn}
 \mbox{\Hypertarget{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}\label{data__app_8h_a3fcb1dddd898c21279d1d829a9de6497}} 
 \index{data\_app.h@{data\_app.h}!data\_app\_init@{data\_app\_init}}
 \index{data\_app\_init@{data\_app\_init}!data\_app.h@{data\_app.h}}
@@ -122,108 +227,85 @@ Here is the call graph for this function\+:
 
 
 
-start all memory modules 
+Initializes the data application. 
 
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to initialize 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the initialization.
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}\label{data__app_8h_aba5f82963cb2888513aa34a5e0cb86be}} 
-\index{data\_app.h@{data\_app.h}!data\_app\_load\_actions@{data\_app\_load\_actions}}
-\index{data\_app\_load\_actions@{data\_app\_load\_actions}!data\_app.h@{data\_app.h}}
-\doxysubsubsection{\texorpdfstring{data\_app\_load\_actions()}{data\_app\_load\_actions()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{out\+\_\+action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+This function initializes the data application for managing various types of data.
+
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{data__app_8h_a3d87368774b5fc85240b7b826e48465b}\label{data__app_8h_a3d87368774b5fc85240b7b826e48465b}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_load@{data\_app\_load}}
+\index{data\_app\_load@{data\_app\_load}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_load()}{data\_app\_load()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}}}]{data\+\_\+type,  }\item[{void $\ast$}]{data }\end{DoxyParamCaption})}
 
 
 
-sends the queue a request to load a current action. 
+Loads data of a specific type. 
 
 
 \begin{DoxyParams}{Parameters}
-{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+{\em data\+\_\+type} & \mbox{[}in\mbox{]}\+: Type of data to load. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+{\em data} & \mbox{[}out\mbox{]}\+: Pointer to the buffer for loading data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the load operation.
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}\label{data__app_8h_a4eb978a8a1a0414f3a5df5c8b545673e}} 
-\index{data\_app.h@{data\_app.h}!data\_app\_load\_config@{data\_app\_load\_config}}
-\index{data\_app\_load\_config@{data\_app\_load\_config}!data\_app.h@{data\_app.h}}
-\doxysubsubsection{\texorpdfstring{data\_app\_load\_config()}{data\_app\_load\_config()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+config (\begin{DoxyParamCaption}\item[{pivot\+\_\+config $\ast$}]{out\+\_\+config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+This function loads data of a specific type from the underlying storage.
 
-
-
-sends the queue a request to load a configuration. 
+Loads data of a specific type.
 
 
 \begin{DoxyParams}{Parameters}
-{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+{\em data\+\_\+type} & Data type identifier. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+{\em data} & Pointer to store the loaded data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}\label{data__app_8h_a4d105ad37ace9c84cf4c0cc65bed9331}} 
-\index{data\_app.h@{data\_app.h}!data\_app\_save\_actions@{data\_app\_save\_actions}}
-\index{data\_app\_save\_actions@{data\_app\_save\_actions}!data\_app.h@{data\_app.h}}
-\doxysubsubsection{\texorpdfstring{data\_app\_save\_actions()}{data\_app\_save\_actions()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions $\ast$}]{action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{data__app_8h_a88cc47a5ab7baf22c4d32a8a71ff1747}\label{data__app_8h_a88cc47a5ab7baf22c4d32a8a71ff1747}} 
+\index{data\_app.h@{data\_app.h}!data\_app\_save@{data\_app\_save}}
+\index{data\_app\_save@{data\_app\_save}!data\_app.h@{data\_app.h}}
+\doxysubsubsection{\texorpdfstring{data\_app\_save()}{data\_app\_save()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}}}]{data\+\_\+type,  }\item[{const void $\ast$}]{data,  }\item[{size\+\_\+t}]{data\+\_\+size }\end{DoxyParamCaption})}
 
 
 
-sends the queue a request to save a new action 
+Saves data of a specific type. 
 
 
 \begin{DoxyParams}{Parameters}
-{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
+{\em data\+\_\+type} & \mbox{[}in\mbox{]}\+: Type of data to save. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
+{\em data} & \mbox{[}in\mbox{]}\+: Pointer to the data. \\
+\hline
+{\em data\+\_\+size} & \mbox{[}in\mbox{]}\+: Size of the data in bytes. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the save operation.
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}\label{data__app_8h_a693771f78e63a031d329d9b72d4bd7b7}} 
-\index{data\_app.h@{data\_app.h}!data\_app\_save\_config@{data\_app\_save\_config}}
-\index{data\_app\_save\_config@{data\_app\_save\_config}!data\_app.h@{data\_app.h}}
-\doxysubsubsection{\texorpdfstring{data\_app\_save\_config()}{data\_app\_save\_config()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+config (\begin{DoxyParamCaption}\item[{const pivot\+\_\+config $\ast$}]{config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+This function saves data of a specific type to the underlying storage.
 
-
-
-sends the queue a request to save a new configuration 
+Saves data of a specific type.
 
 
 \begin{DoxyParams}{Parameters}
-{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
+{\em data\+\_\+type} & Data type identifier. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
+{\em data} & Pointer to the data to be saved. \\
+\hline
+{\em data\+\_\+size} & Size of the data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}

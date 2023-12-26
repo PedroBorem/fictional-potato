@@ -1,5 +1,5 @@
-\hypertarget{rtc__ds3231_8c}{}\doxysection{components/rtc/rtc\+\_\+ds3231.c File Reference}
-\label{rtc__ds3231_8c}\index{components/rtc/rtc\_ds3231.c@{components/rtc/rtc\_ds3231.c}}
+\hypertarget{rtc__ds3231_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/rtc/rtc\+\_\+ds3231.c File Reference}
+\label{rtc__ds3231_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rtc/rtc\_ds3231.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rtc/rtc\_ds3231.c}}
 
 
 RTC DS3231 class implementation.  
@@ -8,8 +8,7 @@ RTC DS3231 class implementation.
 {\ttfamily \#include $<$string.\+h$>$}\newline
 {\ttfamily \#include $<$time.\+h$>$}\newline
 {\ttfamily \#include \char`\"{}rtc\+\_\+ds3231.\+h\char`\"{}}\newline
-Include dependency graph for rtc\+\_\+ds3231.\+c\+:
-\nopagebreak
+Include dependency graph for rtc\+\_\+ds3231.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -25,21 +24,21 @@ Include dependency graph for rtc\+\_\+ds3231.\+c\+:
 \begin{DoxyCompactItemize}
 \item 
 uint8\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a0f7a9fea6e3ea1106a9b5485f7f8df61}{bcd2dec}} (uint8\+\_\+t val)
-\begin{DoxyCompactList}\small\item\em Converts a binary-\/coded decimal (BCD) value to decimal. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Convert binary-\/coded decimal to decimal. \end{DoxyCompactList}\item 
 uint8\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_af6baa5614567fc7a64a994e755d4c721}{dec2bcd}} (uint8\+\_\+t val)
-\begin{DoxyCompactList}\small\item\em Converts a decimal value to binary-\/coded decimal (BCD). \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319}{ds3231\+\_\+init\+\_\+desc}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, i2c\+\_\+port\+\_\+t port, gpio\+\_\+num\+\_\+t sda\+\_\+gpio, gpio\+\_\+num\+\_\+t scl\+\_\+gpio)
-\begin{DoxyCompactList}\small\item\em Initializes the DS3231 RTC descriptor. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a1b7af3a6c2d93b008af11d5cc947594d}{ds3231\+\_\+set\+\_\+time}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, struct tm $\ast$time)
-\begin{DoxyCompactList}\small\item\em Sets the time on the DS3231 RTC module. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_ae0fd78a75161b8f1c446acb74519816a}{ds3231\+\_\+get\+\_\+raw\+\_\+temp}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, int16\+\_\+t $\ast$temp)
-\begin{DoxyCompactList}\small\item\em Gets the raw temperature value from the DS3231 RTC module. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_aab9585577f318244953aa8e0405d480f}{ds3231\+\_\+get\+\_\+temp\+\_\+integer}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, int8\+\_\+t $\ast$temp)
-\begin{DoxyCompactList}\small\item\em Gets the integer part of the temperature from the DS3231 RTC module. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a85f76d5a04e3944da93549b0cb2a5585}{ds3231\+\_\+get\+\_\+temp\+\_\+float}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, float $\ast$temp)
-\begin{DoxyCompactList}\small\item\em Gets the floating-\/point representation of the temperature from the DS3231 RTC module. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4}{ds3231\+\_\+get\+\_\+time}} (\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$dev, struct tm $\ast$time)
-\begin{DoxyCompactList}\small\item\em Gets the current time from the DS3231 RTC module. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Convert decimal to binary-\/coded decimal. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_afbe341e48eadc730540b5ef379ffb3ae}{ds3231\+\_\+init\+\_\+desc}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, i2c\+\_\+port\+\_\+t port, gpio\+\_\+num\+\_\+t sda\+\_\+gpio, gpio\+\_\+num\+\_\+t scl\+\_\+gpio)
+\begin{DoxyCompactList}\small\item\em Initialize the DS3231 RTC device. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_af1299db4f4dae10b77f226001e30deb8}{ds3231\+\_\+set\+\_\+time}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, struct tm $\ast$time)
+\begin{DoxyCompactList}\small\item\em Set the time on the DS3231 RTC device. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_ab3a615beebed1219d884c8ca93701fde}{ds3231\+\_\+get\+\_\+raw\+\_\+temp}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, int16\+\_\+t $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Get the raw temperature from the DS3231 RTC device. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a42ca68a2ecffefc67c900c3b77adc9e6}{ds3231\+\_\+get\+\_\+temp\+\_\+integer}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, int8\+\_\+t $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Get the temperature as an integer from the DS3231 RTC device. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_af3163dedfeb46b1c7c5ea631f0428c97}{ds3231\+\_\+get\+\_\+temp\+\_\+float}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, float $\ast$temp)
+\begin{DoxyCompactList}\small\item\em Get the temperature as a floating-\/point number from the DS3231 RTC device. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__ds3231_8c_a55d950054973f399a102296f405e55ac}{ds3231\+\_\+get\+\_\+time}} (\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$dev, struct tm $\ast$time)
+\begin{DoxyCompactList}\small\item\em Get the time from the DS3231 RTC device. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -76,15 +75,17 @@ This macro checks if the argument is valid. If the argument is not valid, it ret
 
 
 
-Converts a binary-\/coded decimal (BCD) value to decimal. 
+Convert binary-\/coded decimal to decimal. 
+
+Converts a binary-\/coded decimal (BCD) value to decimal.
 
 
 \begin{DoxyParams}{Parameters}
-{\em val} & The BCD value to convert. \\
+{\em val} & Binary-\/coded decimal value. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-uint8\+\_\+t The decimal value. 
+Decimal value. 
 \end{DoxyReturn}
 \mbox{\Hypertarget{rtc__ds3231_8c_af6baa5614567fc7a64a994e755d4c721}\label{rtc__ds3231_8c_af6baa5614567fc7a64a994e755d4c721}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!dec2bcd@{dec2bcd}}
@@ -94,165 +95,151 @@ uint8\+\_\+t The decimal value.
 
 
 
-Converts a decimal value to binary-\/coded decimal (BCD). 
+Convert decimal to binary-\/coded decimal. 
+
+Converts a decimal value to binary-\/coded decimal (BCD).
 
 
 \begin{DoxyParams}{Parameters}
-{\em val} & The decimal value to convert. \\
+{\em val} & Decimal value. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-uint8\+\_\+t The BCD value. 
+Binary-\/coded decimal value. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{rtc__ds3231_8c_ae0fd78a75161b8f1c446acb74519816a}\label{rtc__ds3231_8c_ae0fd78a75161b8f1c446acb74519816a}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_ab3a615beebed1219d884c8ca93701fde}\label{rtc__ds3231_8c_ab3a615beebed1219d884c8ca93701fde}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_get\_raw\_temp@{ds3231\_get\_raw\_temp}}
 \index{ds3231\_get\_raw\_temp@{ds3231\_get\_raw\_temp}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_get\_raw\_temp()}{ds3231\_get\_raw\_temp()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+raw\+\_\+temp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{int16\+\_\+t $\ast$}]{temp }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+raw\+\_\+temp (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{int16\+\_\+t $\ast$}]{temp }\end{DoxyParamCaption})}
 
 
 
-Gets the raw temperature value from the DS3231 RTC module. 
+Get the raw temperature from the DS3231 RTC device. 
 
-This function retrieves the raw temperature value from the DS3231 RTC module.
+Gets the raw temperature value from the DS3231 RTC module.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em temp} & The pointer to the variable to store the temperature value. \\
+{\em temp} & Pointer to the variable to store the temperature. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{rtc__ds3231_8c_a85f76d5a04e3944da93549b0cb2a5585}\label{rtc__ds3231_8c_a85f76d5a04e3944da93549b0cb2a5585}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_af3163dedfeb46b1c7c5ea631f0428c97}\label{rtc__ds3231_8c_af3163dedfeb46b1c7c5ea631f0428c97}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_get\_temp\_float@{ds3231\_get\_temp\_float}}
 \index{ds3231\_get\_temp\_float@{ds3231\_get\_temp\_float}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_get\_temp\_float()}{ds3231\_get\_temp\_float()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+temp\+\_\+float (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{float $\ast$}]{temp }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+temp\+\_\+float (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{float $\ast$}]{temp }\end{DoxyParamCaption})}
 
 
 
-Gets the floating-\/point representation of the temperature from the DS3231 RTC module. 
+Get the temperature as a floating-\/point number from the DS3231 RTC device. 
 
-This function retrieves the floating-\/point representation of the temperature value from the DS3231 RTC module.
+Gets the floating-\/point representation of the temperature from the DS3231 RTC module.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em temp} & The pointer to the variable to store the temperature value. \\
+{\em temp} & Pointer to the variable to store the temperature. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{rtc__ds3231_8c_aab9585577f318244953aa8e0405d480f}\label{rtc__ds3231_8c_aab9585577f318244953aa8e0405d480f}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_a42ca68a2ecffefc67c900c3b77adc9e6}\label{rtc__ds3231_8c_a42ca68a2ecffefc67c900c3b77adc9e6}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_get\_temp\_integer@{ds3231\_get\_temp\_integer}}
 \index{ds3231\_get\_temp\_integer@{ds3231\_get\_temp\_integer}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_get\_temp\_integer()}{ds3231\_get\_temp\_integer()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+temp\+\_\+integer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{int8\+\_\+t $\ast$}]{temp }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+temp\+\_\+integer (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{int8\+\_\+t $\ast$}]{temp }\end{DoxyParamCaption})}
 
 
 
-Gets the integer part of the temperature from the DS3231 RTC module. 
+Get the temperature as an integer from the DS3231 RTC device. 
 
-This function retrieves the integer part of the temperature value from the DS3231 RTC module.
+Gets the integer part of the temperature from the DS3231 RTC module.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em temp} & The pointer to the variable to store the temperature value. \\
+{\em temp} & Pointer to the variable to store the temperature. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4}\label{rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_a55d950054973f399a102296f405e55ac}\label{rtc__ds3231_8c_a55d950054973f399a102296f405e55ac}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_get\_time@{ds3231\_get\_time}}
 \index{ds3231\_get\_time@{ds3231\_get\_time}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_get\_time()}{ds3231\_get\_time()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{struct tm $\ast$}]{time }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+get\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{struct tm $\ast$}]{time }\end{DoxyParamCaption})}
 
 
 
-Gets the current time from the DS3231 RTC module. 
+Get the time from the DS3231 RTC device. 
 
-This function retrieves the current time from the DS3231 RTC module and stores it in the specified time structure.
+Gets the current time from the DS3231 RTC module.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em time} & The pointer to the time structure to store the current time. \\
+{\em time} & Pointer to the structure to store the time information. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}
-Here is the caller graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=349pt]{rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph}
-\end{center}
-\end{figure}
-\mbox{\Hypertarget{rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319}\label{rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_afbe341e48eadc730540b5ef379ffb3ae}\label{rtc__ds3231_8c_afbe341e48eadc730540b5ef379ffb3ae}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_init\_desc@{ds3231\_init\_desc}}
 \index{ds3231\_init\_desc@{ds3231\_init\_desc}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_init\_desc()}{ds3231\_init\_desc()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+init\+\_\+desc (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{i2c\+\_\+port\+\_\+t}]{port,  }\item[{gpio\+\_\+num\+\_\+t}]{sda\+\_\+gpio,  }\item[{gpio\+\_\+num\+\_\+t}]{scl\+\_\+gpio }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+init\+\_\+desc (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{i2c\+\_\+port\+\_\+t}]{port,  }\item[{gpio\+\_\+num\+\_\+t}]{sda\+\_\+gpio,  }\item[{gpio\+\_\+num\+\_\+t}]{scl\+\_\+gpio }\end{DoxyParamCaption})}
 
 
 
-Initializes the DS3231 RTC descriptor. 
+Initialize the DS3231 RTC device. 
 
-This function initializes the DS3231 RTC descriptor with the specified I2C port and GPIO pin numbers for SDA and SCL.
+Initializes the DS3231 RTC descriptor.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em port} & The I2C port number. \\
+{\em port} & I2C port number. \\
 \hline
-{\em sda\+\_\+gpio} & The GPIO number for the I2C SDA signal. \\
+{\em sda\+\_\+gpio} & GPIO number for SDA. \\
 \hline
-{\em scl\+\_\+gpio} & The GPIO number for the I2C SCL signal. \\
+{\em scl\+\_\+gpio} & GPIO number for SCL. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the initialization. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}
-Here is the caller graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=291pt]{rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgraph}
-\end{center}
-\end{figure}
-\mbox{\Hypertarget{rtc__ds3231_8c_a1b7af3a6c2d93b008af11d5cc947594d}\label{rtc__ds3231_8c_a1b7af3a6c2d93b008af11d5cc947594d}} 
+\mbox{\Hypertarget{rtc__ds3231_8c_af1299db4f4dae10b77f226001e30deb8}\label{rtc__ds3231_8c_af1299db4f4dae10b77f226001e30deb8}} 
 \index{rtc\_ds3231.c@{rtc\_ds3231.c}!ds3231\_set\_time@{ds3231\_set\_time}}
 \index{ds3231\_set\_time@{ds3231\_set\_time}!rtc\_ds3231.c@{rtc\_ds3231.c}}
 \doxysubsubsection{\texorpdfstring{ds3231\_set\_time()}{ds3231\_set\_time()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+set\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structi2c__dev__t}{i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{struct tm $\ast$}]{time }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t ds3231\+\_\+set\+\_\+time (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{structrtc__i2c__dev__t}{rtc\+\_\+i2c\+\_\+dev\+\_\+t}} $\ast$}]{dev,  }\item[{struct tm $\ast$}]{time }\end{DoxyParamCaption})}
 
 
 
-Sets the time on the DS3231 RTC module. 
+Set the time on the DS3231 RTC device. 
 
-This function sets the time on the DS3231 RTC module using the specified time structure.
+Sets the time on the DS3231 RTC module.
 
 
 \begin{DoxyParams}{Parameters}
-{\em dev} & The pointer to the RTC I2C device structure. \\
+{\em dev} & Pointer to the RTC device structure. \\
 \hline
-{\em time} & The pointer to the time structure containing the new time. \\
+{\em time} & Pointer to the structure containing time information. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+ERR\+\_\+\+INVALID\+\_\+\+ARG if arguments are invalid. 
 \end{DoxyReturn}

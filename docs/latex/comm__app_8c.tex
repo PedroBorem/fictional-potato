@@ -1,70 +1,42 @@
-\hypertarget{comm__app_8c}{}\doxysection{main/comm\+\_\+app.c File Reference}
-\label{comm__app_8c}\index{main/comm\_app.c@{main/comm\_app.c}}
+\hypertarget{comm__app_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/applications/comm\+\_\+app.c File Reference}
+\label{comm__app_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/comm\_app.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/comm\_app.c}}
 
 
-communication class control application  
+Communication class control application.  
 
 
 {\ttfamily \#include \char`\"{}comm\+\_\+app.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}rf\+\_\+module.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}gprs\+\_\+module.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}gprs\+\_\+uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rf\+\_\+uart.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}wifi\+\_\+app.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}http\+\_\+api.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}common\+\_\+parser.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
-Include dependency graph for comm\+\_\+app.\+c\+:
-\nopagebreak
+Include dependency graph for comm\+\_\+app.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
 \includegraphics[width=350pt]{comm__app_8c__incl}
 \end{center}
 \end{figure}
-\doxysubsection*{Data Structures}
-\begin{DoxyCompactItemize}
-\item 
-struct \mbox{\hyperlink{structcomm__app__request}{comm\+\_\+app\+\_\+request}}
-\end{DoxyCompactItemize}
 \doxysubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
-\#define {\bfseries COMM\+\_\+\+APP\+\_\+\+TAG}~\char`\"{}comm\+\_\+app\char`\"{}
-\item 
-\#define {\bfseries COMM\+\_\+\+APP\+\_\+\+SIZE\+\_\+\+QUEUE}~10
-\end{DoxyCompactItemize}
+\mbox{\Hypertarget{comm__app_8c_a711fe23e542f7959fbb5e757e0305377}\label{comm__app_8c_a711fe23e542f7959fbb5e757e0305377}} 
+\#define \mbox{\hyperlink{comm__app_8c_a711fe23e542f7959fbb5e757e0305377}{COMM\+\_\+\+APP\+\_\+\+TAG}}~\char`\"{}comm\+\_\+app\char`\"{}
+\begin{DoxyCompactList}\small\item\em Tag used for logging within the comm\+\_\+app module. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-void \mbox{\hyperlink{group__comm__app_ga9c6cf7f7bd25ff2c73dc36c880bbc416}{comm\+\_\+app\+\_\+task}} (void $\ast$arg)
-\begin{DoxyCompactList}\small\item\em communication reception task \end{DoxyCompactList}\item 
-bool \mbox{\hyperlink{group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c}{comm\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
-\begin{DoxyCompactList}\small\item\em starts all communication modules \end{DoxyCompactList}\item 
-uint16\+\_\+t \mbox{\hyperlink{group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab}{comm\+\_\+app\+\_\+get\+\_\+degree}} (void)
-\begin{DoxyCompactList}\small\item\em starts all communication modules \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{group__comm__app_ga4a39378319156c06be36e4c82fe53e76}{comm\+\_\+app\+\_\+send\+\_\+event}} (pivot\+\_\+actions pivot\+\_\+status)
-\begin{DoxyCompactList}\small\item\em send events over communication interfaces \end{DoxyCompactList}\item 
-void {\bfseries comm\+\_\+app\+\_\+set\+\_\+config} (const pivot\+\_\+config config)
-\item 
-void {\bfseries comm\+\_\+app\+\_\+set\+\_\+actions} (const pivot\+\_\+actions action, const pivot\+\_\+config config, uint16\+\_\+t start\+\_\+angle, uint16\+\_\+t end\+\_\+angle)
-\item 
-void {\bfseries comm\+\_\+app\+\_\+send\+\_\+actions} (void)
-\item 
-void {\bfseries comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+resp} (\mbox{\hyperlink{project__config_8h_a4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} idp, char $\ast$pivo\+\_\+id, char $\ast$scheaduling\+\_\+id)
-\item 
-\mbox{\Hypertarget{comm__app_8c_a238b4b257f8d14e4f0a103d470493a85}\label{comm__app_8c_a238b4b257f8d14e4f0a103d470493a85}} 
-void {\bfseries MODULES\+\_\+\+NOTIFY\+\_\+\+APP} (void $\ast$notify\+\_\+buffer)
-\item 
-void \mbox{\hyperlink{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}{RF\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP}} (void $\ast$notify\+\_\+buffer)
-\begin{DoxyCompactList}\small\item\em trigger callback to each status message received (write and read) \end{DoxyCompactList}\item 
-void \mbox{\hyperlink{comm__app_8c_a8854174458bacd820fe331ca38622f55}{GPRS\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP}} (void $\ast$notify\+\_\+buffer)
-\begin{DoxyCompactList}\small\item\em Notifies the application about status messages. \end{DoxyCompactList}\end{DoxyCompactItemize}
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{comm__app_8c_a9134ec73eaf995517b7e7234f41c111f}{comm\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Initializes the communication class. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{comm__app_8c_a3178877d2786138b147e70ea9d8f406a}{comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+pack}} (const char $\ast$idp\+\_\+pack, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} communication)
+\begin{DoxyCompactList}\small\item\em Sends an IDP package using the specified communication type. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{comm__app_8c_a5f74637d7451d35430288c692cd94e08}{comm\+\_\+app\+\_\+wifi\+\_\+config}} (char $\ast$wifi\+\_\+ssid, char $\ast$wifi\+\_\+pass)
+\begin{DoxyCompactList}\small\item\em Configures the Wi-\/\+Fi settings. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-communication class control application 
+Communication class control application. 
 
 \begin{DoxyDate}{Date}
 June 23, 2022 
@@ -72,35 +44,58 @@ June 23, 2022
 
 
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{comm__app_8c_a8854174458bacd820fe331ca38622f55}\label{comm__app_8c_a8854174458bacd820fe331ca38622f55}} 
-\index{comm\_app.c@{comm\_app.c}!GPRS\_MODULE\_NOTIFY\_APP@{GPRS\_MODULE\_NOTIFY\_APP}}
-\index{GPRS\_MODULE\_NOTIFY\_APP@{GPRS\_MODULE\_NOTIFY\_APP}!comm\_app.c@{comm\_app.c}}
-\doxysubsubsection{\texorpdfstring{GPRS\_MODULE\_NOTIFY\_APP()}{GPRS\_MODULE\_NOTIFY\_APP()}}
-{\footnotesize\ttfamily void GPRS\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP (\begin{DoxyParamCaption}\item[{void $\ast$}]{notify\+\_\+buffer }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{comm__app_8c_a9134ec73eaf995517b7e7234f41c111f}\label{comm__app_8c_a9134ec73eaf995517b7e7234f41c111f}} 
+\index{comm\_app.c@{comm\_app.c}!comm\_app\_init@{comm\_app\_init}}
+\index{comm\_app\_init@{comm\_app\_init}!comm\_app.c@{comm\_app.c}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_init()}{comm\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t comm\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
 
 
 
-Notifies the application about status messages. 
+Initializes the communication class. 
 
-This function triggers a callback for each status message received (write and read).
-
-
-\begin{DoxyParams}{Parameters}
-{\em notify\+\_\+buffer} & Pointer to the notification buffer. \\
-\hline
-\end{DoxyParams}
-\mbox{\Hypertarget{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}\label{comm__app_8c_a440aee468594cd5064027cd61bdd73a2}} 
-\index{comm\_app.c@{comm\_app.c}!RF\_MODULE\_NOTIFY\_APP@{RF\_MODULE\_NOTIFY\_APP}}
-\index{RF\_MODULE\_NOTIFY\_APP@{RF\_MODULE\_NOTIFY\_APP}!comm\_app.c@{comm\_app.c}}
-\doxysubsubsection{\texorpdfstring{RF\_MODULE\_NOTIFY\_APP()}{RF\_MODULE\_NOTIFY\_APP()}}
-{\footnotesize\ttfamily void RF\+\_\+\+MODULE\+\_\+\+NOTIFY\+\_\+\+APP (\begin{DoxyParamCaption}\item[{void $\ast$}]{notify\+\_\+buffer }\end{DoxyParamCaption})}
-
-
-
-trigger callback to each status message received (write and read) 
+Initializes all communication modules.
 
 
 \begin{DoxyParams}{Parameters}
-{\em config\+\_\+in\mbox{[}in\mbox{]}} & configuration structure \\
+{\em callback} & \mbox{[}in\mbox{]}\+: Callback function for communication events. \\
 \hline
 \end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the initialization.
+\end{DoxyReturn}
+This function initializes various communication modules and registers a callback function to be used for communication events. \mbox{\Hypertarget{comm__app_8c_a3178877d2786138b147e70ea9d8f406a}\label{comm__app_8c_a3178877d2786138b147e70ea9d8f406a}} 
+\index{comm\_app.c@{comm\_app.c}!comm\_app\_send\_idp\_pack@{comm\_app\_send\_idp\_pack}}
+\index{comm\_app\_send\_idp\_pack@{comm\_app\_send\_idp\_pack}!comm\_app.c@{comm\_app.c}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_send\_idp\_pack()}{comm\_app\_send\_idp\_pack()}}
+{\footnotesize\ttfamily void comm\+\_\+app\+\_\+send\+\_\+idp\+\_\+pack (\begin{DoxyParamCaption}\item[{const char $\ast$}]{idp\+\_\+pack,  }\item[{\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}}}]{communication }\end{DoxyParamCaption})}
+
+
+
+Sends an IDP package using the specified communication type. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em idp\+\_\+pack} & \mbox{[}in\mbox{]}\+: IDP package to send. \\
+\hline
+{\em communication} & \mbox{[}in\mbox{]}\+: Type of communication (e.\+g., COMM\+\_\+\+MQTT, COMM\+\_\+\+HTTP\+\_\+\+POST).\\
+\hline
+\end{DoxyParams}
+This function sends an IDP package using the specified communication type. If the communication type is HTTP, it uses the HTTP server; if MQTT, it uses GPRS and RF UART. \mbox{\Hypertarget{comm__app_8c_a5f74637d7451d35430288c692cd94e08}\label{comm__app_8c_a5f74637d7451d35430288c692cd94e08}} 
+\index{comm\_app.c@{comm\_app.c}!comm\_app\_wifi\_config@{comm\_app\_wifi\_config}}
+\index{comm\_app\_wifi\_config@{comm\_app\_wifi\_config}!comm\_app.c@{comm\_app.c}}
+\doxysubsubsection{\texorpdfstring{comm\_app\_wifi\_config()}{comm\_app\_wifi\_config()}}
+{\footnotesize\ttfamily void comm\+\_\+app\+\_\+wifi\+\_\+config (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid,  }\item[{char $\ast$}]{wifi\+\_\+pass }\end{DoxyParamCaption})}
+
+
+
+Configures the Wi-\/\+Fi settings. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+ssid} & \mbox{[}in\mbox{]}\+: Wi-\/\+Fi SSID. \\
+\hline
+{\em wifi\+\_\+pass} & \mbox{[}in\mbox{]}\+: Wi-\/\+Fi password.\\
+\hline
+\end{DoxyParams}
+This function configures the Wi-\/\+Fi settings for the communication module. 

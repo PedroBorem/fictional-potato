@@ -1,5 +1,5 @@
-\hypertarget{rtc__app_8h}{}\doxysection{components/rtc/include/rtc\+\_\+app.h File Reference}
-\label{rtc__app_8h}\index{components/rtc/include/rtc\_app.h@{components/rtc/include/rtc\_app.h}}
+\hypertarget{rtc__app_8h}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/applications/include/rtc\+\_\+app.h File Reference}
+\label{rtc__app_8h}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/rtc\_app.h@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/rtc\_app.h}}
 
 
 RTC application class for managing date and time functionality.  
@@ -7,16 +7,15 @@ RTC application class for managing date and time functionality.
 
 {\ttfamily \#include $<$time.\+h$>$}\newline
 {\ttfamily \#include $<$stdbool.\+h$>$}\newline
-Include dependency graph for rtc\+\_\+app.\+h\+:
-\nopagebreak
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+Include dependency graph for rtc\+\_\+app.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=214pt]{rtc__app_8h__incl}
+\includegraphics[width=288pt]{rtc__app_8h__incl}
 \end{center}
 \end{figure}
-This graph shows which files directly or indirectly include this file\+:
-\nopagebreak
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -32,7 +31,7 @@ This graph shows which files directly or indirectly include this file\+:
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-bool \mbox{\hyperlink{rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390}{rtc\+\_\+app\+\_\+init}} (void)
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__app_8h_aa22b68be066d88e1837e0ebdced6c25e}{rtc\+\_\+app\+\_\+init}} (void)
 \begin{DoxyCompactList}\small\item\em Initializes the RTC application. \end{DoxyCompactList}\item 
 bool \mbox{\hyperlink{rtc__app_8h_acff1f9adb3b5ccaf36e515ad0634c5cf}{rtc\+\_\+app\+\_\+set\+\_\+timestamp}} (time\+\_\+t timestamp)
 \begin{DoxyCompactList}\small\item\em Sets the timestamp in the RTC. \end{DoxyCompactList}\item 
@@ -41,7 +40,9 @@ time\+\_\+t \mbox{\hyperlink{rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b}{rtc\
 void \mbox{\hyperlink{rtc__app_8h_acc1d8772dcf1009e3a26ee67dde529db}{rtc\+\_\+app\+\_\+get\+\_\+date\+\_\+time}} (struct tm $\ast$rtcinfo)
 \begin{DoxyCompactList}\small\item\em Gets the date and time from the RTC. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{rtc__app_8h_a9782b35e8c20a24328a6040a8cddfdc2}{rtc\+\_\+show\+\_\+date\+\_\+time}} (time\+\_\+t timestamp\+\_\+now, uint8\+\_\+t time\+\_\+z)
-\begin{DoxyCompactList}\small\item\em Displays the date and time. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Displays the date and time. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{rtc__app_8h_ad88e03f5de0af55d5dc5b5b925077470}{rtc\+\_\+app\+\_\+get\+\_\+str\+\_\+date\+\_\+time}} (time\+\_\+t timestamp\+\_\+now, char $\ast$str\+\_\+out)
+\begin{DoxyCompactList}\small\item\em Gets the date and time in string format. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -67,6 +68,25 @@ This function retrieves the date and time from the RTC and stores it in the spec
 {\em rtcinfo} & The pointer to the time structure to store the date and time. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{rtc__app_8h_ad88e03f5de0af55d5dc5b5b925077470}\label{rtc__app_8h_ad88e03f5de0af55d5dc5b5b925077470}} 
+\index{rtc\_app.h@{rtc\_app.h}!rtc\_app\_get\_str\_date\_time@{rtc\_app\_get\_str\_date\_time}}
+\index{rtc\_app\_get\_str\_date\_time@{rtc\_app\_get\_str\_date\_time}!rtc\_app.h@{rtc\_app.h}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_get\_str\_date\_time()}{rtc\_app\_get\_str\_date\_time()}}
+{\footnotesize\ttfamily void rtc\+\_\+app\+\_\+get\+\_\+str\+\_\+date\+\_\+time (\begin{DoxyParamCaption}\item[{time\+\_\+t}]{timestamp\+\_\+now,  }\item[{char $\ast$}]{str\+\_\+out }\end{DoxyParamCaption})}
+
+
+
+Gets the date and time in string format. 
+
+This function retrieves the date and time from the RTC and formats it as a string.
+
+
+\begin{DoxyParams}{Parameters}
+{\em timestamp\+\_\+now} & The timestamp value. \\
+\hline
+{\em str\+\_\+out} & Pointer to the output string buffer. \\
+\hline
+\end{DoxyParams}
 \mbox{\Hypertarget{rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b}\label{rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b}} 
 \index{rtc\_app.h@{rtc\_app.h}!rtc\_app\_get\_timestamp@{rtc\_app\_get\_timestamp}}
 \index{rtc\_app\_get\_timestamp@{rtc\_app\_get\_timestamp}!rtc\_app.h@{rtc\_app.h}}
@@ -87,19 +107,11 @@ This function retrieves the timestamp from the RTC.
 \begin{DoxyReturn}{Returns}
 time\+\_\+t The timestamp value. 
 \end{DoxyReturn}
-Here is the call graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=349pt]{rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph}
-\end{center}
-\end{figure}
-\mbox{\Hypertarget{rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390}\label{rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390}} 
+\mbox{\Hypertarget{rtc__app_8h_aa22b68be066d88e1837e0ebdced6c25e}\label{rtc__app_8h_aa22b68be066d88e1837e0ebdced6c25e}} 
 \index{rtc\_app.h@{rtc\_app.h}!rtc\_app\_init@{rtc\_app\_init}}
 \index{rtc\_app\_init@{rtc\_app\_init}!rtc\_app.h@{rtc\_app.h}}
 \doxysubsubsection{\texorpdfstring{rtc\_app\_init()}{rtc\_app\_init()}}
-{\footnotesize\ttfamily bool rtc\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t rtc\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
 
 
@@ -108,16 +120,13 @@ Initializes the RTC application.
 This function initializes the RTC application.
 
 \begin{DoxyReturn}{Returns}
-bool True if initialization is successful, false otherwise. 
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation.
 \end{DoxyReturn}
-Here is the call graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=291pt]{rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph}
-\end{center}
-\end{figure}
+This function initializes the RTC application by configuring the RTC I2C device.
+
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
 \mbox{\Hypertarget{rtc__app_8h_acff1f9adb3b5ccaf36e515ad0634c5cf}\label{rtc__app_8h_acff1f9adb3b5ccaf36e515ad0634c5cf}} 
 \index{rtc\_app.h@{rtc\_app.h}!rtc\_app\_set\_timestamp@{rtc\_app\_set\_timestamp}}
 \index{rtc\_app\_set\_timestamp@{rtc\_app\_set\_timestamp}!rtc\_app.h@{rtc\_app.h}}

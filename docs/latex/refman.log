@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.7.18)  18 JUL 2023 10:09
+This is pdfTeX, Version 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian) (preloaded format=pdflatex 2023.12.26)  26 DEC 2023 13:07
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -676,6 +676,11 @@ File: hpdftex.def 2021-06-07 v7.00m Hyperref driver for pdfTeX
 )
 Package hyperref Info: Option `colorlinks' set `true' on input line 134.
 Package hyperref Info: Option `unicode' set `true' on input line 134.
+   defining Unicode char U+25CF (decimal 9679)
+   defining Unicode char U+251C (decimal 9500)
+   defining Unicode char U+2500 (decimal 9472)
+   defining Unicode char U+2514 (decimal 9492)
+   defining Unicode char U+2502 (decimal 9474)
 
 (/usr/share/texlive/texmf-dist/tex/latex/caption/caption.sty
 Package: caption 2020/10/26 v3.5g Customizing captions (AR)
@@ -708,41 +713,42 @@ Package: etoc 2021/09/23 v1.09e Completely customisable TOCs (JFB)
 \etoc@framed@titlebox=\box118
 \etoc@framed@contentsbox=\box119
 )
-LaTeX Font Info:    Trying to load font information for T1+phv on input line 14
-9.
+LaTeX Font Info:    Trying to load font information for T1+phv on input line 15
+7.
 
 (/usr/share/texlive/texmf-dist/tex/latex/psnfss/t1phv.fd
 File: t1phv.fd 2020/03/25 scalable font definitions for T1/phv.
 )
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 8.99994pt on input line 149.
+(Font)              scaled to size 8.99994pt on input line 157.
 
 (/usr/share/texlive/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
 File: l3backend-pdftex.def 2022-01-12 L3 backend support: PDF output (pdfTeX)
 \l__color_backend_stack_int=\count320
 \l__pdf_internal_box=\box120
 )
-No file refman.aux.
+(./refman.aux)
 \openout1 = `refman.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
-LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 149.
-LaTeX Font Info:    ... okay on input line 149.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for PD1/pdf/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+LaTeX Font Info:    Checking defaults for PU/pdf/m/n on input line 157.
+LaTeX Font Info:    ... okay on input line 157.
+
 (/usr/share/texlive/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
 \scratchcounter=\count321
@@ -799,7 +805,7 @@ e
 * \@reversemarginfalse
 * (1in=72.27pt=25.4mm, 1cm=28.453pt)
 
-Package hyperref Info: Link coloring ON on input line 149.
+Package hyperref Info: Link coloring ON on input line 157.
 (/usr/share/texlive/texmf-dist/tex/latex/hyperref/nameref.sty
 Package: nameref 2021-04-02 v2.47 Cross-referencing by name of section
 
@@ -811,40 +817,42 @@ Package: gettitlestring 2019/12/15 v1.6 Cleanup title references (HO)
 )
 \c@section@level=\count327
 )
-LaTeX Info: Redefining \ref on input line 149.
-LaTeX Info: Redefining \pageref on input line 149.
-LaTeX Info: Redefining \nameref on input line 149.
+LaTeX Info: Redefining \ref on input line 157.
+LaTeX Info: Redefining \pageref on input line 157.
+LaTeX Info: Redefining \nameref on input line 157.
+
+(./refman.out) (./refman.out)
 \@outlinefile=\write5
 \openout5 = `refman.out'.
 
-Package backref Info: ** backref set up for natbib ** on input line 149.
+Package backref Info: ** backref set up for natbib ** on input line 157.
 Package caption Info: Begin \AtBeginDocument code.
 Package caption Info: End \AtBeginDocument code.
+\Etoc@tf=\read4
+Package hyperref Info: Option `pageanchor' set `false' on input line 164.
+Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 164.
 
-No file refman.toc.
-Package hyperref Info: Option `pageanchor' set `false' on input line 156.
-Package hyperref Info: Option `bookmarksnumbered' set `true' on input line 156.
-
-Package hyperref Info: Option `unicode' set `true' on input line 156.
+Package hyperref Info: Option `unicode' set `true' on input line 164.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 12.9599pt on input line 161.
+(Font)              scaled to size 12.9599pt on input line 169.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 10.79993pt on input line 161.
+(Font)              scaled to size 10.79993pt on input line 169.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 6.29996pt on input line 161.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 161
+(Font)              scaled to size 6.29996pt on input line 169.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 169
 .
+
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 161
+LaTeX Font Info:    Trying to load font information for U+msb on input line 169
 .
 
 (/usr/share/texlive/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
 )
 LaTeX Font Info:    Trying to load font information for U+wasy on input line 16
-1.
+9.
 
 (/usr/share/texlive/texmf-dist/tex/latex/wasysym/uwasy.fd
 File: uwasy.fd 2020/01/19 v2.4 Wasy-2 symbol font definitions
@@ -857,58 +865,156 @@ File: uwasy.fd 2020/01/19 v2.4 Wasy-2 symbol font definitions
 \tf@toc=\write6
 \openout6 = `refman.toc'.
 
-Package hyperref Info: Option `pageanchor' set `true' on input line 171.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 8.99994pt on input line 177.
+LaTeX Font Info:    Font shape `T1/phv/b/n' will be
+(Font)              scaled to size 6.29996pt on input line 177.
+ [1]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.3 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]
+De[]Controle[]_[]2.0/components/applications/data[]_[]app.c 
+ []
+
+
+Overfull \hbox (23.44118pt too wide) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.4 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]
+De[]Controle[]_[]2.0/components/applications/include/actuation[] 
+ []
+
+[2]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.8 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]
+De[]Controle[]_[]2.0/components/applications/rtc[]_[]app.c 
+ []
+
+[3]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.9 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]
+De[]Controle[]_[]2.0/components/gpio[]_[]actuator/gpio[]_[] 
+ []
+
+
+Overfull \hbox (15.94427pt too wide) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.10 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/gpio[]_[]actuator/include/gpio[] 
+ []
+
+[4]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.12 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/idp[]_[]protocol/idp[]_[] 
+ []
+
+[5]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.15 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/nvs[]_[]data/nvs[]_[]data.c 
+ []
+
+
+Underfull \hbox (badness 2698) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.16 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/rf[]_[]module/include/rf[]_[] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.19 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/rtc/rtc[]_[]ds3231.c File 
+ []
+
+[6]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.20 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/rtc/rtc[]_[]i2c[]_[]dev.c File 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.21 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/utils/include/[]Free[] 
+ []
+
+
+Underfull \hbox (badness 5652) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.22 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/utils/include/log.h File 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.23 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/utils/include/project[]_[] 
+ []
+
+
+Underfull \hbox (badness 1902) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.24 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/components/wifi[]_[]app/include/wifi[]_[] 
+ []
+
+[7]
+Underfull \hbox (badness 10000) in paragraph at lines 177--177
+ [][] [][]\T1/phv/m/n/10 7.31 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[
+]De[]Controle[]_[]2.0/main/include/system[]_[]monitoring.h 
+ []
+
+[8] [9] [10
+
+]
+Package hyperref Info: Option `pageanchor' set `true' on input line 179.
 
 Chapter 1.
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 
 Package hyperref Warning: Token not allowed in a PDF string (Unicode):
-(hyperref)                removing `math shift' on input line 174.
+(hyperref)                removing `math shift' on input line 182.
 
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 18.66588pt on input line 174.
+(Font)              scaled to size 18.66588pt on input line 182.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 18.66588pt on input line 174.
+(Font)              scaled to size 18.66588pt on input line 182.
 LaTeX Font Info:    Font shape `T1/phv/bc/n' will be
-(Font)              scaled to size 18.66588pt on input line 174.
+(Font)              scaled to size 18.66588pt on input line 182.
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 22.39185pt on input line 174.
+(Font)              scaled to size 22.39185pt on input line 182.
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 22.39185pt on input line 174.
+(Font)              scaled to size 22.39185pt on input line 182.
 LaTeX Font Info:    Font shape `T1/phv/bc/n' will be
-(Font)              scaled to size 22.39185pt on input line 174.
-(./md__r_e_a_d_m_e.tex
+(Font)              scaled to size 22.39185pt on input line 182.
+
+(./md__home_brunolima_eclipse_workspace_fw__placa_de_controle_2_0__r_e_a_d_m_e.
+tex
 LaTeX Font Info:    Trying to load font information for TS1+phv on input line 1
 .
-
-(/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1phv.fd
+ (/usr/share/texlive/texmf-dist/tex/latex/psnfss/ts1phv.fd
 File: ts1phv.fd 2020/03/25 scalable font definitions for TS1/phv.
 )
 LaTeX Font Info:    Font shape `TS1/phv/m/n' will be
@@ -921,1927 +1027,206 @@ File: t1pcr.fd 2001/06/04 font definitions for T1/pcr.
 )
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
 (Font)              scaled to size 12.9599pt on input line 3.
-LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 8.99994pt on input line 5.
-LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 6.29996pt on input line 5.
-
-
-! LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.13 \DoxyCodeLine{├── CMakeLists.txt}
-                                            
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.13 \DoxyCodeLine{├── CMakeLists.txt}
-                                            
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.13 \DoxyCodeLine{├── CMakeLists.txt}
-                                            
-? 
-
-! LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.14 \DoxyCodeLine{├── main}
-                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.14 \DoxyCodeLine{├── main}
-                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.14 \DoxyCodeLine{├── main}
-                                  
-? 
-
-! LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.15 ...CodeLine{│   ├── CMakeLists.txt}
-                                                  
-? 
-
-! LaTeX Error: Unicode character ├ (U+251C)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.15 ...CodeLine{│   ├── CMakeLists.txt}
-                                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.15 ...CodeLine{│   ├── CMakeLists.txt}
-                                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.15 ...CodeLine{│   ├── CMakeLists.txt}
-                                                  
-? 
-
-! LaTeX Error: Unicode character │ (U+2502)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.16 \DoxyCodeLine{│   └── main.c}
-                                            
-? 
-
-! LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.16 \DoxyCodeLine{│   └── main.c}
-                                            
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.16 \DoxyCodeLine{│   └── main.c}
-                                            
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.16 \DoxyCodeLine{│   └── main.c}
-                                            
-? 
-
-! LaTeX Error: Unicode character └ (U+2514)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.17 ...his is the file you are currently reading}
-                                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.17 ...his is the file you are currently reading}
-                                                  
-? 
-
-! LaTeX Error: Unicode character ─ (U+2500)
-               not set up for use with LaTeX.
-
-See the LaTeX manual or LaTeX Companion for explanation.
-Type  H <return>  for immediate help.
- ...                                              
-                                                  
-l.17 ...his is the file you are currently reading}
-                                                  
-? 
 ) [1
-
 
 ] [2]
 Chapter 2.
-(./deprecated.tex
-Underfull \hbox (badness 10000) in paragraph at lines 6--6
-
- []
-
-) [3
+(./modules.tex) [3
 
 ] [4
 
 ]
 Chapter 3.
-(./modules.tex
-
-LaTeX Warning: Reference `group__main' on page 5 undefined on input line 3.
-
-
-LaTeX Warning: Reference `group__comm__app' on page 5 undefined on input line 5
-.
-
-) [5] [6
+(./annotated.tex) [5] [6
 
 ]
 Chapter 4.
-(./annotated.tex
-
-LaTeX Warning: Reference `structasync__resp__arg' on page 7 undefined on input 
-line 3.
-
-
-LaTeX Warning: Reference `structcomm__app__request' on page 7 undefined on inpu
-t line 4.
-
-
-LaTeX Warning: Reference `structhttp__file__server__data' on page 7 undefined o
-n input line 5.
-
-
-LaTeX Warning: Reference `structi2c__dev__t' on page 7 undefined on input line 
-6.
-
-
-LaTeX Warning: Reference `structpivot__sectors' on page 7 undefined on input li
-ne 7.
-
-) [7] [8
-
-]
-Chapter 5.
 (./files.tex
-
-LaTeX Warning: Reference `bootloader_2config_2sdkconfig_8h' on page 9 undefined
- on input line 3.
-
-
-LaTeX Warning: Reference `config_2sdkconfig_8h' on page 9 undefined on input li
-ne 4.
+Overfull \hbox (26.47845pt too wide) in paragraph at lines 7--7
+ [][] \T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]De[]Cont
+role[]_[]2.[]0/components/applications/include/[]  
+ []
 
 
-LaTeX Warning: Reference `ssl__debug__helpers__generated_8c' on page 9 undefine
-d on input line 5.
+Overfull \hbox (31.34721pt too wide) in paragraph at lines 12--12
+ [][] \T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]De[]Cont
+role[]_[]2.[]0/components/gpio[]_[]actuator/include/[]  
+ []
 
 
-LaTeX Warning: Reference `common__parser_8h' on page 9 undefined on input line 
-6.
+LaTeX Warning: Reference `http__api_8h' on page 7 undefined on input line 14.
 
 
-LaTeX Warning: Reference `gpio__actuator_8c' on page 9 undefined on input line 
-7.
+Underfull \hbox (badness 10000) in paragraph at lines 14--14
+ [][] \T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]De[]Cont
+role[]_[]2.[]0/components/http[]_[]server/include/\T1/phv/b/n/10 http[]_[] 
+ []
 
+[7]
 
-LaTeX Warning: Reference `gpio__actuator_8h' on page 9 undefined on input line 
-8.
-
-
-LaTeX Warning: Reference `gprs__module_8c' on page 9 undefined on input line 9.
-
-
-
-LaTeX Warning: Reference `gprs__module_8h' on page 9 undefined on input line 10
-.
-
-
-LaTeX Warning: Reference `gprs__uart_8h' on page 9 undefined on input line 11.
-
-
-LaTeX Warning: Reference `http__api_8h' on page 9 undefined on input line 12.
-
-
-LaTeX Warning: Reference `http__config__parser_8h' on page 9 undefined on input
- line 13.
-
-
-LaTeX Warning: Reference `http__storage_8h' on page 9 undefined on input line 1
+LaTeX Warning: Reference `rtc__i2c__dev_8h' on page 8 undefined on input line 2
 4.
 
 
-LaTeX Warning: Reference `idp__parser_8h' on page 9 undefined on input line 15.
+Overfull \hbox (15.09415pt too wide) in paragraph at lines 25--25
+ [][] \T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw[]_[][]Placa[]De[]Cont
+role[]_[]2.[]0/components/utils/include/[]  
+ []
 
-
-
-LaTeX Warning: Reference `nvs__data_8c' on page 9 undefined on input line 16.
-
-
-LaTeX Warning: Reference `nvs__data_8h' on page 9 undefined on input line 17.
-
-
-LaTeX Warning: Reference `rf__module_8c' on page 9 undefined on input line 18.
-
-
-LaTeX Warning: Reference `rf__module_8h' on page 9 undefined on input line 19.
-
-
-LaTeX Warning: Reference `rf__uart_8h' on page 9 undefined on input line 20.
-
-
-LaTeX Warning: Reference `rtc__app_8c' on page 9 undefined on input line 21.
-
-
-LaTeX Warning: Reference `rtc__ds3231_8c' on page 9 undefined on input line 22.
-
-
-
-LaTeX Warning: Reference `rtc__i2c__dev_8c' on page 9 undefined on input line 2
-3.
-
-
-LaTeX Warning: Reference `rtc__app_8h' on page 9 undefined on input line 24.
-
-
-LaTeX Warning: Reference `rtc__ds3231_8h' on page 9 undefined on input line 25.
-
-
-
-LaTeX Warning: Reference `rtc__i2c__dev_8h' on page 9 undefined on input line 2
-6.
-
-[9]
-
-LaTeX Warning: Reference `_free_r_t_o_s__defines_8h' on page 10 undefined on in
-put line 27.
-
-
-LaTeX Warning: Reference `log_8h' on page 10 undefined on input line 28.
-
-
-LaTeX Warning: Reference `project__config_8h' on page 10 undefined on input lin
-e 29.
-
-
-LaTeX Warning: Reference `wifi__app_8c' on page 10 undefined on input line 30.
-
-
-LaTeX Warning: Reference `wifi__app_8h' on page 10 undefined on input line 31.
-
-
-LaTeX Warning: Reference `actuation__app_8c' on page 10 undefined on input line
- 32.
-
-
-LaTeX Warning: Reference `comm__app_8c' on page 10 undefined on input line 33.
-
-
-LaTeX Warning: Reference `data__app_8c' on page 10 undefined on input line 34.
-
-
-LaTeX Warning: Reference `actuation__app_8h' on page 10 undefined on input line
- 35.
-
-
-LaTeX Warning: Reference `comm__app_8h' on page 10 undefined on input line 36.
-
-
-LaTeX Warning: Reference `data__app_8h' on page 10 undefined on input line 37.
-
-
-LaTeX Warning: Reference `system__manager_8h' on page 10 undefined on input lin
-e 38.
-
-) [10]
-Chapter 6.
-(./group__main.tex <./group__main.pdf
-
-pdfTeX warning: pdflatex (file ./group__main.pdf): PDF inclusion: multiple pdfs
- with page group included in a single page
->
-<group__main.pdf, id=148, 229.85875pt x 99.37125pt>
-File: group__main.pdf Graphic file (type pdf)
-<use group__main.pdf>
-Package pdftex.def Info: group__main.pdf  used on input line 8.
-(pdftex.def)             Requested size: 229.0pt x 99.00557pt.
+) [8]
+Chapter 5.
+(./group___f_r_e_e_r_t_o_s___d_e_f_i_n_e_s.tex
 LaTeX Font Info:    Font shape `T1/phv/b/n' will be
-(Font)              scaled to size 10.79993pt on input line 11.
-) (./group__comm__app.tex <./group__comm__app.pdf
-
-pdfTeX warning: pdflatex (file ./group__comm__app.pdf): PDF inclusion: multiple
- pdfs with page group included in a single page
->
-<group__comm__app.pdf, id=157, 229.85875pt x 99.37125pt>
-File: group__comm__app.pdf Graphic file (type pdf)
-<use group__comm__app.pdf>
-Package pdftex.def Info: group__comm__app.pdf  used on input line 8.
-(pdftex.def)             Requested size: 229.0pt x 99.00557pt.
- [11
+(Font)              scaled to size 10.79993pt on input line 3.
+LaTeX Font Info:    Font shape `T1/phv/m/n' will be
+(Font)              scaled to size 8.09995pt on input line 8.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <9> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 8.
+LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
+(Font)              scaled to size 8.09995pt on input line 8.
+ [9
 
 ]
-LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 8.09995pt on input line 29.
-LaTeX Font Info:    Font shape `T1/phv/m/it' in size <9> not available
-(Font)              Font shape `T1/phv/m/sl' tried instead on input line 29.
+LaTeX Font Info:    Font shape `T1/phv/m/it' in size <7> not available
+(Font)              Font shape `T1/phv/m/sl' tried instead on input line 98.
 LaTeX Font Info:    Font shape `T1/phv/m/sl' will be
-(Font)              scaled to size 8.09995pt on input line 29.
+(Font)              scaled to size 6.29996pt on input line 98.
+)
+(./group___p_r_o_j_e_c_t___c_o_n_f_i_g.tex [10] [11]
 LaTeX Font Info:    Font shape `T1/phv/m/n' will be
-(Font)              scaled to size 7.19995pt on input line 58.
+(Font)              scaled to size 7.19995pt on input line 141.
+ [12] [13]
 LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <8> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 58.
-LaTeX Font Info:    Font shape `T1/phv/bc/n' will be
-(Font)              scaled to size 8.99994pt on input line 64.
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 263.
+ [14]) [15]
+[16
+
+]
+Chapter 6.
+(./structarg__pair.tex) (./structasync__resp__arg.tex [17])
+(./structhttp__file__server__data.tex) (./structi2c__dev__t.tex)
+(./structpivot__sectors.tex [18]) (./structrtc__i2c__dev__t.tex) [19] [20
+
+]
+Chapter 7.
+(./actuation__app_8c.tex <./actuation__app_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./actuation__app_8c__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<actuation__app_8c__incl.pdf, id=2129, 1199.48125pt x 302.12875pt>
+File: actuation__app_8c__incl.pdf Graphic file (type pdf)
+<use actuation__app_8c__incl.pdf>
+Package pdftex.def Info: actuation__app_8c__incl.pdf  used on input line 19.
+(pdftex.def)             Requested size: 350.0pt x 88.15907pt.
+ [21]
+LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <7> not available
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 76.
+ [22]
+Underfull \hbox (badness 10000) detected at line 108
+[][][]
+ []
+
+
+Overfull \vbox (21.0283pt too high) has occurred while \output is active []
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[23]
+Underfull \hbox (badness 10000) detected at line 164
+[][][]
+ []
+
+[24]) (./comm__app_8c.tex <./comm__app_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./comm__app_8c__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<comm__app_8c__incl.pdf, id=2205, 664.4825pt x 302.12875pt>
+File: comm__app_8c__incl.pdf Graphic file (type pdf)
+<use comm__app_8c__incl.pdf>
+Package pdftex.def Info: comm__app_8c__incl.pdf  used on input line 18.
+(pdftex.def)             Requested size: 350.0pt x 159.1409pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[25]
+Underfull \hbox (badness 10000) detected at line 41
+[][][]
+ []
+
 
 Underfull \hbox (badness 10000) detected at line 64
 [][][]
  []
 
- <./group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab_cgraph.pdf>
-<group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab_cgraph.pdf, id=188, 367.37
-25pt x 100.375pt>
-File: group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab_cgraph.pdf Graphic fi
-le (type pdf)
-<use group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab_cgraph.pdf>
-Package pdftex.def Info: group__comm__app_gacd06ed9c7ec5f99df6ccdfb5455e73ab_cg
-raph.pdf  used on input line 72.
-(pdftex.def)             Requested size: 350.0pt x 95.63445pt.
- [12]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 6.1 on input line 89.
-
-
-Underfull \hbox (badness 10000) detected at line 90
-[][][]
- []
-
- <./group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c_cgraph.pdf>
-<group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c_cgraph.pdf, id=223, 613.29
-124pt x 182.6825pt>
-File: group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c_cgraph.pdf Graphic fi
-le (type pdf)
-<use group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c_cgraph.pdf>
-Package pdftex.def Info: group__comm__app_ga73769d903af36ae7f835dd42f2d50b2c_cg
-raph.pdf  used on input line 102.
-(pdftex.def)             Requested size: 350.0pt x 104.25552pt.
-LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <7> not available
-(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 109.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 6.2 on input line 119.
-
-[13]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 6.3 on input line 134.
-
-) [14]
-Chapter 7.
-(./structasync__resp__arg.tex) (./structcomm__app__request.tex)
-(./structhttp__file__server__data.tex [15
-
-]) (./structi2c__dev__t.tex)
-(./structpivot__sectors.tex [16]) [17] [18
-
-]
-Chapter 8.
-(./ssl__debug__helpers__generated_8c.tex <./ssl__debug__helpers__generated_8c__
-incl.pdf
-
-pdfTeX warning: pdflatex (file ./ssl__debug__helpers__generated_8c__incl.pdf): 
-PDF inclusion: multiple pdfs with page group included in a single page
->
-<ssl__debug__helpers__generated_8c__incl.pdf, id=312, 236.885pt x 178.6675pt>
-File: ssl__debug__helpers__generated_8c__incl.pdf Graphic file (type pdf)
-<use ssl__debug__helpers__generated_8c__incl.pdf>
-Package pdftex.def Info: ssl__debug__helpers__generated_8c__incl.pdf  used on i
-nput line 14.
-(pdftex.def)             Requested size: 236.0pt x 178.00456pt.
-) (./common__parser_8h.tex <./common__parser_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./common__parser_8h__incl.pdf): PDF inclusion: m
-ultiple pdfs with page group included in a single page
->
-<common__parser_8h__incl.pdf, id=320, 371.3875pt x 223.83624pt>
-File: common__parser_8h__incl.pdf Graphic file (type pdf)
-<use common__parser_8h__incl.pdf>
-Package pdftex.def Info: common__parser_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 210.94914pt.
- [19] <./common__parser_8h__dep__incl.pdf>
-<common__parser_8h__dep__incl.pdf, id=347, 478.78876pt x 178.6675pt>
-File: common__parser_8h__dep__incl.pdf Graphic file (type pdf)
-<use common__parser_8h__dep__incl.pdf>
-Package pdftex.def Info: common__parser_8h__dep__incl.pdf  used on input line 2
-3.
-(pdftex.def)             Requested size: 350.0pt x 130.60884pt.
-
-Underfull \hbox (badness 3009) in paragraph at lines 49--52
-[][] \T1/phv/m/n/10 esp[]_[]err[]_[]t \T1/phv/b/n/10 common[]_[]parser[]_[]stri
-ng[]_[]to[]_[]scheaduling[]_[]angle \T1/phv/m/n/10 (char $\OMS/cmsy/m/n/10 ^^C$
-\T1/phv/m/n/10 string[]_[]in, pivot[]_[]scheduling[]_[]angle
- []
-
-
-Underfull \hbox (badness 1163) in paragraph at lines 55--58
-[][] \T1/phv/m/n/10 esp[]_[]err[]_[]t \T1/phv/b/n/10 common[]_[]parser[]_[]sche
-aduling[]_[]date[]_[]http[]_[]to[]_[]mqtt \T1/phv/m/n/10 ([] idp, char $\OMS/cm
-sy/m/n/10 ^^C$\T1/phv/m/n/10 gprs[]_[]id, pivot[]_[]
- []
-
-[20]
-Underfull \hbox (badness 10000) detected at line 68
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.1 on input line 96.
-
-
-Underfull \hbox (badness 10000) detected at line 97
-[][][]
- []
-
-[21]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.2 on input line 120.
-
-
-Underfull \hbox (badness 10000) detected at line 121
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.3 on input line 146.
-
-
-Underfull \hbox (badness 10000) detected at line 147
-[][][]
- []
-
- <./common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f04173_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f
-04173_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a 
-single page
->
-<common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f04173_icgraph.pdf, id=391, 586.1
-9pt x 111.41624pt>
-File: common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f04173_icgraph.pdf Graphic f
-ile (type pdf)
-<use common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f04173_icgraph.pdf>
-Package pdftex.def Info: common__parser_8h_a86ae6fa4634bdc26d9fd1741b5f04173_ic
-graph.pdf  used on input line 159.
-(pdftex.def)             Requested size: 350.0pt x 66.52383pt.
- [22]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.4 on input line 178.
-
-
-Underfull \hbox (badness 10000) detected at line 179
-[][][]
- []
-
-) (./gpio__actuator_8c.tex <./gpio__actuator_8c__incl.pdf>
-<gpio__actuator_8c__incl.pdf, id=410, 1163.34625pt x 280.04625pt>
-File: gpio__actuator_8c__incl.pdf Graphic file (type pdf)
-<use gpio__actuator_8c__incl.pdf>
-Package pdftex.def Info: gpio__actuator_8c__incl.pdf  used on input line 18.
-(pdftex.def)             Requested size: 350.0pt x 84.25381pt.
- [23]
-Underfull \hbox (badness 10000) detected at line 69
-[][][]
- []
-
-[24]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.5 on input line 89.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.6 on input line 104.
-
-
-Underfull \hbox (badness 10000) detected at line 115
-[][][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 128
-[][][]
- []
-
- <./gpio__actuator_8c_a6206f3c889822d0ab5fef0fd5714e86e_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./gpio__actuator_8c_a6206f3c889822d0ab5fef0fd571
-4e86e_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a 
-single page
->
-<gpio__actuator_8c_a6206f3c889822d0ab5fef0fd5714e86e_icgraph.pdf, id=474, 328.2
-2626pt x 100.375pt>
-File: gpio__actuator_8c_a6206f3c889822d0ab5fef0fd5714e86e_icgraph.pdf Graphic f
-ile (type pdf)
-<use gpio__actuator_8c_a6206f3c889822d0ab5fef0fd5714e86e_icgraph.pdf>
-Package pdftex.def Info: gpio__actuator_8c_a6206f3c889822d0ab5fef0fd5714e86e_ic
-graph.pdf  used on input line 140.
-(pdftex.def)             Requested size: 327.0pt x 100.00102pt.
- [25]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.7 on input line 157.
-
-
-Underfull \hbox (badness 10000) detected at line 158
-[][][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 175
-[][][]
- []
-
-[26]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.8 on input line 196.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.9 on input line 211.
-
-) (./gpio__actuator_8h.tex <./gpio__actuator_8h__incl.pdf>
-<gpio__actuator_8h__incl.pdf, id=500, 364.36125pt x 223.83624pt>
-File: gpio__actuator_8h__incl.pdf Graphic file (type pdf)
-<use gpio__actuator_8h__incl.pdf>
-Package pdftex.def Info: gpio__actuator_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 215.02039pt.
- <./gpio__actuator_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./gpio__actuator_8h__dep__incl.pdf): PDF inclusi
-on: multiple pdfs with page group included in a single page
->
-<gpio__actuator_8h__dep__incl.pdf, id=515, 367.3725pt x 178.6675pt>
-File: gpio__actuator_8h__dep__incl.pdf Graphic file (type pdf)
-<use gpio__actuator_8h__dep__incl.pdf>
-Package pdftex.def Info: gpio__actuator_8h__dep__incl.pdf  used on input line 2
-3.
-(pdftex.def)             Requested size: 350.0pt x 170.22932pt.
- [27] [28]
-Underfull \hbox (badness 10000) detected at line 106
-[][][]
- []
-
-[29] [30] [31]
-Underfull \hbox (badness 10000) detected at line 295
-[][][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 308
-[][][]
- []
-
- <./gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3
-bc943_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a 
-single page
->
-<gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943_icgraph.pdf, id=642, 328.2
-2626pt x 100.375pt>
-File: gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943_icgraph.pdf Graphic f
-ile (type pdf)
-<use gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943_icgraph.pdf>
-Package pdftex.def Info: gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943_ic
-graph.pdf  used on input line 320.
-(pdftex.def)             Requested size: 327.0pt x 100.00102pt.
- [32]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.10 on input line 337.
-
-
-Underfull \hbox (badness 10000) detected at line 338
-[][][]
- []
-
-) (./gprs__module_8c.tex <./gprs__module_8c__incl.pdf
-
-pdfTeX warning: pdflatex (file ./gprs__module_8c__incl.pdf): PDF inclusion: mul
-tiple pdfs with page group included in a single page
->
-<gprs__module_8c__incl.pdf, id=659, 618.31pt x 280.04625pt>
-File: gprs__module_8c__incl.pdf Graphic file (type pdf)
-<use gprs__module_8c__incl.pdf>
-Package pdftex.def Info: gprs__module_8c__incl.pdf  used on input line 19.
-(pdftex.def)             Requested size: 350.0pt x 158.52553pt.
- [33]
-Underfull \hbox (badness 10000) detected at line 49
-[][][]
- []
-
-[34]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.11 on input line 79.
-
- <./gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgraph.pdf>
-<gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgraph.pdf, id=707, 448.676
-25pt x 100.375pt>
-File: gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgraph.pdf Graphic fil
-e (type pdf)
-<use gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgraph.pdf>
-Package pdftex.def Info: gprs__module_8c_a3d4b67fe86812d98be75bff2e4bdbbca_icgr
-aph.pdf  used on input line 85.
-(pdftex.def)             Requested size: 350.0pt x 78.30289pt.
-
-Underfull \hbox (badness 10000) detected at line 100
-[][][]
- []
-
- <./gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./gprs__module_8c_a884bc4e0a1acf1f8bf3614d207737
-09f_cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sin
-gle page
->
-<gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf, id=715, 320.1962
-4pt x 138.5175pt>
-File: gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf Graphic file
- (type pdf)
-<use gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf>
-Package pdftex.def Info: gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_cgra
-ph.pdf  used on input line 112.
-(pdftex.def)             Requested size: 319.0pt x 138.00142pt.
- [35] <./gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf>
-<gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf, id=733, 310.158
-75pt x 100.375pt>
-File: gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf Graphic fil
-e (type pdf)
-<use gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf>
-Package pdftex.def Info: gprs__module_8c_a884bc4e0a1acf1f8bf3614d20773709f_icgr
-aph.pdf  used on input line 120.
-(pdftex.def)             Requested size: 309.0pt x 99.9995pt.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.12 on input line 143.
-
-
-Underfull \hbox (badness 10000) detected at line 144
-[][][]
- []
-
-[36]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.13 on input line 167.
-
-
-Underfull \hbox (badness 10000) detected at line 168
-[][][]
- []
-
- <./gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf>
-<gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf, id=750, 369.38pt
- x 100.375pt>
-File: gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf Graphic file
- (type pdf)
-<use gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf>
-Package pdftex.def Info: gprs__module_8c_a3dc029caeea0f0ff53840e28d3a2114a_cgra
-ph.pdf  used on input line 180.
-(pdftex.def)             Requested size: 350.0pt x 95.1091pt.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.14 on input line 199.
-
-
-Underfull \hbox (badness 10000) detected at line 200
-[][][]
- []
-
-) (./gprs__module_8h.tex [37] <./gprs__module_8h__incl.pdf>
-<gprs__module_8h__incl.pdf, id=769, 357.335pt x 223.83624pt>
-File: gprs__module_8h__incl.pdf Graphic file (type pdf)
-<use gprs__module_8h__incl.pdf>
-Package pdftex.def Info: gprs__module_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 219.25214pt.
- <./gprs__module_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./gprs__module_8h__dep__incl.pdf): PDF inclusion
-: multiple pdfs with page group included in a single page
->
-<gprs__module_8h__dep__incl.pdf, id=784, 331.2375pt x 178.6675pt>
-File: gprs__module_8h__dep__incl.pdf Graphic file (type pdf)
-<use gprs__module_8h__dep__incl.pdf>
-Package pdftex.def Info: gprs__module_8h__dep__incl.pdf  used on input line 23.
-
-(pdftex.def)             Requested size: 330.0pt x 178.0073pt.
- [38]
-Underfull \hbox (badness 10000) detected at line 61
-[][][]
- []
-
-
-Underfull \hbox (badness 10000) detected at line 76
-[][][]
- []
-
- <./gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf>
-<gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf, id=810, 320.1962
-4pt x 138.5175pt>
-File: gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf Graphic file
- (type pdf)
-<use gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_cgraph.pdf>
-Package pdftex.def Info: gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_cgra
-ph.pdf  used on input line 88.
-(pdftex.def)             Requested size: 319.0pt x 138.00142pt.
- [39] <./gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./gprs__module_8h_a884bc4e0a1acf1f8bf3614d207737
-09f_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a si
-ngle page
->
-<gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf, id=829, 310.158
-75pt x 100.375pt>
-File: gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf Graphic fil
-e (type pdf)
-<use gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_icgraph.pdf>
-Package pdftex.def Info: gprs__module_8h_a884bc4e0a1acf1f8bf3614d20773709f_icgr
-aph.pdf  used on input line 96.
-(pdftex.def)             Requested size: 309.0pt x 99.9995pt.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.15 on input line 115.
-
-[40]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.16 on input line 136.
-
-
-Underfull \hbox (badness 10000) detected at line 137
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.17 on input line 160.
-
-
-Underfull \hbox (badness 10000) detected at line 161
-[][][]
- []
-
- <./gprs__module_8h_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf>
-<gprs__module_8h_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf, id=847, 369.38pt
- x 100.375pt>
-File: gprs__module_8h_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf Graphic file
- (type pdf)
-<use gprs__module_8h_a3dc029caeea0f0ff53840e28d3a2114a_cgraph.pdf>
-Package pdftex.def Info: gprs__module_8h_a3dc029caeea0f0ff53840e28d3a2114a_cgra
-ph.pdf  used on input line 173.
-(pdftex.def)             Requested size: 350.0pt x 95.1091pt.
- [41]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.18 on input line 192.
-
-
-Underfull \hbox (badness 10000) detected at line 193
-[][][]
- []
-
-) (./gprs__uart_8h.tex <./gprs__uart_8h__incl.pdf>
-<gprs__uart_8h__incl.pdf, id=865, 357.335pt x 223.83624pt>
-File: gprs__uart_8h__incl.pdf Graphic file (type pdf)
-<use gprs__uart_8h__incl.pdf>
-Package pdftex.def Info: gprs__uart_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 219.25214pt.
- <./gprs__uart_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./gprs__uart_8h__dep__incl.pdf): PDF inclusion: 
-multiple pdfs with page group included in a single page
->
-<gprs__uart_8h__dep__incl.pdf, id=880, 331.2375pt x 178.6675pt>
-File: gprs__uart_8h__dep__incl.pdf Graphic file (type pdf)
-<use gprs__uart_8h__dep__incl.pdf>
-Package pdftex.def Info: gprs__uart_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 330.0pt x 178.0073pt.
- [42]
-Underfull \hbox (badness 10000) detected at line 43
-[][][]
- []
-
-[43]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.19 on input line 65.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.20 on input line 83.
-
-
-Underfull \hbox (badness 10000) detected at line 84
-[][][]
- []
-
- <./gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgraph.pdf>
-<gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgraph.pdf, id=917, 429.605pt
- x 100.375pt>
-File: gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgraph.pdf Graphic file 
-(type pdf)
-<use gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgraph.pdf>
-Package pdftex.def Info: gprs__uart_8h_abe5a3280e59e35d0c4cfc086debb2ced_icgrap
-h.pdf  used on input line 97.
-(pdftex.def)             Requested size: 350.0pt x 81.77655pt.
- [44]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.21 on input line 116.
-
-
-Underfull \hbox (badness 10000) detected at line 117
-[][][]
- []
-
- <./gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgraph.pdf>
-<gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgraph.pdf, id=936, 369.38pt 
-x 100.375pt>
-File: gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgraph.pdf Graphic file 
-(type pdf)
-<use gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgraph.pdf>
-Package pdftex.def Info: gprs__uart_8h_a5201b4131d387f351e1138748fa8f7fd_icgrap
-h.pdf  used on input line 129.
-(pdftex.def)             Requested size: 350.0pt x 95.1091pt.
-)
-(./nvs__data_8h.tex <./nvs__data_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./nvs__data_8h__incl.pdf): PDF inclusion: multip
-le pdfs with page group included in a single page
->
-<nvs__data_8h__incl.pdf, id=944, 212.795pt x 167.62625pt>
-File: nvs__data_8h__incl.pdf Graphic file (type pdf)
-<use nvs__data_8h__incl.pdf>
-Package pdftex.def Info: nvs__data_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 212.0pt x 167.0094pt.
- <./nvs__data_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./nvs__data_8h__dep__incl.pdf): PDF inclusion: m
-ultiple pdfs with page group included in a single page
->
-<nvs__data_8h__dep__incl.pdf, id=952, 321.2pt x 178.6675pt>
-File: nvs__data_8h__dep__incl.pdf Graphic file (type pdf)
-<use nvs__data_8h__dep__incl.pdf>
-Package pdftex.def Info: nvs__data_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 320.0pt x 178.00456pt.
- [45]
-Underfull \hbox (badness 10000) detected at line 44
-[][][]
- []
-
-[46]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.22 on input line 70.
-
-
-Underfull \hbox (badness 10000) detected at line 71
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.23 on input line 92.
-
-
-Underfull \hbox (badness 10000) detected at line 93
-[][][]
- []
-
- <./nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf>
-<nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf, id=987, 358.33875p
-t x 100.375pt>
-File: nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf Graphic file (
-type pdf)
-<use nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf>
-Package pdftex.def Info: nvs__data_8h_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph
-.pdf  used on input line 101.
-(pdftex.def)             Requested size: 350.0pt x 98.04518pt.
- [47]
-Underfull \hbox (badness 10000) detected at line 116
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.24 on input line 141.
-
-
-Underfull \hbox (badness 10000) detected at line 142
-[][][]
- []
-
-) (./nvs__data_8c.tex <./nvs__data_8c__incl.pdf>
-<nvs__data_8c__incl.pdf, id=1006, 486.81876pt x 223.83624pt>
-File: nvs__data_8c__incl.pdf Graphic file (type pdf)
-<use nvs__data_8c__incl.pdf>
-Package pdftex.def Info: nvs__data_8c__incl.pdf  used on input line 18.
-(pdftex.def)             Requested size: 350.0pt x 160.9263pt.
- [48]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.25 on input line 66.
-
-
-Underfull \hbox (badness 10000) detected at line 67
-[][][]
- []
-
-[49]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.26 on input line 88.
-
-
-Underfull \hbox (badness 10000) detected at line 89
-[][][]
- []
-
- <./nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79
-_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a singl
-e page
->
-<nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf, id=1051, 358.33875
-pt x 100.375pt>
-File: nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf Graphic file (
-type pdf)
-<use nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph.pdf>
-Package pdftex.def Info: nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph
-.pdf  used on input line 97.
-(pdftex.def)             Requested size: 350.0pt x 98.04518pt.
-
-Underfull \hbox (badness 10000) detected at line 112
-[][][]
- []
-
-[50]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.27 on input line 137.
-
-
-Underfull \hbox (badness 10000) detected at line 138
-[][][]
- []
-
-) (./rf__module_8c.tex <./rf__module_8c__incl.pdf>
-<rf__module_8c__incl.pdf, id=1069, 614.295pt x 280.04625pt>
-File: rf__module_8c__incl.pdf Graphic file (type pdf)
-<use rf__module_8c__incl.pdf>
-Package pdftex.def Info: rf__module_8c__incl.pdf  used on input line 19.
-(pdftex.def)             Requested size: 350.0pt x 159.55963pt.
- [51]
-Underfull \hbox (badness 10000) detected at line 47
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.28 on input line 69.
-
- <./rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_cgraph.pdf>
-<rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_cgraph.pdf, id=1104, 334.24875
-pt x 111.41624pt>
-File: rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_cgraph.pdf Graphic file (
-type pdf)
-<use rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_cgraph.pdf>
-Package pdftex.def Info: rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_cgraph
-.pdf  used on input line 75.
-(pdftex.def)             Requested size: 333.0pt x 111.00964pt.
- <./rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf
-9_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sing
-le page
->
-<rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_icgraph.pdf, id=1112, 421.575p
-t x 100.375pt>
-File: rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_icgraph.pdf Graphic file 
-(type pdf)
-<use rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_icgraph.pdf>
-Package pdftex.def Info: rf__module_8c_acc6751a36c4a3d2ea32eb05bc41bcaf9_icgrap
-h.pdf  used on input line 83.
-(pdftex.def)             Requested size: 350.0pt x 83.33418pt.
- [52]
-Underfull \hbox (badness 10000) detected at line 96
-[][][]
- []
-
- <./rf__module_8c_ad3ec06cb49bc8256cc55378a0de06e33_icgraph.pdf>
-<rf__module_8c_ad3ec06cb49bc8256cc55378a0de06e33_icgraph.pdf, id=1131, 367.3725
-pt x 100.375pt>
-File: rf__module_8c_ad3ec06cb49bc8256cc55378a0de06e33_icgraph.pdf Graphic file 
-(type pdf)
-<use rf__module_8c_ad3ec06cb49bc8256cc55378a0de06e33_icgraph.pdf>
-Package pdftex.def Info: rf__module_8c_ad3ec06cb49bc8256cc55378a0de06e33_icgrap
-h.pdf  used on input line 104.
-(pdftex.def)             Requested size: 350.0pt x 95.63445pt.
-
-Underfull \hbox (badness 10000) detected at line 117
-[][][]
- []
-
- <./rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rf__module_8c_aff46a7815a9677f30632ed7a72cb8c8
-2_cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a singl
-e page
->
-<rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_cgraph.pdf, id=1139, 457.71pt 
-x 111.41624pt>
-File: rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_cgraph.pdf Graphic file (
-type pdf)
-<use rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_cgraph.pdf>
-Package pdftex.def Info: rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_cgraph
-.pdf  used on input line 129.
-(pdftex.def)             Requested size: 350.0pt x 85.20084pt.
- <./rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rf__module_8c_aff46a7815a9677f30632ed7a72cb8c8
-2_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sing
-le page
->
-<rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_icgraph.pdf, id=1148, 296.1062
-5pt x 100.375pt>
-File: rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_icgraph.pdf Graphic file 
-(type pdf)
-<use rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_icgraph.pdf>
-Package pdftex.def Info: rf__module_8c_aff46a7815a9677f30632ed7a72cb8c82_icgrap
-h.pdf  used on input line 137.
-(pdftex.def)             Requested size: 295.0pt x 100.00255pt.
- [53]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.29 on input line 154.
-
-
-Underfull \hbox (badness 10000) detected at line 155
-[][][]
- []
-
-) (./rtc__app_8h.tex <./rtc__app_8h__incl.pdf>
-<rtc__app_8h__incl.pdf, id=1167, 214.8025pt x 167.62625pt>
-File: rtc__app_8h__incl.pdf Graphic file (type pdf)
-<use rtc__app_8h__incl.pdf>
-Package pdftex.def Info: rtc__app_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 214.0pt x 167.00172pt.
- <./rtc__app_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__app_8h__dep__incl.pdf): PDF inclusion: mu
-ltiple pdfs with page group included in a single page
->
-<rtc__app_8h__dep__incl.pdf, id=1175, 480.79625pt x 178.6675pt>
-File: rtc__app_8h__dep__incl.pdf Graphic file (type pdf)
-<use rtc__app_8h__dep__incl.pdf>
-Package pdftex.def Info: rtc__app_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 350.0pt x 130.06631pt.
- [54]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.30 on input line 69.
-
-[55]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.31 on input line 86.
-
-
-Underfull \hbox (badness 10000) detected at line 87
-[][][]
- []
-
- <./rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_
-cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a single 
-page
->
-<rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf, id=1216, 350.30875pt
- x 100.375pt>
-File: rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf Graphic file (ty
-pe pdf)
-<use rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf>
-Package pdftex.def Info: rtc__app_8h_a94c7e156542f18f9fc8702a25514f16b_cgraph.p
-df  used on input line 95.
-(pdftex.def)             Requested size: 349.0pt x 100.00716pt.
-
-Underfull \hbox (badness 10000) detected at line 110
-[][][]
- []
-
- <./rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_
-cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a single 
-page
->
-<rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf, id=1224, 292.09125pt
- x 100.375pt>
-File: rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf Graphic file (ty
-pe pdf)
-<use rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf>
-Package pdftex.def Info: rtc__app_8h_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.p
-df  used on input line 118.
-(pdftex.def)             Requested size: 291.0pt x 100.00868pt.
- [56]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.32 on input line 137.
-
-
-Underfull \hbox (badness 10000) detected at line 138
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.33 on input line 159.
-
-) (./rtc__ds3231_8h.tex <./rtc__ds3231_8h__incl.pdf>
-<rtc__ds3231_8h__incl.pdf, id=1241, 345.29pt x 223.83624pt>
-File: rtc__ds3231_8h__incl.pdf Graphic file (type pdf)
-<use rtc__ds3231_8h__incl.pdf>
-Package pdftex.def Info: rtc__ds3231_8h__incl.pdf  used on input line 17.
-(pdftex.def)             Requested size: 344.0pt x 223.00232pt.
- [57] <./rtc__ds3231_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__ds3231_8h__dep__incl.pdf): PDF inclusion:
- multiple pdfs with page group included in a single page
->
-<rtc__ds3231_8h__dep__incl.pdf, id=1258, 315.1775pt x 178.6675pt>
-File: rtc__ds3231_8h__dep__incl.pdf Graphic file (type pdf)
-<use rtc__ds3231_8h__dep__incl.pdf>
-Package pdftex.def Info: rtc__ds3231_8h__dep__incl.pdf  used on input line 25.
-(pdftex.def)             Requested size: 314.0pt x 178.01003pt.
- [58] [59]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.34 on input line 147.
-
-
-Underfull \hbox (badness 10000) detected at line 148
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.35 on input line 165.
-
-
-Overfull \vbox (1.36826pt too high) has occurred while \output is active []
-
-
-[60]
-Underfull \hbox (badness 10000) detected at line 166
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.36 on input line 187.
-
-
-Underfull \hbox (badness 10000) detected at line 188
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.37 on input line 209.
-
-
-Underfull \hbox (badness 10000) detected at line 210
-[][][]
- []
-
-[61]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.38 on input line 231.
-
-
-Underfull \hbox (badness 10000) detected at line 232
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.39 on input line 253.
-
-
-Underfull \hbox (badness 10000) detected at line 254
-[][][]
- []
-
- <./rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87
-d4_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sin
-gle page
->
-<rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf, id=1375, 350.308
-75pt x 100.375pt>
-File: rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf Graphic file
- (type pdf)
-<use rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf>
-Package pdftex.def Info: rtc__ds3231_8h_a8ab27d2ae4e65134dd8875b8b75d87d4_icgra
-ph.pdf  used on input line 262.
-(pdftex.def)             Requested size: 349.0pt x 100.00716pt.
- [62]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.40 on input line 287.
-
-
-Underfull \hbox (badness 10000) detected at line 288
-[][][]
- []
-
- <./rtc__ds3231_8h_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf>
-<rtc__ds3231_8h_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf, id=1395, 292.091
-25pt x 100.375pt>
-File: rtc__ds3231_8h_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf Graphic file
- (type pdf)
-<use rtc__ds3231_8h_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf>
-Package pdftex.def Info: rtc__ds3231_8h_a63ec444d9d79b17d3fbc31b9d5514319_icgra
-ph.pdf  used on input line 296.
-(pdftex.def)             Requested size: 291.0pt x 100.00868pt.
- [63]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.41 on input line 317.
-
-
-Underfull \hbox (badness 10000) detected at line 318
-[][][]
- []
-
-) (./rtc__app_8c.tex <./rtc__app_8c__incl.pdf>
-<rtc__app_8c__incl.pdf, id=1413, 345.29pt x 280.04625pt>
-File: rtc__app_8c__incl.pdf Graphic file (type pdf)
-<use rtc__app_8c__incl.pdf>
-Package pdftex.def Info: rtc__app_8c__incl.pdf  used on input line 16.
-(pdftex.def)             Requested size: 344.0pt x 279.00288pt.
- [64]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.42 on input line 68.
-
-[65]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.43 on input line 85.
-
-
-Underfull \hbox (badness 10000) detected at line 86
-[][][]
- []
-
- <./rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_
-cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a single 
-page
->
-<rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf, id=1456, 350.30875pt
- x 100.375pt>
-File: rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf Graphic file (ty
-pe pdf)
-<use rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_cgraph.pdf>
-Package pdftex.def Info: rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b_cgraph.p
-df  used on input line 94.
-(pdftex.def)             Requested size: 349.0pt x 100.00716pt.
-
-Underfull \hbox (badness 10000) detected at line 109
-[][][]
- []
-
- <./rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_
-cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a single 
-page
->
-<rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf, id=1464, 292.09125pt
- x 100.375pt>
-File: rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf Graphic file (ty
-pe pdf)
-<use rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.pdf>
-Package pdftex.def Info: rtc__app_8c_a97aa82b9129a56760e7d7f1e8b3a9390_cgraph.p
-df  used on input line 117.
-(pdftex.def)             Requested size: 291.0pt x 100.00868pt.
- [66]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.44 on input line 136.
-
-
-Underfull \hbox (badness 10000) detected at line 137
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.45 on input line 158.
-
-) (./rtc__ds3231_8c.tex <./rtc__ds3231_8c__incl.pdf>
-<rtc__ds3231_8c__incl.pdf, id=1482, 401.5pt x 280.04625pt>
-File: rtc__ds3231_8c__incl.pdf Graphic file (type pdf)
-<use rtc__ds3231_8c__incl.pdf>
-Package pdftex.def Info: rtc__ds3231_8c__incl.pdf  used on input line 16.
-(pdftex.def)             Requested size: 350.0pt x 244.14249pt.
- [67] [68]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.46 on input line 67.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.47 on input line 85.
-
-
-Underfull \hbox (badness 10000) detected at line 86
-[][][]
- []
-
-[69]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.48 on input line 103.
-
-
-Underfull \hbox (badness 10000) detected at line 104
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.49 on input line 125.
-
-
-Underfull \hbox (badness 10000) detected at line 126
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.50 on input line 147.
-
-[70]
-Underfull \hbox (badness 10000) detected at line 148
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.51 on input line 169.
-
-
-Underfull \hbox (badness 10000) detected at line 170
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.52 on input line 191.
-
-
-Underfull \hbox (badness 10000) detected at line 192
-[][][]
- []
-
- <./rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87
-d4_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sin
-gle page
->
-<rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf, id=1556, 350.308
-75pt x 100.375pt>
-File: rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf Graphic file
- (type pdf)
-<use rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgraph.pdf>
-Package pdftex.def Info: rtc__ds3231_8c_a8ab27d2ae4e65134dd8875b8b75d87d4_icgra
-ph.pdf  used on input line 200.
-(pdftex.def)             Requested size: 349.0pt x 100.00716pt.
- [71]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.53 on input line 225.
-
-
-Underfull \hbox (badness 10000) detected at line 226
-[][][]
- []
-
- <./rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf
-
-pdfTeX warning: pdflatex (file ./rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d55143
-19_icgraph.pdf): PDF inclusion: multiple pdfs with page group included in a sin
-gle page
->
-<rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf, id=1574, 292.091
-25pt x 100.375pt>
-File: rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf Graphic file
- (type pdf)
-<use rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgraph.pdf>
-Package pdftex.def Info: rtc__ds3231_8c_a63ec444d9d79b17d3fbc31b9d5514319_icgra
-ph.pdf  used on input line 234.
-(pdftex.def)             Requested size: 291.0pt x 100.00868pt.
- [72]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.54 on input line 255.
-
-
-Underfull \hbox (badness 10000) detected at line 256
-[][][]
- []
-
-) (./rtc__i2c__dev_8c.tex <./rtc__i2c__dev_8c__incl.pdf>
-<rtc__i2c__dev_8c__incl.pdf, id=1592, 381.425pt x 223.83624pt>
-File: rtc__i2c__dev_8c__incl.pdf Graphic file (type pdf)
-<use rtc__i2c__dev_8c__incl.pdf>
-Package pdftex.def Info: rtc__i2c__dev_8c__incl.pdf  used on input line 17.
-(pdftex.def)             Requested size: 350.0pt x 205.40244pt.
- [73]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.55 on input line 67.
-
-[74]
-Underfull \hbox (badness 10000) detected at line 68
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.56 on input line 95.
-
-
-Underfull \hbox (badness 10000) detected at line 96
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.57 on input line 119.
-
-[75]
-Underfull \hbox (badness 10000) detected at line 120
-[][][]
- []
-
-) (./_free_r_t_o_s__defines_8h.tex <./_free_r_t_o_s__defines_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./_free_r_t_o_s__defines_8h__incl.pdf): PDF incl
-usion: multiple pdfs with page group included in a single page
->
-<_free_r_t_o_s__defines_8h__incl.pdf, id=1640, 695.59875pt x 167.62625pt>
-File: _free_r_t_o_s__defines_8h__incl.pdf Graphic file (type pdf)
-<use _free_r_t_o_s__defines_8h__incl.pdf>
-Package pdftex.def Info: _free_r_t_o_s__defines_8h__incl.pdf  used on input lin
-e 18.
-(pdftex.def)             Requested size: 350.0pt x 84.34236pt.
- <./_free_r_t_o_s__defines_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./_free_r_t_o_s__defines_8h__dep__incl.pdf): PDF
- inclusion: multiple pdfs with page group included in a single page
->
-<_free_r_t_o_s__defines_8h__dep__incl.pdf, id=1655, 632.3625pt x 178.6675pt>
-File: _free_r_t_o_s__defines_8h__dep__incl.pdf Graphic file (type pdf)
-<use _free_r_t_o_s__defines_8h__dep__incl.pdf>
-Package pdftex.def Info: _free_r_t_o_s__defines_8h__dep__incl.pdf  used on inpu
-t line 26.
-(pdftex.def)             Requested size: 350.0pt x 98.889pt.
- [76] [77]
-Underfull \hbox (badness 10000) detected at line 136
-[][][]
- []
-
-) (./log_8h.tex <./log_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./log_8h__incl.pdf): PDF inclusion: multiple pdf
-s with page group included in a single page
->
-<log_8h__incl.pdf, id=1751, 226.8475pt x 167.62625pt>
-File: log_8h__incl.pdf Graphic file (type pdf)
-<use log_8h__incl.pdf>
-Package pdftex.def Info: log_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 226.0pt x 167.00172pt.
- <./log_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./log_8h__dep__incl.pdf): PDF inclusion: multipl
-e pdfs with page group included in a single page
->
-<log_8h__dep__incl.pdf, id=1759, 924.45375pt x 178.6675pt>
-File: log_8h__dep__incl.pdf Graphic file (type pdf)
-<use log_8h__dep__incl.pdf>
-Package pdftex.def Info: log_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 350.0pt x 67.64352pt.
- [78]
-Underfull \hbox (badness 10000) detected at line 44
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.58 on input line 68.
-
-[79]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.59 on input line 97.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.60 on input line 116.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.61 on input line 135.
-
-) (./project__config_8h.tex <./project__config_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./project__config_8h__incl.pdf): PDF inclusion: 
-multiple pdfs with page group included in a single page
->
-<project__config_8h__incl.pdf, id=1806, 357.335pt x 167.62625pt>
-File: project__config_8h__incl.pdf Graphic file (type pdf)
-<use project__config_8h__incl.pdf>
-Package pdftex.def Info: project__config_8h__incl.pdf  used on input line 17.
-(pdftex.def)             Requested size: 350.0pt x 164.1933pt.
- [80] <./project__config_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./project__config_8h__dep__incl.pdf): PDF inclus
-ion: multiple pdfs with page group included in a single page
->
-<project__config_8h__dep__incl.pdf, id=1831, 2006.49625pt x 245.91875pt>
-File: project__config_8h__dep__incl.pdf Graphic file (type pdf)
-<use project__config_8h__dep__incl.pdf>
-Package pdftex.def Info: project__config_8h__dep__incl.pdf  used on input line 
-25.
-(pdftex.def)             Requested size: 350.0pt x 42.89383pt.
- [81]
-Overfull \hbox (91.56396pt too wide) in paragraph at lines 98--117
-[] \T1/phv/m/n/10 , [] , [] , []
- []
-
-
-Overfull \hbox (16.44897pt too wide) in paragraph at lines 98--117
-[] \T1/phv/m/n/10 , [] , []
- []
-
-[82]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.62 on input line 209.
-
-[83]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.63 on input line 284.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.64 on input line 304.
-
-[84]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.65 on input line 358.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.66 on input line 378.
-
-[85]) (./wifi__app_8h.tex [86] <./wifi__app_8h__incl.pdf
-
-pdfTeX warning: pdflatex (file ./wifi__app_8h__incl.pdf): PDF inclusion: multip
-le pdfs with page group included in a single page
->
-<wifi__app_8h__incl.pdf, id=1989, 357.335pt x 223.83624pt>
-File: wifi__app_8h__incl.pdf Graphic file (type pdf)
-<use wifi__app_8h__incl.pdf>
-Package pdftex.def Info: wifi__app_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 219.25214pt.
- <./wifi__app_8h__dep__incl.pdf
-
-pdfTeX warning: pdflatex (file ./wifi__app_8h__dep__incl.pdf): PDF inclusion: m
-ultiple pdfs with page group included in a single page
->
-<wifi__app_8h__dep__incl.pdf, id=2004, 327.2225pt x 178.6675pt>
-File: wifi__app_8h__dep__incl.pdf Graphic file (type pdf)
-<use wifi__app_8h__dep__incl.pdf>
-Package pdftex.def Info: wifi__app_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 326.0pt x 177.99911pt.
- [87]
-Underfull \hbox (badness 10000) detected at line 38
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.67 on input line 60.
-
-
-Underfull \hbox (badness 10000) detected at line 61
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.68 on input line 80.
-
-[88]
-Underfull \hbox (badness 10000) detected at line 81
-[][][]
- []
-
-) (./wifi__app_8c.tex <./wifi__app_8c__incl.pdf
-
-pdfTeX warning: pdflatex (file ./wifi__app_8c__incl.pdf): PDF inclusion: multip
-le pdfs with page group included in a single page
->
-<wifi__app_8c__incl.pdf, id=2044, 1581.91pt x 280.04625pt>
-File: wifi__app_8c__incl.pdf Graphic file (type pdf)
-<use wifi__app_8c__incl.pdf>
-Package pdftex.def Info: wifi__app_8c__incl.pdf  used on input line 25.
-(pdftex.def)             Requested size: 350.0pt x 61.96075pt.
- [89]
-Underfull \hbox (badness 10000) detected at line 61
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.69 on input line 83.
-
-
-Underfull \hbox (badness 10000) detected at line 84
-[][][]
- []
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.70 on input line 103.
-
-[90]
-Underfull \hbox (badness 10000) detected at line 104
-[][][]
- []
-
-) (./actuation__app_8c.tex <./actuation__app_8c__incl.pdf
-
-pdfTeX warning: pdflatex (file ./actuation__app_8c__incl.pdf): PDF inclusion: m
-ultiple pdfs with page group included in a single page
->
-<actuation__app_8c__incl.pdf, id=2098, 1163.34625pt x 269.005pt>
-File: actuation__app_8c__incl.pdf Graphic file (type pdf)
-<use actuation__app_8c__incl.pdf>
-Package pdftex.def Info: actuation__app_8c__incl.pdf  used on input line 18.
-(pdftex.def)             Requested size: 350.0pt x 80.93198pt.
-
-Underfull \hbox (badness 10000) detected at line 61
-[][][]
- []
-
-[91]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.71 on input line 83.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.72 on input line 98.
-
-
-Underfull \hbox (badness 10000) detected at line 99
-[][][]
- []
-
- <./actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf>
-<actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf, id=2140, 328.2
-2626pt x 100.375pt>
-File: actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf Graphic fi
-le (type pdf)
-<use actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf>
-Package pdftex.def Info: actuation__app_8c_aa0ee6380a12bec5c937642a5abb11242_cg
-raph.pdf  used on input line 111.
-(pdftex.def)             Requested size: 327.0pt x 100.00102pt.
- [92]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.73 on input line 128.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.74 on input line 143.
-
-) (./comm__app_8c.tex <./comm__app_8c__incl.pdf>
-<comm__app_8c__incl.pdf, id=2159, 1381.16pt x 269.005pt>
-File: comm__app_8c__incl.pdf Graphic file (type pdf)
-<use comm__app_8c__incl.pdf>
-Package pdftex.def Info: comm__app_8c__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 350.0pt x 68.16641pt.
- [93]
-Underfull \hbox (badness 10000) detected at line 69
-[][][]
- []
-
-[94]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.75 on input line 91.
-
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.76 on input line 106.
-
-) (./data__app_8c.tex <./data__app_8c__incl.pdf
+[26]) (./data__app_8c.tex <./data__app_8c__incl.pdf
 
 pdfTeX warning: pdflatex (file ./data__app_8c__incl.pdf): PDF inclusion: multip
 le pdfs with page group included in a single page
 >
-<data__app_8c__incl.pdf, id=2208, 605.26125pt x 269.005pt>
+<data__app_8c__incl.pdf, id=2248, 622.325pt x 245.91875pt>
 File: data__app_8c__incl.pdf Graphic file (type pdf)
 <use data__app_8c__incl.pdf>
 Package pdftex.def Info: data__app_8c__incl.pdf  used on input line 18.
-(pdftex.def)             Requested size: 350.0pt x 155.55507pt.
- [95]
-Underfull \hbox (badness 10000) detected at line 107
-[][][]
- []
-
-[96]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.77 on input line 148.
+(pdftex.def)             Requested size: 350.0pt x 138.30643pt.
 
 
-Underfull \hbox (badness 10000) detected at line 149
-[][][]
- []
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
 
- <./data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
 
-pdfTeX warning: pdflatex (file ./data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc
-_cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a single
- page
->
-<data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf, id=2282, 358.33875p
-t x 100.375pt>
-File: data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf Graphic file (t
-ype pdf)
-<use data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf>
-Package pdftex.def Info: data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.
-pdf  used on input line 161.
-(pdftex.def)             Requested size: 350.0pt x 98.04518pt.
- [97]
-Underfull \hbox (badness 10000) detected at line 174
+[27] [28]
+Underfull \hbox (badness 10000) detected at line 83
 [][][]
  []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.78 on input line 197.
-
-
-Underfull \hbox (badness 10000) detected at line 198
-[][][]
- []
-
-[98]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.79 on input line 221.
-
-
-Underfull \hbox (badness 10000) detected at line 222
+Underfull \hbox (badness 10000) detected at line 106
 [][][]
  []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.80 on input line 245.
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
 
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
 
-Underfull \hbox (badness 10000) detected at line 246
+[29]
+Underfull \hbox (badness 10000) detected at line 143
 [][][]
  []
 
-[99]
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.81 on input line 269.
+Underfull \hbox (badness 10000) detected at line 156
+[][][]
+ []
+
+[30]
+Underfull \hbox (badness 10000) detected at line 178
+[][][]
+ []
 
 
-Underfull \hbox (badness 10000) detected at line 270
+Underfull \hbox (badness 10000) detected at line 202
 [][][]
  []
 
@@ -2850,176 +1235,1844 @@ Underfull \hbox (badness 10000) detected at line 270
 pdfTeX warning: pdflatex (file ./actuation__app_8h__incl.pdf): PDF inclusion: m
 ultiple pdfs with page group included in a single page
 >
-<actuation__app_8h__incl.pdf, id=2319, 357.335pt x 223.83624pt>
+<actuation__app_8h__incl.pdf, id=2332, 423.5825pt x 245.91875pt>
 File: actuation__app_8h__incl.pdf Graphic file (type pdf)
 <use actuation__app_8h__incl.pdf>
 Package pdftex.def Info: actuation__app_8h__incl.pdf  used on input line 14.
-(pdftex.def)             Requested size: 350.0pt x 219.25214pt.
- <./actuation__app_8h__dep__incl.pdf
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[31] <./actuation__app_8h__dep__incl.pdf
 
 pdfTeX warning: pdflatex (file ./actuation__app_8h__dep__incl.pdf): PDF inclusi
 on: multiple pdfs with page group included in a single page
 >
-<actuation__app_8h__dep__incl.pdf, id=2334, 208.78pt x 167.62625pt>
+<actuation__app_8h__dep__incl.pdf, id=2354, 1020.81375pt x 222.8325pt>
 File: actuation__app_8h__dep__incl.pdf Graphic file (type pdf)
 <use actuation__app_8h__dep__incl.pdf>
 Package pdftex.def Info: actuation__app_8h__dep__incl.pdf  used on input line 2
-2.
-(pdftex.def)             Requested size: 208.0pt x 167.0094pt.
- [100]
-Underfull \hbox (badness 10000) detected at line 45
+1.
+(pdftex.def)             Requested size: 350.0pt x 76.40128pt.
+ [32]
+Underfull \hbox (badness 10000) detected at line 49
 [][][]
  []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.82 on input line 67.
+Overfull \vbox (8.96188pt too high) has occurred while \output is active []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.83 on input line 82.
 
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
 
-Overfull \vbox (6.88647pt too high) has occurred while \output is active []
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
 
-
-[101]
-Underfull \hbox (badness 10000) detected at line 83
+[33]
+Underfull \hbox (badness 10000) detected at line 100
 [][][]
  []
 
- <./actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf
 
-pdfTeX warning: pdflatex (file ./actuation__app_8h_aa0ee6380a12bec5c937642a5abb
-11242_cgraph.pdf): PDF inclusion: multiple pdfs with page group included in a s
-ingle page
+Underfull \hbox (badness 10000) detected at line 114
+[][][]
+ []
+
+[34]
+Underfull \hbox (badness 10000) detected at line 162
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 176
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[35]) (./comm__app_8h.tex <./comm__app_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./comm__app_8h__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
 >
-<actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf, id=2373, 328.2
-2626pt x 100.375pt>
-File: actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf Graphic fi
-le (type pdf)
-<use actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cgraph.pdf>
-Package pdftex.def Info: actuation__app_8h_aa0ee6380a12bec5c937642a5abb11242_cg
-raph.pdf  used on input line 95.
-(pdftex.def)             Requested size: 327.0pt x 100.00102pt.
+<comm__app_8h__incl.pdf, id=2409, 423.5825pt x 245.91875pt>
+File: comm__app_8h__incl.pdf Graphic file (type pdf)
+<use comm__app_8h__incl.pdf>
+Package pdftex.def Info: comm__app_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ <./comm__app_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./comm__app_8h__dep__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<comm__app_8h__dep__incl.pdf, id=2425, 829.0975pt x 222.8325pt>
+File: comm__app_8h__dep__incl.pdf Graphic file (type pdf)
+<use comm__app_8h__dep__incl.pdf>
+Package pdftex.def Info: comm__app_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 350.0pt x 94.06503pt.
+ [36]
+Underfull \hbox (badness 10000) detected at line 38
+[][][]
+ []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.84 on input line 112.
+Underfull \hbox (badness 10000) detected at line 59
+[][][]
+ []
 
-) (./data__app_8h.tex <./data__app_8h__incl.pdf
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[37]
+Underfull \hbox (badness 10000) detected at line 75
+[][][]
+ []
+
+) (./data__app_8h.tex [38] <./data__app_8h__incl.pdf
 
 pdfTeX warning: pdflatex (file ./data__app_8h__incl.pdf): PDF inclusion: multip
 le pdfs with page group included in a single page
 >
-<data__app_8h__incl.pdf, id=2381, 357.335pt x 212.795pt>
+<data__app_8h__incl.pdf, id=2465, 253.94875pt x 189.70876pt>
 File: data__app_8h__incl.pdf Graphic file (type pdf)
 <use data__app_8h__incl.pdf>
-Package pdftex.def Info: data__app_8h__incl.pdf  used on input line 15.
-(pdftex.def)             Requested size: 350.0pt x 208.437pt.
- [102] <./data__app_8h__dep__incl.pdf>
-<data__app_8h__dep__incl.pdf, id=2405, 305.14pt x 156.585pt>
+Package pdftex.def Info: data__app_8h__incl.pdf  used on input line 13.
+(pdftex.def)             Requested size: 253.0pt x 189.00775pt.
+ <./data__app_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./data__app_8h__dep__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<data__app_8h__dep__incl.pdf, id=2473, 1020.81375pt x 222.8325pt>
 File: data__app_8h__dep__incl.pdf Graphic file (type pdf)
 <use data__app_8h__dep__incl.pdf>
-Package pdftex.def Info: data__app_8h__dep__incl.pdf  used on input line 23.
-(pdftex.def)             Requested size: 304.0pt x 156.0064pt.
- [103]
-Underfull \hbox (badness 10000) detected at line 81
+Package pdftex.def Info: data__app_8h__dep__incl.pdf  used on input line 20.
+(pdftex.def)             Requested size: 350.0pt x 76.40128pt.
+
+Underfull \hbox (badness 3930) in paragraph at lines 26--44
+[] \T1/phv/m/n/10 = 0 , [] , [] ,
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[39]
+Underfull \hbox (badness 10000) detected at line 65
+[][][]
+ []
+
+[40]
+Underfull \hbox (badness 10000) detected at line 153
 [][][]
  []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.85 on input line 101.
-
-
-Underfull \hbox (badness 10000) detected at line 102
+Underfull \hbox (badness 10000) detected at line 165
 [][][]
  []
 
- <./data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf>
-<data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf, id=2437, 358.33875p
-t x 100.375pt>
-File: data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf Graphic file (t
-ype pdf)
-<use data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.pdf>
-Package pdftex.def Info: data__app_8h_aac152d624f3ab146d0188f8db6c2c6dc_cgraph.
-pdf  used on input line 114.
-(pdftex.def)             Requested size: 350.0pt x 98.04518pt.
- [104]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[41]
+Underfull \hbox (badness 10000) detected at line 207
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 219
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 232
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 237
+[][][]
+ []
+
+[42]
+Underfull \hbox (badness 10000) detected at line 257
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 271
+[][][]
+ []
+
+
+Overfull \vbox (34.45796pt too high) has occurred while \output is active []
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[43]
+Underfull \hbox (badness 10000) detected at line 293
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 309
+[][][]
+ []
+
+) (./rtc__app_8h.tex <./rtc__app_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__app_8h__incl.pdf): PDF inclusion: multipl
+e pdfs with page group included in a single page
+>
+<rtc__app_8h__incl.pdf, id=2562, 289.08pt x 189.70876pt>
+File: rtc__app_8h__incl.pdf Graphic file (type pdf)
+<use rtc__app_8h__incl.pdf>
+Package pdftex.def Info: rtc__app_8h__incl.pdf  used on input line 15.
+(pdftex.def)             Requested size: 288.0pt x 189.01065pt.
+ <./rtc__app_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__app_8h__dep__incl.pdf): PDF inclusion: mu
+ltiple pdfs with page group included in a single page
+>
+<rtc__app_8h__dep__incl.pdf, id=2570, 1020.81375pt x 222.8325pt>
+File: rtc__app_8h__dep__incl.pdf Graphic file (type pdf)
+<use rtc__app_8h__dep__incl.pdf>
+Package pdftex.def Info: rtc__app_8h__dep__incl.pdf  used on input line 22.
+(pdftex.def)             Requested size: 350.0pt x 76.40128pt.
+ [44]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[45]
+Underfull \hbox (badness 10000) detected at line 107
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 122
+[][][]
+ []
+
+
 Underfull \hbox (badness 10000) detected at line 127
 [][][]
  []
 
+[46]
+Underfull \hbox (badness 10000) detected at line 147
+[][][]
+ []
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.86 on input line 150.
+) (./rtc__app_8c.tex <./rtc__app_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__app_8c__incl.pdf): PDF inclusion: multipl
+e pdfs with page group included in a single page
+>
+<rtc__app_8c__incl.pdf, id=2613, 472.76625pt x 302.12875pt>
+File: rtc__app_8c__incl.pdf Graphic file (type pdf)
+<use rtc__app_8c__incl.pdf>
+Package pdftex.def Info: rtc__app_8c__incl.pdf  used on input line 16.
+(pdftex.def)             Requested size: 350.0pt x 223.6778pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[47] [48]
+Overfull \vbox (3.9145pt too high) has occurred while \output is active []
+
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[49]
+Underfull \hbox (badness 10000) detected at line 107
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 122
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 142
+[][][]
+ []
+
+[50]) (./gpio__actuator_8c.tex <./gpio__actuator_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./gpio__actuator_8c__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<gpio__actuator_8c__incl.pdf, id=2667, 1229.59375pt x 302.12875pt>
+File: gpio__actuator_8c__incl.pdf Graphic file (type pdf)
+<use gpio__actuator_8c__incl.pdf>
+Package pdftex.def Info: gpio__actuator_8c__incl.pdf  used on input line 17.
+(pdftex.def)             Requested size: 350.0pt x 86.00154pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[51]
+Underfull \hbox (badness 10000) detected at line 65
+[][][]
+ []
+
+[52]
+Underfull \hbox (badness 10000) detected at line 120
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 137
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 152
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[53] [54]
+Underfull \hbox (badness 10000) detected at line 214
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 239
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[55]) (./gpio__actuator_8h.tex <./gpio__actuator_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./gpio__actuator_8h__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<gpio__actuator_8h__incl.pdf, id=2746, 423.5825pt x 245.91875pt>
+File: gpio__actuator_8h__incl.pdf Graphic file (type pdf)
+<use gpio__actuator_8h__incl.pdf>
+Package pdftex.def Info: gpio__actuator_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ <./gpio__actuator_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./gpio__actuator_8h__dep__incl.pdf): PDF inclusi
+on: multiple pdfs with page group included in a single page
+>
+<gpio__actuator_8h__dep__incl.pdf, id=2761, 445.665pt x 222.8325pt>
+File: gpio__actuator_8h__dep__incl.pdf Graphic file (type pdf)
+<use gpio__actuator_8h__dep__incl.pdf>
+Package pdftex.def Info: gpio__actuator_8h__dep__incl.pdf  used on input line 2
+1.
+(pdftex.def)             Requested size: 350.0pt x 175.00209pt.
+ [56]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[57]
+Underfull \hbox (badness 10000) detected at line 95
+[][][]
+ []
+
+[58]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[59] [60]
+Underfull \hbox (badness 10000) detected at line 291
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[61]
+Underfull \hbox (badness 10000) detected at line 307
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 322
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 329
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 344
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 353
+[][][]
+ []
+
+[62]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[63]
+Underfull \hbox (badness 10000) detected at line 421
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 437
+[][][]
+ []
+
+) (./gprs__uart_8h.tex <./gprs__uart_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./gprs__uart_8h__incl.pdf): PDF inclusion: multi
+ple pdfs with page group included in a single page
+>
+<gprs__uart_8h__incl.pdf, id=2881, 423.5825pt x 245.91875pt>
+File: gprs__uart_8h__incl.pdf Graphic file (type pdf)
+<use gprs__uart_8h__incl.pdf>
+Package pdftex.def Info: gprs__uart_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ [64] <./gprs__uart_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./gprs__uart_8h__dep__incl.pdf): PDF inclusion: 
+multiple pdfs with page group included in a single page
+>
+<gprs__uart_8h__dep__incl.pdf, id=2902, 253.94875pt x 222.8325pt>
+File: gprs__uart_8h__dep__incl.pdf Graphic file (type pdf)
+<use gprs__uart_8h__dep__incl.pdf>
+Package pdftex.def Info: gprs__uart_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 253.0pt x 222.00911pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[65]
+Underfull \hbox (badness 10000) detected at line 56
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 83
+[][][]
+ []
+
+) (./idp__parser_8c.tex [66] <./idp__parser_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./idp__parser_8c__incl.pdf): PDF inclusion: mult
+iple pdfs with page group included in a single page
+>
+<idp__parser_8c__incl.pdf, id=2931, 605.26125pt x 302.12875pt>
+File: idp__parser_8c__incl.pdf Graphic file (type pdf)
+<use idp__parser_8c__incl.pdf>
+Package pdftex.def Info: idp__parser_8c__incl.pdf  used on input line 20.
+(pdftex.def)             Requested size: 350.0pt x 174.70924pt.
+LaTeX Font Info:    Font shape `T1/pcr/m/it' in size <9> not available
+(Font)              Font shape `T1/pcr/m/sl' tried instead on input line 42.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[67] [68]
+Underfull \hbox (badness 10000) detected at line 97
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 121
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[69]
+Underfull \hbox (badness 10000) detected at line 185
+[][][]
+ []
+
+[70]
+Underfull \hbox (badness 10000) detected at line 207
+[][][]
+ []
+
+) (./idp__parser_8h.tex <./idp__parser_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./idp__parser_8h__incl.pdf): PDF inclusion: mult
+iple pdfs with page group included in a single page
+>
+<idp__parser_8h__incl.pdf, id=2997, 423.5825pt x 245.91875pt>
+File: idp__parser_8h__incl.pdf Graphic file (type pdf)
+<use idp__parser_8h__incl.pdf>
+Package pdftex.def Info: idp__parser_8h__incl.pdf  used on input line 13.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ <./idp__parser_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./idp__parser_8h__dep__incl.pdf): PDF inclusion:
+ multiple pdfs with page group included in a single page
+>
+<idp__parser_8h__dep__incl.pdf, id=3012, 1020.81375pt x 222.8325pt>
+File: idp__parser_8h__dep__incl.pdf Graphic file (type pdf)
+<use idp__parser_8h__dep__incl.pdf>
+Package pdftex.def Info: idp__parser_8h__dep__incl.pdf  used on input line 20.
+(pdftex.def)             Requested size: 350.0pt x 76.40128pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[71]
+Underfull \hbox (badness 10000) detected at line 56
+[][][]
+ []
+
+[72]
+Underfull \hbox (badness 10000) detected at line 109
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 121
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[73]
+Underfull \hbox (badness 10000) detected at line 143
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 157
+[][][]
+ []
+
+[74]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[75]
+Underfull \hbox (badness 10000) detected at line 237
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 249
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 269
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 281
+[][][]
+ []
+
+) (./nvs__data_8h.tex [76] <./nvs__data_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./nvs__data_8h__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<nvs__data_8h__incl.pdf, id=3090, 265.99374pt x 189.70876pt>
+File: nvs__data_8h__incl.pdf Graphic file (type pdf)
+<use nvs__data_8h__incl.pdf>
+Package pdftex.def Info: nvs__data_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 265.0pt x 189.01643pt.
+ <./nvs__data_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./nvs__data_8h__dep__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<nvs__data_8h__dep__incl.pdf, id=3098, 475.7775pt x 222.8325pt>
+File: nvs__data_8h__dep__incl.pdf Graphic file (type pdf)
+<use nvs__data_8h__dep__incl.pdf>
+Package pdftex.def Info: nvs__data_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 350.0pt x 163.93123pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[77]
+Underfull \hbox (badness 10000) detected at line 62
+[][][]
+ []
+
+[78]
+Underfull \hbox (badness 10000) detected at line 82
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 97
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 121
+[][][]
+ []
+
+) (./nvs__data_8c.tex
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[79] <./nvs__data_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./nvs__data_8c__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<nvs__data_8c__incl.pdf, id=3135, 486.81876pt x 234.8775pt>
+File: nvs__data_8c__incl.pdf Graphic file (type pdf)
+<use nvs__data_8c__incl.pdf>
+Package pdftex.def Info: nvs__data_8c__incl.pdf  used on input line 17.
+(pdftex.def)             Requested size: 350.0pt x 168.86436pt.
+ [80]
+Underfull \hbox (badness 10000) detected at line 64
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 84
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[81]
+Underfull \hbox (badness 10000) detected at line 99
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 123
+[][][]
+ []
+
+) (./rf__uart_8h.tex <./rf__uart_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rf__uart_8h__incl.pdf): PDF inclusion: multipl
+e pdfs with page group included in a single page
+>
+<rf__uart_8h__incl.pdf, id=3174, 423.5825pt x 245.91875pt>
+File: rf__uart_8h__incl.pdf Graphic file (type pdf)
+<use rf__uart_8h__incl.pdf>
+Package pdftex.def Info: rf__uart_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ [82] <./rf__uart_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rf__uart_8h__dep__incl.pdf): PDF inclusion: mu
+ltiple pdfs with page group included in a single page
+>
+<rf__uart_8h__dep__incl.pdf, id=3194, 469.755pt x 222.8325pt>
+File: rf__uart_8h__dep__incl.pdf Graphic file (type pdf)
+<use rf__uart_8h__dep__incl.pdf>
+Package pdftex.def Info: rf__uart_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 350.0pt x 166.02571pt.
+
+Underfull \hbox (badness 10000) detected at line 36
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[83]
+Underfull \hbox (badness 10000) detected at line 59
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 72
+[][][]
+ []
+
+
+Overfull \vbox (5.9817pt too high) has occurred while \output is active []
+
+
+[84]
+Underfull \hbox (badness 10000) detected at line 94
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 110
+[][][]
+ []
+
+) (./rf__uart_8c.tex <./rf__uart_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rf__uart_8c__incl.pdf): PDF inclusion: multipl
+e pdfs with page group included in a single page
+>
+<rf__uart_8c__incl.pdf, id=3223, 1183.42125pt x 291.0875pt>
+File: rf__uart_8c__incl.pdf Graphic file (type pdf)
+<use rf__uart_8c__incl.pdf>
+Package pdftex.def Info: rf__uart_8c__incl.pdf  used on input line 18.
+(pdftex.def)             Requested size: 350.0pt x 86.08769pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[85]
+Underfull \hbox (badness 10000) detected at line 69
+[][][]
+ []
+
+[86]
+Underfull \hbox (badness 10000) detected at line 91
+[][][]
+ []
+
+) (./rtc__ds3231_8h.tex <./rtc__ds3231_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__ds3231_8h__incl.pdf): PDF inclusion: mult
+iple pdfs with page group included in a single page
+>
+<rtc__ds3231_8h__incl.pdf, id=3270, 345.29pt x 245.91875pt>
+File: rtc__ds3231_8h__incl.pdf Graphic file (type pdf)
+<use rtc__ds3231_8h__incl.pdf>
+Package pdftex.def Info: rtc__ds3231_8h__incl.pdf  used on input line 16.
+(pdftex.def)             Requested size: 344.0pt x 245.00253pt.
+ <./rtc__ds3231_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__ds3231_8h__dep__incl.pdf): PDF inclusion:
+ multiple pdfs with page group included in a single page
+>
+<rtc__ds3231_8h__dep__incl.pdf, id=3278, 453.695pt x 222.8325pt>
+File: rtc__ds3231_8h__dep__incl.pdf Graphic file (type pdf)
+<use rtc__ds3231_8h__dep__incl.pdf>
+Package pdftex.def Info: rtc__ds3231_8h__dep__incl.pdf  used on input line 23.
+(pdftex.def)             Requested size: 350.0pt x 171.90456pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[87] [88]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[89]
+Underfull \hbox (badness 10000) detected at line 146
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 156
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 174
+[][][]
+ []
+
+[90]
+Underfull \hbox (badness 10000) detected at line 184
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 206
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 218
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[91]
+Underfull \hbox (badness 10000) detected at line 240
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 252
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 274
+[][][]
+ []
+
+[92]
+Underfull \hbox (badness 10000) detected at line 286
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 308
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 320
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[93]
+Underfull \hbox (badness 10000) detected at line 346
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 362
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 384
+[][][]
+ []
+
+[94]
+Underfull \hbox (badness 10000) detected at line 396
+[][][]
+ []
+
+) (./rtc__ds3231_8c.tex <./rtc__ds3231_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__ds3231_8c__incl.pdf): PDF inclusion: mult
+iple pdfs with page group included in a single page
+>
+<rtc__ds3231_8c__incl.pdf, id=3420, 409.53pt x 291.0875pt>
+File: rtc__ds3231_8c__incl.pdf Graphic file (type pdf)
+<use rtc__ds3231_8c__incl.pdf>
+Package pdftex.def Info: rtc__ds3231_8c__incl.pdf  used on input line 15.
+(pdftex.def)             Requested size: 350.0pt x 248.78911pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[95] [96]
+Underfull \hbox (badness 10000) detected at line 87
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 107
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[97]
+Underfull \hbox (badness 10000) detected at line 129
+[][][]
+ []
 
 
 Underfull \hbox (badness 10000) detected at line 151
 [][][]
  []
 
-[105]
-
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.87 on input line 174.
-
-
-Underfull \hbox (badness 10000) detected at line 175
+[98]
+Underfull \hbox (badness 10000) detected at line 173
 [][][]
  []
 
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.88 on input line 198.
+Underfull \hbox (badness 10000) detected at line 195
+[][][]
+ []
 
 
-Underfull \hbox (badness 10000) detected at line 199
+Underfull \hbox (badness 10000) detected at line 221
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[99]
+Underfull \hbox (badness 10000) detected at line 243
+[][][]
+ []
+
+) (./rtc__i2c__dev_8c.tex <./rtc__i2c__dev_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./rtc__i2c__dev_8c__incl.pdf): PDF inclusion: mu
+ltiple pdfs with page group included in a single page
+>
+<rtc__i2c__dev_8c__incl.pdf, id=3493, 381.425pt x 234.8775pt>
+File: rtc__i2c__dev_8c__incl.pdf Graphic file (type pdf)
+<use rtc__i2c__dev_8c__incl.pdf>
+Package pdftex.def Info: rtc__i2c__dev_8c__incl.pdf  used on input line 16.
+(pdftex.def)             Requested size: 350.0pt x 215.53441pt.
+ [100]
+Underfull \hbox (badness 10000) detected at line 69
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[101]
+Underfull \hbox (badness 10000) detected at line 99
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 125
+[][][]
+ []
+
+) (./_free_r_t_o_s__defines_8h.tex [102] <./_free_r_t_o_s__defines_8h__incl.pdf
+
+
+pdfTeX warning: pdflatex (file ./_free_r_t_o_s__defines_8h__incl.pdf): PDF incl
+usion: multiple pdfs with page group included in a single page
+>
+<_free_r_t_o_s__defines_8h__incl.pdf, id=3533, 695.59875pt x 189.70876pt>
+File: _free_r_t_o_s__defines_8h__incl.pdf Graphic file (type pdf)
+<use _free_r_t_o_s__defines_8h__incl.pdf>
+Package pdftex.def Info: _free_r_t_o_s__defines_8h__incl.pdf  used on input lin
+e 17.
+(pdftex.def)             Requested size: 350.0pt x 95.45334pt.
+ <./_free_r_t_o_s__defines_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./_free_r_t_o_s__defines_8h__dep__incl.pdf): PDF
+ inclusion: multiple pdfs with page group included in a single page
+>
+<_free_r_t_o_s__defines_8h__dep__incl.pdf, id=3549, 2024.56375pt x 222.8325pt>
+File: _free_r_t_o_s__defines_8h__dep__incl.pdf Graphic file (type pdf)
+<use _free_r_t_o_s__defines_8h__dep__incl.pdf>
+Package pdftex.def Info: _free_r_t_o_s__defines_8h__dep__incl.pdf  used on inpu
+t line 24.
+(pdftex.def)             Requested size: 350.0pt x 38.52025pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[103] [104]
+Underfull \hbox (badness 10000) detected at line 113
+[][][]
+ []
+
+) (./log_8h.tex <./log_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./log_8h__incl.pdf): PDF inclusion: multiple pdf
+s with page group included in a single page
+>
+<log_8h__incl.pdf, id=3616, 270.00874pt x 178.6675pt>
+File: log_8h__incl.pdf Graphic file (type pdf)
+<use log_8h__incl.pdf>
+Package pdftex.def Info: log_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 269.0pt x 178.00456pt.
+ <./log_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./log_8h__dep__incl.pdf): PDF inclusion: multipl
+e pdfs with page group included in a single page
+>
+<log_8h__dep__incl.pdf, id=3624, 2216.28pt x 211.79124pt>
+File: log_8h__dep__incl.pdf Graphic file (type pdf)
+<use log_8h__dep__incl.pdf>
+Package pdftex.def Info: log_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 350.0pt x 33.44455pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[105]
+Underfull \hbox (badness 10000) detected at line 42
 [][][]
  []
 
 [106]
 
-Package longtable Warning: Column widths have changed
-(longtable)                in table 8.89 on input line 222.
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
 
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
 
-Underfull \hbox (badness 10000) detected at line 223
+[107]) (./project__config_8h.tex <./project__config_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./project__config_8h__incl.pdf): PDF inclusion: 
+multiple pdfs with page group included in a single page
+>
+<project__config_8h__incl.pdf, id=3671, 423.5825pt x 189.70876pt>
+File: project__config_8h__incl.pdf Graphic file (type pdf)
+<use project__config_8h__incl.pdf>
+Package pdftex.def Info: project__config_8h__incl.pdf  used on input line 17.
+(pdftex.def)             Requested size: 350.0pt x 156.75769pt.
+ <./project__config_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./project__config_8h__dep__incl.pdf): PDF inclus
+ion: multiple pdfs with page group included in a single page
+>
+<project__config_8h__dep__incl.pdf, id=3686, 2673.99pt x 312.16624pt>
+File: project__config_8h__dep__incl.pdf Graphic file (type pdf)
+<use project__config_8h__dep__incl.pdf>
+Package pdftex.def Info: project__config_8h__dep__incl.pdf  used on input line 
+24.
+(pdftex.def)             Requested size: 350.0pt x 40.8593pt.
+ [108]
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[109]) (./wifi__app_8h.tex <./wifi__app_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./wifi__app_8h__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<wifi__app_8h__incl.pdf, id=3743, 423.5825pt x 245.91875pt>
+File: wifi__app_8h__incl.pdf Graphic file (type pdf)
+<use wifi__app_8h__incl.pdf>
+Package pdftex.def Info: wifi__app_8h__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 203.2044pt.
+ <./wifi__app_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./wifi__app_8h__dep__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<wifi__app_8h__dep__incl.pdf, id=3758, 467.7475pt x 222.8325pt>
+File: wifi__app_8h__dep__incl.pdf Graphic file (type pdf)
+<use wifi__app_8h__dep__incl.pdf>
+Package pdftex.def Info: wifi__app_8h__dep__incl.pdf  used on input line 21.
+(pdftex.def)             Requested size: 350.0pt x 166.74654pt.
+ [110]
+Underfull \hbox (badness 10000) detected at line 36
 [][][]
  []
 
-) [107] [108
 
-]
-No file refman.ind.
+Underfull \hbox (badness 10000) detected at line 52
+[][][]
+ []
 
-Package longtable Warning: Table widths have changed. Rerun LaTeX.
 
-(./refman.aux)
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 33.97194pt, for example:
+(fancyhdr)                \setlength{\headheight}{33.97194pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-21.97194pt}.
+
+[111]) (./wifi__app_8c.tex <./wifi__app_8c__incl.pdf>
+<wifi__app_8c__incl.pdf, id=3792, 1599.9775pt x 291.0875pt>
+File: wifi__app_8c__incl.pdf Graphic file (type pdf)
+<use wifi__app_8c__incl.pdf>
+Package pdftex.def Info: wifi__app_8c__incl.pdf  used on input line 23.
+(pdftex.def)             Requested size: 350.0pt x 63.67523pt.
+ [112]
+Underfull \hbox (badness 10000) detected at line 61
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 77
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[113]
+Underfull \hbox (badness 10000) detected at line 109
+[][][]
+ []
+
+) (./eco__mode_8c.tex <./eco__mode_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./eco__mode_8c__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<eco__mode_8c__incl.pdf, id=3838, 1165.35374pt x 291.0875pt>
+File: eco__mode_8c__incl.pdf Graphic file (type pdf)
+<use eco__mode_8c__incl.pdf>
+Package pdftex.def Info: eco__mode_8c__incl.pdf  used on input line 17.
+(pdftex.def)             Requested size: 350.0pt x 87.42464pt.
+ [114]
+Underfull \hbox (badness 10000) detected at line 41
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 44
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 80
+[][][]
+ []
+
+) (./eco__mode_8h.tex [115] <./eco__mode_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./eco__mode_8h__incl.pdf): PDF inclusion: multip
+le pdfs with page group included in a single page
+>
+<eco__mode_8h__incl.pdf, id=3879, 423.5825pt x 234.8775pt>
+File: eco__mode_8h__incl.pdf Graphic file (type pdf)
+<use eco__mode_8h__incl.pdf>
+Package pdftex.def Info: eco__mode_8h__incl.pdf  used on input line 13.
+(pdftex.def)             Requested size: 350.0pt x 194.08095pt.
+ <./eco__mode_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./eco__mode_8h__dep__incl.pdf): PDF inclusion: m
+ultiple pdfs with page group included in a single page
+>
+<eco__mode_8h__dep__incl.pdf, id=3894, 253.94875pt x 200.75pt>
+File: eco__mode_8h__dep__incl.pdf Graphic file (type pdf)
+<use eco__mode_8h__dep__incl.pdf>
+Package pdftex.def Info: eco__mode_8h__dep__incl.pdf  used on input line 20.
+(pdftex.def)             Requested size: 253.0pt x 200.0082pt.
+ [116]
+Underfull \hbox (badness 10000) detected at line 38
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 41
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[117]
+Underfull \hbox (badness 10000) detected at line 77
+[][][]
+ []
+
+) (./scheduling_8h.tex <./scheduling_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./scheduling_8h__incl.pdf): PDF inclusion: multi
+ple pdfs with page group included in a single page
+>
+<scheduling_8h__incl.pdf, id=3923, 423.5825pt x 234.8775pt>
+File: scheduling_8h__incl.pdf Graphic file (type pdf)
+<use scheduling_8h__incl.pdf>
+Package pdftex.def Info: scheduling_8h__incl.pdf  used on input line 13.
+(pdftex.def)             Requested size: 350.0pt x 194.08095pt.
+ <./scheduling_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./scheduling_8h__dep__incl.pdf): PDF inclusion: 
+multiple pdfs with page group included in a single page
+>
+<scheduling_8h__dep__incl.pdf, id=3938, 445.665pt x 200.75pt>
+File: scheduling_8h__dep__incl.pdf Graphic file (type pdf)
+<use scheduling_8h__dep__incl.pdf>
+Package pdftex.def Info: scheduling_8h__dep__incl.pdf  used on input line 20.
+(pdftex.def)             Requested size: 350.0pt x 157.65953pt.
+ [118]
+Underfull \hbox (badness 10000) detected at line 35
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 38
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 61
+[][][]
+ []
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[119]
+Underfull \hbox (badness 10000) detected at line 83
+[][][]
+ []
+
+) (./sectorization_8h.tex <./sectorization_8h__incl.pdf
+
+pdfTeX warning: pdflatex (file ./sectorization_8h__incl.pdf): PDF inclusion: mu
+ltiple pdfs with page group included in a single page
+>
+<sectorization_8h__incl.pdf, id=3968, 423.5825pt x 234.8775pt>
+File: sectorization_8h__incl.pdf Graphic file (type pdf)
+<use sectorization_8h__incl.pdf>
+Package pdftex.def Info: sectorization_8h__incl.pdf  used on input line 13.
+(pdftex.def)             Requested size: 350.0pt x 194.08095pt.
+ <./sectorization_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./sectorization_8h__dep__incl.pdf): PDF inclusio
+n: multiple pdfs with page group included in a single page
+>
+<sectorization_8h__dep__incl.pdf, id=3983, 445.665pt x 200.75pt>
+File: sectorization_8h__dep__incl.pdf Graphic file (type pdf)
+<use sectorization_8h__dep__incl.pdf>
+Package pdftex.def Info: sectorization_8h__dep__incl.pdf  used on input line 20
+.
+(pdftex.def)             Requested size: 350.0pt x 157.65953pt.
+ [120]
+Underfull \hbox (badness 10000) detected at line 35
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 38
+[][][]
+ []
+
+) (./system__manager_8h.tex
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[121] <./system__manager_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./system__manager_8h__dep__incl.pdf): PDF inclus
+ion: multiple pdfs with page group included in a single page
+>
+<system__manager_8h__dep__incl.pdf, id=4011, 445.665pt x 200.75pt>
+File: system__manager_8h__dep__incl.pdf Graphic file (type pdf)
+<use system__manager_8h__dep__incl.pdf>
+Package pdftex.def Info: system__manager_8h__dep__incl.pdf  used on input line 
+12.
+(pdftex.def)             Requested size: 350.0pt x 157.65953pt.
+
+Underfull \hbox (badness 10000) detected at line 25
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 28
+[][][]
+ []
+
+) (./system__monitoring_8h.tex [122] <./system__monitoring_8h__incl.pdf>
+<system__monitoring_8h__incl.pdf, id=4028, 423.5825pt x 234.8775pt>
+File: system__monitoring_8h__incl.pdf Graphic file (type pdf)
+<use system__monitoring_8h__incl.pdf>
+Package pdftex.def Info: system__monitoring_8h__incl.pdf  used on input line 13
+.
+(pdftex.def)             Requested size: 350.0pt x 194.08095pt.
+ <./system__monitoring_8h__dep__incl.pdf
+
+pdfTeX warning: pdflatex (file ./system__monitoring_8h__dep__incl.pdf): PDF inc
+lusion: multiple pdfs with page group included in a single page
+>
+<system__monitoring_8h__dep__incl.pdf, id=4043, 445.665pt x 200.75pt>
+File: system__monitoring_8h__dep__incl.pdf Graphic file (type pdf)
+<use system__monitoring_8h__dep__incl.pdf>
+Package pdftex.def Info: system__monitoring_8h__dep__incl.pdf  used on input li
+ne 20.
+(pdftex.def)             Requested size: 350.0pt x 157.65953pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[123]
+Underfull \hbox (badness 10000) detected at line 39
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 42
+[][][]
+ []
+
+
+Overfull \vbox (3.90984pt too high) has occurred while \output is active []
+
+
+[124]) (./main_8c.tex <./main_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./main_8c__incl.pdf): PDF inclusion: multiple pd
+fs with page group included in a single page
+>
+<main_8c__incl.pdf, id=4073, 695.59875pt x 234.8775pt>
+File: main_8c__incl.pdf Graphic file (type pdf)
+<use main_8c__incl.pdf>
+Package pdftex.def Info: main_8c__incl.pdf  used on input line 14.
+(pdftex.def)             Requested size: 350.0pt x 118.18033pt.
+
+Underfull \hbox (badness 10000) detected at line 27
+[][][]
+ []
+
+[125]
+Underfull \hbox (badness 10000) detected at line 30
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 46
+[][][]
+ []
+
+) (./scheduling_8c.tex <./scheduling_8c__incl.pdf>
+<scheduling_8c__incl.pdf, id=4098, 1238.6275pt x 291.0875pt>
+File: scheduling_8c__incl.pdf Graphic file (type pdf)
+<use scheduling_8c__incl.pdf>
+Package pdftex.def Info: scheduling_8c__incl.pdf  used on input line 22.
+(pdftex.def)             Requested size: 350.0pt x 82.25458pt.
+ [126]
+Underfull \hbox (badness 10000) detected at line 43
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 46
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 69
+[][][]
+ []
+
+[127]
+Underfull \hbox (badness 10000) detected at line 91
+[][][]
+ []
+
+) (./sectorization_8c.tex <./sectorization_8c__incl.pdf
+
+pdfTeX warning: pdflatex (file ./sectorization_8c__incl.pdf): PDF inclusion: mu
+ltiple pdfs with page group included in a single page
+>
+<sectorization_8c__incl.pdf, id=4137, 1055.945pt x 291.0875pt>
+File: sectorization_8c__incl.pdf Graphic file (type pdf)
+<use sectorization_8c__incl.pdf>
+Package pdftex.def Info: sectorization_8c__incl.pdf  used on input line 17.
+(pdftex.def)             Requested size: 350.0pt x 96.48111pt.
+ [128]
+Underfull \hbox (badness 10000) detected at line 38
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 41
+[][][]
+ []
+
+) (./system__manager_8c.tex <./system__manager_8c__incl.pdf>
+<system__manager_8c__incl.pdf, id=4166, 1754.555pt x 291.0875pt>
+File: system__manager_8c__incl.pdf Graphic file (type pdf)
+<use system__manager_8c__incl.pdf>
+Package pdftex.def Info: system__manager_8c__incl.pdf  used on input line 26.
+(pdftex.def)             Requested size: 350.0pt x 58.06544pt.
+ [129]
+Underfull \hbox (badness 10000) detected at line 61
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 64
+[][][]
+ []
+
+[130]) (./system__monitoring_8c.tex <./system__monitoring_8c__incl.pdf>
+<system__monitoring_8c__incl.pdf, id=4206, 1362.08875pt x 291.0875pt>
+File: system__monitoring_8c__incl.pdf Graphic file (type pdf)
+<use system__monitoring_8c__incl.pdf>
+Package pdftex.def Info: system__monitoring_8c__incl.pdf  used on input line 21
+.
+(pdftex.def)             Requested size: 350.0pt x 74.79707pt.
+
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[131]
+Underfull \hbox (badness 10000) detected at line 55
+[][][]
+ []
+
+
+Underfull \hbox (badness 10000) detected at line 58
+[][][]
+ []
+
+[132])
+
+Package fancyhdr Warning: \headheight is too small (12.0pt): 
+(fancyhdr)                Make it at least 22.16548pt, for example:
+(fancyhdr)                \setlength{\headheight}{22.16548pt}.
+(fancyhdr)                You might also make \topmargin smaller to compensate:
+
+(fancyhdr)                \addtolength{\topmargin}{-10.16548pt}.
+
+[133] [134
+
+] (./refman.ind
+Overfull \hbox (192.90884pt too wide) in paragraph at lines 3--5
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/actuation_app.c,
+ []
+
+
+Overfull \hbox (180.88528pt too wide) in paragraph at lines 5--7
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/comm_app.c,
+ []
+
+
+Overfull \hbox (173.90121pt too wide) in paragraph at lines 7--9
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/data_app.c,
+ []
+
+
+Overfull \hbox (224.42618pt too wide) in paragraph at lines 9--11
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/include/actuation_app.h,
+ []
+
+
+Overfull \hbox (212.40262pt too wide) in paragraph at lines 11--13
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/include/comm_app.h,
+ []
+
+
+Overfull \hbox (205.41855pt too wide) in paragraph at lines 13--15
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/include/data_app.h,
+ []
+
+
+Overfull \hbox (198.26364pt too wide) in paragraph at lines 15--17
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/include/rtc_app.h,
+ []
+
+
+Overfull \hbox (166.7463pt too wide) in paragraph at lines 17--19
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/applications/rtc_app.c,
+ []
+
+
+Overfull \hbox (197.7776pt too wide) in paragraph at lines 19--21
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/gpio_actuator/gpio_actuator.c,
+ []
+
+
+Overfull \hbox (229.29494pt too wide) in paragraph at lines 21--23
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/gpio_actuator/include/gpio_actuator.h,
+ []
+
+
+Overfull \hbox (176.56505pt too wide) in paragraph at lines 23--25
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/gprs/include/gprs_uart.h,
+ []
+
+
+Overfull \hbox (180.2551pt too wide) in paragraph at lines 25--27
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/idp_protocol/idp_parser.c,
+ []
+
+
+Overfull \hbox (211.77243pt too wide) in paragraph at lines 27--29
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/idp_protocol/include/idp_parser.h,
+ []
+
+
+Overfull \hbox (193.36797pt too wide) in paragraph at lines 29--31
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/nvs_data/include/nvs_data.h,
+ []
+
+
+Overfull \hbox (161.85063pt too wide) in paragraph at lines 31--33
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/nvs_data/nvs_data.c,
+ []
+
+
+Overfull \hbox (187.06766pt too wide) in paragraph at lines 33--35
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/rf_module/include/rf_uart.h,
+ []
+
+
+Overfull \hbox (155.55032pt too wide) in paragraph at lines 35--37
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/rf_module/rf_uart.c,
+ []
+
+
+Overfull \hbox (175.92598pt too wide) in paragraph at lines 37--39
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/rtc/include/rtc_ds3231.h,
+ []
+
+
+Overfull \hbox (144.40865pt too wide) in paragraph at lines 39--41
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/rtc/rtc_ds3231.c,
+ []
+
+
+Overfull \hbox (144.91278pt too wide) in paragraph at lines 41--43
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/rtc/rtc_i2c_dev.c,
+ []
+
+
+Overfull \hbox (213.04187pt too wide) in paragraph at lines 43--45
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/utils/include/FreeRTOS_defines.h,
+ []
+
+
+Overfull \hbox (148.69261pt too wide) in paragraph at lines 45--47
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/utils/include/log.h,
+ []
+
+
+Overfull \hbox (192.71088pt too wide) in paragraph at lines 47--49
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/utils/include/project_config.h,
+ []
+
+
+Overfull \hbox (186.39313pt too wide) in paragraph at lines 49--51
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/wifi_app/include/wifi_app.h,
+ []
+
+
+Overfull \hbox (154.8758pt too wide) in paragraph at lines 51--53
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/compo
+nents/wifi_app/wifi_app.c,
+ []
+
+
+Overfull \hbox (99.03183pt too wide) in paragraph at lines 53--55
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+eco_mode.c,
+ []
+
+
+Overfull \hbox (130.54916pt too wide) in paragraph at lines 55--57
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+include/eco_mode.h,
+ []
+
+
+Overfull \hbox (131.68306pt too wide) in paragraph at lines 57--59
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+include/scheduling.h,
+ []
+
+
+Overfull \hbox (139.31474pt too wide) in paragraph at lines 59--61
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+include/sectorization.h,
+ []
+
+
+Overfull \hbox (157.23364pt too wide) in paragraph at lines 61--63
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+include/system_manager.h,
+ []
+
+
+Overfull \hbox (164.31636pt too wide) in paragraph at lines 63--65
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+include/system_monitoring.h,
+ []
+
+
+Overfull \hbox (76.64911pt too wide) in paragraph at lines 65--67
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+main.c,
+ []
+
+
+Overfull \hbox (100.16573pt too wide) in paragraph at lines 67--69
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+scheduling.c,
+ []
+
+
+Overfull \hbox (107.79741pt too wide) in paragraph at lines 69--71
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+sectorization.c,
+ []
+
+
+Overfull \hbox (125.71631pt too wide) in paragraph at lines 71--73
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+system_manager.c,
+ []
+
+
+Overfull \hbox (132.79903pt too wide) in paragraph at lines 73--75
+[]\T1/phv/m/n/10 /home/brunolima/eclipse-workspace/fw_PlacaDeControle_2.0/main/
+system_monitoring.c,
+ []
+
+[135
+
+
+] [136] [137] [138] [139] [140]) (./refman.aux)
 
 LaTeX Warning: There were undefined references.
 
-
-LaTeX Warning: Label(s) may have changed. Rerun to get cross-references right.
-
-
-Package rerunfilecheck Warning: File `refman.out' has changed.
-(rerunfilecheck)                Rerun to get outlines right
-(rerunfilecheck)                or use package `bookmark'.
-
-Package rerunfilecheck Info: Checksums for `refman.out':
-(rerunfilecheck)             Before: <no file>
-(rerunfilecheck)             After:  60D3EF2EAC7FABA8F9E6586E857E1069;56978.
+Package rerunfilecheck Info: File `refman.out' has not changed.
+(rerunfilecheck)             Checksum: CA0EA6D178B44322F9C591E83A1904A2;86559.
  ) 
 Here is how much of TeX's memory you used:
- 19430 strings out of 480247
- 353515 string characters out of 5896151
- 610090 words of memory out of 5000000
- 36035 multiletter control sequences out of 15000+600000
- 532166 words of font info for 118 fonts, out of 8000000 for 9000
+ 19956 strings out of 480247
+ 355906 string characters out of 5896150
+ 733921 words of memory out of 5000000
+ 36330 multiletter control sequences out of 15000+600000
+ 532903 words of font info for 120 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 99i,16n,117p,775b,634s stack positions out of 5000i,500n,10000p,200000b,80000s
+ 99i,16n,117p,931b,633s stack positions out of 5000i,500n,10000p,200000b,80000s
 {/usr/share/texlive/texmf-dist/fonts/enc/dvips/base/8r.enc}</usr/share/texliv
 e/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/texlive/texm
 f-dist/fonts/type1/public/amsfonts/cm/cmmi12.pfb></usr/share/texlive/texmf-dist
@@ -3032,10 +3085,10 @@ sr/share/texlive/texmf-dist/fonts/type1/urw/helvetic/uhvb8a.pfb></usr/share/tex
 live/texmf-dist/fonts/type1/urw/helvetic/uhvb8ac.pfb></usr/share/texlive/texmf-
 dist/fonts/type1/urw/helvetic/uhvr8a.pfb></usr/share/texlive/texmf-dist/fonts/t
 ype1/urw/helvetic/uhvro8a.pfb>
-Output written on refman.pdf (110 pages, 795674 bytes).
+Output written on refman.pdf (152 pages, 971730 bytes).
 PDF statistics:
- 2742 PDF objects out of 2984 (max. 8388607)
- 2293 compressed objects within 23 object streams
- 947 named destinations out of 1000 (max. 500000)
- 366 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 5040 PDF objects out of 5155 (max. 8388607)
+ 4558 compressed objects within 46 object streams
+ 1148 named destinations out of 1200 (max. 500000)
+ 2887 words of extra memory for PDF output out of 10000 (max. 10000000)
 

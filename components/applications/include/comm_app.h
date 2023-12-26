@@ -19,11 +19,6 @@
 #include "esp_err.h"
 
 /**
- * @defgroup CommApp Communication Application
- * @{
- */
-
-/**
  * @brief Initializes all communication modules.
  * @param callback [in]: Function used with return to the main application class.
  * @return
@@ -52,9 +47,5 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication);
  * This function configures the Wi-Fi settings for the communication module.
  */
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
-
-/**
- * @}
- */
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */

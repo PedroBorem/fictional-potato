@@ -1,0 +1,714 @@
+\begin{theindex}
+
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/actuation\_app.c}, 
+		\hyperpage{21}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/comm\_app.c}, 
+		\hyperpage{25}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/data\_app.c}, 
+		\hyperpage{27}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/actuation\_app.h}, 
+		\hyperpage{31}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/comm\_app.h}, 
+		\hyperpage{36}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/data\_app.h}, 
+		\hyperpage{39}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/include/rtc\_app.h}, 
+		\hyperpage{44}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/rtc\_app.c}, 
+		\hyperpage{47}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/gpio\_actuator/gpio\_actuator.c}, 
+		\hyperpage{51}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/gpio\_actuator/include/gpio\_actuator.h}, 
+		\hyperpage{56}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/gprs/include/gprs\_uart.h}, 
+		\hyperpage{64}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/idp\_protocol/idp\_parser.c}, 
+		\hyperpage{67}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/idp\_protocol/include/idp\_parser.h}, 
+		\hyperpage{71}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/nvs\_data/include/nvs\_data.h}, 
+		\hyperpage{77}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/nvs\_data/nvs\_data.c}, 
+		\hyperpage{80}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rf\_module/include/rf\_uart.h}, 
+		\hyperpage{82}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rf\_module/rf\_uart.c}, 
+		\hyperpage{85}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rtc/include/rtc\_ds3231.h}, 
+		\hyperpage{87}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rtc/rtc\_ds3231.c}, 
+		\hyperpage{95}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rtc/rtc\_i2c\_dev.c}, 
+		\hyperpage{100}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/FreeRTOS\_defines.h}, 
+		\hyperpage{103}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/log.h}, 
+		\hyperpage{105}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/project\_config.h}, 
+		\hyperpage{108}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/wifi\_app/include/wifi\_app.h}, 
+		\hyperpage{110}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/wifi\_app/wifi\_app.c}, 
+		\hyperpage{112}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/eco\_mode.c}, 
+		\hyperpage{114}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/include/eco\_mode.h}, 
+		\hyperpage{116}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/include/scheduling.h}, 
+		\hyperpage{118}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/include/sectorization.h}, 
+		\hyperpage{120}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/include/system\_manager.h}, 
+		\hyperpage{122}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/include/system\_monitoring.h}, 
+		\hyperpage{123}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/main.c}, 
+		\hyperpage{125}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/scheduling.c}, 
+		\hyperpage{126}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/sectorization.c}, 
+		\hyperpage{128}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/system\_manager.c}, 
+		\hyperpage{129}
+  \item {/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/main/system\_monitoring.c}, 
+		\hyperpage{131}
+  \item {\_\_attribute\_\_}
+    \subitem {Project Configuration}, \hyperpage{14}
+
+  \indexspace
+
+  \item {actuation\_app.c}
+    \subitem {actuation\_app\_get\_actions}, \hyperpage{22}
+    \subitem {actuation\_app\_init}, \hyperpage{23}
+    \subitem {actuation\_app\_manual\_call}, \hyperpage{23}
+    \subitem {actuation\_app\_set\_actions}, \hyperpage{23}
+    \subitem {actuation\_app\_set\_config}, \hyperpage{24}
+    \subitem {actuation\_app\_set\_pump}, \hyperpage{24}
+    \subitem {actuation\_app\_shutdown}, \hyperpage{24}
+    \subitem {actuation\_app\_task}, \hyperpage{24}
+    \subitem {pivot\_actions\_off}, \hyperpage{25}
+  \item {actuation\_app.h}
+    \subitem {actuation\_app\_get\_actions}, \hyperpage{33}
+    \subitem {actuation\_app\_init}, \hyperpage{33}
+    \subitem {actuation\_app\_set\_actions}, \hyperpage{34}
+    \subitem {actuation\_app\_set\_config}, \hyperpage{34}
+    \subitem {actuation\_app\_set\_pump}, \hyperpage{35}
+    \subitem {actuation\_app\_shutdown}, \hyperpage{35}
+    \subitem {pivot\_actions\_off}, \hyperpage{36}
+  \item {actuation\_app\_get\_actions}
+    \subitem {actuation\_app.c}, \hyperpage{22}
+    \subitem {actuation\_app.h}, \hyperpage{33}
+  \item {actuation\_app\_init}
+    \subitem {actuation\_app.c}, \hyperpage{23}
+    \subitem {actuation\_app.h}, \hyperpage{33}
+  \item {actuation\_app\_manual\_call}
+    \subitem {actuation\_app.c}, \hyperpage{23}
+  \item {actuation\_app\_set\_actions}
+    \subitem {actuation\_app.c}, \hyperpage{23}
+    \subitem {actuation\_app.h}, \hyperpage{34}
+  \item {actuation\_app\_set\_config}
+    \subitem {actuation\_app.c}, \hyperpage{24}
+    \subitem {actuation\_app.h}, \hyperpage{34}
+  \item {actuation\_app\_set\_pump}
+    \subitem {actuation\_app.c}, \hyperpage{24}
+    \subitem {actuation\_app.h}, \hyperpage{35}
+  \item {actuation\_app\_shutdown}
+    \subitem {actuation\_app.c}, \hyperpage{24}
+    \subitem {actuation\_app.h}, \hyperpage{35}
+  \item {actuation\_app\_task}
+    \subitem {actuation\_app.c}, \hyperpage{24}
+  \item {actuator\_read\_percent}
+    \subitem {gpio\_actuator.c}, \hyperpage{52}
+  \item {actuator\_wait\_pressure}
+    \subitem {gpio\_actuator.c}, \hyperpage{52}
+  \item {app\_callback}
+    \subitem {Project Configuration}, \hyperpage{13}
+  \item {app\_main}
+    \subitem {main.c}, \hyperpage{126}
+  \item {arg\_pair}, \hyperpage{17}
+    \subitem {type}, \hyperpage{17}
+    \subitem {value}, \hyperpage{17}
+  \item {async\_resp\_arg}, \hyperpage{18}
+
+  \indexspace
+
+  \item {bcd2dec}
+    \subitem {rtc\_ds3231.c}, \hyperpage{96}
+    \subitem {rtc\_ds3231.h}, \hyperpage{89}
+
+  \indexspace
+
+  \item {CHECK\_ARG}
+    \subitem {rtc\_ds3231.c}, \hyperpage{96}
+  \item {comm\_app.c}
+    \subitem {comm\_app\_init}, \hyperpage{26}
+    \subitem {comm\_app\_send\_idp\_pack}, \hyperpage{26}
+    \subitem {comm\_app\_wifi\_config}, \hyperpage{27}
+  \item {comm\_app.h}
+    \subitem {comm\_app\_init}, \hyperpage{37}
+    \subitem {comm\_app\_send\_idp\_pack}, \hyperpage{38}
+    \subitem {comm\_app\_wifi\_config}, \hyperpage{38}
+  \item {comm\_app\_init}
+    \subitem {comm\_app.c}, \hyperpage{26}
+    \subitem {comm\_app.h}, \hyperpage{37}
+  \item {comm\_app\_send\_idp\_pack}
+    \subitem {comm\_app.c}, \hyperpage{26}
+    \subitem {comm\_app.h}, \hyperpage{38}
+  \item {comm\_app\_wifi\_config}
+    \subitem {comm\_app.c}, \hyperpage{27}
+    \subitem {comm\_app.h}, \hyperpage{38}
+  \item {comm\_type}
+    \subitem {Project Configuration}, \hyperpage{13}
+  \item {CONFIG\_HISTORY\_MAX\_VALUE}
+    \subitem {Project Configuration}, \hyperpage{12}
+  \item {CONFIG\_SCHEDULING\_MAX\_VALUE}
+    \subitem {Project Configuration}, \hyperpage{12}
+  \item {CONFIG\_SECTORS\_MAX\_VALUE}
+    \subitem {Project Configuration}, \hyperpage{12}
+
+  \indexspace
+
+  \item {data\_app.c}
+    \subitem {data\_app\_delete\_scheduling}, \hyperpage{29}
+    \subitem {data\_app\_gen\_scheduling\_key}, \hyperpage{29}
+    \subitem {data\_app\_get\_data\_size}, \hyperpage{30}
+    \subitem {data\_app\_init}, \hyperpage{30}
+    \subitem {data\_app\_load}, \hyperpage{30}
+    \subitem {data\_app\_save}, \hyperpage{31}
+  \item {data\_app.h}
+    \subitem {data\_app\_delete\_scheduling}, \hyperpage{41}
+    \subitem {data\_app\_gen\_scheduling\_key}, \hyperpage{41}
+    \subitem {data\_app\_get\_data\_size}, \hyperpage{42}
+    \subitem {data\_app\_init}, \hyperpage{42}
+    \subitem {data\_app\_load}, \hyperpage{43}
+    \subitem {data\_app\_save}, \hyperpage{43}
+    \subitem {DATA\_TYPE\_ACTIONS}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_ECO\_MODE\_CONFIG}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_HISTORY}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_NETWORK\_CONFIG}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_OLD\_HISTORY}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_PIVOT\_CONFIG}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_RETURN\_CONFIG}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_SCHEDULING\_ANGLE}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_SCHEDULING\_DATE}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_SCHEDULING\_OFF\_DATE}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_SECTOR\_CONFIG}, \hyperpage{40}
+    \subitem {data\_type\_t}, \hyperpage{40}
+    \subitem {DATA\_TYPE\_TIMESTAMP}, \hyperpage{40}
+  \item {data\_app\_delete\_scheduling}
+    \subitem {data\_app.c}, \hyperpage{29}
+    \subitem {data\_app.h}, \hyperpage{41}
+  \item {data\_app\_gen\_scheduling\_key}
+    \subitem {data\_app.c}, \hyperpage{29}
+    \subitem {data\_app.h}, \hyperpage{41}
+  \item {data\_app\_get\_data\_size}
+    \subitem {data\_app.c}, \hyperpage{30}
+    \subitem {data\_app.h}, \hyperpage{42}
+  \item {data\_app\_init}
+    \subitem {data\_app.c}, \hyperpage{30}
+    \subitem {data\_app.h}, \hyperpage{42}
+  \item {data\_app\_load}
+    \subitem {data\_app.c}, \hyperpage{30}
+    \subitem {data\_app.h}, \hyperpage{43}
+  \item {data\_app\_save}
+    \subitem {data\_app.c}, \hyperpage{31}
+    \subitem {data\_app.h}, \hyperpage{43}
+  \item {DATA\_TYPE\_ACTIONS}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_ECO\_MODE\_CONFIG}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_HISTORY}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_NETWORK\_CONFIG}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_OLD\_HISTORY}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_PIVOT\_CONFIG}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_RETURN\_CONFIG}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_SCHEDULING\_ANGLE}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_SCHEDULING\_DATE}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_SCHEDULING\_OFF\_ANGLE}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_SCHEDULING\_OFF\_DATE}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_SECTOR\_CONFIG}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {data\_type\_t}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {DATA\_TYPE\_TIMESTAMP}
+    \subitem {data\_app.h}, \hyperpage{40}
+  \item {dec2bcd}
+    \subitem {rtc\_ds3231.c}, \hyperpage{97}
+    \subitem {rtc\_ds3231.h}, \hyperpage{90}
+  \item {ds3231\_get\_raw\_temp}
+    \subitem {rtc\_ds3231.c}, \hyperpage{97}
+    \subitem {rtc\_ds3231.h}, \hyperpage{91}
+  \item {ds3231\_get\_temp\_float}
+    \subitem {rtc\_ds3231.c}, \hyperpage{98}
+    \subitem {rtc\_ds3231.h}, \hyperpage{91}
+  \item {ds3231\_get\_temp\_integer}
+    \subitem {rtc\_ds3231.c}, \hyperpage{98}
+    \subitem {rtc\_ds3231.h}, \hyperpage{92}
+  \item {ds3231\_get\_time}
+    \subitem {rtc\_ds3231.c}, \hyperpage{99}
+    \subitem {rtc\_ds3231.h}, \hyperpage{93}
+  \item {ds3231\_init\_desc}
+    \subitem {rtc\_ds3231.c}, \hyperpage{99}
+    \subitem {rtc\_ds3231.h}, \hyperpage{93}
+  \item {ds3231\_set\_time}
+    \subitem {rtc\_ds3231.c}, \hyperpage{99}
+    \subitem {rtc\_ds3231.h}, \hyperpage{94}
+
+  \indexspace
+
+  \item {eco\_mode.c}
+    \subitem {eco\_mode\_register\_callback}, \hyperpage{115}
+    \subitem {eco\_mode\_start}, \hyperpage{115}
+  \item {eco\_mode.h}
+    \subitem {eco\_mode\_register\_callback}, \hyperpage{117}
+    \subitem {eco\_mode\_start}, \hyperpage{117}
+  \item {eco\_mode\_register\_callback}
+    \subitem {eco\_mode.c}, \hyperpage{115}
+    \subitem {eco\_mode.h}, \hyperpage{117}
+  \item {eco\_mode\_start}
+    \subitem {eco\_mode.c}, \hyperpage{115}
+    \subitem {eco\_mode.h}, \hyperpage{117}
+  \item {end\_angle}
+    \subitem {pivot\_sectors}, \hyperpage{19}
+
+  \indexspace
+
+  \item {FreeRTOS Defines}, \hyperpage{9}
+
+  \indexspace
+
+  \item {global\_angle}
+    \subitem {Project Configuration}, \hyperpage{15}
+  \item {GPIO\_ACT\_PIN\_AUX}
+    \subitem {gpio\_actuator.h}, \hyperpage{58}
+  \item {GPIO\_ACT\_PIN\_CCW}
+    \subitem {gpio\_actuator.h}, \hyperpage{58}
+  \item {GPIO\_ACT\_PIN\_CCW\_IN}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_CW}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_CW\_IN}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_OFF}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_ON}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_PERC\_AUX}
+    \subitem {gpio\_actuator.h}, \hyperpage{59}
+  \item {GPIO\_ACT\_PIN\_PERC\_IN}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {GPIO\_ACT\_PIN\_PERC\_OUT}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {GPIO\_ACT\_PIN\_PRESS}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {GPIO\_ACT\_PIN\_PUMP}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {GPIO\_ACT\_PIN\_WATERING}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {gpio\_actuator.c}
+    \subitem {actuator\_read\_percent}, \hyperpage{52}
+    \subitem {actuator\_wait\_pressure}, \hyperpage{52}
+    \subitem {gpio\_actuator\_config}, \hyperpage{53}
+    \subitem {gpio\_actuator\_get}, \hyperpage{53}
+    \subitem {gpio\_actuator\_init}, \hyperpage{53}
+    \subitem {gpio\_actuator\_pressure\_off}, \hyperpage{54}
+    \subitem {gpio\_actuator\_pressure\_on}, \hyperpage{54}
+    \subitem {gpio\_actuator\_pump\_off}, \hyperpage{54}
+    \subitem {gpio\_actuator\_pump\_on}, \hyperpage{54}
+    \subitem {gpio\_actuator\_set}, \hyperpage{54}
+    \subitem {gpio\_actuator\_shutdown}, \hyperpage{55}
+    \subitem {gpio\_actuator\_start}, \hyperpage{55}
+    \subitem {vPercTimerOffExpire}, \hyperpage{55}
+    \subitem {vPercTimerOnExpire}, \hyperpage{55}
+  \item {gpio\_actuator.h}
+    \subitem {GPIO\_ACT\_PIN\_AUX}, \hyperpage{58}
+    \subitem {GPIO\_ACT\_PIN\_CCW}, \hyperpage{58}
+    \subitem {GPIO\_ACT\_PIN\_CCW\_IN}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_CW}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_CW\_IN}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_OFF}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_ON}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_PERC\_AUX}, \hyperpage{59}
+    \subitem {GPIO\_ACT\_PIN\_PERC\_IN}, \hyperpage{60}
+    \subitem {GPIO\_ACT\_PIN\_PERC\_OUT}, \hyperpage{60}
+    \subitem {GPIO\_ACT\_PIN\_PRESS}, \hyperpage{60}
+    \subitem {GPIO\_ACT\_PIN\_PUMP}, \hyperpage{60}
+    \subitem {GPIO\_ACT\_PIN\_WATERING}, \hyperpage{60}
+    \subitem {gpio\_actuator\_config}, \hyperpage{61}
+    \subitem {gpio\_actuator\_get}, \hyperpage{62}
+    \subitem {gpio\_actuator\_init}, \hyperpage{62}
+    \subitem {gpio\_actuator\_pressure\_off}, \hyperpage{62}
+    \subitem {gpio\_actuator\_pressure\_on}, \hyperpage{63}
+    \subitem {gpio\_actuator\_pump\_off}, \hyperpage{63}
+    \subitem {gpio\_actuator\_pump\_on}, \hyperpage{63}
+    \subitem {gpio\_actuator\_set}, \hyperpage{63}
+    \subitem {gpio\_actuator\_shutdown}, \hyperpage{64}
+    \subitem {GPIO\_INPUT\_PIN\_GROUP}, \hyperpage{60}
+    \subitem {GPIO\_OUTPUT\_PIN\_GROUP}, \hyperpage{61}
+  \item {gpio\_actuator\_config}
+    \subitem {gpio\_actuator.c}, \hyperpage{53}
+    \subitem {gpio\_actuator.h}, \hyperpage{61}
+  \item {gpio\_actuator\_get}
+    \subitem {gpio\_actuator.c}, \hyperpage{53}
+    \subitem {gpio\_actuator.h}, \hyperpage{62}
+  \item {gpio\_actuator\_init}
+    \subitem {gpio\_actuator.c}, \hyperpage{53}
+    \subitem {gpio\_actuator.h}, \hyperpage{62}
+  \item {gpio\_actuator\_pressure\_off}
+    \subitem {gpio\_actuator.c}, \hyperpage{54}
+    \subitem {gpio\_actuator.h}, \hyperpage{62}
+  \item {gpio\_actuator\_pressure\_on}
+    \subitem {gpio\_actuator.c}, \hyperpage{54}
+    \subitem {gpio\_actuator.h}, \hyperpage{63}
+  \item {gpio\_actuator\_pump\_off}
+    \subitem {gpio\_actuator.c}, \hyperpage{54}
+    \subitem {gpio\_actuator.h}, \hyperpage{63}
+  \item {gpio\_actuator\_pump\_on}
+    \subitem {gpio\_actuator.c}, \hyperpage{54}
+    \subitem {gpio\_actuator.h}, \hyperpage{63}
+  \item {gpio\_actuator\_set}
+    \subitem {gpio\_actuator.c}, \hyperpage{54}
+    \subitem {gpio\_actuator.h}, \hyperpage{63}
+  \item {gpio\_actuator\_shutdown}
+    \subitem {gpio\_actuator.c}, \hyperpage{55}
+    \subitem {gpio\_actuator.h}, \hyperpage{64}
+  \item {gpio\_actuator\_start}
+    \subitem {gpio\_actuator.c}, \hyperpage{55}
+  \item {GPIO\_INPUT\_PIN\_GROUP}
+    \subitem {gpio\_actuator.h}, \hyperpage{60}
+  \item {GPIO\_OUTPUT\_PIN\_GROUP}
+    \subitem {gpio\_actuator.h}, \hyperpage{61}
+  \item {gprs\_uart.h}
+    \subitem {gprs\_uart\_init}, \hyperpage{66}
+    \subitem {gprs\_uart\_send\_event}, \hyperpage{66}
+  \item {gprs\_uart\_init}
+    \subitem {gprs\_uart.h}, \hyperpage{66}
+  \item {gprs\_uart\_send\_event}
+    \subitem {gprs\_uart.h}, \hyperpage{66}
+
+  \indexspace
+
+  \item {http\_file\_server\_data}, \hyperpage{18}
+
+  \indexspace
+
+  \item {i2c\_dev\_read}
+    \subitem {rtc\_i2c\_dev.c}, \hyperpage{101}
+  \item {i2c\_dev\_t}, \hyperpage{18}
+  \item {i2c\_dev\_write}
+    \subitem {rtc\_i2c\_dev.c}, \hyperpage{101}
+  \item {i2c\_master\_init}
+    \subitem {rtc\_i2c\_dev.c}, \hyperpage{102}
+  \item {idp\_parser.c}
+    \subitem {idp\_parser\_create\_package}, \hyperpage{68}
+    \subitem {idp\_parser\_create\_pwd}, \hyperpage{68}
+    \subitem {idp\_parser\_get}, \hyperpage{69}
+    \subitem {idp\_parser\_get\_packet\_data}, \hyperpage{69}
+    \subitem {idp\_parser\_get\_pwd}, \hyperpage{70}
+    \subitem {idp\_parser\_validate\_actions}, \hyperpage{70}
+    \subitem {idp\_parser\_validate\_network}, \hyperpage{70}
+  \item {idp\_parser.h}
+    \subitem {idp\_parser\_create\_package}, \hyperpage{72}
+    \subitem {idp\_parser\_create\_pwd}, \hyperpage{73}
+    \subitem {idp\_parser\_get}, \hyperpage{73}
+    \subitem {idp\_parser\_get\_packet\_data}, \hyperpage{74}
+    \subitem {idp\_parser\_get\_pwd}, \hyperpage{75}
+    \subitem {idp\_parser\_validate\_actions}, \hyperpage{75}
+    \subitem {idp\_parser\_validate\_network}, \hyperpage{76}
+  \item {idp\_parser\_create\_package}
+    \subitem {idp\_parser.c}, \hyperpage{68}
+    \subitem {idp\_parser.h}, \hyperpage{72}
+  \item {idp\_parser\_create\_pwd}
+    \subitem {idp\_parser.c}, \hyperpage{68}
+    \subitem {idp\_parser.h}, \hyperpage{73}
+  \item {idp\_parser\_get}
+    \subitem {idp\_parser.c}, \hyperpage{69}
+    \subitem {idp\_parser.h}, \hyperpage{73}
+  \item {idp\_parser\_get\_packet\_data}
+    \subitem {idp\_parser.c}, \hyperpage{69}
+    \subitem {idp\_parser.h}, \hyperpage{74}
+  \item {idp\_parser\_get\_pwd}
+    \subitem {idp\_parser.c}, \hyperpage{70}
+    \subitem {idp\_parser.h}, \hyperpage{75}
+  \item {idp\_parser\_validate\_actions}
+    \subitem {idp\_parser.c}, \hyperpage{70}
+    \subitem {idp\_parser.h}, \hyperpage{75}
+  \item {idp\_parser\_validate\_network}
+    \subitem {idp\_parser.c}, \hyperpage{70}
+    \subitem {idp\_parser.h}, \hyperpage{76}
+  \item {idp\_type}
+    \subitem {Project Configuration}, \hyperpage{13}
+
+  \indexspace
+
+  \item {log.h}
+    \subitem {LOG\_ACTUATION}, \hyperpage{106}
+    \subitem {LOG\_COLOR\_WHITE}, \hyperpage{106}
+    \subitem {LOG\_COMM}, \hyperpage{107}
+    \subitem {LOG\_DATA}, \hyperpage{107}
+    \subitem {LOG\_MANAGER}, \hyperpage{107}
+  \item {LOG\_ACTUATION}
+    \subitem {log.h}, \hyperpage{106}
+  \item {LOG\_COLOR\_WHITE}
+    \subitem {log.h}, \hyperpage{106}
+  \item {LOG\_COMM}
+    \subitem {log.h}, \hyperpage{107}
+  \item {LOG\_DATA}
+    \subitem {log.h}, \hyperpage{107}
+  \item {LOG\_MANAGER}
+    \subitem {log.h}, \hyperpage{107}
+
+  \indexspace
+
+  \item {main.c}
+    \subitem {app\_main}, \hyperpage{126}
+
+  \indexspace
+
+  \item {nvs\_data.c}
+    \subitem {nvs\_data\_get\_blob}, \hyperpage{81}
+    \subitem {nvs\_data\_get\_size}, \hyperpage{81}
+    \subitem {nvs\_data\_init}, \hyperpage{82}
+    \subitem {nvs\_data\_set}, \hyperpage{82}
+  \item {nvs\_data.h}
+    \subitem {nvs\_data\_get\_blob}, \hyperpage{78}
+    \subitem {nvs\_data\_get\_size}, \hyperpage{78}
+    \subitem {nvs\_data\_init}, \hyperpage{79}
+    \subitem {nvs\_data\_set}, \hyperpage{79}
+  \item {nvs\_data\_get\_blob}
+    \subitem {nvs\_data.c}, \hyperpage{81}
+    \subitem {nvs\_data.h}, \hyperpage{78}
+  \item {nvs\_data\_get\_size}
+    \subitem {nvs\_data.c}, \hyperpage{81}
+    \subitem {nvs\_data.h}, \hyperpage{78}
+  \item {nvs\_data\_init}
+    \subitem {nvs\_data.c}, \hyperpage{82}
+    \subitem {nvs\_data.h}, \hyperpage{79}
+  \item {nvs\_data\_set}
+    \subitem {nvs\_data.c}, \hyperpage{82}
+    \subitem {nvs\_data.h}, \hyperpage{79}
+
+  \indexspace
+
+  \item {pivot\_actions\_off}
+    \subitem {actuation\_app.c}, \hyperpage{25}
+    \subitem {actuation\_app.h}, \hyperpage{36}
+  \item {PIVOT\_CCW}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_CW}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_DRY}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_OFF}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_ON}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_PRESSURIZING}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {pivot\_sectors}, \hyperpage{18}
+    \subitem {end\_angle}, \hyperpage{19}
+    \subitem {start\_angle}, \hyperpage{19}
+  \item {pivot\_states}
+    \subitem {Project Configuration}, \hyperpage{13}
+  \item {PIVOT\_UNKNOWN}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {PIVOT\_WET}
+    \subitem {Project Configuration}, \hyperpage{14}
+  \item {Project Configuration}, \hyperpage{11}
+    \subitem {\_\_attribute\_\_}, \hyperpage{14}
+    \subitem {app\_callback}, \hyperpage{13}
+    \subitem {comm\_type}, \hyperpage{13}
+    \subitem {CONFIG\_HISTORY\_MAX\_VALUE}, \hyperpage{12}
+    \subitem {CONFIG\_SCHEDULING\_MAX\_VALUE}, \hyperpage{12}
+    \subitem {CONFIG\_SECTORS\_MAX\_VALUE}, \hyperpage{12}
+    \subitem {global\_angle}, \hyperpage{15}
+    \subitem {idp\_type}, \hyperpage{13}
+    \subitem {PIVOT\_CCW}, \hyperpage{14}
+    \subitem {PIVOT\_CW}, \hyperpage{14}
+    \subitem {PIVOT\_DRY}, \hyperpage{14}
+    \subitem {PIVOT\_OFF}, \hyperpage{14}
+    \subitem {PIVOT\_ON}, \hyperpage{14}
+    \subitem {PIVOT\_PRESSURIZING}, \hyperpage{14}
+    \subitem {pivot\_states}, \hyperpage{13}
+    \subitem {PIVOT\_UNKNOWN}, \hyperpage{14}
+    \subitem {PIVOT\_WET}, \hyperpage{14}
+
+  \indexspace
+
+  \item {rf\_uart.c}
+    \subitem {rf\_uart\_init}, \hyperpage{86}
+    \subitem {rf\_uart\_send\_event}, \hyperpage{86}
+  \item {rf\_uart.h}
+    \subitem {rf\_uart\_init}, \hyperpage{84}
+    \subitem {rf\_uart\_send\_event}, \hyperpage{84}
+  \item {rf\_uart\_init}
+    \subitem {rf\_uart.c}, \hyperpage{86}
+    \subitem {rf\_uart.h}, \hyperpage{84}
+  \item {rf\_uart\_send\_event}
+    \subitem {rf\_uart.c}, \hyperpage{86}
+    \subitem {rf\_uart.h}, \hyperpage{84}
+  \item {rtc\_app.c}
+    \subitem {rtc\_app\_get\_date\_time}, \hyperpage{49}
+    \subitem {rtc\_app\_get\_str\_date\_time}, \hyperpage{49}
+    \subitem {rtc\_app\_get\_timestamp}, \hyperpage{49}
+    \subitem {rtc\_app\_init}, \hyperpage{50}
+    \subitem {rtc\_app\_set\_timestamp}, \hyperpage{50}
+    \subitem {rtc\_show\_date\_time}, \hyperpage{50}
+  \item {rtc\_app.h}
+    \subitem {rtc\_app\_get\_date\_time}, \hyperpage{45}
+    \subitem {rtc\_app\_get\_str\_date\_time}, \hyperpage{45}
+    \subitem {rtc\_app\_get\_timestamp}, \hyperpage{46}
+    \subitem {rtc\_app\_init}, \hyperpage{46}
+    \subitem {rtc\_app\_set\_timestamp}, \hyperpage{46}
+    \subitem {rtc\_show\_date\_time}, \hyperpage{47}
+  \item {rtc\_app\_get\_date\_time}
+    \subitem {rtc\_app.c}, \hyperpage{49}
+    \subitem {rtc\_app.h}, \hyperpage{45}
+  \item {rtc\_app\_get\_str\_date\_time}
+    \subitem {rtc\_app.c}, \hyperpage{49}
+    \subitem {rtc\_app.h}, \hyperpage{45}
+  \item {rtc\_app\_get\_timestamp}
+    \subitem {rtc\_app.c}, \hyperpage{49}
+    \subitem {rtc\_app.h}, \hyperpage{46}
+  \item {rtc\_app\_init}
+    \subitem {rtc\_app.c}, \hyperpage{50}
+    \subitem {rtc\_app.h}, \hyperpage{46}
+  \item {rtc\_app\_set\_timestamp}
+    \subitem {rtc\_app.c}, \hyperpage{50}
+    \subitem {rtc\_app.h}, \hyperpage{46}
+  \item {rtc\_ds3231.c}
+    \subitem {bcd2dec}, \hyperpage{96}
+    \subitem {CHECK\_ARG}, \hyperpage{96}
+    \subitem {dec2bcd}, \hyperpage{97}
+    \subitem {ds3231\_get\_raw\_temp}, \hyperpage{97}
+    \subitem {ds3231\_get\_temp\_float}, \hyperpage{98}
+    \subitem {ds3231\_get\_temp\_integer}, \hyperpage{98}
+    \subitem {ds3231\_get\_time}, \hyperpage{99}
+    \subitem {ds3231\_init\_desc}, \hyperpage{99}
+    \subitem {ds3231\_set\_time}, \hyperpage{99}
+  \item {rtc\_ds3231.h}
+    \subitem {bcd2dec}, \hyperpage{89}
+    \subitem {dec2bcd}, \hyperpage{90}
+    \subitem {ds3231\_get\_raw\_temp}, \hyperpage{91}
+    \subitem {ds3231\_get\_temp\_float}, \hyperpage{91}
+    \subitem {ds3231\_get\_temp\_integer}, \hyperpage{92}
+    \subitem {ds3231\_get\_time}, \hyperpage{93}
+    \subitem {ds3231\_init\_desc}, \hyperpage{93}
+    \subitem {ds3231\_set\_time}, \hyperpage{94}
+  \item {rtc\_i2c\_dev.c}
+    \subitem {i2c\_dev\_read}, \hyperpage{101}
+    \subitem {i2c\_dev\_write}, \hyperpage{101}
+    \subitem {i2c\_master\_init}, \hyperpage{102}
+  \item {rtc\_i2c\_dev\_t}, \hyperpage{19}
+  \item {rtc\_show\_date\_time}
+    \subitem {rtc\_app.c}, \hyperpage{50}
+    \subitem {rtc\_app.h}, \hyperpage{47}
+
+  \indexspace
+
+  \item {scheduling.c}
+    \subitem {scheduling\_register\_callback}, \hyperpage{127}
+    \subitem {scheduling\_start}, \hyperpage{127}
+  \item {scheduling.h}
+    \subitem {scheduling\_register\_callback}, \hyperpage{119}
+    \subitem {scheduling\_start}, \hyperpage{119}
+  \item {scheduling\_register\_callback}
+    \subitem {scheduling.c}, \hyperpage{127}
+    \subitem {scheduling.h}, \hyperpage{119}
+  \item {scheduling\_start}
+    \subitem {scheduling.c}, \hyperpage{127}
+    \subitem {scheduling.h}, \hyperpage{119}
+  \item {sectorization.c}
+    \subitem {sectorization\_start}, \hyperpage{129}
+    \subitem {sectorization\_stop}, \hyperpage{129}
+  \item {sectorization.h}
+    \subitem {sectorization\_start}, \hyperpage{121}
+    \subitem {sectorization\_stop}, \hyperpage{121}
+  \item {sectorization\_start}
+    \subitem {sectorization.c}, \hyperpage{129}
+    \subitem {sectorization.h}, \hyperpage{121}
+  \item {sectorization\_stop}
+    \subitem {sectorization.c}, \hyperpage{129}
+    \subitem {sectorization.h}, \hyperpage{121}
+  \item {start\_angle}
+    \subitem {pivot\_sectors}, \hyperpage{19}
+  \item {system\_manager.c}
+    \subitem {system\_manager\_init}, \hyperpage{131}
+  \item {system\_manager.h}
+    \subitem {system\_manager\_init}, \hyperpage{122}
+  \item {system\_manager\_init}
+    \subitem {system\_manager.c}, \hyperpage{131}
+    \subitem {system\_manager.h}, \hyperpage{122}
+  \item {system\_monitoring.c}
+    \subitem {system\_monitoring\_register\_callback}, \hyperpage{132}
+    \subitem {system\_monitoring\_start}, \hyperpage{133}
+    \subitem {system\_monitoring\_states}, \hyperpage{132}
+    \subitem {system\_monitoring\_stop}, \hyperpage{133}
+    \subitem {SYSTEM\_PAUSE}, \hyperpage{132}
+    \subitem {SYSTEM\_RETURN}, \hyperpage{132}
+    \subitem {SYSTEM\_RUNNING}, \hyperpage{132}
+  \item {system\_monitoring.h}
+    \subitem {system\_monitoring\_register\_callback}, \hyperpage{124}
+    \subitem {system\_monitoring\_start}, \hyperpage{124}
+    \subitem {system\_monitoring\_stop}, \hyperpage{125}
+  \item {system\_monitoring\_register\_callback}
+    \subitem {system\_monitoring.c}, \hyperpage{132}
+    \subitem {system\_monitoring.h}, \hyperpage{124}
+  \item {system\_monitoring\_start}
+    \subitem {system\_monitoring.c}, \hyperpage{133}
+    \subitem {system\_monitoring.h}, \hyperpage{124}
+  \item {system\_monitoring\_states}
+    \subitem {system\_monitoring.c}, \hyperpage{132}
+  \item {system\_monitoring\_stop}
+    \subitem {system\_monitoring.c}, \hyperpage{133}
+    \subitem {system\_monitoring.h}, \hyperpage{125}
+  \item {SYSTEM\_PAUSE}
+    \subitem {system\_monitoring.c}, \hyperpage{132}
+  \item {SYSTEM\_RETURN}
+    \subitem {system\_monitoring.c}, \hyperpage{132}
+  \item {SYSTEM\_RUNNING}
+    \subitem {system\_monitoring.c}, \hyperpage{132}
+
+  \indexspace
+
+  \item {type}
+    \subitem {arg\_pair}, \hyperpage{17}
+
+  \indexspace
+
+  \item {value}
+    \subitem {arg\_pair}, \hyperpage{17}
+  \item {vPercTimerOffExpire}
+    \subitem {gpio\_actuator.c}, \hyperpage{55}
+  \item {vPercTimerOnExpire}
+    \subitem {gpio\_actuator.c}, \hyperpage{55}
+
+  \indexspace
+
+  \item {wifi\_app.c}
+    \subitem {wifi\_app\_init}, \hyperpage{113}
+    \subitem {wifi\_app\_set\_config}, \hyperpage{113}
+    \subitem {wifi\_app\_start}, \hyperpage{114}
+  \item {wifi\_app.h}
+    \subitem {wifi\_app\_init}, \hyperpage{111}
+    \subitem {wifi\_app\_set\_config}, \hyperpage{111}
+  \item {wifi\_app\_init}
+    \subitem {wifi\_app.c}, \hyperpage{113}
+    \subitem {wifi\_app.h}, \hyperpage{111}
+  \item {wifi\_app\_set\_config}
+    \subitem {wifi\_app.c}, \hyperpage{113}
+    \subitem {wifi\_app.h}, \hyperpage{111}
+  \item {wifi\_app\_start}
+    \subitem {wifi\_app.c}, \hyperpage{114}
+
+\end{theindex}

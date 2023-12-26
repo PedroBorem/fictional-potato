@@ -1,5 +1,5 @@
-\hypertarget{wifi__app_8c}{}\doxysection{components/wifi\+\_\+app/wifi\+\_\+app.c File Reference}
-\label{wifi__app_8c}\index{components/wifi\_app/wifi\_app.c@{components/wifi\_app/wifi\_app.c}}
+\hypertarget{wifi__app_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/wifi\+\_\+app/wifi\+\_\+app.c File Reference}
+\label{wifi__app_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/wifi\_app/wifi\_app.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/wifi\_app/wifi\_app.c}}
 
 
 Wi-\/\+Fi application implementation.  
@@ -14,11 +14,9 @@ Wi-\/\+Fi application implementation.
 {\ttfamily \#include \char`\"{}lwip/err.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}lwip/sys.\+h\char`\"{}}\newline
 {\ttfamily \#include $<$netdb.\+h$>$}\newline
-{\ttfamily \#include \char`\"{}http\+\_\+api.\+h\char`\"{}}\newline
-{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
-Include dependency graph for wifi\+\_\+app.\+c\+:
-\nopagebreak
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+Include dependency graph for wifi\+\_\+app.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -44,15 +42,17 @@ Include dependency graph for wifi\+\_\+app.\+c\+:
 \#define \mbox{\hyperlink{wifi__app_8c_aeec977cc354300cacdfaa2c953546544}{WIFI\+\_\+\+MAX\+\_\+\+STA\+\_\+\+CONN}}~5
 \begin{DoxyCompactList}\small\item\em Maximum number of stations that can be connected to the access point. \end{DoxyCompactList}\item 
 \mbox{\Hypertarget{wifi__app_8c_ac3971908d712fa1b843633f834b3e7b4}\label{wifi__app_8c_ac3971908d712fa1b843633f834b3e7b4}} 
-\#define \mbox{\hyperlink{wifi__app_8c_ac3971908d712fa1b843633f834b3e7b4}{WIFI\+\_\+\+APP\+\_\+\+SIZE\+\_\+\+QUEUE\+\_\+\+EVENT}}~5
-\begin{DoxyCompactList}\small\item\em Size of the Wi-\/\+Fi application queue for events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\#define {\bfseries WIFI\+\_\+\+APP\+\_\+\+SIZE\+\_\+\+QUEUE\+\_\+\+EVENT}~5
+\end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8c_a115c0b1f40cbd8453a9ef89d1a3c9c5b}{wifi\+\_\+app\+\_\+init}} (char $\ast$wifi\+\_\+ssid)
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8c_adb4bc109bad9fcc651d910f47ee34a6e}{wifi\+\_\+app\+\_\+start}} (void)
+\begin{DoxyCompactList}\small\item\em Start the Wi-\/\+Fi application. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8c_a26cf3f06215660f415ec949d1cf825fd}{wifi\+\_\+app\+\_\+init}} (void)
 \begin{DoxyCompactList}\small\item\em Initialize the Wi-\/\+Fi application. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8c_ae1f785d9aa7ad46ead54001b95a9e091}{wifi\+\_\+app\+\_\+register\+\_\+callback}} (\mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}} callback)
-\begin{DoxyCompactList}\small\item\em Register a callback function for Wi-\/\+Fi application events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+void \mbox{\hyperlink{wifi__app_8c_ac6f5123d77dac91418d105614cc565b4}{wifi\+\_\+app\+\_\+set\+\_\+config}} (char $\ast$wifi\+\_\+ssid, char $\ast$wifi\+\_\+pass)
+\begin{DoxyCompactList}\small\item\em Set the Wi-\/\+Fi configuration. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -64,43 +64,48 @@ January 20, 2023
 This file contains the implementation of the Wi-\/\+Fi application. It includes functions to start the Wi-\/\+Fi application, handle Wi-\/\+Fi events, and manage the Wi-\/\+Fi application task. 
 
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{wifi__app_8c_a115c0b1f40cbd8453a9ef89d1a3c9c5b}\label{wifi__app_8c_a115c0b1f40cbd8453a9ef89d1a3c9c5b}} 
+\mbox{\Hypertarget{wifi__app_8c_a26cf3f06215660f415ec949d1cf825fd}\label{wifi__app_8c_a26cf3f06215660f415ec949d1cf825fd}} 
 \index{wifi\_app.c@{wifi\_app.c}!wifi\_app\_init@{wifi\_app\_init}}
 \index{wifi\_app\_init@{wifi\_app\_init}!wifi\_app.c@{wifi\_app.c}}
 \doxysubsubsection{\texorpdfstring{wifi\_app\_init()}{wifi\_app\_init()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
 
 
 
 Initialize the Wi-\/\+Fi application. 
 
-This function initializes the Wi-\/\+Fi application with the provided SSID.
-
-
-\begin{DoxyParams}{Parameters}
-{\em wifi\+\_\+ssid} & The SSID of the Wi-\/\+Fi network. \\
-\hline
-\end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK if the initialization is successful, otherwise an error code. 
+esp\+\_\+err\+\_\+t indicating success or failure. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{wifi__app_8c_ae1f785d9aa7ad46ead54001b95a9e091}\label{wifi__app_8c_ae1f785d9aa7ad46ead54001b95a9e091}} 
-\index{wifi\_app.c@{wifi\_app.c}!wifi\_app\_register\_callback@{wifi\_app\_register\_callback}}
-\index{wifi\_app\_register\_callback@{wifi\_app\_register\_callback}!wifi\_app.c@{wifi\_app.c}}
-\doxysubsubsection{\texorpdfstring{wifi\_app\_register\_callback()}{wifi\_app\_register\_callback()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+register\+\_\+callback (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{project__config_8h_a7f788ef5575593ab0d8f21818b5a5dae}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{wifi__app_8c_ac6f5123d77dac91418d105614cc565b4}\label{wifi__app_8c_ac6f5123d77dac91418d105614cc565b4}} 
+\index{wifi\_app.c@{wifi\_app.c}!wifi\_app\_set\_config@{wifi\_app\_set\_config}}
+\index{wifi\_app\_set\_config@{wifi\_app\_set\_config}!wifi\_app.c@{wifi\_app.c}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_set\_config()}{wifi\_app\_set\_config()}}
+{\footnotesize\ttfamily void wifi\+\_\+app\+\_\+set\+\_\+config (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid,  }\item[{char $\ast$}]{wifi\+\_\+pass }\end{DoxyParamCaption})}
 
 
 
-Register a callback function for Wi-\/\+Fi application events. 
+Set the Wi-\/\+Fi configuration. 
 
-This function registers a callback function to be called when a Wi-\/\+Fi application event occurs.
+Set Wi-\/\+Fi configuration parameters.
 
 
 \begin{DoxyParams}{Parameters}
-{\em callback} & The callback function to be registered. \\
+{\em wifi\+\_\+ssid} & Wi-\/\+Fi SSID. \\
+\hline
+{\em wifi\+\_\+pass} & Wi-\/\+Fi password. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{wifi__app_8c_adb4bc109bad9fcc651d910f47ee34a6e}\label{wifi__app_8c_adb4bc109bad9fcc651d910f47ee34a6e}} 
+\index{wifi\_app.c@{wifi\_app.c}!wifi\_app\_start@{wifi\_app\_start}}
+\index{wifi\_app\_start@{wifi\_app\_start}!wifi\_app.c@{wifi\_app.c}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_start()}{wifi\_app\_start()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+start (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Start the Wi-\/\+Fi application. 
+
 \begin{DoxyReturn}{Returns}
-esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK if the registration is successful, otherwise an error code. 
+esp\+\_\+err\+\_\+t indicating success or failure. 
 \end{DoxyReturn}

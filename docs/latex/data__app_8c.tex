@@ -1,17 +1,17 @@
-\hypertarget{data__app_8c}{}\doxysection{main/data\+\_\+app.c File Reference}
-\label{data__app_8c}\index{main/data\_app.c@{main/data\_app.c}}
+\hypertarget{data__app_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/applications/data\+\_\+app.c File Reference}
+\label{data__app_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/data\_app.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/applications/data\_app.c}}
 
 
-memory control application  
+Memory control application.  
 
 
 {\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}nvs\+\_\+data.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}esp\+\_\+log.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}esp\+\_\+random.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
 {\ttfamily \#include $<$string.\+h$>$}\newline
-Include dependency graph for data\+\_\+app.\+c\+:
-\nopagebreak
+Include dependency graph for data\+\_\+app.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -21,146 +21,128 @@ Include dependency graph for data\+\_\+app.\+c\+:
 \doxysubsection*{Macros}
 \begin{DoxyCompactItemize}
 \item 
+\mbox{\Hypertarget{data__app_8c_a47a4c4d271550db10940cddfc59e779e}\label{data__app_8c_a47a4c4d271550db10940cddfc59e779e}} 
 \#define \mbox{\hyperlink{data__app_8c_a47a4c4d271550db10940cddfc59e779e}{DATA\+\_\+\+APP\+\_\+\+TAG}}~\char`\"{}data\+\_\+app\char`\"{}
-\item 
-\#define \mbox{\hyperlink{data__app_8c_a95f60a86c3cb49ea8714ff1675b9dae5}{DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+ACTION}}~\char`\"{}space\+\_\+action\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a1910945e5eddf43753af82040dfa0890}\label{data__app_8c_a1910945e5eddf43753af82040dfa0890}} 
-\#define {\bfseries DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+CONFIG}~\char`\"{}space\+\_\+config\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a99850d648cf93c8fc360d79c2e6b5032}\label{data__app_8c_a99850d648cf93c8fc360d79c2e6b5032}} 
-\#define {\bfseries DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+SCHEDULING\+\_\+\+DATE}~\char`\"{}space\+\_\+s\+\_\+date\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a65e70c1b9faf61d16dae3cc0a0157ecb}\label{data__app_8c_a65e70c1b9faf61d16dae3cc0a0157ecb}} 
-\#define {\bfseries DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+SCHEDULING\+\_\+\+ANGLE}~\char`\"{}space\+\_\+s\+\_\+angle\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a0ba0a88a821b25a1145c80246895eb98}\label{data__app_8c_a0ba0a88a821b25a1145c80246895eb98}} 
-\#define {\bfseries DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+HISTORY}~\char`\"{}space\+\_\+history\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a7ed3c07fcd649dd3a91b4df0d5aaeffd}\label{data__app_8c_a7ed3c07fcd649dd3a91b4df0d5aaeffd}} 
-\#define {\bfseries DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+TIMESTAMP}~\char`\"{}space\+\_\+timestamp\char`\"{}
-\item 
-\#define \mbox{\hyperlink{data__app_8c_a15ade7b2339ac872810ebf7621aa20da}{DATA\+\_\+\+KEY\+\_\+\+ACTIONS}}~\char`\"{}label\+\_\+actions\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_af7ad8f7f4868e76fb23b72613da462c3}\label{data__app_8c_af7ad8f7f4868e76fb23b72613da462c3}} 
-\#define {\bfseries DATA\+\_\+\+KEY\+\_\+\+CONFIG}~\char`\"{}label\+\_\+config\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a0b104b1aac043d71ec9d6d4cd039b9c8}\label{data__app_8c_a0b104b1aac043d71ec9d6d4cd039b9c8}} 
-\#define {\bfseries DATA\+\_\+\+KEY\+\_\+\+SCHEDULING\+\_\+\+DATE}~\char`\"{}label\+\_\+s\+\_\+date\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_a3c6d7eceb402289614da29a034707ca5}\label{data__app_8c_a3c6d7eceb402289614da29a034707ca5}} 
-\#define {\bfseries DATA\+\_\+\+KEY\+\_\+\+SCHEDULING\+\_\+\+ANGLE}~\char`\"{}label\+\_\+s\+\_\+angle\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_afef4263ce2f73c64a29d9e0b910ae5bf}\label{data__app_8c_afef4263ce2f73c64a29d9e0b910ae5bf}} 
-\#define {\bfseries DATA\+\_\+\+KEY\+\_\+\+HISTORY}~\char`\"{}label\+\_\+history\char`\"{}
-\item 
-\mbox{\Hypertarget{data__app_8c_add5cf80c84f9d37730074d11cd1e5952}\label{data__app_8c_add5cf80c84f9d37730074d11cd1e5952}} 
-\#define {\bfseries DATA\+\_\+\+KEY\+\_\+\+TIMESTAMP}~\char`\"{}label\+\_\+timestamp\char`\"{}
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Class log tag. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_a8db97ba37b20984a4de72484abdd773a}\label{data__app_8c_a8db97ba37b20984a4de72484abdd773a}} 
+\#define \mbox{\hyperlink{data__app_8c_a8db97ba37b20984a4de72484abdd773a}{DATA\+\_\+\+ACTION}}~\char`\"{}action\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for action data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_a49b0a2e4c5893c6ee57d211c9f518915}\label{data__app_8c_a49b0a2e4c5893c6ee57d211c9f518915}} 
+\#define \mbox{\hyperlink{data__app_8c_a49b0a2e4c5893c6ee57d211c9f518915}{DATA\+\_\+\+PIVOT\+\_\+\+CONFIG}}~\char`\"{}pivot\+\_\+config\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for pivot configuration data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ae579cbe73c74c60f92b8fbe888b6b193}\label{data__app_8c_ae579cbe73c74c60f92b8fbe888b6b193}} 
+\#define \mbox{\hyperlink{data__app_8c_ae579cbe73c74c60f92b8fbe888b6b193}{DATA\+\_\+\+NETWORK\+\_\+\+CONFIG}}~\char`\"{}net\+\_\+config\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for network configuration data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_afdf404a0a7d3f482191bc9aa18803ed1}\label{data__app_8c_afdf404a0a7d3f482191bc9aa18803ed1}} 
+\#define \mbox{\hyperlink{data__app_8c_afdf404a0a7d3f482191bc9aa18803ed1}{DATA\+\_\+\+ECO\+\_\+\+MODE\+\_\+\+CONFIG}}~\char`\"{}eco\+\_\+config\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for eco mode configuration data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ab1d18e9ddb5843306924a677de5c370b}\label{data__app_8c_ab1d18e9ddb5843306924a677de5c370b}} 
+\#define \mbox{\hyperlink{data__app_8c_ab1d18e9ddb5843306924a677de5c370b}{DATA\+\_\+\+SECTOR\+\_\+\+CONFIG}}~\char`\"{}sector\+\_\+config\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for sector configuration data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_a77d15eff21214711a7e24633f18a653a}\label{data__app_8c_a77d15eff21214711a7e24633f18a653a}} 
+\#define \mbox{\hyperlink{data__app_8c_a77d15eff21214711a7e24633f18a653a}{DATA\+\_\+\+RETURN\+\_\+\+CONFIG}}~\char`\"{}return\+\_\+config\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for return configuration data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ad602af82813c2194dd61cfce91923bde}\label{data__app_8c_ad602af82813c2194dd61cfce91923bde}} 
+\#define \mbox{\hyperlink{data__app_8c_ad602af82813c2194dd61cfce91923bde}{DATA\+\_\+\+SCHEDULING\+\_\+\+DATE}}~\char`\"{}s\+\_\+date\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for scheduling date data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_af3e435570166c56c444e879cb0afbd61}\label{data__app_8c_af3e435570166c56c444e879cb0afbd61}} 
+\#define \mbox{\hyperlink{data__app_8c_af3e435570166c56c444e879cb0afbd61}{DATA\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+DATE}}~\char`\"{}s\+\_\+off\+\_\+date\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for scheduling off date data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ad6ca7b7b75f7b059beaa14d4fc037c0e}\label{data__app_8c_ad6ca7b7b75f7b059beaa14d4fc037c0e}} 
+\#define \mbox{\hyperlink{data__app_8c_ad6ca7b7b75f7b059beaa14d4fc037c0e}{DATA\+\_\+\+SCHEDULING\+\_\+\+ANGLE}}~\char`\"{}s\+\_\+angle\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for scheduling angle data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_a6f23ea598d70ca4a4059525bfa106aab}\label{data__app_8c_a6f23ea598d70ca4a4059525bfa106aab}} 
+\#define \mbox{\hyperlink{data__app_8c_a6f23ea598d70ca4a4059525bfa106aab}{DATA\+\_\+\+SCHEDULING\+\_\+\+OFF\+\_\+\+ANGLE}}~\char`\"{}s\+\_\+off\+\_\+angle\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for scheduling off angle data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ac407f0fe3a6d4f831049cc81c5a797b8}\label{data__app_8c_ac407f0fe3a6d4f831049cc81c5a797b8}} 
+\#define \mbox{\hyperlink{data__app_8c_ac407f0fe3a6d4f831049cc81c5a797b8}{DATA\+\_\+\+HISTORY}}~\char`\"{}history\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for history data. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{data__app_8c_ac1c1358710ca3bfaf9283a961dada464}\label{data__app_8c_ac1c1358710ca3bfaf9283a961dada464}} 
+\#define \mbox{\hyperlink{data__app_8c_ac1c1358710ca3bfaf9283a961dada464}{DATA\+\_\+\+TIMESTAMP}}~\char`\"{}timestamp\char`\"{}
+\begin{DoxyCompactList}\small\item\em NVS access space for timestamp data. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \doxysubsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
 esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a3fcb1dddd898c21279d1d829a9de6497}{data\+\_\+app\+\_\+init}} (void)
-\begin{DoxyCompactList}\small\item\em start all memory modules \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a4d105ad37ace9c84cf4c0cc65bed9331}{data\+\_\+app\+\_\+save\+\_\+actions}} (const pivot\+\_\+actions $\ast$action, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new action \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_aba5f82963cb2888513aa34a5e0cb86be}{data\+\_\+app\+\_\+load\+\_\+actions}} (pivot\+\_\+actions $\ast$out\+\_\+action, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to load a current action. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a693771f78e63a031d329d9b72d4bd7b7}{data\+\_\+app\+\_\+save\+\_\+config}} (const pivot\+\_\+config $\ast$config, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to save a new configuration \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a4eb978a8a1a0414f3a5df5c8b545673e}{data\+\_\+app\+\_\+load\+\_\+config}} (pivot\+\_\+config $\ast$out\+\_\+config, size\+\_\+t size)
-\begin{DoxyCompactList}\small\item\em sends the queue a request to load a configuration. \end{DoxyCompactList}\item 
-\mbox{\Hypertarget{data__app_8c_afaa0d189caf561ea6d32929e14ffd042}\label{data__app_8c_afaa0d189caf561ea6d32929e14ffd042}} 
-void {\bfseries data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key} (char $\ast$scheduling\+\_\+id)
-\item 
-\mbox{\Hypertarget{data__app_8c_a9a963c8f543a1f19f4fcc5ce74ee1fd8}\label{data__app_8c_a9a963c8f543a1f19f4fcc5ce74ee1fd8}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, const void $\ast$value, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8c_aadcdb286fed03d5dd2cde93377e9048f}\label{data__app_8c_aadcdb286fed03d5dd2cde93377e9048f}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, void $\ast$out\+\_\+value, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8c_a793fa3365a8785c27f8d1a2552955852}\label{data__app_8c_a793fa3365a8785c27f8d1a2552955852}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+delete\+\_\+scheduling} (data\+\_\+scheduling\+\_\+type scheduling\+\_\+type, char $\ast$scheduling\+\_\+id)
-\item 
-\mbox{\Hypertarget{data__app_8c_ae580b38a97a6b098354d0b1ffdabf4be}\label{data__app_8c_ae580b38a97a6b098354d0b1ffdabf4be}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+new\+\_\+history} (pivot\+\_\+history new\+\_\+history)
-\item 
-\mbox{\Hypertarget{data__app_8c_ab3bc0a00591a5ba38d01ad0f608ed5c1}\label{data__app_8c_ab3bc0a00591a5ba38d01ad0f608ed5c1}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+old\+\_\+history} (time\+\_\+t end\+\_\+date, uint16\+\_\+t end\+\_\+angle)
-\item 
-\mbox{\Hypertarget{data__app_8c_aadf13d47940a1449d30fe2bebfb9d9b7}\label{data__app_8c_aadf13d47940a1449d30fe2bebfb9d9b7}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+history} (pivot\+\_\+history $\ast$out\+\_\+history, size\+\_\+t size)
-\item 
-\mbox{\Hypertarget{data__app_8c_aa047be918f994647ecc5dc84048c88ce}\label{data__app_8c_aa047be918f994647ecc5dc84048c88ce}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+save\+\_\+timestamp} (time\+\_\+t $\ast$timestamp)
-\item 
-\mbox{\Hypertarget{data__app_8c_a9047d339c7416af15ac4bc89246d3daf}\label{data__app_8c_a9047d339c7416af15ac4bc89246d3daf}} 
-esp\+\_\+err\+\_\+t {\bfseries data\+\_\+app\+\_\+load\+\_\+timestamp} (time\+\_\+t $\ast$out\+\_\+timestamp)
-\item 
-size\+\_\+t \mbox{\hyperlink{data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc}{data\+\_\+app\+\_\+get\+\_\+data\+\_\+size}} (const char $\ast$label\+\_\+name, const char $\ast$key)
-\begin{DoxyCompactList}\small\item\em Gets the data size for the informed key. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Initializes the data application. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a88cc47a5ab7baf22c4d32a8a71ff1747}{data\+\_\+app\+\_\+save}} (\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}} data\+\_\+type, const void $\ast$data, size\+\_\+t data\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Saves data to the NVS based on the specified data type. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_a3d87368774b5fc85240b7b826e48465b}{data\+\_\+app\+\_\+load}} (\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}} data\+\_\+type, void $\ast$data)
+\begin{DoxyCompactList}\small\item\em Loads data from the NVS based on the specified data type. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{data__app_8c_adc004ba6267e3b08268a2cdb0f990a48}{data\+\_\+app\+\_\+delete\+\_\+scheduling}} (char $\ast$scheduling\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Deletes scheduling data based on the provided scheduling ID. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{data__app_8c_afaa0d189caf561ea6d32929e14ffd042}{data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key}} (char $\ast$scheduling\+\_\+id)
+\begin{DoxyCompactList}\small\item\em Generates a scheduling key. \end{DoxyCompactList}\item 
+size\+\_\+t \mbox{\hyperlink{data__app_8c_aa99a3c97fbf8362267e3342110f16a11}{data\+\_\+app\+\_\+get\+\_\+data\+\_\+size}} (const char $\ast$label\+\_\+name)
+\begin{DoxyCompactList}\small\item\em Gets the size of the data stored in the NVS based on the label name. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
-memory control application 
+Memory control application. 
 
 \begin{DoxyDate}{Date}
 Set 18, 2022 
 \end{DoxyDate}
 
 
-\doxysubsection{Macro Definition Documentation}
-\mbox{\Hypertarget{data__app_8c_a95f60a86c3cb49ea8714ff1675b9dae5}\label{data__app_8c_a95f60a86c3cb49ea8714ff1675b9dae5}} 
-\index{data\_app.c@{data\_app.c}!DATA\_APP\_LABEL\_ACTION@{DATA\_APP\_LABEL\_ACTION}}
-\index{DATA\_APP\_LABEL\_ACTION@{DATA\_APP\_LABEL\_ACTION}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{DATA\_APP\_LABEL\_ACTION}{DATA\_APP\_LABEL\_ACTION}}
-{\footnotesize\ttfamily \#define DATA\+\_\+\+APP\+\_\+\+LABEL\+\_\+\+ACTION~\char`\"{}space\+\_\+action\char`\"{}}
-
-NVS access space \mbox{\Hypertarget{data__app_8c_a47a4c4d271550db10940cddfc59e779e}\label{data__app_8c_a47a4c4d271550db10940cddfc59e779e}} 
-\index{data\_app.c@{data\_app.c}!DATA\_APP\_TAG@{DATA\_APP\_TAG}}
-\index{DATA\_APP\_TAG@{DATA\_APP\_TAG}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{DATA\_APP\_TAG}{DATA\_APP\_TAG}}
-{\footnotesize\ttfamily \#define DATA\+\_\+\+APP\+\_\+\+TAG~\char`\"{}data\+\_\+app\char`\"{}}
-
-class log tag \mbox{\Hypertarget{data__app_8c_a15ade7b2339ac872810ebf7621aa20da}\label{data__app_8c_a15ade7b2339ac872810ebf7621aa20da}} 
-\index{data\_app.c@{data\_app.c}!DATA\_KEY\_ACTIONS@{DATA\_KEY\_ACTIONS}}
-\index{DATA\_KEY\_ACTIONS@{DATA\_KEY\_ACTIONS}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{DATA\_KEY\_ACTIONS}{DATA\_KEY\_ACTIONS}}
-{\footnotesize\ttfamily \#define DATA\+\_\+\+KEY\+\_\+\+ACTIONS~\char`\"{}label\+\_\+actions\char`\"{}}
-
-NVS access label 
-
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc}\label{data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc}} 
-\index{data\_app.c@{data\_app.c}!data\_app\_get\_data\_size@{data\_app\_get\_data\_size}}
-\index{data\_app\_get\_data\_size@{data\_app\_get\_data\_size}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{data\_app\_get\_data\_size()}{data\_app\_get\_data\_size()}}
-{\footnotesize\ttfamily size\+\_\+t data\+\_\+app\+\_\+get\+\_\+data\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{data__app_8c_adc004ba6267e3b08268a2cdb0f990a48}\label{data__app_8c_adc004ba6267e3b08268a2cdb0f990a48}} 
+\index{data\_app.c@{data\_app.c}!data\_app\_delete\_scheduling@{data\_app\_delete\_scheduling}}
+\index{data\_app\_delete\_scheduling@{data\_app\_delete\_scheduling}!data\_app.c@{data\_app.c}}
+\doxysubsubsection{\texorpdfstring{data\_app\_delete\_scheduling()}{data\_app\_delete\_scheduling()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+delete\+\_\+scheduling (\begin{DoxyParamCaption}\item[{char $\ast$}]{scheduling\+\_\+id }\end{DoxyParamCaption})}
 
 
 
-Gets the data size for the informed key. 
+Deletes scheduling data based on the provided scheduling ID. 
+
+Deletes scheduling data based on the scheduling ID.
 
 
 \begin{DoxyParams}{Parameters}
-{\em key} & -\/ access key defined in \mbox{\hyperlink{project__config_8h}{project\+\_\+config.\+h}} \\
+{\em scheduling\+\_\+id} & Scheduling ID to identify the data to be deleted. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item 0\+: in case of errors
-\item Data size. 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}
-Here is the call graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=350pt]{data__app_8c_aac152d624f3ab146d0188f8db6c2c6dc_cgraph}
-\end{center}
-\end{figure}
+\mbox{\Hypertarget{data__app_8c_afaa0d189caf561ea6d32929e14ffd042}\label{data__app_8c_afaa0d189caf561ea6d32929e14ffd042}} 
+\index{data\_app.c@{data\_app.c}!data\_app\_gen\_scheduling\_key@{data\_app\_gen\_scheduling\_key}}
+\index{data\_app\_gen\_scheduling\_key@{data\_app\_gen\_scheduling\_key}!data\_app.c@{data\_app.c}}
+\doxysubsubsection{\texorpdfstring{data\_app\_gen\_scheduling\_key()}{data\_app\_gen\_scheduling\_key()}}
+{\footnotesize\ttfamily void data\+\_\+app\+\_\+gen\+\_\+scheduling\+\_\+key (\begin{DoxyParamCaption}\item[{char $\ast$}]{scheduling\+\_\+id }\end{DoxyParamCaption})}
+
+
+
+Generates a scheduling key. 
+
+Generates a scheduling key based on the current timestamp.
+
+
+\begin{DoxyParams}{Parameters}
+{\em scheduling\+\_\+id} & Pointer to store the generated scheduling key. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{data__app_8c_aa99a3c97fbf8362267e3342110f16a11}\label{data__app_8c_aa99a3c97fbf8362267e3342110f16a11}} 
+\index{data\_app.c@{data\_app.c}!data\_app\_get\_data\_size@{data\_app\_get\_data\_size}}
+\index{data\_app\_get\_data\_size@{data\_app\_get\_data\_size}!data\_app.c@{data\_app.c}}
+\doxysubsubsection{\texorpdfstring{data\_app\_get\_data\_size()}{data\_app\_get\_data\_size()}}
+{\footnotesize\ttfamily size\+\_\+t data\+\_\+app\+\_\+get\+\_\+data\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name }\end{DoxyParamCaption})}
+
+
+
+Gets the size of the data stored in the NVS based on the label name. 
+
+Gets the size of data associated with a given label name.
+
+
+\begin{DoxyParams}{Parameters}
+{\em label\+\_\+name} & Label name to identify the data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+size\+\_\+t Size of the data. 
+\end{DoxyReturn}
 \mbox{\Hypertarget{data__app_8c_a3fcb1dddd898c21279d1d829a9de6497}\label{data__app_8c_a3fcb1dddd898c21279d1d829a9de6497}} 
 \index{data\_app.c@{data\_app.c}!data\_app\_init@{data\_app\_init}}
 \index{data\_app\_init@{data\_app\_init}!data\_app.c@{data\_app.c}}
@@ -169,108 +151,54 @@ Here is the call graph for this function\+:
 
 
 
-start all memory modules 
+Initializes the data application. 
 
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to initialize 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8c_aba5f82963cb2888513aa34a5e0cb86be}\label{data__app_8c_aba5f82963cb2888513aa34a5e0cb86be}} 
-\index{data\_app.c@{data\_app.c}!data\_app\_load\_actions@{data\_app\_load\_actions}}
-\index{data\_app\_load\_actions@{data\_app\_load\_actions}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{data\_app\_load\_actions()}{data\_app\_load\_actions()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{out\+\_\+action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{data__app_8c_a3d87368774b5fc85240b7b826e48465b}\label{data__app_8c_a3d87368774b5fc85240b7b826e48465b}} 
+\index{data\_app.c@{data\_app.c}!data\_app\_load@{data\_app\_load}}
+\index{data\_app\_load@{data\_app\_load}!data\_app.c@{data\_app.c}}
+\doxysubsubsection{\texorpdfstring{data\_app\_load()}{data\_app\_load()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}}}]{data\+\_\+type,  }\item[{void $\ast$}]{data }\end{DoxyParamCaption})}
 
 
 
-sends the queue a request to load a current action. 
+Loads data from the NVS based on the specified data type. 
+
+Loads data of a specific type.
 
 
 \begin{DoxyParams}{Parameters}
-{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+{\em data\+\_\+type} & Data type identifier. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+{\em data} & Pointer to store the loaded data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8c_a4eb978a8a1a0414f3a5df5c8b545673e}\label{data__app_8c_a4eb978a8a1a0414f3a5df5c8b545673e}} 
-\index{data\_app.c@{data\_app.c}!data\_app\_load\_config@{data\_app\_load\_config}}
-\index{data\_app\_load\_config@{data\_app\_load\_config}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{data\_app\_load\_config()}{data\_app\_load\_config()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+load\+\_\+config (\begin{DoxyParamCaption}\item[{pivot\+\_\+config $\ast$}]{out\+\_\+config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
+\mbox{\Hypertarget{data__app_8c_a88cc47a5ab7baf22c4d32a8a71ff1747}\label{data__app_8c_a88cc47a5ab7baf22c4d32a8a71ff1747}} 
+\index{data\_app.c@{data\_app.c}!data\_app\_save@{data\_app\_save}}
+\index{data\_app\_save@{data\_app\_save}!data\_app.c@{data\_app.c}}
+\doxysubsubsection{\texorpdfstring{data\_app\_save()}{data\_app\_save()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{data__app_8h_a49b5dfea31023fcd165ce36384234dc5}{data\+\_\+type\+\_\+t}}}]{data\+\_\+type,  }\item[{const void $\ast$}]{data,  }\item[{size\+\_\+t}]{data\+\_\+size }\end{DoxyParamCaption})}
 
 
 
-sends the queue a request to load a configuration. 
+Saves data to the NVS based on the specified data type. 
+
+Saves data of a specific type.
 
 
 \begin{DoxyParams}{Parameters}
-{\em out\+\_\+value} & -\/ \mbox{[}in\mbox{]}\+: return pointer with the value read from the label. \\
+{\em data\+\_\+type} & Data type identifier. \\
 \hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size allocated for pointer(out\+\_\+value). \\
+{\em data} & Pointer to the data to be saved. \\
 \hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
-\end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8c_a4d105ad37ace9c84cf4c0cc65bed9331}\label{data__app_8c_a4d105ad37ace9c84cf4c0cc65bed9331}} 
-\index{data\_app.c@{data\_app.c}!data\_app\_save\_actions@{data\_app\_save\_actions}}
-\index{data\_app\_save\_actions@{data\_app\_save\_actions}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{data\_app\_save\_actions()}{data\_app\_save\_actions()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions $\ast$}]{action,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
-
-
-
-sends the queue a request to save a new action 
-
-
-\begin{DoxyParams}{Parameters}
-{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
-\hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
+{\em data\+\_\+size} & Size of the data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
-\end{DoxyReturn}
-\mbox{\Hypertarget{data__app_8c_a693771f78e63a031d329d9b72d4bd7b7}\label{data__app_8c_a693771f78e63a031d329d9b72d4bd7b7}} 
-\index{data\_app.c@{data\_app.c}!data\_app\_save\_config@{data\_app\_save\_config}}
-\index{data\_app\_save\_config@{data\_app\_save\_config}!data\_app.c@{data\_app.c}}
-\doxysubsubsection{\texorpdfstring{data\_app\_save\_config()}{data\_app\_save\_config()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t data\+\_\+app\+\_\+save\+\_\+config (\begin{DoxyParamCaption}\item[{const pivot\+\_\+config $\ast$}]{config,  }\item[{size\+\_\+t}]{size }\end{DoxyParamCaption})}
-
-
-
-sends the queue a request to save a new configuration 
-
-
-\begin{DoxyParams}{Parameters}
-{\em value} & -\/ \mbox{[}in\mbox{]}\+: content you want to save in memory. \\
-\hline
-{\em size} & -\/ \mbox{[}in\mbox{]}\+: size of content \\
-\hline
-\end{DoxyParams}
-\begin{DoxyReturn}{Returns}
-
-\begin{DoxyItemize}
-\item ESP\+\_\+\+OK\+: success
-\item ESP\+\_\+\+FAIL\+: fail to save 
-\end{DoxyItemize}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
 \end{DoxyReturn}

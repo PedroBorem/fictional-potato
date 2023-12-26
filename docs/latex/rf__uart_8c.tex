@@ -1,0 +1,93 @@
+\hypertarget{rf__uart_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/rf\+\_\+module/rf\+\_\+uart.c File Reference}
+\label{rf__uart_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rf\_module/rf\_uart.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/rf\_module/rf\_uart.c}}
+
+
+RF UART module implementation.  
+
+
+{\ttfamily \#include \char`\"{}rf\+\_\+uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}driver/uart.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}driver/gpio.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$strings.\+h$>$}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+Include dependency graph for rf\+\_\+uart.\+c\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{rf__uart_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{rf__uart_8c_ad4cffb920a4191ef4e293af48cd2de5e}\label{rf__uart_8c_ad4cffb920a4191ef4e293af48cd2de5e}} 
+\#define \mbox{\hyperlink{rf__uart_8c_ad4cffb920a4191ef4e293af48cd2de5e}{RF\+\_\+\+UART\+\_\+\+TAG}}~\char`\"{}rf\+\_\+uart\char`\"{}
+\begin{DoxyCompactList}\small\item\em The log tag for RF UART module. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rf__uart_8c_a683e21bb5e096e96731a8d7c558b45c5}\label{rf__uart_8c_a683e21bb5e096e96731a8d7c558b45c5}} 
+\#define \mbox{\hyperlink{rf__uart_8c_a683e21bb5e096e96731a8d7c558b45c5}{RF\+\_\+\+UART\+\_\+\+NUM}}~UART\+\_\+\+NUM\+\_\+2
+\begin{DoxyCompactList}\small\item\em The UART number to use. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rf__uart_8c_a0dce22393149e71e56f6e43a79245988}\label{rf__uart_8c_a0dce22393149e71e56f6e43a79245988}} 
+\#define \mbox{\hyperlink{rf__uart_8c_a0dce22393149e71e56f6e43a79245988}{RF\+\_\+\+UART\+\_\+\+TX\+\_\+\+NUM}}~GPIO\+\_\+\+NUM\+\_\+2
+\begin{DoxyCompactList}\small\item\em The GPIO number for UART TX. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rf__uart_8c_ac9f35410864f636bcadf1b76b5166743}\label{rf__uart_8c_ac9f35410864f636bcadf1b76b5166743}} 
+\#define \mbox{\hyperlink{rf__uart_8c_ac9f35410864f636bcadf1b76b5166743}{RF\+\_\+\+UART\+\_\+\+RX\+\_\+\+NUM}}~GPIO\+\_\+\+NUM\+\_\+1
+\begin{DoxyCompactList}\small\item\em The GPIO number for UART RX. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rf__uart_8c_af2ba1e80c4bd253074481d6345db5dec}\label{rf__uart_8c_af2ba1e80c4bd253074481d6345db5dec}} 
+\#define \mbox{\hyperlink{rf__uart_8c_af2ba1e80c4bd253074481d6345db5dec}{RF\+\_\+\+UART\+\_\+\+BUF\+\_\+\+SIZE}}~(1024)
+\begin{DoxyCompactList}\small\item\em The buffer size for UART communication. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rf__uart_8c_acf4b7e955dfb15271c2c02ce693c0349}{rf\+\_\+uart\+\_\+init}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Initialize the RF UART module. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rf__uart_8c_aa4f12dc5b8f8f94193e38fc8abb50510}{rf\+\_\+uart\+\_\+send\+\_\+event}} (const char $\ast$event, size\+\_\+t event\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Send an event over RF UART. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+RF UART module implementation. 
+
+This file contains the implementation of the RF UART module for communication over UART. It uses Free\+RTOS and ESP-\/\+IDF UART driver. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{rf__uart_8c_acf4b7e955dfb15271c2c02ce693c0349}\label{rf__uart_8c_acf4b7e955dfb15271c2c02ce693c0349}} 
+\index{rf\_uart.c@{rf\_uart.c}!rf\_uart\_init@{rf\_uart\_init}}
+\index{rf\_uart\_init@{rf\_uart\_init}!rf\_uart.c@{rf\_uart.c}}
+\doxysubsubsection{\texorpdfstring{rf\_uart\_init()}{rf\_uart\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t rf\+\_\+uart\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Initialize the RF UART module. 
+
+This function configures the UART parameters, installs the UART driver, and creates a task to handle UART events. 
+\begin{DoxyParams}{Parameters}
+{\em callback} & Callback function for RF UART events. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+FAIL on failure. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{rf__uart_8c_aa4f12dc5b8f8f94193e38fc8abb50510}\label{rf__uart_8c_aa4f12dc5b8f8f94193e38fc8abb50510}} 
+\index{rf\_uart.c@{rf\_uart.c}!rf\_uart\_send\_event@{rf\_uart\_send\_event}}
+\index{rf\_uart\_send\_event@{rf\_uart\_send\_event}!rf\_uart.c@{rf\_uart.c}}
+\doxysubsubsection{\texorpdfstring{rf\_uart\_send\_event()}{rf\_uart\_send\_event()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t rf\+\_\+uart\+\_\+send\+\_\+event (\begin{DoxyParamCaption}\item[{const char $\ast$}]{event,  }\item[{size\+\_\+t}]{event\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Send an event over RF UART. 
+
+Send events through the UART.
+
+
+\begin{DoxyParams}{Parameters}
+{\em event} & Pointer to the event data. \\
+\hline
+{\em event\+\_\+size} & Size of the event data. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, ESP\+\_\+\+FAIL on failure. 
+\end{DoxyReturn}
