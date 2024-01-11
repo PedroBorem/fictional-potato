@@ -263,11 +263,6 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
         } else if (strcmp(arg_pairs[i].type, "string") == 0) {
             const char* str_arg = (const char*)arg_pairs[i].value;
             strcat(str_out, str_arg);
-        } else if (strcmp(arg_pairs[i].type, "time_t") == 0) {
-            time_t time_arg = * (time_t *) arg_pairs[i].value;
-            char arg_buffer[IDP_MAX_PKG_SIZE];
-            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%ld", (long)time_arg);
-            strcat(str_out, arg_buffer);
         }
     }
 
@@ -317,9 +312,7 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
             ((char *)arg_pairs[index].value)[str_size] = '\0';
         } else if (strcmp(type, "bool") == 0) {
             * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
-        } else if (strcmp(type, "time_t") == 0) {
-	    * (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
-	}
+        }
 
         token = strtok(NULL, "-$");
         index++;
