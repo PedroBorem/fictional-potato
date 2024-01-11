@@ -54,6 +54,11 @@
  */
 uint16_t global_angle = 655;
 
+/** @var global_pressure
+ *  @brief Global variable for the current pressure.
+ */
+uint16_t global_pressure = 0;
+
 /** @var system_id
  *  @brief Local variable for the system ID.
  */
@@ -393,6 +398,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 			{ "uint16_t", &actions.percentimeter },
 			{ "uint16_t", &system_initial_angle },
 			{ "uint16_t", &global_angle },
+			{ "uint16_t", &global_pressure },
 			{ "string", str_date_time },
 			{ NULL, NULL }
 		};
@@ -843,21 +849,22 @@ static void system_manager_idp_07(const char* buffer, comm_type comm_mode)
 	if(comm_mode == COMM_MQTT)
 	{
 		uint8_t idp = 0;
-		uint32_t timestamp;
+		time_t timestamp;
 		char utc[10] = {};
-		// todo transformar em time_t (adicionar time_t no idp_parser_get_packet_data)
+
 		// get angle
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
 			{ "uint16_t", &global_angle },
-			{ "uint32_t", &timestamp },
+			{ "uint16_t", &global_pressure },
+			{ "time_t", &timestamp },
 			{ "string", utc },
 			{ NULL, NULL }
 		};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		rtc_app_set_timestamp((time_t)timestamp);
+		rtc_app_set_timestamp(timestamp);
 
 		if(system_initial_angle == 655)
 		{
