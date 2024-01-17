@@ -89,7 +89,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	}
 	else
 	{
-		ESP_LOGI(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
+		ESP_LOGE(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
 	}
 
 	return ret;
