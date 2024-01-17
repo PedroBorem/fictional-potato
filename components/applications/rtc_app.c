@@ -10,6 +10,7 @@
 #include "esp_log.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 /**
  * @def RTC_APP_TAG
@@ -34,6 +35,8 @@
  * @brief The RTC I2C device structure.
  */
 static rtc_i2c_dev_t dev = {};
+
+static time_t rtc_app_timestamp_ctrl = 0;
 
 /* Public methods ----------------------------------- */
 
@@ -79,9 +82,14 @@ bool rtc_app_set_timestamp(time_t timestamp)
 		}
 		else
 		{
+			rtc_app_timestamp_ctrl = timestamp;
 			ret = true;
 			ESP_LOGI(RTC_APP_TAG, "Set initial date time done (%lld)", timestamp);
 		}
+	}
+	else
+	{
+		ESP_LOGI(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
 	}
 
 	return ret;
@@ -110,6 +118,12 @@ time_t rtc_app_get_timestamp(bool rtc_show_dt)
 		rtcinfo.tm_mon = rtcinfo.tm_mon - 1;
 
 		timestamp_now = mktime(&rtcinfo);
+
+		if(llabs(timestamp_now - rtc_app_timestamp_ctrl) >= 2592000LL) // 1 month
+		{
+			rtc_app_set_timestamp(rtc_app_timestamp_ctrl);
+			timestamp_now = rtc_app_timestamp_ctrl;
+		}
 
 		if(rtc_show_dt == true)
 		{
