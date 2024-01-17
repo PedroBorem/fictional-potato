@@ -119,7 +119,8 @@ time_t rtc_app_get_timestamp(bool rtc_show_dt)
 
 		timestamp_now = mktime(&rtcinfo);
 
-		if(llabs(timestamp_now - rtc_app_timestamp_ctrl) >= 2592000LL) // 1 month
+		if(llabs(timestamp_now - rtc_app_timestamp_ctrl) >= 2592000LL
+				&& rtc_app_timestamp_ctrl != 0) // 1 month
 		{
 			rtc_app_set_timestamp(rtc_app_timestamp_ctrl);
 			timestamp_now = rtc_app_timestamp_ctrl;
