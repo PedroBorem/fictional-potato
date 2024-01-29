@@ -361,6 +361,9 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		default:
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
+
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
 			break;
 		}
@@ -500,6 +503,7 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 				}
 
 				ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
+				LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed_to_save_new_state");
 			}
 		}
 		else
@@ -510,6 +514,8 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
 			}
 
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid state (%s)", buffer);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid state");
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 		}
 
 		// start timer percent and pressure
@@ -1105,6 +1111,8 @@ static void system_manager_idp_14(const char* buffer, comm_type comm_mode)
 					}
 
 					ESP_LOGE(SYSTEM_MANAGER_TAG, "Scheduling invalid state (%s)", buffer);
+					LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid state");
+					LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 				}
 
 				break;
@@ -1252,6 +1260,8 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode)
 					}
 
 					ESP_LOGE(SYSTEM_MANAGER_TAG, "Scheduling invalid state (%s)", buffer);
+					LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid state");
+					LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 				}
 
 				break;

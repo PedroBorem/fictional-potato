@@ -500,6 +500,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		default:
 		{
 			ESP_LOGE(SCHEDULING_TAG, "invalid scheduling idp %s", __func__);
+			LOG_DBG_ERROR(SCHEDULING_TAG, "invalid_scheduling_idp");
 			break;
 		}
 	}

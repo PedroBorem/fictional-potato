@@ -192,6 +192,7 @@ esp_err_t wifi_app_start(void)
 			{
 				ret = ESP_FAIL;
 				ESP_LOGE(WIFI_TAG, "%s, WiFi Failed to start", __func__);
+				LOG_DBG_ERROR(WIFI_TAG, "WiFi_Failed_to_start");
 			}
 		}
 		else
@@ -202,6 +203,7 @@ esp_err_t wifi_app_start(void)
 	else
 	{
 		ESP_LOGE(WIFI_TAG, "%s, error on init netif", __func__);
+		LOG_DBG_ERROR(WIFI_TAG, "WiFi_netif_error");
 	}
 
 	return ret;

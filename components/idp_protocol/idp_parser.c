@@ -318,7 +318,7 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         } else if (strcmp(type, "bool") == 0) {
             * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
         } else if (strcmp(type, "time_t") == 0) {
-        		* (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
+        	* (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
         }
 
         token = strtok(NULL, "-$");

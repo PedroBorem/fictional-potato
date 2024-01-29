@@ -218,6 +218,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 	else
 	{
 		ESP_LOGE(GPIO_ACT_TAG,"Invalid contactor type configuration");
+		LOG_DBG_ERROR(GPIO_ACT_TAG, "Invalid_contactor_type");
 		return err;
 	}
 
@@ -232,6 +233,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 	else
 	{
 		ESP_LOGE(GPIO_ACT_TAG,"Invalid pressure type configuration");
+		LOG_DBG_ERROR(GPIO_ACT_TAG, "Invalid_pressure_type");
 		return err;
 	}
 

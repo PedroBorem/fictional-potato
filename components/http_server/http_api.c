@@ -133,6 +133,7 @@ httpd_handle_t http_server_start(void)
 		if (httpd_start(&http_handle, &config) != ESP_OK)
 		{
 			ESP_LOGE(HTTP_API_TAG, "Failed to start file server!");
+			LOG_DBG_ERROR(HTTP_API_TAG, "Failed_to_start_http");
 		}
 		else
 		{

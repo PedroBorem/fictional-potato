@@ -8,6 +8,7 @@
 #include "rtc_app.h"
 #include "rtc_ds3231.h"
 #include "esp_log.h"
+#include "log.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -79,6 +80,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 		if (ds3231_set_time(&dev, &time) != ESP_OK)
 		{
 			ESP_LOGE(RTC_APP_TAG, "Could not set time.");
+			LOG_DBG_ERROR(RTC_APP_TAG, "set_hw_rtc_error");
 		}
 		else
 		{
@@ -90,6 +92,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	else
 	{
 		ESP_LOGE(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
+		LOG_DBG_ERROR(RTC_APP_TAG, "set_invalid_timestamp");
 	}
 
 	return ret;
@@ -151,6 +154,7 @@ void rtc_app_get_date_time(struct tm* rtcinfo)
 	else if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
 	{
 		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+		LOG_DBG_ERROR(RTC_APP_TAG, "get_hw_rtc_error");
 	}
 }
 

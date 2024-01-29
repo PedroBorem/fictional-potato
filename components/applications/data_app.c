@@ -9,6 +9,7 @@
 #include "nvs_data.h"
 
 /* Project include */
+#include "log.h"
 #include "esp_log.h"
 #include "esp_random.h"
 #include "project_config.h"
@@ -202,6 +203,7 @@ esp_err_t data_app_init(void)
 	else
 	{
 		ESP_LOGE( DATA_APP_TAG, "%s, failed to start data application", __func__);
+		LOG_DBG_ERROR(DATA_APP_TAG, "memory_error");
 	}
 
 	return err;
