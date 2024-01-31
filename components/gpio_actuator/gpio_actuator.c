@@ -516,7 +516,7 @@ void gpio_actuator_pressure_off(void)
 void vPercTimerOnExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	xTimerStart(perc_timer_handleOff, 1000);
+	xTimerStart(perc_timer_handleOff, pdMS_TO_TICKS(5000));
 }
 
 /**
@@ -526,7 +526,7 @@ void vPercTimerOnExpire(TimerHandle_t pxTimer)
 void vPercTimerOffExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-	xTimerStart(perc_timer_handleOn, 1000);
+	xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(5000));
 }
 
 /**
