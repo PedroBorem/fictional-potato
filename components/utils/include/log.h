@@ -13,7 +13,7 @@
 #include <inttypes.h>
 #include "esp_log.h"
 
-#define DBG_MQTT_ERROR
+//#define DBG_MQTT_ERROR
 
 /**
  * @def LOG_COLOR_WHITE
@@ -91,7 +91,9 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size) __attribute
     } while(0)
 
 #else
-#define LOG_DBG_ERROR(tag,...) ESP_LOGE(LOG_COLOR(LOG_COLOR_RED) tag, __VA_ARGS__)
+#define LOG_DBG_ERROR(tag, msg) \
+    do { \
+    } while(0)
 #endif /* DBG_MQTT_ERROR */
 
 #endif /* COMPONENTS_UTILS_INCLUDE_LOG_H_ */
