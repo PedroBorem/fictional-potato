@@ -75,7 +75,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer);
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start(void);
+esp_err_t gpio_actuator_start(bool pulse);
 
 /**
  * @brief Water pressure application task.
@@ -345,7 +345,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 		{
 			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
 			gpio_actuator_pressure_off();
-			gpio_actuator_start();
+			gpio_actuator_start(true);
 		}
 		else if(actions.watering_state == PIVOT_WET)
 		{
@@ -535,14 +535,31 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start(void)
+esp_err_t gpio_actuator_start(bool pulse)
 {
 	esp_err_t err = ESP_FAIL;
 
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-	vTaskDelay(pdMS_TO_TICKS(500));
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	if(pulse == false)
+	{
+		vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+		vTaskDelay(pdMS_TO_TICKS(500));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	}
+	else
+	{
+		uint8_t pulse_count = 5; // 5 secounds
+		for(uint8_t pulse_value = 0; pulse_value < pulse_count; pulse_value++)
+		{
+
+			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
+			gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+
+			vTaskDelay(pdMS_TO_TICKS(1000));
+			gpio_actuator_start(false);
+		}
+
+	}
 
 	return err;
 }
@@ -563,7 +580,7 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			//system on
-			gpio_actuator_start();
+			gpio_actuator_start(false);
 			pressurizing = false;
 
 			//suspend own task
