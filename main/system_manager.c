@@ -537,8 +537,25 @@ static void system_manager_idp_01(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if(comm_mode == COMM_MQTT)
 	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if(delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if(comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		char pivot_id[50] = {};
 		char str_out[200] = {};
 		network_config net_config = {};
 		uint8_t idp = 0;
@@ -546,6 +563,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "string", net_config.gprs_id },
 			{ "string", net_config.modem_apn },
 			{ "string", net_config.wifi_ssid },
@@ -561,7 +579,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 			comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
 
 			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 
 			// send GPRS module
 			idp = IDP_6;
@@ -569,6 +587,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 
 			arg_pair_t arg_pairs_3[] = {
 				{ "uint8_t", &idp },
+				{ "string", system_id },
 				{ "string", net_config.gprs_id },
 				{ "string", net_config.modem_apn },
 				{ NULL, NULL }
@@ -579,10 +598,10 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		}
 		else
 		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if(comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 		network_config net_config = {};
@@ -593,6 +612,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", system_id },
 			{ "string", net_config.gprs_id },
 			{ "string", net_config.modem_apn },
 			{ "string", net_config.wifi_ssid },
@@ -601,7 +621,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		};
 
 		idp_parser_create_package(str_out,arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
@@ -615,14 +635,32 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if(comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if(delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if(comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
+		char pivot_id[50] = {};
 		pivot_config new_config = {};
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "string", new_config.contactor },
 			{ "string", new_config.pressure },
 			{ "uint16_t", &new_config.pressurization_time },
@@ -637,16 +675,16 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 		if(ret == ESP_OK)
 		{
 			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			actuation_app_set_config(new_config);
 			system_read_time = new_config.read_time;
 		}
 		else
 		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if(comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
@@ -658,6 +696,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", system_id },
 			{ "string", config.contactor },
 			{ "string", config.pressure },
 			{ "uint16_t", &config.pressurization_time },
@@ -668,7 +707,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
@@ -682,14 +721,32 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if(comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if(delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if(comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
+		char pivot_id[50] = {};
 		eco_mode_config eco_mode = {};
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "uint32_t", &eco_mode.start_time },
 			{ "uint32_t", &eco_mode.end_time },
 			{ NULL, NULL }
@@ -701,11 +758,11 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 		if(ret == ESP_OK)
 		{
 			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 		}
 		else
 		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 
 		/*
@@ -713,7 +770,7 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 		eco_mode_start(eco_mode);
 		*/
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if(comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
@@ -725,13 +782,14 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", system_id },
 			{ "uint32_t", &eco_mode.start_time },
 			{ "uint32_t", &eco_mode.end_time },
 			{ NULL, NULL }
 		};
 
 		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
@@ -745,14 +803,32 @@ static void system_manager_idp_04(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if(comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if(delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if(comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
+		char pivot_id[50] = {};
 		sector_config sector = {};
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "uint8_t", &sector.sector_number },
 			{ "uint16_t", &sector.sectors[0].start_angle },
 			{ "uint16_t", &sector.sectors[0].end_angle },
@@ -771,16 +847,16 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		if(ret == ESP_OK)
 		{
 			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			sectorization_stop();
 			sectorization_start(sector);
 		}
 		else
 		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if(comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
@@ -792,6 +868,7 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", system_id },
 			{ "uint8_t", &sector.sector_number },
 			{ "uint16_t", &sector.sectors[0].start_angle },
 			{ "uint16_t", &sector.sectors[0].end_angle },
@@ -805,7 +882,7 @@ static void system_manager_idp_05(const char* buffer, comm_type comm_mode)
 		};
 
 		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
@@ -1582,14 +1659,32 @@ static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if(comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if(delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if(comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
+		char pivot_id[50] = {};
 		pivot_return_config return_config = {};
 
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", pivot_id },
 			{ "uint16_t", &return_config.start_angle },
 			{ "uint16_t", &return_config.end_angle },
 			{ "bool", &return_config.automatic_return },
@@ -1603,16 +1698,16 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 		if(ret == ESP_OK)
 		{
 			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			system_monitoring_stop();
 			system_monitoring_start(return_config, system_read_time);
 		}
 		else
 		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if(comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
@@ -1624,6 +1719,7 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] =
 		{
 			{ "uint8_t", &idp },
+			{ "string", system_id },
 			{ "uint16_t", &return_config.start_angle },
 			{ "uint16_t", &return_config.end_angle },
 			{ "bool", &return_config.automatic_return },
@@ -1633,7 +1729,7 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 

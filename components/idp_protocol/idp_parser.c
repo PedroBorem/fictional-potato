@@ -327,3 +327,18 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 
     free(str_copy);
 }
+
+uint8_t idp_parser_get_delimiter(const char *buffer)
+{
+    int count = 0;
+    int buffer_size = strlen(buffer);
+
+    for (int i = 0; i < buffer_size; i++) {
+        if (buffer[i] == '-') {
+        	count++;
+        }
+    }
+
+    return count;
+}
+
