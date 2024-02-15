@@ -30,4 +30,9 @@ esp_err_t wifi_app_init(void);
  */
 void wifi_app_set_config(char* wifi_ssid, char* wifi_pass);
 
+/**
+ * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
+ */
+void wifi_reloader(void);
+
 #endif /** COMPONENTS_WIFI_APP_INCLUDE_WIFI_APP_H */

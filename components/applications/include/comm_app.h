@@ -48,4 +48,6 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication);
  */
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
 
+void comm_app_wifi_reloader(void);
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */

@@ -61,11 +61,6 @@ static esp_netif_t* wifi_ap_netif = NULL;
 esp_err_t wifi_app_start(void);
 
 /**
- * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
- */
-static void wifi_reloader(void);
-
-/**
  * @brief Wi-Fi application task function.
  * @param arg Task argument (not used).
  */
@@ -125,6 +120,14 @@ void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 	strcpy(wifi_global_pass,wifi_pass);
 }
 
+/**
+ * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
+ */
+void wifi_reloader(void)
+{
+	uint8_t wifi_app_queue_req = 0;
+	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
+}
 /* Private methods ----------------------------------------------- */
 /**
  * @brief Start the Wi-Fi application.
@@ -207,15 +210,6 @@ esp_err_t wifi_app_start(void)
 	}
 
 	return ret;
-}
-
-/**
- * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
- */
-static void wifi_reloader(void)
-{
-	uint8_t wifi_app_queue_req = 0;
-	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
 }
 
 /**

@@ -577,6 +577,7 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 		{
 			data_app_save(DATA_TYPE_NETWORK_CONFIG, &net_config, sizeof(net_config));
 			comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
+			comm_app_wifi_reloader();
 
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
