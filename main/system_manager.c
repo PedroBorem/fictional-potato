@@ -1713,7 +1713,7 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 
-		uint8_t idp = IDP_3;
+		uint8_t idp = IDP_22;
 		pivot_return_config return_config = {};
 
 		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);

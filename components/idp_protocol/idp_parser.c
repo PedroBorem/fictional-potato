@@ -268,6 +268,9 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 						char arg_buffer[IDP_MAX_PKG_SIZE];
 						snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%ld", (long)time_arg);
 						strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "bool") == 0) {
+            bool bool_arg = * (bool *) arg_pairs[i].value;
+            strcat(str_out, bool_arg ? "1" : "0");
         }
     }
 
