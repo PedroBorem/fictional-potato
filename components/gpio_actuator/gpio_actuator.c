@@ -239,7 +239,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 
 	// convert sec to mili;
 	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
-	gpio_act_on_off_delay = (config.on_off_time*1000);
+	gpio_act_on_off_delay = (config.on_off_time * 1000);
 	// TODO testar no pivo o tempo de retorno
 
 	return ESP_OK;
@@ -424,8 +424,6 @@ pivot_actions gpio_actuator_get(void)
  */
 void gpio_actuator_shutdown(void)
 {
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
-
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
@@ -540,9 +538,9 @@ esp_err_t gpio_actuator_start(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
 	vTaskDelay(pdMS_TO_TICKS(500));
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 
 	return err;
@@ -589,7 +587,7 @@ void actuator_wait_pressure(void* arg)
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-			vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+			vTaskDelay(pdMS_TO_TICKS(500));
 
 			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
