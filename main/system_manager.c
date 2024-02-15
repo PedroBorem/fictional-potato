@@ -665,6 +665,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", new_config.pressure },
 			{ "uint16_t", &new_config.pressurization_time },
 			{ "uint8_t", &new_config.on_off_time },
+			{ "uint8_t", &new_config.on_off_pulse },
 			{ "uint8_t", &new_config.read_time },
 			{ NULL, NULL }
 		};
@@ -701,6 +702,7 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", config.pressure },
 			{ "uint16_t", &config.pressurization_time },
 			{ "uint8_t", &config.on_off_time },
+			{ "uint8_t", &config.on_off_pulse },
 			{ "uint8_t", &config.read_time },
 			{ NULL, NULL }
 		};

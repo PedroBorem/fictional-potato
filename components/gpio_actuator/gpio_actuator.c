@@ -240,6 +240,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 	// convert sec to mili;
 	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
 	gpio_act_on_off_delay = (config.on_off_time*1000);
+	// TODO testar no pivo o tempo de retorno
 
 	return ESP_OK;
 }
