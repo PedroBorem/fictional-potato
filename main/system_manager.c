@@ -676,10 +676,16 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 		esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 		if(ret == ESP_OK)
 		{
+			pivot_return_config return_config = {};
+			data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			actuation_app_set_config(new_config);
 			system_read_time = new_config.read_time;
+
+			system_monitoring_stop();
+			system_monitoring_start(return_config, system_read_time);
 		}
 		else
 		{
