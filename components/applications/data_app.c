@@ -115,7 +115,6 @@ esp_err_t data_app_init(void)
 			.pressure = "NA",
 			.pressurization_time = 30,
 			.on_off_time = 1,
-			.on_off_pulse = 5,
 			.read_time = 10
 	};
 

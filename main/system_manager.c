@@ -575,9 +575,19 @@ static void system_manager_idp_02(const char* buffer, comm_type comm_mode)
 
 		if(idp_parser_validate_network(net_config) == true)
 		{
+			// load old configuration
+			network_config net_nvs_config = {};
+			data_app_load(DATA_TYPE_NETWORK_CONFIG, &net_nvs_config);
+
+			// save new configuration
 			data_app_save(DATA_TYPE_NETWORK_CONFIG, &net_config, sizeof(net_config));
-			comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
-			comm_app_wifi_reloader();
+
+			if((strcmp(net_config.wifi_ssid, net_nvs_config.wifi_ssid) != 0)
+				|| strcmp(net_config.wifi_pass, net_nvs_config.wifi_pass) != 0)
+			{
+				comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
+				comm_app_wifi_reloader();
+			}
 
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
@@ -666,7 +676,6 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", new_config.pressure },
 			{ "uint16_t", &new_config.pressurization_time },
 			{ "uint8_t", &new_config.on_off_time },
-			{ "uint8_t", &new_config.on_off_pulse },
 			{ "uint8_t", &new_config.read_time },
 			{ NULL, NULL }
 		};
@@ -709,7 +718,6 @@ static void system_manager_idp_03(const char* buffer, comm_type comm_mode)
 			{ "string", config.pressure },
 			{ "uint16_t", &config.pressurization_time },
 			{ "uint8_t", &config.on_off_time },
-			{ "uint8_t", &config.on_off_pulse },
 			{ "uint8_t", &config.read_time },
 			{ NULL, NULL }
 		};
