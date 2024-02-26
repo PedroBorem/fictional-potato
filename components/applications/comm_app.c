@@ -91,6 +91,9 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
     wifi_app_set_config(wifi_ssid, wifi_pass);
 }
 
+/**
+ * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
+ */
 void comm_app_wifi_reloader(void)
 {
 	wifi_reloader();

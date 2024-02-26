@@ -47,7 +47,9 @@ void \mbox{\hyperlink{idp__parser_8h_a6513fe9acfead29ddd42ad3dc0365c05}{idp\+\_\
 void \mbox{\hyperlink{idp__parser_8h_ab9469f237062123c2283833987f5bf70}{idp\+\_\+parser\+\_\+create\+\_\+package}} (char $\ast$str\+\_\+out, \mbox{\hyperlink{structarg__pair}{arg\+\_\+pair\+\_\+t}} arg\+\_\+pairs\mbox{[}$\,$\mbox{]})
 \begin{DoxyCompactList}\small\item\em Create an IDP packet with the given arguments. \end{DoxyCompactList}\item 
 void \mbox{\hyperlink{idp__parser_8h_a8cf82652e2aa03aba0a30806130a4aae}{idp\+\_\+parser\+\_\+get\+\_\+packet\+\_\+data}} (const char $\ast$str\+\_\+arg, \mbox{\hyperlink{structarg__pair}{arg\+\_\+pair\+\_\+t}} arg\+\_\+pairs\mbox{[}$\,$\mbox{]})
-\begin{DoxyCompactList}\small\item\em Parse the IDP packet and extract data to populate the argument pairs. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Parse the IDP packet and extract data to populate the argument pairs. \end{DoxyCompactList}\item 
+uint8\+\_\+t \mbox{\hyperlink{idp__parser_8h_acb5461c7cb182685f52d85ffd38ea065}{idp\+\_\+parser\+\_\+get\+\_\+delimiter}} (const char $\ast$buffer)
+\begin{DoxyCompactList}\small\item\em Returns the number of delimiters \textquotesingle{}-\/\textquotesingle{} present in the buffer. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -157,6 +159,32 @@ This function extracts the IDP type from the received IDP packet string.
 \begin{DoxyReturn}{Returns}
 The IDP type as an {\ttfamily idp\+\_\+type} enum. 
 \end{DoxyReturn}
+\mbox{\Hypertarget{idp__parser_8h_acb5461c7cb182685f52d85ffd38ea065}\label{idp__parser_8h_acb5461c7cb182685f52d85ffd38ea065}} 
+\index{idp\_parser.h@{idp\_parser.h}!idp\_parser\_get\_delimiter@{idp\_parser\_get\_delimiter}}
+\index{idp\_parser\_get\_delimiter@{idp\_parser\_get\_delimiter}!idp\_parser.h@{idp\_parser.h}}
+\doxysubsubsection{\texorpdfstring{idp\_parser\_get\_delimiter()}{idp\_parser\_get\_delimiter()}}
+{\footnotesize\ttfamily uint8\+\_\+t idp\+\_\+parser\+\_\+get\+\_\+delimiter (\begin{DoxyParamCaption}\item[{const char $\ast$}]{buffer }\end{DoxyParamCaption})}
+
+
+
+Returns the number of delimiters \textquotesingle{}-\/\textquotesingle{} present in the buffer. 
+
+This function counts the number of delimiters \textquotesingle{}-\/\textquotesingle{} present in the provided buffer.
+
+
+\begin{DoxyParams}{Parameters}
+{\em buffer} & The buffer containing the data to be analyzed. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The number of \textquotesingle{}-\/\textquotesingle{} delimiters in the buffer. 
+\end{DoxyReturn}
+\begin{DoxyNote}{Note}
+The provided buffer must be a valid null-\/terminated string. 
+\end{DoxyNote}
+\begin{DoxyWarning}{Warning}
+This function does not check whether the provided buffer is valid or null-\/terminated. Ensure that the buffer is valid and null-\/terminated to avoid undefined behavior. 
+\end{DoxyWarning}
 \mbox{\Hypertarget{idp__parser_8h_a8cf82652e2aa03aba0a30806130a4aae}\label{idp__parser_8h_a8cf82652e2aa03aba0a30806130a4aae}} 
 \index{idp\_parser.h@{idp\_parser.h}!idp\_parser\_get\_packet\_data@{idp\_parser\_get\_packet\_data}}
 \index{idp\_parser\_get\_packet\_data@{idp\_parser\_get\_packet\_data}!idp\_parser.h@{idp\_parser.h}}

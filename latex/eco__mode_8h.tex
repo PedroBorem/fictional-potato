@@ -1,0 +1,81 @@
+\hypertarget{eco__mode_8h}{}\doxysection{main/include/eco\+\_\+mode.h File Reference}
+\label{eco__mode_8h}\index{main/include/eco\_mode.h@{main/include/eco\_mode.h}}
+
+
+Header file for the Eco Mode module.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+Include dependency graph for eco\+\_\+mode.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{eco__mode_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=222pt]{eco__mode_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{eco__mode_8h_a3dc9e79951809b6632da27d635c16472}{eco\+\_\+mode\+\_\+start}} (eco\+\_\+mode\+\_\+config current\+\_\+eco\+\_\+mode)
+\begin{DoxyCompactList}\small\item\em Starts the Eco Mode with the provided configuration. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{eco__mode_8h_a31ae4c9dfc2ebed2c55bfd82a9909ec0}\label{eco__mode_8h_a31ae4c9dfc2ebed2c55bfd82a9909ec0}} 
+void \mbox{\hyperlink{eco__mode_8h_a31ae4c9dfc2ebed2c55bfd82a9909ec0}{eco\+\_\+mode\+\_\+stop}} (void)
+\begin{DoxyCompactList}\small\item\em Stops the Eco Mode. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{eco__mode_8h_a42fe0e335387a749eebda40340f3ae1d}{eco\+\_\+mode\+\_\+register\+\_\+callback}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Registers a callback function for Eco Mode events. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Header file for the Eco Mode module. 
+
+\begin{DoxyAuthor}{Author}
+soil-\/dev 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+15 de out. de 2023 
+\end{DoxyDate}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{eco__mode_8h_a42fe0e335387a749eebda40340f3ae1d}\label{eco__mode_8h_a42fe0e335387a749eebda40340f3ae1d}} 
+\index{eco\_mode.h@{eco\_mode.h}!eco\_mode\_register\_callback@{eco\_mode\_register\_callback}}
+\index{eco\_mode\_register\_callback@{eco\_mode\_register\_callback}!eco\_mode.h@{eco\_mode.h}}
+\doxysubsubsection{\texorpdfstring{eco\_mode\_register\_callback()}{eco\_mode\_register\_callback()}}
+{\footnotesize\ttfamily void eco\+\_\+mode\+\_\+register\+\_\+callback (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Registers a callback function for Eco Mode events. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & Callback function to be registered. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{eco__mode_8h_a3dc9e79951809b6632da27d635c16472}\label{eco__mode_8h_a3dc9e79951809b6632da27d635c16472}} 
+\index{eco\_mode.h@{eco\_mode.h}!eco\_mode\_start@{eco\_mode\_start}}
+\index{eco\_mode\_start@{eco\_mode\_start}!eco\_mode.h@{eco\_mode.h}}
+\doxysubsubsection{\texorpdfstring{eco\_mode\_start()}{eco\_mode\_start()}}
+{\footnotesize\ttfamily void eco\+\_\+mode\+\_\+start (\begin{DoxyParamCaption}\item[{eco\+\_\+mode\+\_\+config}]{current\+\_\+eco\+\_\+mode }\end{DoxyParamCaption})}
+
+
+
+Starts the Eco Mode with the provided configuration. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em current\+\_\+eco\+\_\+mode} & Configuration for Eco Mode. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+If the start or end time is not set, the Eco Mode will be stopped. 
+\end{DoxyNote}

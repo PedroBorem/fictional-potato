@@ -1,0 +1,142 @@
+\hypertarget{system__monitoring_8c}{}\doxysection{main/system\+\_\+monitoring.c File Reference}
+\label{system__monitoring_8c}\index{main/system\_monitoring.c@{main/system\_monitoring.c}}
+
+
+System monitoring functionality implementation.  
+
+
+{\ttfamily \#include \char`\"{}system\+\_\+monitoring.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}actuation\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}comm\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rtc\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}idp\+\_\+parser.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for system\+\_\+monitoring.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{system__monitoring_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{system__monitoring_8c_a33c120190d47a4042696d4d38d9bd80c}\label{system__monitoring_8c_a33c120190d47a4042696d4d38d9bd80c}} 
+\#define {\bfseries SYSTEM\+\_\+\+MONITORING\+\_\+\+TAG}~\char`\"{}system monitoring\char`\"{}
+\item 
+\mbox{\Hypertarget{system__monitoring_8c_a15e76857d314659e3db6ac8f07f6cab8}\label{system__monitoring_8c_a15e76857d314659e3db6ac8f07f6cab8}} 
+\#define {\bfseries SYSTEM\+\_\+\+DELAY\+\_\+\+ANALYSIS\+\_\+\+ANGLE\+\_\+\+MS}~(6000)
+\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{system__monitoring_8c_a5679307e248aa516235fd240e6452d24}{system\+\_\+monitoring\+\_\+states}} \{ \mbox{\hyperlink{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a4f21f378c8f814f81943ba858eb8ad93}{SYSTEM\+\_\+\+PAUSE}} = 0
+, \mbox{\hyperlink{system__monitoring_8c_a5679307e248aa516235fd240e6452d24aefa249ca4d9ffa0e03b0cae750e57577}{SYSTEM\+\_\+\+RUNNING}}
+, \mbox{\hyperlink{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a31aa7fdd7f6d235ec61e8f7efbed2e2b}{SYSTEM\+\_\+\+RETURN}}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumeration representing the possible states of the system monitoring. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{system__monitoring_8c_a83c0a59a76a57ea9ec815b8050e20791}{system\+\_\+monitoring\+\_\+start}} (const pivot\+\_\+return\+\_\+config return\+\_\+config, uint8\+\_\+t monitoring\+\_\+time)
+\begin{DoxyCompactList}\small\item\em Starts the system monitoring task with the provided configuration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{system__monitoring_8c_a976d64daefa903e5ca71fc6db86a8fd5}{system\+\_\+monitoring\+\_\+stop}} (void)
+\begin{DoxyCompactList}\small\item\em Stops the system monitoring task. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{system__monitoring_8c_ab5f97d266ed38c58bb788009c403c961}{system\+\_\+monitoring\+\_\+register\+\_\+callback}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Registers a callback function for system monitoring. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+System monitoring functionality implementation. 
+
+\begin{DoxyAuthor}{Author}
+soil-\/dev 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+4 de ago. de 2023 
+\end{DoxyDate}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{system__monitoring_8c_a5679307e248aa516235fd240e6452d24}\label{system__monitoring_8c_a5679307e248aa516235fd240e6452d24}} 
+\index{system\_monitoring.c@{system\_monitoring.c}!system\_monitoring\_states@{system\_monitoring\_states}}
+\index{system\_monitoring\_states@{system\_monitoring\_states}!system\_monitoring.c@{system\_monitoring.c}}
+\doxysubsubsection{\texorpdfstring{system\_monitoring\_states}{system\_monitoring\_states}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{system__monitoring_8c_a5679307e248aa516235fd240e6452d24}{system\+\_\+monitoring\+\_\+states}}}
+
+
+
+Enumeration representing the possible states of the system monitoring. 
+
+\begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SYSTEM\_PAUSE@{SYSTEM\_PAUSE}!system\_monitoring.c@{system\_monitoring.c}}\index{system\_monitoring.c@{system\_monitoring.c}!SYSTEM\_PAUSE@{SYSTEM\_PAUSE}}}\mbox{\Hypertarget{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a4f21f378c8f814f81943ba858eb8ad93}\label{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a4f21f378c8f814f81943ba858eb8ad93}} 
+SYSTEM\+\_\+\+PAUSE&System is in a paused state. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SYSTEM\_RUNNING@{SYSTEM\_RUNNING}!system\_monitoring.c@{system\_monitoring.c}}\index{system\_monitoring.c@{system\_monitoring.c}!SYSTEM\_RUNNING@{SYSTEM\_RUNNING}}}\mbox{\Hypertarget{system__monitoring_8c_a5679307e248aa516235fd240e6452d24aefa249ca4d9ffa0e03b0cae750e57577}\label{system__monitoring_8c_a5679307e248aa516235fd240e6452d24aefa249ca4d9ffa0e03b0cae750e57577}} 
+SYSTEM\+\_\+\+RUNNING&System is running normally. \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{SYSTEM\_RETURN@{SYSTEM\_RETURN}!system\_monitoring.c@{system\_monitoring.c}}\index{system\_monitoring.c@{system\_monitoring.c}!SYSTEM\_RETURN@{SYSTEM\_RETURN}}}\mbox{\Hypertarget{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a31aa7fdd7f6d235ec61e8f7efbed2e2b}\label{system__monitoring_8c_a5679307e248aa516235fd240e6452d24a31aa7fdd7f6d235ec61e8f7efbed2e2b}} 
+SYSTEM\+\_\+\+RETURN&System is in a return state. \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{system__monitoring_8c_ab5f97d266ed38c58bb788009c403c961}\label{system__monitoring_8c_ab5f97d266ed38c58bb788009c403c961}} 
+\index{system\_monitoring.c@{system\_monitoring.c}!system\_monitoring\_register\_callback@{system\_monitoring\_register\_callback}}
+\index{system\_monitoring\_register\_callback@{system\_monitoring\_register\_callback}!system\_monitoring.c@{system\_monitoring.c}}
+\doxysubsubsection{\texorpdfstring{system\_monitoring\_register\_callback()}{system\_monitoring\_register\_callback()}}
+{\footnotesize\ttfamily void system\+\_\+monitoring\+\_\+register\+\_\+callback (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Registers a callback function for system monitoring. 
+
+This function allows the registration of a callback function to be used in the system monitoring module. The registered callback will be invoked by the system monitoring module to perform specific actions.
+
+
+\begin{DoxyParams}[1]{Parameters}
+\mbox{\texttt{ in}}  & {\em callback} & A function pointer to the callback function. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{system__monitoring_8c_a83c0a59a76a57ea9ec815b8050e20791}\label{system__monitoring_8c_a83c0a59a76a57ea9ec815b8050e20791}} 
+\index{system\_monitoring.c@{system\_monitoring.c}!system\_monitoring\_start@{system\_monitoring\_start}}
+\index{system\_monitoring\_start@{system\_monitoring\_start}!system\_monitoring.c@{system\_monitoring.c}}
+\doxysubsubsection{\texorpdfstring{system\_monitoring\_start()}{system\_monitoring\_start()}}
+{\footnotesize\ttfamily void system\+\_\+monitoring\+\_\+start (\begin{DoxyParamCaption}\item[{const pivot\+\_\+return\+\_\+config}]{return\+\_\+config,  }\item[{uint8\+\_\+t}]{monitoring\+\_\+time }\end{DoxyParamCaption})}
+
+
+
+Starts the system monitoring task with the provided configuration. 
+
+Starts the system monitoring with the specified configuration.
+
+This function initializes the system monitoring task with the specified configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em return\+\_\+config} & Configuration for system monitoring. \\
+\hline
+{\em monitoring\+\_\+time} & Time interval for system monitoring (in minutes). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{system__monitoring_8c_a976d64daefa903e5ca71fc6db86a8fd5}\label{system__monitoring_8c_a976d64daefa903e5ca71fc6db86a8fd5}} 
+\index{system\_monitoring.c@{system\_monitoring.c}!system\_monitoring\_stop@{system\_monitoring\_stop}}
+\index{system\_monitoring\_stop@{system\_monitoring\_stop}!system\_monitoring.c@{system\_monitoring.c}}
+\doxysubsubsection{\texorpdfstring{system\_monitoring\_stop()}{system\_monitoring\_stop()}}
+{\footnotesize\ttfamily void system\+\_\+monitoring\+\_\+stop (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Stops the system monitoring task. 
+
+Stops the system monitoring.
+
+This function stops the system monitoring task. 

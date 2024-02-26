@@ -278,6 +278,11 @@ void actuation_app_task(void* arg)
 	}
 }
 
+/**
+ * @brief Perform a manual call based on the given parameters.
+ * @param on_off [in]: The state to set (true for on, false for off).
+ * @param current_action [in]: The current pivot actions.
+ */
 void actuation_app_manual_call(bool on_off, pivot_actions current_action)
 {
 	if(on_off == true)

@@ -1,0 +1,166 @@
+\hypertarget{rtc__app_8c}{}\doxysection{components/applications/rtc\+\_\+app.c File Reference}
+\label{rtc__app_8c}\index{components/applications/rtc\_app.c@{components/applications/rtc\_app.c}}
+
+
+RTC application implementation for managing date and time functionality.  
+
+
+{\ttfamily \#include \char`\"{}rtc\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}rtc\+\_\+ds3231.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+log.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+{\ttfamily \#include $<$stdlib.\+h$>$}\newline
+Include dependency graph for rtc\+\_\+app.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{rtc__app_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{rtc__app_8c_aaa49b4682b4b97e8e4150a955035cf02}\label{rtc__app_8c_aaa49b4682b4b97e8e4150a955035cf02}} 
+\#define \mbox{\hyperlink{rtc__app_8c_aaa49b4682b4b97e8e4150a955035cf02}{RTC\+\_\+\+APP\+\_\+\+TAG}}~\char`\"{}rtc\+\_\+app\char`\"{}
+\begin{DoxyCompactList}\small\item\em Log tag for RTC application. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rtc__app_8c_a88c628db27b3beb0c21b35bfea09b00f}\label{rtc__app_8c_a88c628db27b3beb0c21b35bfea09b00f}} 
+\#define \mbox{\hyperlink{rtc__app_8c_a88c628db27b3beb0c21b35bfea09b00f}{RTC\+\_\+\+SDA\+\_\+\+PIN}}~36
+\begin{DoxyCompactList}\small\item\em The GPIO pin number for the RTC I2C SDA signal. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{rtc__app_8c_a06190ae82bfcb3e0ee8708c64a4013c1}\label{rtc__app_8c_a06190ae82bfcb3e0ee8708c64a4013c1}} 
+\#define \mbox{\hyperlink{rtc__app_8c_a06190ae82bfcb3e0ee8708c64a4013c1}{RTC\+\_\+\+SCL\+\_\+\+PIN}}~37
+\begin{DoxyCompactList}\small\item\em The GPIO pin number for the RTC I2C SCL signal. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{rtc__app_8c_aa22b68be066d88e1837e0ebdced6c25e}{rtc\+\_\+app\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em Initializes the RTC application. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{rtc__app_8c_acff1f9adb3b5ccaf36e515ad0634c5cf}{rtc\+\_\+app\+\_\+set\+\_\+timestamp}} (time\+\_\+t timestamp)
+\begin{DoxyCompactList}\small\item\em Sets the timestamp in the RTC. \end{DoxyCompactList}\item 
+time\+\_\+t \mbox{\hyperlink{rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b}{rtc\+\_\+app\+\_\+get\+\_\+timestamp}} (bool rtc\+\_\+show\+\_\+dt)
+\begin{DoxyCompactList}\small\item\em Gets the timestamp from the RTC. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{rtc__app_8c_acc1d8772dcf1009e3a26ee67dde529db}{rtc\+\_\+app\+\_\+get\+\_\+date\+\_\+time}} (struct tm $\ast$rtcinfo)
+\begin{DoxyCompactList}\small\item\em Gets the date and time from the RTC. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{rtc__app_8c_a9782b35e8c20a24328a6040a8cddfdc2}{rtc\+\_\+show\+\_\+date\+\_\+time}} (time\+\_\+t timestamp\+\_\+now, uint8\+\_\+t time\+\_\+z)
+\begin{DoxyCompactList}\small\item\em Displays the date and time. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{rtc__app_8c_ad88e03f5de0af55d5dc5b5b925077470}{rtc\+\_\+app\+\_\+get\+\_\+str\+\_\+date\+\_\+time}} (time\+\_\+t timestamp\+\_\+now, char $\ast$str\+\_\+out)
+\begin{DoxyCompactList}\small\item\em Gets the date and time in string format. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+RTC application implementation for managing date and time functionality. 
+
+This file contains the implementation of the RTC application for managing date and time functionality. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{rtc__app_8c_acc1d8772dcf1009e3a26ee67dde529db}\label{rtc__app_8c_acc1d8772dcf1009e3a26ee67dde529db}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_app\_get\_date\_time@{rtc\_app\_get\_date\_time}}
+\index{rtc\_app\_get\_date\_time@{rtc\_app\_get\_date\_time}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_get\_date\_time()}{rtc\_app\_get\_date\_time()}}
+{\footnotesize\ttfamily void rtc\+\_\+app\+\_\+get\+\_\+date\+\_\+time (\begin{DoxyParamCaption}\item[{struct tm $\ast$}]{rtcinfo }\end{DoxyParamCaption})}
+
+
+
+Gets the date and time from the RTC. 
+
+This function retrieves the date and time from the RTC and stores it in the specified time structure.
+
+
+\begin{DoxyParams}{Parameters}
+{\em rtcinfo} & The pointer to the time structure to store the date and time. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{rtc__app_8c_ad88e03f5de0af55d5dc5b5b925077470}\label{rtc__app_8c_ad88e03f5de0af55d5dc5b5b925077470}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_app\_get\_str\_date\_time@{rtc\_app\_get\_str\_date\_time}}
+\index{rtc\_app\_get\_str\_date\_time@{rtc\_app\_get\_str\_date\_time}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_get\_str\_date\_time()}{rtc\_app\_get\_str\_date\_time()}}
+{\footnotesize\ttfamily void rtc\+\_\+app\+\_\+get\+\_\+str\+\_\+date\+\_\+time (\begin{DoxyParamCaption}\item[{time\+\_\+t}]{timestamp\+\_\+now,  }\item[{char $\ast$}]{str\+\_\+out }\end{DoxyParamCaption})}
+
+
+
+Gets the date and time in string format. 
+
+This function retrieves the date and time from the RTC and formats it as a string.
+
+
+\begin{DoxyParams}{Parameters}
+{\em timestamp\+\_\+now} & The timestamp value. \\
+\hline
+{\em str\+\_\+out} & Pointer to the output string buffer. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b}\label{rtc__app_8c_a94c7e156542f18f9fc8702a25514f16b}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_app\_get\_timestamp@{rtc\_app\_get\_timestamp}}
+\index{rtc\_app\_get\_timestamp@{rtc\_app\_get\_timestamp}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_get\_timestamp()}{rtc\_app\_get\_timestamp()}}
+{\footnotesize\ttfamily time\+\_\+t rtc\+\_\+app\+\_\+get\+\_\+timestamp (\begin{DoxyParamCaption}\item[{bool}]{rtc\+\_\+show\+\_\+dt }\end{DoxyParamCaption})}
+
+
+
+Gets the timestamp from the RTC. 
+
+This function retrieves the timestamp from the RTC.
+
+
+\begin{DoxyParams}{Parameters}
+{\em rtc\+\_\+show\+\_\+dt} & Flag indicating whether to display the date and time in local time. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+time\+\_\+t The timestamp value. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{rtc__app_8c_aa22b68be066d88e1837e0ebdced6c25e}\label{rtc__app_8c_aa22b68be066d88e1837e0ebdced6c25e}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_app\_init@{rtc\_app\_init}}
+\index{rtc\_app\_init@{rtc\_app\_init}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_init()}{rtc\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t rtc\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initializes the RTC application. 
+
+This function initializes the RTC application by configuring the RTC I2C device.
+
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{rtc__app_8c_acff1f9adb3b5ccaf36e515ad0634c5cf}\label{rtc__app_8c_acff1f9adb3b5ccaf36e515ad0634c5cf}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_app\_set\_timestamp@{rtc\_app\_set\_timestamp}}
+\index{rtc\_app\_set\_timestamp@{rtc\_app\_set\_timestamp}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_app\_set\_timestamp()}{rtc\_app\_set\_timestamp()}}
+{\footnotesize\ttfamily bool rtc\+\_\+app\+\_\+set\+\_\+timestamp (\begin{DoxyParamCaption}\item[{time\+\_\+t}]{timestamp }\end{DoxyParamCaption})}
+
+
+
+Sets the timestamp in the RTC. 
+
+This function sets the timestamp in the RTC with the specified timestamp value.
+
+
+\begin{DoxyParams}{Parameters}
+{\em timestamp} & The timestamp value to set. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+bool True if setting the timestamp is successful, false otherwise. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{rtc__app_8c_a9782b35e8c20a24328a6040a8cddfdc2}\label{rtc__app_8c_a9782b35e8c20a24328a6040a8cddfdc2}} 
+\index{rtc\_app.c@{rtc\_app.c}!rtc\_show\_date\_time@{rtc\_show\_date\_time}}
+\index{rtc\_show\_date\_time@{rtc\_show\_date\_time}!rtc\_app.c@{rtc\_app.c}}
+\doxysubsubsection{\texorpdfstring{rtc\_show\_date\_time()}{rtc\_show\_date\_time()}}
+{\footnotesize\ttfamily void rtc\+\_\+show\+\_\+date\+\_\+time (\begin{DoxyParamCaption}\item[{time\+\_\+t}]{timestamp\+\_\+now,  }\item[{uint8\+\_\+t}]{time\+\_\+z }\end{DoxyParamCaption})}
+
+
+
+Displays the date and time. 
+
+This function displays the date and time based on the specified timestamp and time zone.
+
+
+\begin{DoxyParams}{Parameters}
+{\em timestamp\+\_\+now} & The timestamp value. \\
+\hline
+{\em time\+\_\+z} & The time zone. \\
+\hline
+\end{DoxyParams}

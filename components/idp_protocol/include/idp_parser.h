@@ -92,6 +92,17 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[]);
  */
 void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[]);
 
+/**
+ * @brief Returns the number of delimiters '-' present in the buffer.
+ *
+ * This function counts the number of delimiters '-' present in the provided buffer.
+ *
+ * @param buffer The buffer containing the data to be analyzed.
+ * @return The number of '-' delimiters in the buffer.
+ * @note The provided buffer must be a valid null-terminated string.
+ * @warning This function does not check whether the provided buffer is valid or null-terminated.
+ * Ensure that the buffer is valid and null-terminated to avoid undefined behavior.
+ */
 uint8_t idp_parser_get_delimiter(const char *buffer);
 
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

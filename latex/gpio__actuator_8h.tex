@@ -1,0 +1,456 @@
+\hypertarget{gpio__actuator_8h}{}\doxysection{components/gpio\+\_\+actuator/include/gpio\+\_\+actuator.h File Reference}
+\label{gpio__actuator_8h}\index{components/gpio\_actuator/include/gpio\_actuator.h@{components/gpio\_actuator/include/gpio\_actuator.h}}
+
+
+Board GPIO macros and pinout definitions for the GPIO Actuator module.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}driver/gpio.\+h\char`\"{}}\newline
+Include dependency graph for gpio\+\_\+actuator.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gpio__actuator_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{gpio__actuator_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{gpio__actuator_8h_a2fdfd172dcc0ee688d841cc77592909c}\label{gpio__actuator_8h_a2fdfd172dcc0ee688d841cc77592909c}} 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a2fdfd172dcc0ee688d841cc77592909c}{GPIO\+\_\+\+ACT\+\_\+\+SYS\+\_\+\+ENABLE}}~0
+\begin{DoxyCompactList}\small\item\em Macro to enable the GPIO actuator system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{gpio__actuator_8h_aef530888c6a22938b107d0ee4f3d4431}\label{gpio__actuator_8h_aef530888c6a22938b107d0ee4f3d4431}} 
+\#define \mbox{\hyperlink{gpio__actuator_8h_aef530888c6a22938b107d0ee4f3d4431}{GPIO\+\_\+\+ACT\+\_\+\+SYS\+\_\+\+DISABLE}}~1
+\begin{DoxyCompactList}\small\item\em Macro to disable the GPIO actuator system. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{gpio__actuator_8h_a3ad78be6aa720f2cf5fdd6971a8d04c0}\label{gpio__actuator_8h_a3ad78be6aa720f2cf5fdd6971a8d04c0}} 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a3ad78be6aa720f2cf5fdd6971a8d04c0}{GPIO\+\_\+\+ACT\+\_\+\+PERC\+\_\+\+FULL\+\_\+\+CYCLE}}~60000
+\begin{DoxyCompactList}\small\item\em Macro defining the full cycle duration for the percentimeter (in milliseconds). \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a92c79a9c64a9d29a6891d24c646e6bde}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+ON}}~GPIO\+\_\+\+NUM\+\_\+13
+\begin{DoxyCompactList}\small\item\em GPIO pin number for turning the system on. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_ad48b7c5383ed0ada1dd71a8309c7e7bc}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+OFF}}~GPIO\+\_\+\+NUM\+\_\+12
+\begin{DoxyCompactList}\small\item\em GPIO pin number for turning the system off. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_aabde3af6bcbe778ff81a66507ce756f4}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CW}}~GPIO\+\_\+\+NUM\+\_\+11
+\begin{DoxyCompactList}\small\item\em GPIO pin number for clockwise direction. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a1131053f191e20a1e5758f029cb1b52b}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CCW}}~GPIO\+\_\+\+NUM\+\_\+10
+\begin{DoxyCompactList}\small\item\em GPIO pin number for counter-\/clockwise direction. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_affa40471168da40be880745f56569f74}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+WATERING}}~GPIO\+\_\+\+NUM\+\_\+9
+\begin{DoxyCompactList}\small\item\em GPIO pin number for watering relay. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_ae0f6b5dac3f19ce36afaa9d1cccb1e52}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+AUX}}~GPIO\+\_\+\+NUM\+\_\+8
+\begin{DoxyCompactList}\small\item\em GPIO pin number for auxiliary system relay. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_ac01c195099a0db1e0dedfde2911e8ba3}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+AUX}}~GPIO\+\_\+\+NUM\+\_\+16
+\begin{DoxyCompactList}\small\item\em GPIO pin number for auxiliary relay for percentimeter. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a142731581993455b4a03f44d381c905a}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+OUT}}~GPIO\+\_\+\+NUM\+\_\+35
+\begin{DoxyCompactList}\small\item\em GPIO pin number for percentimeter reading output. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a7c230be9462b17c16d882f514f411f9e}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PUMP}}~GPIO\+\_\+\+NUM\+\_\+14
+\begin{DoxyCompactList}\small\item\em GPIO pin number for pump relay. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a9eb529c21c4e6fad3b03a520fd621837}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CW\+\_\+\+IN}}~GPIO\+\_\+\+NUM\+\_\+7
+\begin{DoxyCompactList}\small\item\em GPIO pin number for clockwise input. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_aa511821009d60378c224d2393ce4e434}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CCW\+\_\+\+IN}}~GPIO\+\_\+\+NUM\+\_\+6
+\begin{DoxyCompactList}\small\item\em GPIO pin number for counter-\/clockwise input. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a61dc9ffb2e12a95f18d6a37d52788a5c}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+IN}}~GPIO\+\_\+\+NUM\+\_\+5
+\begin{DoxyCompactList}\small\item\em GPIO pin number for percentimeter read input. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a3b7f947ed5fa0f78f417656413bb795d}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PRESS}}~GPIO\+\_\+\+NUM\+\_\+4
+\begin{DoxyCompactList}\small\item\em GPIO pin number for water pressure reading input. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_ae9414ffb07bc5755fe07d93730986f6f}{GPIO\+\_\+\+OUTPUT\+\_\+\+PIN\+\_\+\+GROUP}}
+\begin{DoxyCompactList}\small\item\em GPIO pin bitmask for all output pins. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a6f59d8eb395ad1a647ce35e93ada1fc7}{GPIO\+\_\+\+INPUT\+\_\+\+PIN\+\_\+\+GROUP}}
+\begin{DoxyCompactList}\small\item\em GPIO pin bitmask for all input pins. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{gpio__actuator_8h_a4fde0d7170d93e6bbe9a9e438413ccfb}\label{gpio__actuator_8h_a4fde0d7170d93e6bbe9a9e438413ccfb}} 
+\#define \mbox{\hyperlink{gpio__actuator_8h_a4fde0d7170d93e6bbe9a9e438413ccfb}{GPIO\+\_\+\+INT\+\_\+\+PERC}}~(1ULL$<$$<$\mbox{\hyperlink{gpio__actuator_8h_a61dc9ffb2e12a95f18d6a37d52788a5c}{GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+IN}})
+\begin{DoxyCompactList}\small\item\em GPIO pin bitmask for the percentimeter interrupt pin. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943}{gpio\+\_\+actuator\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em Initializes the GPIO actuator module. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gpio__actuator_8h_a0afe7c71d5e0d419d5dc21c75f8edfd2}{gpio\+\_\+actuator\+\_\+config}} (pivot\+\_\+config config)
+\begin{DoxyCompactList}\small\item\em Configures the GPIO actuator module with the specified configuration. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{gpio__actuator_8h_a422f44a7b18b258cff72793003fa2ca4}{gpio\+\_\+actuator\+\_\+set}} (pivot\+\_\+actions actions)
+\begin{DoxyCompactList}\small\item\em Sets the pivot configuration. \end{DoxyCompactList}\item 
+pivot\+\_\+actions \mbox{\hyperlink{gpio__actuator_8h_aaa17c3bcdd8b746b0f7ee4dffd66cd39}{gpio\+\_\+actuator\+\_\+get}} (void)
+\begin{DoxyCompactList}\small\item\em Gets the current pivot configuration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{gpio__actuator_8h_afeaeadf28e5cbe11a1cfe0094b6bf23c}{gpio\+\_\+actuator\+\_\+shutdown}} (void)
+\begin{DoxyCompactList}\small\item\em Shuts down all relays. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{gpio__actuator_8h_a1e92129283eeff7fea4b2dba2b4de59d}{gpio\+\_\+actuator\+\_\+pump\+\_\+on}} (void)
+\begin{DoxyCompactList}\small\item\em Turns on the pump relay. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{gpio__actuator_8h_a581efd7ff2ba44a03738f78f28b7ec4c}{gpio\+\_\+actuator\+\_\+pump\+\_\+off}} (void)
+\begin{DoxyCompactList}\small\item\em Turns off the pump relay. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{gpio__actuator_8h_a82736219ac42b57346f0848ae0d94d53}{gpio\+\_\+actuator\+\_\+pressure\+\_\+on}} (void)
+\begin{DoxyCompactList}\small\item\em Turns on the pressure relay and starts pressure monitoring. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{gpio__actuator_8h_adcb9317653a296d6372ff20d6f6663df}{gpio\+\_\+actuator\+\_\+pressure\+\_\+off}} (void)
+\begin{DoxyCompactList}\small\item\em Turns off the pressure relay and stops pressure monitoring. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Board GPIO macros and pinout definitions for the GPIO Actuator module. 
+
+\begin{DoxyDate}{Date}
+June 20, 2022 
+\end{DoxyDate}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{gpio__actuator_8h_ae0f6b5dac3f19ce36afaa9d1cccb1e52}\label{gpio__actuator_8h_ae0f6b5dac3f19ce36afaa9d1cccb1e52}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_AUX@{GPIO\_ACT\_PIN\_AUX}}
+\index{GPIO\_ACT\_PIN\_AUX@{GPIO\_ACT\_PIN\_AUX}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_AUX}{GPIO\_ACT\_PIN\_AUX}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+AUX~GPIO\+\_\+\+NUM\+\_\+8}
+
+
+
+GPIO pin number for auxiliary system relay. 
+
+System Auxiliary Relay \mbox{\Hypertarget{gpio__actuator_8h_a1131053f191e20a1e5758f029cb1b52b}\label{gpio__actuator_8h_a1131053f191e20a1e5758f029cb1b52b}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_CCW@{GPIO\_ACT\_PIN\_CCW}}
+\index{GPIO\_ACT\_PIN\_CCW@{GPIO\_ACT\_PIN\_CCW}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_CCW}{GPIO\_ACT\_PIN\_CCW}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CCW~GPIO\+\_\+\+NUM\+\_\+10}
+
+
+
+GPIO pin number for counter-\/clockwise direction. 
+
+Direction Counter-\/\+Clockwise \mbox{\Hypertarget{gpio__actuator_8h_aa511821009d60378c224d2393ce4e434}\label{gpio__actuator_8h_aa511821009d60378c224d2393ce4e434}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_CCW\_IN@{GPIO\_ACT\_PIN\_CCW\_IN}}
+\index{GPIO\_ACT\_PIN\_CCW\_IN@{GPIO\_ACT\_PIN\_CCW\_IN}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_CCW\_IN}{GPIO\_ACT\_PIN\_CCW\_IN}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CCW\+\_\+\+IN~GPIO\+\_\+\+NUM\+\_\+6}
+
+
+
+GPIO pin number for counter-\/clockwise input. 
+
+Counter-\/\+Clockwise Input \mbox{\Hypertarget{gpio__actuator_8h_aabde3af6bcbe778ff81a66507ce756f4}\label{gpio__actuator_8h_aabde3af6bcbe778ff81a66507ce756f4}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_CW@{GPIO\_ACT\_PIN\_CW}}
+\index{GPIO\_ACT\_PIN\_CW@{GPIO\_ACT\_PIN\_CW}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_CW}{GPIO\_ACT\_PIN\_CW}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CW~GPIO\+\_\+\+NUM\+\_\+11}
+
+
+
+GPIO pin number for clockwise direction. 
+
+Direction Clockwise \mbox{\Hypertarget{gpio__actuator_8h_a9eb529c21c4e6fad3b03a520fd621837}\label{gpio__actuator_8h_a9eb529c21c4e6fad3b03a520fd621837}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_CW\_IN@{GPIO\_ACT\_PIN\_CW\_IN}}
+\index{GPIO\_ACT\_PIN\_CW\_IN@{GPIO\_ACT\_PIN\_CW\_IN}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_CW\_IN}{GPIO\_ACT\_PIN\_CW\_IN}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+CW\+\_\+\+IN~GPIO\+\_\+\+NUM\+\_\+7}
+
+
+
+GPIO pin number for clockwise input. 
+
+Clockwise Input \mbox{\Hypertarget{gpio__actuator_8h_ad48b7c5383ed0ada1dd71a8309c7e7bc}\label{gpio__actuator_8h_ad48b7c5383ed0ada1dd71a8309c7e7bc}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_OFF@{GPIO\_ACT\_PIN\_OFF}}
+\index{GPIO\_ACT\_PIN\_OFF@{GPIO\_ACT\_PIN\_OFF}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_OFF}{GPIO\_ACT\_PIN\_OFF}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+OFF~GPIO\+\_\+\+NUM\+\_\+12}
+
+
+
+GPIO pin number for turning the system off. 
+
+Main system relay on \mbox{\Hypertarget{gpio__actuator_8h_a92c79a9c64a9d29a6891d24c646e6bde}\label{gpio__actuator_8h_a92c79a9c64a9d29a6891d24c646e6bde}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_ON@{GPIO\_ACT\_PIN\_ON}}
+\index{GPIO\_ACT\_PIN\_ON@{GPIO\_ACT\_PIN\_ON}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_ON}{GPIO\_ACT\_PIN\_ON}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+ON~GPIO\+\_\+\+NUM\+\_\+13}
+
+
+
+GPIO pin number for turning the system on. 
+
+Main system relay off \mbox{\Hypertarget{gpio__actuator_8h_ac01c195099a0db1e0dedfde2911e8ba3}\label{gpio__actuator_8h_ac01c195099a0db1e0dedfde2911e8ba3}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_PERC\_AUX@{GPIO\_ACT\_PIN\_PERC\_AUX}}
+\index{GPIO\_ACT\_PIN\_PERC\_AUX@{GPIO\_ACT\_PIN\_PERC\_AUX}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_PERC\_AUX}{GPIO\_ACT\_PIN\_PERC\_AUX}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+AUX~GPIO\+\_\+\+NUM\+\_\+16}
+
+
+
+GPIO pin number for auxiliary relay for percentimeter. 
+
+Auxiliary Relay for Percentimeter \mbox{\Hypertarget{gpio__actuator_8h_a61dc9ffb2e12a95f18d6a37d52788a5c}\label{gpio__actuator_8h_a61dc9ffb2e12a95f18d6a37d52788a5c}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_PERC\_IN@{GPIO\_ACT\_PIN\_PERC\_IN}}
+\index{GPIO\_ACT\_PIN\_PERC\_IN@{GPIO\_ACT\_PIN\_PERC\_IN}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_PERC\_IN}{GPIO\_ACT\_PIN\_PERC\_IN}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+IN~GPIO\+\_\+\+NUM\+\_\+5}
+
+
+
+GPIO pin number for percentimeter read input. 
+
+Percentimeter Read Input \mbox{\Hypertarget{gpio__actuator_8h_a142731581993455b4a03f44d381c905a}\label{gpio__actuator_8h_a142731581993455b4a03f44d381c905a}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_PERC\_OUT@{GPIO\_ACT\_PIN\_PERC\_OUT}}
+\index{GPIO\_ACT\_PIN\_PERC\_OUT@{GPIO\_ACT\_PIN\_PERC\_OUT}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_PERC\_OUT}{GPIO\_ACT\_PIN\_PERC\_OUT}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PERC\+\_\+\+OUT~GPIO\+\_\+\+NUM\+\_\+35}
+
+
+
+GPIO pin number for percentimeter reading output. 
+
+Percentimeter \mbox{\Hypertarget{gpio__actuator_8h_a3b7f947ed5fa0f78f417656413bb795d}\label{gpio__actuator_8h_a3b7f947ed5fa0f78f417656413bb795d}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_PRESS@{GPIO\_ACT\_PIN\_PRESS}}
+\index{GPIO\_ACT\_PIN\_PRESS@{GPIO\_ACT\_PIN\_PRESS}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_PRESS}{GPIO\_ACT\_PIN\_PRESS}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PRESS~GPIO\+\_\+\+NUM\+\_\+4}
+
+
+
+GPIO pin number for water pressure reading input. 
+
+Water pressure reading \mbox{\Hypertarget{gpio__actuator_8h_a7c230be9462b17c16d882f514f411f9e}\label{gpio__actuator_8h_a7c230be9462b17c16d882f514f411f9e}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_PUMP@{GPIO\_ACT\_PIN\_PUMP}}
+\index{GPIO\_ACT\_PIN\_PUMP@{GPIO\_ACT\_PIN\_PUMP}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_PUMP}{GPIO\_ACT\_PIN\_PUMP}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+PUMP~GPIO\+\_\+\+NUM\+\_\+14}
+
+
+
+GPIO pin number for pump relay. 
+
+Pump Relay \mbox{\Hypertarget{gpio__actuator_8h_affa40471168da40be880745f56569f74}\label{gpio__actuator_8h_affa40471168da40be880745f56569f74}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_ACT\_PIN\_WATERING@{GPIO\_ACT\_PIN\_WATERING}}
+\index{GPIO\_ACT\_PIN\_WATERING@{GPIO\_ACT\_PIN\_WATERING}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_ACT\_PIN\_WATERING}{GPIO\_ACT\_PIN\_WATERING}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+ACT\+\_\+\+PIN\+\_\+\+WATERING~GPIO\+\_\+\+NUM\+\_\+9}
+
+
+
+GPIO pin number for watering relay. 
+
+Watering Relay \mbox{\Hypertarget{gpio__actuator_8h_a6f59d8eb395ad1a647ce35e93ada1fc7}\label{gpio__actuator_8h_a6f59d8eb395ad1a647ce35e93ada1fc7}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_INPUT\_PIN\_GROUP@{GPIO\_INPUT\_PIN\_GROUP}}
+\index{GPIO\_INPUT\_PIN\_GROUP@{GPIO\_INPUT\_PIN\_GROUP}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_INPUT\_PIN\_GROUP}{GPIO\_INPUT\_PIN\_GROUP}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+INPUT\+\_\+\+PIN\+\_\+\+GROUP}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{                                ((1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a9eb529c21c4e6fad3b03a520fd621837}{GPIO\_ACT\_PIN\_CW\_IN}})       \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_aa511821009d60378c224d2393ce4e434}{GPIO\_ACT\_PIN\_CCW\_IN}})    \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a3b7f947ed5fa0f78f417656413bb795d}{GPIO\_ACT\_PIN\_PRESS}})) \(\backslash\)}
+
+\end{DoxyCode}
+
+
+GPIO pin bitmask for all input pins. 
+
+\mbox{\Hypertarget{gpio__actuator_8h_ae9414ffb07bc5755fe07d93730986f6f}\label{gpio__actuator_8h_ae9414ffb07bc5755fe07d93730986f6f}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!GPIO\_OUTPUT\_PIN\_GROUP@{GPIO\_OUTPUT\_PIN\_GROUP}}
+\index{GPIO\_OUTPUT\_PIN\_GROUP@{GPIO\_OUTPUT\_PIN\_GROUP}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{GPIO\_OUTPUT\_PIN\_GROUP}{GPIO\_OUTPUT\_PIN\_GROUP}}
+{\footnotesize\ttfamily \#define GPIO\+\_\+\+OUTPUT\+\_\+\+PIN\+\_\+\+GROUP}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{                                ((1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a92c79a9c64a9d29a6891d24c646e6bde}{GPIO\_ACT\_PIN\_ON}})         \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_ad48b7c5383ed0ada1dd71a8309c7e7bc}{GPIO\_ACT\_PIN\_OFF}})      \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_ae0f6b5dac3f19ce36afaa9d1cccb1e52}{GPIO\_ACT\_PIN\_AUX}})      \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_aabde3af6bcbe778ff81a66507ce756f4}{GPIO\_ACT\_PIN\_CW}})        \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a1131053f191e20a1e5758f029cb1b52b}{GPIO\_ACT\_PIN\_CCW}})      \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_affa40471168da40be880745f56569f74}{GPIO\_ACT\_PIN\_WATERING}})    \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_ac01c195099a0db1e0dedfde2911e8ba3}{GPIO\_ACT\_PIN\_PERC\_AUX}})    \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a142731581993455b4a03f44d381c905a}{GPIO\_ACT\_PIN\_PERC\_OUT}})    \(\backslash\)}
+\DoxyCodeLine{                                | (1ULL<<\mbox{\hyperlink{gpio__actuator_8h_a7c230be9462b17c16d882f514f411f9e}{GPIO\_ACT\_PIN\_PUMP}}))   \(\backslash\)}
+
+\end{DoxyCode}
+
+
+GPIO pin bitmask for all output pins. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{gpio__actuator_8h_a0afe7c71d5e0d419d5dc21c75f8edfd2}\label{gpio__actuator_8h_a0afe7c71d5e0d419d5dc21c75f8edfd2}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_config@{gpio\_actuator\_config}}
+\index{gpio\_actuator\_config@{gpio\_actuator\_config}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_config()}{gpio\_actuator\_config()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gpio\+\_\+actuator\+\_\+config (\begin{DoxyParamCaption}\item[{pivot\+\_\+config}]{config }\end{DoxyParamCaption})}
+
+
+
+Configures the GPIO actuator module with the specified configuration. 
+
+This function configures the GPIO actuator module based on the provided configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & The configuration to apply\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Failed to configure
+\end{DoxyItemize}
+\end{DoxyReturn}
+Configures the GPIO actuator module with the specified configuration.
+
+This function configures the GPIO actuator module based on the provided configuration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & Pivot configuration. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{gpio__actuator_8h_aaa17c3bcdd8b746b0f7ee4dffd66cd39}\label{gpio__actuator_8h_aaa17c3bcdd8b746b0f7ee4dffd66cd39}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_get@{gpio\_actuator\_get}}
+\index{gpio\_actuator\_get@{gpio\_actuator\_get}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_get()}{gpio\_actuator\_get()}}
+{\footnotesize\ttfamily pivot\+\_\+actions gpio\+\_\+actuator\+\_\+get (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Gets the current pivot configuration. 
+
+This function retrieves the current pivot configuration from the GPIO actuator module.
+
+\begin{DoxyReturn}{Returns}
+The current pivot configuration
+\end{DoxyReturn}
+Gets the current pivot configuration.
+
+This function retrieves the current GPIO actuator state.
+
+\begin{DoxyReturn}{Returns}
+pivot\+\_\+actions Current pivot actions. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943}\label{gpio__actuator_8h_a5d66d70c42fdb257cbfc6b104f3bc943}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_init@{gpio\_actuator\_init}}
+\index{gpio\_actuator\_init@{gpio\_actuator\_init}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_init()}{gpio\_actuator\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gpio\+\_\+actuator\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initializes the GPIO actuator module. 
+
+This function initializes the GPIO actuator module, setting up GPIO pins and configurations.
+
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Failed to initialize
+\end{DoxyItemize}
+\end{DoxyReturn}
+This function initializes the GPIO actuator module, configures GPIO pins, and sets up timers and tasks.
+
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{gpio__actuator_8h_adcb9317653a296d6372ff20d6f6663df}\label{gpio__actuator_8h_adcb9317653a296d6372ff20d6f6663df}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_pressure\_off@{gpio\_actuator\_pressure\_off}}
+\index{gpio\_actuator\_pressure\_off@{gpio\_actuator\_pressure\_off}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_pressure\_off()}{gpio\_actuator\_pressure\_off()}}
+{\footnotesize\ttfamily void gpio\+\_\+actuator\+\_\+pressure\+\_\+off (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Turns off the pressure relay and stops pressure monitoring. 
+
+This function turns off the pressure relay and stops pressure monitoring in the GPIO actuator module.
+
+Turns off the pressure relay and stops pressure monitoring. \mbox{\Hypertarget{gpio__actuator_8h_a82736219ac42b57346f0848ae0d94d53}\label{gpio__actuator_8h_a82736219ac42b57346f0848ae0d94d53}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_pressure\_on@{gpio\_actuator\_pressure\_on}}
+\index{gpio\_actuator\_pressure\_on@{gpio\_actuator\_pressure\_on}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_pressure\_on()}{gpio\_actuator\_pressure\_on()}}
+{\footnotesize\ttfamily void gpio\+\_\+actuator\+\_\+pressure\+\_\+on (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Turns on the pressure relay and starts pressure monitoring. 
+
+This function turns on the pressure relay and starts pressure monitoring in the GPIO actuator module.
+
+Turns on the pressure relay and starts pressure monitoring. \mbox{\Hypertarget{gpio__actuator_8h_a581efd7ff2ba44a03738f78f28b7ec4c}\label{gpio__actuator_8h_a581efd7ff2ba44a03738f78f28b7ec4c}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_pump\_off@{gpio\_actuator\_pump\_off}}
+\index{gpio\_actuator\_pump\_off@{gpio\_actuator\_pump\_off}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_pump\_off()}{gpio\_actuator\_pump\_off()}}
+{\footnotesize\ttfamily void gpio\+\_\+actuator\+\_\+pump\+\_\+off (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Turns off the pump relay. 
+
+This function turns off the pump relay in the GPIO actuator module.
+
+Turns off the pump relay. \mbox{\Hypertarget{gpio__actuator_8h_a1e92129283eeff7fea4b2dba2b4de59d}\label{gpio__actuator_8h_a1e92129283eeff7fea4b2dba2b4de59d}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_pump\_on@{gpio\_actuator\_pump\_on}}
+\index{gpio\_actuator\_pump\_on@{gpio\_actuator\_pump\_on}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_pump\_on()}{gpio\_actuator\_pump\_on()}}
+{\footnotesize\ttfamily void gpio\+\_\+actuator\+\_\+pump\+\_\+on (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Turns on the pump relay. 
+
+This function turns on the pump relay in the GPIO actuator module.
+
+Turns on the pump relay. \mbox{\Hypertarget{gpio__actuator_8h_a422f44a7b18b258cff72793003fa2ca4}\label{gpio__actuator_8h_a422f44a7b18b258cff72793003fa2ca4}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_set@{gpio\_actuator\_set}}
+\index{gpio\_actuator\_set@{gpio\_actuator\_set}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_set()}{gpio\_actuator\_set()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t gpio\+\_\+actuator\+\_\+set (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions}]{actions }\end{DoxyParamCaption})}
+
+
+
+Sets the pivot configuration. 
+
+This function sets the pivot configuration for the GPIO actuator module.
+
+
+\begin{DoxyParams}{Parameters}
+{\em actions} & The pivot actions to set\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+
+\begin{DoxyItemize}
+\item ESP\+\_\+\+OK\+: Success
+\item ESP\+\_\+\+FAIL\+: Failed to set the configuration
+\end{DoxyItemize}
+\end{DoxyReturn}
+Sets the pivot configuration.
+
+This function sets the GPIO actuator actions based on the provided actions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em actions} & Pivot actions to set. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Error code indicating the success of the operation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{gpio__actuator_8h_afeaeadf28e5cbe11a1cfe0094b6bf23c}\label{gpio__actuator_8h_afeaeadf28e5cbe11a1cfe0094b6bf23c}} 
+\index{gpio\_actuator.h@{gpio\_actuator.h}!gpio\_actuator\_shutdown@{gpio\_actuator\_shutdown}}
+\index{gpio\_actuator\_shutdown@{gpio\_actuator\_shutdown}!gpio\_actuator.h@{gpio\_actuator.h}}
+\doxysubsubsection{\texorpdfstring{gpio\_actuator\_shutdown()}{gpio\_actuator\_shutdown()}}
+{\footnotesize\ttfamily void gpio\+\_\+actuator\+\_\+shutdown (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Shuts down all relays. 
+
+This function shuts down all relays in the GPIO actuator module.
+
+Shuts down all relays.
+
+This function shuts down the GPIO actuator module by turning off relays and cleaning up resources. 

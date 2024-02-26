@@ -1,0 +1,89 @@
+\hypertarget{wifi__app_8h}{}\doxysection{components/wifi\+\_\+app/include/wifi\+\_\+app.h File Reference}
+\label{wifi__app_8h}\index{components/wifi\_app/include/wifi\_app.h@{components/wifi\_app/include/wifi\_app.h}}
+
+
+Wi-\/\+Fi application functions and callbacks.  
+
+
+{\ttfamily \#include \char`\"{}project\+\_\+config.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}esp\+\_\+err.\+h\char`\"{}}\newline
+Include dependency graph for wifi\+\_\+app.\+h\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{wifi__app_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{wifi__app_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{wifi__app_8h_a26cf3f06215660f415ec949d1cf825fd}{wifi\+\_\+app\+\_\+init}} (void)
+\begin{DoxyCompactList}\small\item\em Initialize the Wi-\/\+Fi application. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{wifi__app_8h_ac6f5123d77dac91418d105614cc565b4}{wifi\+\_\+app\+\_\+set\+\_\+config}} (char $\ast$wifi\+\_\+ssid, char $\ast$wifi\+\_\+pass)
+\begin{DoxyCompactList}\small\item\em Set Wi-\/\+Fi configuration parameters. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{wifi__app_8h_a047b425b130feec7fd757734eaf8b404}\label{wifi__app_8h_a047b425b130feec7fd757734eaf8b404}} 
+void \mbox{\hyperlink{wifi__app_8h_a047b425b130feec7fd757734eaf8b404}{wifi\+\_\+reloader}} (void)
+\begin{DoxyCompactList}\small\item\em Reload the Wi-\/\+Fi configuration and restart the Wi-\/\+Fi application. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Wi-\/\+Fi application functions and callbacks. 
+
+\begin{DoxyDate}{Date}
+January 29, 2023
+\end{DoxyDate}
+This file contains the Wi-\/\+Fi application initialization and callback registration functions. 
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{wifi__app_8h_a26cf3f06215660f415ec949d1cf825fd}\label{wifi__app_8h_a26cf3f06215660f415ec949d1cf825fd}} 
+\index{wifi\_app.h@{wifi\_app.h}!wifi\_app\_init@{wifi\_app\_init}}
+\index{wifi\_app\_init@{wifi\_app\_init}!wifi\_app.h@{wifi\_app.h}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_init()}{wifi\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t wifi\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Initialize the Wi-\/\+Fi application. 
+
+This function initializes the Wi-\/\+Fi application, including setting up Wi-\/\+Fi configurations. \begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t Returns ESP\+\_\+\+OK on success, an error code otherwise.
+
+esp\+\_\+err\+\_\+t indicating success or failure. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{wifi__app_8h_ac6f5123d77dac91418d105614cc565b4}\label{wifi__app_8h_ac6f5123d77dac91418d105614cc565b4}} 
+\index{wifi\_app.h@{wifi\_app.h}!wifi\_app\_set\_config@{wifi\_app\_set\_config}}
+\index{wifi\_app\_set\_config@{wifi\_app\_set\_config}!wifi\_app.h@{wifi\_app.h}}
+\doxysubsubsection{\texorpdfstring{wifi\_app\_set\_config()}{wifi\_app\_set\_config()}}
+{\footnotesize\ttfamily void wifi\+\_\+app\+\_\+set\+\_\+config (\begin{DoxyParamCaption}\item[{char $\ast$}]{wifi\+\_\+ssid,  }\item[{char $\ast$}]{wifi\+\_\+pass }\end{DoxyParamCaption})}
+
+
+
+Set Wi-\/\+Fi configuration parameters. 
+
+This function sets the Wi-\/\+Fi SSID and password for connecting to a Wi-\/\+Fi network.
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+ssid} & The Wi-\/\+Fi SSID. \\
+\hline
+{\em wifi\+\_\+pass} & The Wi-\/\+Fi password.\\
+\hline
+\end{DoxyParams}
+Set Wi-\/\+Fi configuration parameters.
+
+
+\begin{DoxyParams}{Parameters}
+{\em wifi\+\_\+ssid} & Wi-\/\+Fi SSID. \\
+\hline
+{\em wifi\+\_\+pass} & Wi-\/\+Fi password. \\
+\hline
+\end{DoxyParams}

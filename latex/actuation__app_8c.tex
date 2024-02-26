@@ -1,0 +1,235 @@
+\hypertarget{actuation__app_8c}{}\doxysection{components/applications/actuation\+\_\+app.c File Reference}
+\label{actuation__app_8c}\index{components/applications/actuation\_app.c@{components/applications/actuation\_app.c}}
+
+
+Actuation control class responsible for managing actuator actions.  
+
+
+{\ttfamily \#include \char`\"{}actuation\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}gpio\+\_\+actuator.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}data\+\_\+app.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}Free\+RTOS\+\_\+defines.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}idp\+\_\+parser.\+h\char`\"{}}\newline
+{\ttfamily \#include \char`\"{}log.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$string.\+h$>$}\newline
+Include dependency graph for actuation\+\_\+app.\+c\+:
+\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{actuation__app_8c__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{actuation__app_8c_af0c6adb6a3834dd0e90d69971cef02ec}\label{actuation__app_8c_af0c6adb6a3834dd0e90d69971cef02ec}} 
+\#define \mbox{\hyperlink{actuation__app_8c_af0c6adb6a3834dd0e90d69971cef02ec}{ACTUATION\+\_\+\+APP\+\_\+\+TAG}}~\char`\"{}actuation\+\_\+app\char`\"{}
+\begin{DoxyCompactList}\small\item\em Tag used for logging within the actuation\+\_\+app module. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8c_ae9328057dab5589853e5dad115719d99}\label{actuation__app_8c_ae9328057dab5589853e5dad115719d99}} 
+\#define \mbox{\hyperlink{actuation__app_8c_ae9328057dab5589853e5dad115719d99}{ACTUATION\+\_\+\+APP\+\_\+\+POWER\+\_\+\+TIME}}~10000
+\begin{DoxyCompactList}\small\item\em Timeout duration for manual power configuration in milliseconds (10 seconds). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8c_a57f1082d2d9d523ddbf3045e0e1076df}\label{actuation__app_8c_a57f1082d2d9d523ddbf3045e0e1076df}} 
+\#define \mbox{\hyperlink{actuation__app_8c_a57f1082d2d9d523ddbf3045e0e1076df}{ACTUATION\+\_\+\+APP\+\_\+\+WATERING\+\_\+\+TIME}}~30000
+\begin{DoxyCompactList}\small\item\em Timeout duration for manual watering configuration in milliseconds (30 seconds). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8c_a7200005fafc96430e9d4fc254bbc7d73}\label{actuation__app_8c_a7200005fafc96430e9d4fc254bbc7d73}} 
+\#define \mbox{\hyperlink{actuation__app_8c_a7200005fafc96430e9d4fc254bbc7d73}{ACTUATION\+\_\+\+APP\+\_\+\+ROTATION\+\_\+\+TIME}}~6000
+\begin{DoxyCompactList}\small\item\em Timeout duration for manual rotation configuration in milliseconds (6 seconds). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{actuation__app_8c_a01ecf89ca91dc092449f482c0b41d812}\label{actuation__app_8c_a01ecf89ca91dc092449f482c0b41d812}} 
+\#define \mbox{\hyperlink{actuation__app_8c_a01ecf89ca91dc092449f482c0b41d812}{ACTUATION\+\_\+\+APP\+\_\+\+PERCENTIMETER\+\_\+\+TIME}}~120000
+\begin{DoxyCompactList}\small\item\em Timeout duration for manual percentimeter configuration in milliseconds (2 minutes). \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}{actuation\+\_\+app\+\_\+task}} (void $\ast$arg)
+\begin{DoxyCompactList}\small\item\em Task responsible for monitoring possible changes in equipment status. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_a0e90ab1e5cbb4fb01a29750721af18a6}{actuation\+\_\+app\+\_\+manual\+\_\+call}} (bool on\+\_\+off, pivot\+\_\+actions current\+\_\+action)
+\begin{DoxyCompactList}\small\item\em Perform a manual call based on the given parameters. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{actuation__app_8c_a0ddb1b57ec32c8ee51dd73522356736f}{actuation\+\_\+app\+\_\+init}} (const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}} callback)
+\begin{DoxyCompactList}\small\item\em Initialize the actuation control class. \end{DoxyCompactList}\item 
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{actuation__app_8c_a7d7a362766382ca97b44c28f701f50da}{actuation\+\_\+app\+\_\+set\+\_\+config}} (pivot\+\_\+config config)
+\begin{DoxyCompactList}\small\item\em Set the configuration for the actuator. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}{actuation\+\_\+app\+\_\+set\+\_\+actions}} (const pivot\+\_\+actions config\+\_\+in, bool alert\+\_\+change)
+\begin{DoxyCompactList}\small\item\em Set the actions for the actuator. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ad5a53c07829844904985cbcece00e627}{actuation\+\_\+app\+\_\+get\+\_\+actions}} (pivot\+\_\+actions $\ast$config\+\_\+out, size\+\_\+t config\+\_\+size)
+\begin{DoxyCompactList}\small\item\em Get the current actions of the actuator. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ab60deacd543170493cfb182243ea9809}{actuation\+\_\+app\+\_\+set\+\_\+pump}} (bool pump\+\_\+state)
+\begin{DoxyCompactList}\small\item\em Set the state of the pump. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{actuation__app_8c_ad4dc627155e42c8191f1179bf3340964}{actuation\+\_\+app\+\_\+shutdown}} (void)
+\begin{DoxyCompactList}\small\item\em Shutdown the actuation control class. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const pivot\+\_\+actions \mbox{\hyperlink{actuation__app_8c_a1482a55d642a437eeb8a696a81877035}{pivot\+\_\+actions\+\_\+off}}
+\begin{DoxyCompactList}\small\item\em Pivot actions structure. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Actuation control class responsible for managing actuator actions. 
+
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{actuation__app_8c_ad5a53c07829844904985cbcece00e627}\label{actuation__app_8c_ad5a53c07829844904985cbcece00e627}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_get\_actions@{actuation\_app\_get\_actions}}
+\index{actuation\_app\_get\_actions@{actuation\_app\_get\_actions}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_get\_actions()}{actuation\_app\_get\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+get\+\_\+actions (\begin{DoxyParamCaption}\item[{pivot\+\_\+actions $\ast$}]{config\+\_\+out,  }\item[{size\+\_\+t}]{config\+\_\+size }\end{DoxyParamCaption})}
+
+
+
+Get the current actions of the actuator. 
+
+Reads the current status on IO ports.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+out} & \mbox{[}out\mbox{]}\+: The buffer to store the current pivot actions. \\
+\hline
+{\em config\+\_\+size} & \mbox{[}in\mbox{]}\+: The size of the config\+\_\+out buffer. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_a0ddb1b57ec32c8ee51dd73522356736f}\label{actuation__app_8c_a0ddb1b57ec32c8ee51dd73522356736f}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_init@{actuation\_app\_init}}
+\index{actuation\_app\_init@{actuation\_app\_init}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_init()}{actuation\_app\_init()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t actuation\+\_\+app\+\_\+init (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}}]{callback }\end{DoxyParamCaption})}
+
+
+
+Initialize the actuation control class. 
+
+Initializes the actuation application.
+
+
+\begin{DoxyParams}{Parameters}
+{\em callback} & \mbox{[}in\mbox{]}\+: Callback function for actuation events. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the initialization. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{actuation__app_8c_a0e90ab1e5cbb4fb01a29750721af18a6}\label{actuation__app_8c_a0e90ab1e5cbb4fb01a29750721af18a6}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_manual\_call@{actuation\_app\_manual\_call}}
+\index{actuation\_app\_manual\_call@{actuation\_app\_manual\_call}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_manual\_call()}{actuation\_app\_manual\_call()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+manual\+\_\+call (\begin{DoxyParamCaption}\item[{bool}]{on\+\_\+off,  }\item[{pivot\+\_\+actions}]{current\+\_\+action }\end{DoxyParamCaption})}
+
+
+
+Perform a manual call based on the given parameters. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em on\+\_\+off} & \mbox{[}in\mbox{]}\+: The state to set (true for on, false for off). \\
+\hline
+{\em current\+\_\+action} & \mbox{[}in\mbox{]}\+: The current pivot actions. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}\label{actuation__app_8c_ac1b2a4c561102e805732b9bd2c910b15}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_set\_actions@{actuation\_app\_set\_actions}}
+\index{actuation\_app\_set\_actions@{actuation\_app\_set\_actions}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_set\_actions()}{actuation\_app\_set\_actions()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+set\+\_\+actions (\begin{DoxyParamCaption}\item[{const pivot\+\_\+actions}]{config\+\_\+in,  }\item[{bool}]{alert\+\_\+change }\end{DoxyParamCaption})}
+
+
+
+Set the actions for the actuator. 
+
+Applies the provided actions to the actuation application.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+\_\+in} & \mbox{[}in\mbox{]}\+: The pivot actions to set. \\
+\hline
+{\em alert\+\_\+change} & \mbox{[}in\mbox{]}\+: Flag indicating whether to alert about manual configuration. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_a7d7a362766382ca97b44c28f701f50da}\label{actuation__app_8c_a7d7a362766382ca97b44c28f701f50da}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_set\_config@{actuation\_app\_set\_config}}
+\index{actuation\_app\_set\_config@{actuation\_app\_set\_config}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_set\_config()}{actuation\_app\_set\_config()}}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t actuation\+\_\+app\+\_\+set\+\_\+config (\begin{DoxyParamCaption}\item[{pivot\+\_\+config}]{config }\end{DoxyParamCaption})}
+
+
+
+Set the configuration for the actuator. 
+
+Sets the configuration for the actuation application.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config} & \mbox{[}in\mbox{]}\+: The pivot configuration to set. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+esp\+\_\+err\+\_\+t\+: Error code indicating the success of the configuration. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{actuation__app_8c_ab60deacd543170493cfb182243ea9809}\label{actuation__app_8c_ab60deacd543170493cfb182243ea9809}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_set\_pump@{actuation\_app\_set\_pump}}
+\index{actuation\_app\_set\_pump@{actuation\_app\_set\_pump}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_set\_pump()}{actuation\_app\_set\_pump()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+set\+\_\+pump (\begin{DoxyParamCaption}\item[{bool}]{pump\+\_\+state }\end{DoxyParamCaption})}
+
+
+
+Set the state of the pump. 
+
+Sets the pump state for the actuation application.
+
+
+\begin{DoxyParams}{Parameters}
+{\em pump\+\_\+state} & \mbox{[}in\mbox{]}\+: The state to set (true for on, false for off). \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{actuation__app_8c_ad4dc627155e42c8191f1179bf3340964}\label{actuation__app_8c_ad4dc627155e42c8191f1179bf3340964}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_shutdown@{actuation\_app\_shutdown}}
+\index{actuation\_app\_shutdown@{actuation\_app\_shutdown}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_shutdown()}{actuation\_app\_shutdown()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+shutdown (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Shutdown the actuation control class. 
+
+Shuts down the actuation application. \mbox{\Hypertarget{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}\label{actuation__app_8c_a5f04de009b97c356dc4efe6bcb2c5516}} 
+\index{actuation\_app.c@{actuation\_app.c}!actuation\_app\_task@{actuation\_app\_task}}
+\index{actuation\_app\_task@{actuation\_app\_task}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{actuation\_app\_task()}{actuation\_app\_task()}}
+{\footnotesize\ttfamily void actuation\+\_\+app\+\_\+task (\begin{DoxyParamCaption}\item[{void $\ast$}]{arg }\end{DoxyParamCaption})}
+
+
+
+Task responsible for monitoring possible changes in equipment status. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em arg} & \mbox{[}in\mbox{]}\+: Task argument (default NULL).\\
+\hline
+{\em arg} & -\/ \mbox{[}in\mbox{]}\+: task argument (default NULL) \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{actuation__app_8c_a1482a55d642a437eeb8a696a81877035}\label{actuation__app_8c_a1482a55d642a437eeb8a696a81877035}} 
+\index{actuation\_app.c@{actuation\_app.c}!pivot\_actions\_off@{pivot\_actions\_off}}
+\index{pivot\_actions\_off@{pivot\_actions\_off}!actuation\_app.c@{actuation\_app.c}}
+\doxysubsubsection{\texorpdfstring{pivot\_actions\_off}{pivot\_actions\_off}}
+{\footnotesize\ttfamily const pivot\+\_\+actions pivot\+\_\+actions\+\_\+off}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    .power\_state = \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}{PIVOT\_OFF}},}
+\DoxyCodeLine{    .rotation = \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}{PIVOT\_CW}},}
+\DoxyCodeLine{    .watering\_state = \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}{PIVOT\_DRY}},}
+\DoxyCodeLine{    .percentimeter = 0}
+\DoxyCodeLine{\}}
+
+\end{DoxyCode}
+
+
+Pivot actions structure. 
+
+This structure defines the possible actions for actuation, including power state, rotation direction, watering state, and percentimeter reading. 

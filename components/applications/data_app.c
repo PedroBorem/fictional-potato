@@ -493,7 +493,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 	return ret;
 }
 
-
 /**
  * @brief Generates a scheduling key.
  * @param scheduling_id Pointer to store the generated scheduling key.
