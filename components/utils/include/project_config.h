@@ -311,6 +311,11 @@ typedef void (*app_callback)(const char* buffer_request, comm_type communication
  */
 extern uint16_t global_angle;
 
+/** @var system_id
+ *  @brief Local variable for the system ID.
+ */
+extern char system_id[50];
+
 /** @} */ // end of PROJECT_CONFIG group
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */

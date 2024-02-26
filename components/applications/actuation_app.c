@@ -85,7 +85,7 @@ esp_err_t actuation_app_init(const app_callback callback)
 {
 	esp_err_t err = ESP_OK;
 
-	err = gpio_actuator_init();
+	err = gpio_actuator_init(callback);
 	if(callback != NULL && err == ESP_OK)
 	{
 		actuation_app_call = callback;

@@ -62,7 +62,7 @@ uint16_t global_angle = 655;
 /** @var system_id
  *  @brief Local variable for the system ID.
  */
-static char system_id[50] = {};
+char system_id[50] = {};
 
 /** @var system_read_time
  *  @brief Local variable for the system read time.

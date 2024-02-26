@@ -27,6 +27,8 @@
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
 
 /* Global variables ---------------------------------------------- */
+// Callback variables
+static app_callback gpio_actuator_callback = NULL;
 
 // FreeRTOS variables
 static TimerHandle_t perc_timer_handleOn = NULL;
@@ -115,9 +117,18 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
  *
  * @return esp_err_t Error code indicating the success of the operation.
  */
-esp_err_t gpio_actuator_init()
+esp_err_t gpio_actuator_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
+
+	if(callback != NULL)
+	{
+		gpio_actuator_callback = callback;
+	}
+	else
+	{
+		return err;
+	}
 
 	perc_pct_on = 0;
 	perc_sec_on = 0;
@@ -564,6 +575,9 @@ void actuator_wait_pressure(void* arg)
 			//system on
 			gpio_actuator_start();
 			pressurizing = false;
+
+			// send current action
+			gpio_actuator_callback("#00$", COMM_MQTT);
 
 			//suspend own task
 			vTaskSuspend(NULL);

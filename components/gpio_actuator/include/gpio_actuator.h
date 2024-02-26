@@ -131,7 +131,7 @@
  *     - ESP_OK: Success
  *     - ESP_FAIL: Failed to initialize
  */
-esp_err_t gpio_actuator_init(void);
+esp_err_t gpio_actuator_init(const app_callback callback);
 
 /**
  * @brief Configures the GPIO actuator module with the specified configuration.
