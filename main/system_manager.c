@@ -1791,15 +1791,18 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 			actuation_app_set_actions(current_action, true);
 			actuation_app_shutdown();
 
+			// save old history
+			pivot_history old_history = {};
+			old_history.end_date = rtc_app_get_timestamp(false);
+			old_history.end_angle = global_angle;
+
+			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
+
+			// send current status
+			system_manager_idp_00("#00$", COMM_MQTT);
+
 			// save current config
 			data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
-
-			// save old history
-			pivot_history current_history = {};
-			current_history.end_date = rtc_app_get_timestamp(false);
-			current_history.end_angle = global_angle;
-
-			data_app_save(DATA_TYPE_OLD_HISTORY, &current_history, sizeof(current_history));
 		}
 		else
 		{
