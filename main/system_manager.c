@@ -362,6 +362,7 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
+			vTaskDelay(pdMS_TO_TICKS(1000));
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
 
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
@@ -1865,6 +1866,7 @@ static void system_manager_idp_30(const char* buffer, comm_type comm_mode)
 			{ NULL, NULL }
 		};
 
+		vTaskDelay(pdMS_TO_TICKS(1000));
 		idp_parser_create_package(str_out, arg_pairs_ack);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
 	}

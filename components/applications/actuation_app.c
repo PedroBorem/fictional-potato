@@ -26,19 +26,19 @@
  * @def ACTUATION_APP_POWER_TIME
  * @brief Timeout duration for manual power configuration in milliseconds (10 seconds).
  */
-#define ACTUATION_APP_POWER_TIME 10000    // 10 sec
+#define ACTUATION_APP_POWER_TIME 15000    // 10 sec
 
 /**
  * @def ACTUATION_APP_WATERING_TIME
  * @brief Timeout duration for manual watering configuration in milliseconds (30 seconds).
  */
-#define ACTUATION_APP_WATERING_TIME 30000 // 30 sec
+#define ACTUATION_APP_WATERING_TIME 35000 // 30 sec
 
 /**
  * @def ACTUATION_APP_ROTATION_TIME
  * @brief Timeout duration for manual rotation configuration in milliseconds (6 seconds).
  */
-#define ACTUATION_APP_ROTATION_TIME 6000  // 6 sec
+#define ACTUATION_APP_ROTATION_TIME 15000  // 6 sec
 
 /**
  * @def ACTUATION_APP_PERCENTIMETER_TIME
@@ -210,7 +210,6 @@ void actuation_app_task(void* arg)
 	while(1)
 	{
 		current_action = gpio_actuator_get();
-		data_app_load(DATA_TYPE_ACTIONS, &actuation_config);
 
 		if((current_action.power_state != actuation_config.power_state)
 		&& (current_action.watering_state != PIVOT_PRESSURIZING))
@@ -239,7 +238,7 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_action.watering_state == PIVOT_DRY)
 				{
-					actuation_app_manual_call(false, current_action);
+					actuation_app_manual_call(true, current_action);
 				}
 				else if(current_action.watering_state == PIVOT_WET)
 				{
