@@ -29,7 +29,7 @@ def criar_interface():
     root = tk.Tk()
     root.title("Gravação do ESP32")
 
-    logo = tk.PhotoImage(file="logo.png")
+    logo = tk.PhotoImage(file=f"./flash/logo.png")
     logo_label = tk.Label(root, image=logo)
     logo_label.pack()
 
