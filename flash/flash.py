@@ -1,6 +1,6 @@
 import subprocess
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import messagebox
 import os
 
 def gravar_firmware(porta_entry):
@@ -10,9 +10,14 @@ def gravar_firmware(porta_entry):
     
     if verificar_porta(porta):
         comando = f"python {esptool_path} --chip esp32s3 -p {porta} -b 460800 --before=default_reset --after=hard_reset write_flash --flash_mode dio --flash_freq 80m --flash_size 8MB 0x0 {firmware_path}/bootloader.bin 0x10000 {firmware_path}/fw_PlacaDeControle_2.bin 0x8000 {firmware_path}/partition-table.bin"
-        subprocess.run(comando, shell=True)
+        
+        try:
+            subprocess.run(comando, shell=True, check=True)
+            messagebox.showinfo("Sucesso", "Firmware gravado com sucesso!")
+        except subprocess.CalledProcessError:
+            messagebox.showerror("Erro", "Erro ao gravar o firmware.")
     else:
-        tk.messagebox.showerror("Erro", "Porta inválida!")
+        messagebox.showerror("Erro", "Porta inválida!")
 
 def verificar_porta(porta):
     if porta.startswith("COM") or porta.startswith("/dev/ttyUSB") or porta.startswith("/dev/ttyACM"):
