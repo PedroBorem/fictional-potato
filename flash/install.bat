@@ -14,5 +14,11 @@ cd esptool
 python setup.py install
 cd ..
 
+rem Instala o intelhex module
+pip install --user intelhex
+
+rem Instala o pyserial module
+pip install --user pyserial
+
 echo Instalação concluída com sucesso!
 pause
