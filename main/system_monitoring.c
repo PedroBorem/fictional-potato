@@ -128,11 +128,11 @@ static void system_monitoring_actuation(void)
 
             if(system_monitoring_config.water_return == true)
             {
-                pivot_actions.rotation = PIVOT_WET;
+                pivot_actions.watering_state = PIVOT_WET;
             }
             else
             {
-                pivot_actions.rotation = PIVOT_DRY;
+                pivot_actions.watering_state = PIVOT_DRY;
             }
 
             idp = IDP_1;
