@@ -114,7 +114,8 @@ esp_err_t data_app_init(void)
 			.contactor = "NA",
 			.pressure = "NA",
 			.pressurization_time = 30,
-			.on_off_time = 1,
+			.on_time = 1,
+			.off_time = 1,
 			.read_time = 10
 	};
 
