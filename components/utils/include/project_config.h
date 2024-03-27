@@ -93,6 +93,7 @@
  * @var IDP_14 Scheduling type 1 (On by date and off by date)
  * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
  * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_23 GPS configurations via LoraMesh
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -117,6 +118,7 @@ typedef enum
     IDP_17,
     IDP_18,
     IDP_22 = 22,
+    IDP_23,
     IDP_30 = 30,
     IDP_90 = 90,
     IDP_91,

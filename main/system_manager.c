@@ -104,6 +104,7 @@ static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_23(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char* buffer, comm_type comm_mode);
@@ -336,6 +337,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 		case IDP_22:
 		{
 			system_manager_idp_22(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_23:
+		{
+			system_manager_idp_23(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -1751,6 +1757,18 @@ static void system_manager_idp_22(const char* buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+}
+
+/**
+ * @brief Handles IDP 23 requests for GPS configuration modification via LoraMesh.
+ *
+ * This function handles the configuration of the GPS through LoraMesh communication.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_23(const char* buffer, comm_type comm_mode){
+
 }
 
 /**
