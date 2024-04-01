@@ -1749,6 +1749,8 @@ static void system_manager_idp_23(const char* buffer, comm_type comm_mode)
 		size_t len_new_buffer = strlen(new_buffer);
 		rf_uart_send_event(new_buffer, len_new_buffer);
 
+		ESP_LOGI(SYSTEM_MANAGER_TAG,"TESTANDO %s", id_gps_ascii);
+
 		free(new_buffer);
 	}
 }
