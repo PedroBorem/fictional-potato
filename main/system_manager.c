@@ -1733,26 +1733,22 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 static void system_manager_idp_23(const char* buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_MQTT)
-	{
-		char id_gps_ascii[] = "\x01\x00"; //"";
-		size_t len_id_radio = strlen(id_gps_ascii);
-
-		char *new_buffer = (char *)malloc(strlen(buffer) + len_id_radio + 1);
-
-		if (new_buffer == NULL)
-		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG,"Memory allocation error");
-		}
-		strcpy(new_buffer, id_gps_ascii);
-		strcat(new_buffer, buffer);
+    {	
+		size_t len_buffer = strlen(buffer);
+    
+		size_t len_buffer_gps_config = len_buffer + 2; // for 0x01 and 0x00
+		char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
 		
-		size_t len_new_buffer = strlen(new_buffer);
-		rf_uart_send_event(new_buffer, len_new_buffer);
+		buffer_gps_config[0] = 0x01;
+		buffer_gps_config[1] = 0x00;
+		
+		memcpy(buffer_gps_config + 2, buffer, len_buffer);
+		
+		buffer_gps_config[len_buffer_gps_config] = '\0';
 
-		ESP_LOGI(SYSTEM_MANAGER_TAG,"TESTANDO %s", id_gps_ascii);
+		rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
 
-		free(new_buffer);
-	}
+    }
 }
 
 /**
