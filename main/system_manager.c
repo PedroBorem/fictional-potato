@@ -24,6 +24,7 @@
 #include "actuation_app.h"
 #include "comm_app.h"
 #include "data_app.h"
+#include "rf_uart.h"
 
 #include "scheduling.h"
 #include "system_monitoring.h"
@@ -1729,23 +1730,21 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  * @param buffer The input buffer containing request data.
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
-static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
+static void system_manager_idp_23(const char* buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_MQTT)
 	{
-		char id_gps_ascii[] = "";
+		char id_gps_ascii[] = "\x01\x00"; //"";
 		size_t len_id_radio = strlen(id_gps_ascii);
 
 		char *new_buffer = (char *)malloc(strlen(buffer) + len_id_radio + 1);
 
 		if (new_buffer == NULL)
 		{
-			LOG_ERR("Memory allocation error");
-			return 1;
+			ESP_LOGE(SYSTEM_MANAGER_TAG,"Memory allocation error");
 		}
-
 		strcpy(new_buffer, id_gps_ascii);
-		strcpy(new_buffer, buffer);
+		strcat(new_buffer, buffer);
 		
 		size_t len_new_buffer = strlen(new_buffer);
 		rf_uart_send_event(new_buffer, len_new_buffer);
