@@ -972,15 +972,17 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 			system_initial_angle = global_angle;
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
 		}
+
+		if(gps_flag_send_to_mqtt)
+		{
+			gprs_uart_send_event(buffer, strlen(buffer));
+		}
+		
+		gps_flag_send_to_mqtt = false;
 	}
 	if (comm_mode == COMM_MQTT)
 	{
 		gps_flag_send_to_mqtt = true;
-	}
-	if(gps_flag_send_to_mqtt)
-	{
-		gprs_uart_send_event(buffer, strlen(buffer));
-		gps_flag_send_to_mqtt = false;
 	}
 }
 
