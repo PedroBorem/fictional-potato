@@ -141,6 +141,7 @@ typedef enum
     COMM_HTTP_POST = 0,
     COMM_HTTP_GET,
     COMM_MQTT,
+    COMM_RF,
 } comm_type;
 
 /**

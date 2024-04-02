@@ -942,7 +942,7 @@ static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_RF)
 	{
 		uint8_t idp = 0;
 		time_t timestamp;
@@ -1730,25 +1730,28 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  * @param buffer The input buffer containing request data.
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
-static void system_manager_idp_23(const char* buffer, comm_type comm_mode)
+static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_MQTT)
-    {	
+	{
 		size_t len_buffer = strlen(buffer);
-    
-		size_t len_buffer_gps_config = len_buffer + 2; // for 0x01 and 0x00
+
+		size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
 		char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
-		
+
 		buffer_gps_config[0] = 0x01;
 		buffer_gps_config[1] = 0x00;
-		
+
 		memcpy(buffer_gps_config + 2, buffer, len_buffer);
-		
+
 		buffer_gps_config[len_buffer_gps_config] = '\0';
 
 		rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
-
-    }
+	}
+	if (comm_mode == COMM_RF)
+	{
+		gprs_uart_send_event(buffer, strlen(buffer));
+	}
 }
 
 /**
