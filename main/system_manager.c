@@ -85,6 +85,12 @@ static uint16_t system_initial_angle = 655;
  */
 static TimerHandle_t system_timer = NULL;
 
+/**
+ * @var gps_flag_send_to_mqtt
+ * @brief Variable that will indicate whether or not the next payload received from GPS will go to MQTT
+*/
+static bool gps_flag_send_to_mqtt = false;
+
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
@@ -966,6 +972,15 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 			system_initial_angle = global_angle;
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
 		}
+	}
+	if (comm_mode == COMM_MQTT)
+	{
+		gps_flag_send_to_mqtt = true;
+	}
+	if(gps_flag_send_to_mqtt)
+	{
+		gprs_uart_send_event(buffer, strlen(buffer));
+		gps_flag_send_to_mqtt = false;
 	}
 }
 
