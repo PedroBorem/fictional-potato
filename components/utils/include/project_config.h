@@ -135,6 +135,7 @@ typedef enum
  * @var COMM_HTTP_POST HTTP POST communication
  * @var COMM_HTTP_GET HTTP GET communication
  * @var COMM_MQTT MQTT communication
+ * @var COMM_RF RadioLoraMesh communication
  */
 typedef enum
 {
