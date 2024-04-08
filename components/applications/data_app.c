@@ -54,6 +54,12 @@
 #define DATA_SECTOR_CONFIG "sector_config"
 
 /**
+ * @def DATA_GPS_CONFIG
+ * @brief NVS access space for gps configuration data.
+ */
+#define DATA_GPS_CONFIG "gps_config"
+
+/**
  * @def DATA_RETURN_CONFIG
  * @brief NVS access space for return configuration data.
  */
@@ -126,6 +132,7 @@ esp_err_t data_app_init(void)
 			.wifi_pass = "soiltech",
 	};
 
+	const gps_config gps_config = {};
 	const pivot_return_config return_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
@@ -162,6 +169,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_SECTOR_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_SECTOR_CONFIG, &default_sector, sizeof(default_sector));
+		}
+
+		if(nvs_data_get_size(DATA_GPS_CONFIG) == 0)
+		{
+			data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
 		}
 
 		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
@@ -246,6 +258,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_SECTOR_CONFIG:
 		{
 			ret = nvs_data_set(DATA_SECTOR_CONFIG, data, data_size);
+			break;
+		}
+		case DATA_TYPE_GPS_CONFIG:
+		{
+			ret = nvs_data_set(DATA_GPS_CONFIG, data, data_size);
 			break;
 		}
 		case DATA_TYPE_RETURN_CONFIG:
@@ -367,6 +384,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_SECTOR_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_SECTOR_CONFIG, data);
+			break;
+		}
+		case DATA_TYPE_GPS_CONFIG:
+		{
+			ret = nvs_data_get_blob(DATA_GPS_CONFIG, data);
 			break;
 		}
 		case DATA_TYPE_RETURN_CONFIG:
