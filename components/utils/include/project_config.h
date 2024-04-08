@@ -236,6 +236,22 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
     pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } sector_config;
 
+/**
+ * @brief GPS Configuration parameters.
+ *
+ * Structure defining the GPS Configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t sinal_lat;
+    char latitude[17];
+    uint8_t sinal_lon;
+    char longitude[17];
+    uint16_t time_payload;
+    uint16_t offset;
+
+} gps_config;
+
 typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle;   /*!< Start angle of the configuration */
