@@ -79,7 +79,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  * @brief getter that will return the state of the barrier
  *
  */
-void bool barrier_get()
+bool barrier_get()
 {
     return barrier_status;
 }
