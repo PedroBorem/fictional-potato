@@ -13,6 +13,8 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
+#include "system_monitoring.h"
+#include "project_config.h"
 
 /* Private definitions ------------------------------------------- */
 
@@ -39,6 +41,8 @@ static TaskHandle_t xTask_readpercent = NULL;
 // Actions duration variables
 static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
+
+static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -280,19 +284,105 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 	if(actions.power_state == PIVOT_ON)
 	{
-		if(actions.rotation == PIVOT_CW)
+		if(barrier_get())
 		{
-			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+			if(&global_angle == system_monitoring_config.start_angle)
+			{
+				if(actions.rotation == PIVOT_CW)
+				{
+					if(gpio_actuator_start() == ESP_OK)
+					{
+						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+					}
+					else
+					{
+						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
+					}
+				}
+				else if(actions.rotation == PIVOT_CCW)
+				{
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+				}
+			}
+			else if(&global_angle == system_monitoring_config.end_angle)
+			{
+				if(actions.rotation == PIVOT_CW)
+				{
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+				}
+				else if(actions.rotation == PIVOT_CCW)
+				{
+					if(gpio_actuator_start() == ESP_OK)
+					{
+						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+					}
+					else
+					{
+						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
+					}
+				}
+			}
+			else
+			{
+				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+			}
 		}
-		else if(actions.rotation == PIVOT_CCW)
+		else
 		{
-			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
+			if(&global_angle == system_monitoring_config.start_angle)
+			{
+				if(actions.rotation == PIVOT_CW)
+				{
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+				}
+				else if(actions.rotation == PIVOT_CCW)
+				{
+					if(gpio_actuator_start() == ESP_OK)
+					{
+						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+					}
+					else
+					{
+						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
+					}
+				}
+			}
+			else if(&global_angle == system_monitoring_config.end_angle)
+			{
+				if(actions.rotation == PIVOT_CW)
+				{
+					if(gpio_actuator_start() == ESP_OK)
+					{
+						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+					}
+					else
+					{
+						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
+					}
+				}
+				else if(actions.rotation == PIVOT_CCW)
+				{
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+				}
+			}
+			else
+			{
+				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+			}
 		}
-
+		
 		if(actions.percentimeter > 0 && actions.percentimeter < 100)
 		{
 			perc_timer_handleOn = xTimerCreate(

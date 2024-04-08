@@ -41,4 +41,10 @@ void system_monitoring_stop(void);
  */
 void system_monitoring_register_callback(const app_callback callback);
 
+/**
+ * @brief getter that will return the state of the barrier
+ *
+ */
+void bool barrier_get();
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */
