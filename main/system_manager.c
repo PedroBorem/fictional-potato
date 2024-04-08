@@ -18,6 +18,8 @@
 #include "esp_system.h"
 #include "FreeRTOS_defines.h"
 
+#include "http_api.h"
+
 // Private includes
 #include <string.h>
 
@@ -1749,7 +1751,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	if ( comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
 	{
 		size_t len_buffer = strlen(buffer);
 
@@ -1763,11 +1765,71 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 		buffer_gps_config[len_buffer_gps_config] = '\0';
 
-		rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}
 	}
-	if (comm_mode == COMM_RF)
+	else if (comm_mode == COMM_HTTP_GET)
 	{
-		gprs_uart_send_event(buffer, strlen(buffer));
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_23;
+		gps_config gps_config = {};
+
+		data_app_load(DATA_TYPE_GPS_CONFIG, &gps_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"uint8_t", &gps_config.sinal_lat},
+				{"string", &gps_config.latitude},
+				{"uint8_t", &gps_config.sinal_lon},
+				{"string", &gps_config.longitude},
+				{"uint16_t", &gps_config.time_payload},
+				{"uint16_t", &gps_config.offset},
+				{NULL, NULL}};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+	}
+	else if (comm_mode == COMM_RF)
+	{
+		uint8_t idp = IDP_23;
+		char pivot_id[50] = {};
+		gps_config gps_config = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint8_t", &gps_config.sinal_lat},
+				{"string", &gps_config.latitude},
+				{"uint8_t", &gps_config.sinal_lon},
+				{"string", &gps_config.longitude},
+				{"uint16_t", &gps_config.time_payload},
+				{"uint16_t", &gps_config.offset},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+		esp_err_t ret = data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
+		if (ret == ESP_OK)
+		{
+			gprs_uart_send_event(buffer,strlen(buffer));
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_MQTT);
+		}
 	}
 }
 
