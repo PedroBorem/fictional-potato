@@ -289,10 +289,12 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 		// {
 			if(system_monitoring_current_angle == system_monitoring_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
-				if(actions.rotation == PIVOT_CW)
+				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
 					if(gpio_actuator_start() == ESP_OK)
 					{
+						ESP_LOGE(GPIO_ACT_TAG, "EEEEEEEEEEEEEEEEEEEEEE");
+
 						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
@@ -302,15 +304,11 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
 					}
 				}
-				else if(actions.rotation == PIVOT_CCW)
+				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
-					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier DDDDDDDDDDDDDDDDDDDDDDDDDDD");
 
 					vTaskDelay(pdMS_TO_TICKS(500)); 
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-
 					gpio_actuator_shutdown();
 				}
 			}
@@ -318,19 +316,17 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
-					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
+					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier  CCCCCCCCCCCCCCCCCCCCCCC");
 
 					vTaskDelay(pdMS_TO_TICKS(500)); 
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-
 					gpio_actuator_shutdown();
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
 					if(gpio_actuator_start() == ESP_OK)
 					{
+						ESP_LOGE(GPIO_ACT_TAG, "BBBBBBBBBBBBBBBBBBBBBBB");
+
 						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
@@ -343,6 +339,8 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			}
 			else
 			{
+				ESP_LOGE(GPIO_ACT_TAG, "AAAAAAAAAAAAAAAAAAAAAAAA");
+
 				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
