@@ -282,37 +282,32 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	perc_sec = actions.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
-
-	if(actions.power_state == PIVOT_ON)
+	
+	if(*system_monitoring_current_angle == system_monitoring_config.start_angle 
+	|| *system_monitoring_current_angle == system_monitoring_config.start_angle)
 	{
-		// if(barrier_get()) /* Inicial menor que final, ou seja ele esta irrigando a area menor */
-		// {
-			if(system_monitoring_current_angle == system_monitoring_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
+		if(actions.power_state == PIVOT_ON)
+		{
+			if(*system_monitoring_current_angle == system_monitoring_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
-					if(gpio_actuator_start() == ESP_OK)
-					{
-						ESP_LOGE(GPIO_ACT_TAG, "EEEEEEEEEEEEEEEEEEEEEE");
+					vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
+					ESP_LOGE(GPIO_ACT_TAG, "EEEEEEEEEEEEEEEEEEEEEE");
+					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
 
-						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-					}
-					else
-					{
-						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
-					}
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
+					ESP_LOGE(GPIO_ACT_TAG, "Angulo atual: %i, Angulo final: %i", *system_monitoring_current_angle, system_monitoring_config.end_angle);
 					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier DDDDDDDDDDDDDDDDDDDDDDDDDDD");
-
 					vTaskDelay(pdMS_TO_TICKS(500)); 
 					gpio_actuator_shutdown();
 				}
 			}
-			else if(system_monitoring_current_angle == system_monitoring_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
+			else if(*system_monitoring_current_angle == system_monitoring_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
@@ -323,171 +318,206 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
-					if(gpio_actuator_start() == ESP_OK)
-					{
-						ESP_LOGE(GPIO_ACT_TAG, "BBBBBBBBBBBBBBBBBBBBBBB");
-
-						gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-					}
-					else
-					{
-						ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
-					}
+					vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
+					ESP_LOGE(GPIO_ACT_TAG, "BBBBBBBBBBBBBBBBBBBBBBB");
+					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
 				}
 			}
 			else
 			{
-				ESP_LOGE(GPIO_ACT_TAG, "AAAAAAAAAAAAAAAAAAAAAAAA");
+				ESP_LOGE(GPIO_ACT_TAG, "Angulo atual: %i, Angulo inicial: %i", *system_monitoring_current_angle, system_monitoring_config.start_angle);
+				if(actions.rotation == PIVOT_CW)
+				{
+					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+				}
+				else if(actions.rotation == PIVOT_CCW)
+				{
+					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
+				}
+			}
+			if(actions.percentimeter > 0 && actions.percentimeter < 100)
+			{
+				perc_timer_handleOn = xTimerCreate(
+						"percTimerON", /* name */
+						pdMS_TO_TICKS(perc_sec), /* period/time */
+						pdFALSE, /* auto reload */
+						(void*)0, /* timer ID */
+						vPercTimerOnExpire); /* callback */
 
+				perc_timer_handleOff = xTimerCreate(
+						"percTimerOff", /* name */
+						pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
+						pdFALSE, /* auto reload */
+						(void*)0, /* timer ID */
+						vPercTimerOffExpire); /* callback */
+
+				if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
+				{
+					gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+					xTimerStart(perc_timer_handleOn, 100);
+				}
+
+			}
+			else if(actions.percentimeter == 0)
+			{
+				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+
+				if(perc_timer_handleOn != 0)
+				{
+					xTimerStop(perc_timer_handleOn, 1000);
+					xTimerDelete(perc_timer_handleOn,1000);
+					negedge_perc = 0;
+				}
+
+				if(perc_timer_handleOff != 0)
+				{
+					xTimerStop(perc_timer_handleOff, 1000);
+					xTimerDelete(perc_timer_handleOff, 1000);
+					posedge_perc = 0;
+				}
+
+				pivot_actions_read.percentimeter = 0;
+			}
+			else if(actions.percentimeter == 100)
+			{
+				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+
+				if(perc_timer_handleOn != 0)
+				{
+					xTimerStop(perc_timer_handleOn, 1000);
+					xTimerDelete(perc_timer_handleOn, 1000);
+				}
+
+				if(perc_timer_handleOff != 0)
+				{
+					xTimerStop(perc_timer_handleOff, 1000);
+					xTimerDelete(perc_timer_handleOff, 1000);
+				}
+			}
+
+			if(actions.watering_state == PIVOT_DRY)
+			{
+				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+				gpio_actuator_pressure_off();
+				gpio_actuator_start();
+			}
+			else if(actions.watering_state == PIVOT_WET)
+			{
+				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+				gpio_actuator_pressure_on();
+			}
+		}
+		else if(actions.power_state == PIVOT_OFF)
+		{
+			gpio_actuator_shutdown();
+		}
+
+	}
+	else
+	{
+		if(actions.power_state == PIVOT_ON)
+		{
+			if(actions.rotation == PIVOT_CW)
+			{
 				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
 			}
-		// }
-		// else /* Inicial maior que o final, ou seja o pivo vai irrigar a area maior */
-		// {
-		// 	if(system_monitoring_current_angle == system_monitoring_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
-		// 	{
-		// 		if(actions.rotation == PIVOT_CW)
-		// 		{
-		// 			if(gpio_actuator_start() == ESP_OK)
-		// 			{
-		// 				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-		// 				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-		// 				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-		// 			}
-		// 			else
-		// 			{
-		// 				ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
-		// 			}
-		// 		}
-		// 		else if(actions.rotation == PIVOT_CCW)
-		// 		{
-		// 			ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
-
-		// 			vTaskDelay(pdMS_TO_TICKS(500)); 
-		// 			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-		// 			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-		// 			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-
-		// 			gpio_actuator_shutdown();					
-		// 		}
-		// 	}
-		// 	else if(system_monitoring_current_angle == system_monitoring_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
-		// 	{
-		// 		if(actions.rotation == PIVOT_CW)
-		// 		{
-		// 			ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier");
-
-		// 			vTaskDelay(pdMS_TO_TICKS(500)); 
-		// 			gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-		// 			gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-		// 			gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-
-		// 			gpio_actuator_shutdown();	
-		// 		}
-		// 		else if(actions.rotation == PIVOT_CCW)
-		// 		{
-		// 			if(gpio_actuator_start() == ESP_OK)
-		// 			{
-		// 				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-		// 				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-		// 				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-		// 			}
-		// 			else
-		// 			{
-		// 				ESP_LOGE(GPIO_ACT_TAG, "Error keeping logic high");
-		// 			}
-		// 		}
-		// 	}
-		// 	else
-		// 	{
-		// 		gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-		// 		gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-		// 		gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-		// 	}
-		// }
-		
-		if(actions.percentimeter > 0 && actions.percentimeter < 100)
-		{
-			perc_timer_handleOn = xTimerCreate(
-					  "percTimerON", /* name */
-					  pdMS_TO_TICKS(perc_sec), /* period/time */
-					  pdFALSE, /* auto reload */
-					  (void*)0, /* timer ID */
-					  vPercTimerOnExpire); /* callback */
-
-			perc_timer_handleOff = xTimerCreate(
-					  "percTimerOff", /* name */
-					  pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
-					  pdFALSE, /* auto reload */
-					  (void*)0, /* timer ID */
-					  vPercTimerOffExpire); /* callback */
-
-			if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
+			else if(actions.rotation == PIVOT_CCW)
 			{
-				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
+			}
+
+			if(actions.percentimeter > 0 && actions.percentimeter < 100)
+			{
+				perc_timer_handleOn = xTimerCreate(
+						"percTimerON", /* name */
+						pdMS_TO_TICKS(perc_sec), /* period/time */
+						pdFALSE, /* auto reload */
+						(void*)0, /* timer ID */
+						vPercTimerOnExpire); /* callback */
+
+				perc_timer_handleOff = xTimerCreate(
+						"percTimerOff", /* name */
+						pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
+						pdFALSE, /* auto reload */
+						(void*)0, /* timer ID */
+						vPercTimerOffExpire); /* callback */
+
+				if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
+				{
+					gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+					gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+					xTimerStart(perc_timer_handleOn, 100);
+				}
+
+			}
+			else if(actions.percentimeter == 0)
+			{
+				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+
+				if(perc_timer_handleOn != 0)
+				{
+					xTimerStop(perc_timer_handleOn, 1000);
+					xTimerDelete(perc_timer_handleOn,1000);
+					negedge_perc = 0;
+				}
+
+				if(perc_timer_handleOff != 0)
+				{
+					xTimerStop(perc_timer_handleOff, 1000);
+					xTimerDelete(perc_timer_handleOff, 1000);
+					posedge_perc = 0;
+				}
+
+				pivot_actions_read.percentimeter = 0;
+			}
+			else if(actions.percentimeter == 100)
+			{
 				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-				xTimerStart(perc_timer_handleOn, 100);
+				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+
+				if(perc_timer_handleOn != 0)
+				{
+					xTimerStop(perc_timer_handleOn, 1000);
+					xTimerDelete(perc_timer_handleOn, 1000);
+				}
+
+				if(perc_timer_handleOff != 0)
+				{
+					xTimerStop(perc_timer_handleOff, 1000);
+					xTimerDelete(perc_timer_handleOff, 1000);
+				}
 			}
 
-		}
-		else if(actions.percentimeter == 0)
-		{
-			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-
-			if(perc_timer_handleOn != 0)
+			if(actions.watering_state == PIVOT_DRY)
 			{
-				xTimerStop(perc_timer_handleOn, 1000);
-				xTimerDelete(perc_timer_handleOn,1000);
-				negedge_perc = 0;
+				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+				gpio_actuator_pressure_off();
+				gpio_actuator_start();
 			}
-
-			if(perc_timer_handleOff != 0)
+			else if(actions.watering_state == PIVOT_WET)
 			{
-				xTimerStop(perc_timer_handleOff, 1000);
-				xTimerDelete(perc_timer_handleOff, 1000);
-				posedge_perc = 0;
-			}
-
-			pivot_actions_read.percentimeter = 0;
-		}
-		else if(actions.percentimeter == 100)
-		{
-			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-			gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-
-			if(perc_timer_handleOn != 0)
-			{
-				xTimerStop(perc_timer_handleOn, 1000);
-				xTimerDelete(perc_timer_handleOn, 1000);
-			}
-
-			if(perc_timer_handleOff != 0)
-			{
-				xTimerStop(perc_timer_handleOff, 1000);
-				xTimerDelete(perc_timer_handleOff, 1000);
+				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+				gpio_actuator_pressure_on();
 			}
 		}
-
-		if(actions.watering_state == PIVOT_DRY)
+		else if(actions.power_state == PIVOT_OFF)
 		{
-			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-			gpio_actuator_pressure_off();
-			gpio_actuator_start();
+			gpio_actuator_shutdown();
 		}
-		else if(actions.watering_state == PIVOT_WET)
-		{
-			gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-			gpio_actuator_pressure_on();
-		}
-	}
-	else if(actions.power_state == PIVOT_OFF)
-	{
-		gpio_actuator_shutdown();
 	}
 
 	err = ESP_OK;
