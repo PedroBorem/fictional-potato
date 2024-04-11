@@ -42,8 +42,9 @@ static TaskHandle_t xTask_readpercent = NULL;
 static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
 
-static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
-static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
+// Barrier config variables
+const pivot_return_config barrier_config = {}; /**< Configuration for system monitoring. */
+static uint16_t* system_monitoring_virtual_barrier_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -365,7 +366,7 @@ void water_pump_relay_control(pivot_actions actions)
  *
  * @param actions Pivot actions containing the rotation information.
  */
-void rotation_ralay_control(pivot_actions actions)
+void rotation_relay_control(pivot_actions actions)
 {
     if (actions.rotation == PIVOT_CW)
     {
@@ -400,35 +401,43 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 	
-	if(*system_monitoring_current_angle == 300 /* Angulo inicial*/
-	|| *system_monitoring_current_angle == 60 /* Angulo final */) 
+	if(*system_monitoring_virtual_barrier_current_angle == 300 /* Angulo inicial*/
+	|| *system_monitoring_virtual_barrier_current_angle == 60 /* Angulo final */) 
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
-			if(*system_monitoring_current_angle == 300) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
+			if(*system_monitoring_virtual_barrier_current_angle == 300) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
-					rotation_ralay_control(actions);
+					rotation_relay_control(actions);
 					percent_relay_control(actions);
 					water_pump_relay_control(actions);
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
+					rotation_relay_control(actions);
+					percent_relay_control(actions);
+					water_pump_relay_control(actions);
+
 					vTaskDelay(pdMS_TO_TICKS(500)); 
 					gpio_actuator_shutdown();
 				}
 			}
-			else if(*system_monitoring_current_angle == 60) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
+			else if(*system_monitoring_virtual_barrier_current_angle == 60) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
+					rotation_relay_control(actions);
+					percent_relay_control(actions);
+					water_pump_relay_control(actions);
+					
 					vTaskDelay(pdMS_TO_TICKS(500)); 
 					gpio_actuator_shutdown();
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
-					rotation_ralay_control(actions);
+					rotation_relay_control(actions);
 					percent_relay_control(actions);
 					water_pump_relay_control(actions);		
 				}
@@ -448,9 +457,10 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	}
 	else
 	{
+		ESP_LOGE(GPIO_ACT_TAG,"Angulo inicial: %i Angulo final: %i", barrier_config.start_angle, barrier_config.end_angle);
 		if(actions.power_state == PIVOT_ON)
 		{
-			rotation_ralay_control(actions);
+			rotation_relay_control(actions);
 			percent_relay_control(actions);
 			water_pump_relay_control(actions);
 		}
