@@ -80,8 +80,6 @@ static time_t system_rtc_percent = 0;
  */
 static uint16_t system_initial_angle = 655;
 
-static int barrier_status = 0;
-
 /** @var system_timer
  *  @brief Timer handle for the system manager.
  */
@@ -118,16 +116,6 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
-
-int get_start_angle_barrier_status()
-{
-	return barrier_status;
-}
-
-int get_end_angle_barrier_status()
-{
-	return barrier_status;
-}
 
 /**
  * @brief Initializes the system manager module.
@@ -1748,10 +1736,6 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
-
-		/*FUNCAO*/
-		barrier_status = return_config.start_angle;
-		barrier_status = return_config.end_angle;
 	}
 }
 

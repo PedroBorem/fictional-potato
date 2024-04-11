@@ -15,7 +15,4 @@
  */
 void system_manager_init(void);
 
-int get_start_angle_barrier_status();
-int get_end_angle_barrier_status();
-
 #endif /* MAIN_INCLUDE_SYSTEM_MANAGER_H_ */

@@ -14,7 +14,7 @@
 #include "FreeRTOS_defines.h"
 #include "log.h"
 #include "system_monitoring.h"
-#include "system_manager.h"
+#include "data_app.h"
 #include "project_config.h"
 
 /* Private definitions ------------------------------------------- */
@@ -396,18 +396,21 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	esp_err_t err = ESP_FAIL;
 	int perc_sec = 0;
 
+	pivot_return_config virtual_barrier_config = {};
+	data_app_load(DATA_TYPE_RETURN_CONFIG, &virtual_barrier_config);
+
 	//task_actions_set = actions;
 	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
 	perc_sec = actions.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 	
-	if(*system_monitoring_virtual_barrier_current_angle == 300 /* Angulo inicial*/
-	|| *system_monitoring_virtual_barrier_current_angle == 60 /* Angulo final */) 
+	if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.start_angle /* Angulo inicial*/
+	|| *system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.end_angle /* Angulo final */) 
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
-			if(*system_monitoring_virtual_barrier_current_angle == 300) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
+			if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
@@ -425,7 +428,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 					gpio_actuator_shutdown();
 				}
 			}
-			else if(*system_monitoring_virtual_barrier_current_angle == 60) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
+			else if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
@@ -458,7 +461,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	}
 	else
 	{
-		ESP_LOGE(GPIO_ACT_TAG,"Angulo inicial: %i Angulo final: %i", get_start_angle_barrier_status(), get_end_angle_barrier_status());
+		ESP_LOGE(GPIO_ACT_TAG,"Angulo inicial: %i Angulo final: %i", virtual_barrier_config.start_angle, virtual_barrier_config.end_angle);
 		if(actions.power_state == PIVOT_ON)
 		{
 			rotation_relay_control(actions);
