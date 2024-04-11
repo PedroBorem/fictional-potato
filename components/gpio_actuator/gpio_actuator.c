@@ -444,7 +444,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			}
 			else
 			{
-				rotation_ralay_control(actions);
+				rotation_relay_control(actions);
 				percent_relay_control(actions);
 				water_pump_relay_control(actions);
 			}
