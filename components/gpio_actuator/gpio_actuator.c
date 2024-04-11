@@ -412,19 +412,18 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
+			rotation_relay_control(actions);
+			percent_relay_control(actions, perc_sec);
+			
 			if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle - 3 
 			&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.start_angle + 3) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
-					rotation_relay_control(actions);
-					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions, false);
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
-					rotation_relay_control(actions);
-					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions, true);
 				}
 			}
@@ -433,21 +432,15 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
-					rotation_relay_control(actions);
-					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions, true);
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
-					rotation_relay_control(actions);
-					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions, false);		
 				}
 			}
 			else
 			{
-				rotation_relay_control(actions);
-				percent_relay_control(actions, perc_sec);
 				water_pump_relay_control(actions, false);
 			}
 		}
