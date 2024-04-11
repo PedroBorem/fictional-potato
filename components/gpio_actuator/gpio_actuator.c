@@ -14,6 +14,7 @@
 #include "FreeRTOS_defines.h"
 #include "log.h"
 #include "system_monitoring.h"
+#include "system_manager.h"
 #include "project_config.h"
 
 /* Private definitions ------------------------------------------- */
@@ -457,7 +458,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	}
 	else
 	{
-		ESP_LOGE(GPIO_ACT_TAG,"Angulo inicial: %i Angulo final: %i", barrier_config.start_angle, barrier_config.end_angle);
+		ESP_LOGE(GPIO_ACT_TAG,"Angulo inicial: %i Angulo final: %i", get_start_angle_barrier_status(), get_end_angle_barrier_status());
 		if(actions.power_state == PIVOT_ON)
 		{
 			rotation_relay_control(actions);
