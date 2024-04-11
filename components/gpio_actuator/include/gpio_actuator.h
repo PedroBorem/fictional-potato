@@ -194,7 +194,7 @@ void gpio_actuator_pump_off(void);
  *
  * This function turns on the pressure relay and starts pressure monitoring in the GPIO actuator module.
  */
-void gpio_actuator_pressure_on(void);
+void gpio_actuator_pressure_on(bool pivot_is_on_barrier);
 
 /**
  * @brief Turns off the pressure relay and stops pressure monitoring.
