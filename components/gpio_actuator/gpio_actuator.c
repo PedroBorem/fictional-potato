@@ -85,7 +85,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer);
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start(void);
+esp_err_t gpio_actuator_start(bool on_barrier);
 
 /**
  * @brief Water pressure application task.
@@ -345,18 +345,18 @@ void percent_relay_control(pivot_actions actions, int perc_sec)
  *
  * @param actions Pivot actions containing the watering state information.
  */
-void water_pump_relay_control(pivot_actions actions)
+void water_pump_relay_control(pivot_actions actions, bool pivot_is_on_barrier)
 {
     if (actions.watering_state == PIVOT_DRY)
     {
         gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
         gpio_actuator_pressure_off();
-        gpio_actuator_start();
+        gpio_actuator_start(pivot_is_on_barrier);
     }
     else if (actions.watering_state == PIVOT_WET)
     {
         gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-        gpio_actuator_pressure_on();
+        gpio_actuator_pressure_on(pivot_is_on_barrier);
     }
 }
 
@@ -410,22 +410,19 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
-			if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
+			if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
 					rotation_relay_control(actions);
 					percent_relay_control(actions, perc_sec);
-					water_pump_relay_control(actions);
+					water_pump_relay_control(actions, false);
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
 					rotation_relay_control(actions);
 					percent_relay_control(actions, perc_sec);
-					water_pump_relay_control(actions);
-
-					vTaskDelay(pdMS_TO_TICKS(500)); 
-					gpio_actuator_shutdown();
+					water_pump_relay_control(actions, true);
 				}
 			}
 			else if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
@@ -434,23 +431,20 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				{
 					rotation_relay_control(actions);
 					percent_relay_control(actions, perc_sec);
-					water_pump_relay_control(actions);
-					
-					vTaskDelay(pdMS_TO_TICKS(500)); 
-					gpio_actuator_shutdown();
+					water_pump_relay_control(actions, true);
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
 					rotation_relay_control(actions);
 					percent_relay_control(actions, perc_sec);
-					water_pump_relay_control(actions);		
+					water_pump_relay_control(actions, false);		
 				}
 			}
 			else
 			{
 				rotation_relay_control(actions);
 				percent_relay_control(actions, perc_sec);
-				water_pump_relay_control(actions);
+				water_pump_relay_control(actions, false);
 			}
 		}
 		else if(actions.power_state == PIVOT_OFF)
@@ -466,7 +460,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 		{
 			rotation_relay_control(actions);
 			percent_relay_control(actions, perc_sec);
-			water_pump_relay_control(actions);
+			water_pump_relay_control(actions, false);
 		}
 		else if(actions.power_state == PIVOT_OFF)
 		{
@@ -587,14 +581,14 @@ void gpio_actuator_pump_off(void)
 /**
  * @brief Turns on pressure application in the GPIO actuator module.
  */
-void gpio_actuator_pressure_on(void)
+void gpio_actuator_pressure_on(bool pivot_is_on_barrier)
 {
 	if(xTask_waitpressure == NULL)
 	{
 		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
 								ACTUATOR_CHECK_TASK_NAME,
 								ACTUATOR_CHECK_STACK_SIZE,
-								NULL,
+								(void *) &pivot_is_on_barrier,
 								ACTUATOR_CHECK_TASK_PRIORITY,
 								&xTask_waitpressure);
 		if(xReturn != pdPASS || xTask_waitpressure == NULL)
@@ -645,19 +639,30 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
 
 /**
  * @brief Start the relays accordingly after pressure check or dry mode.
+ * @param on_barrier parameter that indicates whether the pivot is in the barrier
  * @return
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start(void)
+esp_err_t gpio_actuator_start(bool on_barrier)
 {
 	esp_err_t err = ESP_FAIL;
 
-	vTaskDelay(pdMS_TO_TICKS(500));
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-
+	if(!on_barrier)
+	{
+		vTaskDelay(pdMS_TO_TICKS(500));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+		vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	}
+	else
+	{
+		vTaskDelay(pdMS_TO_TICKS(500));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+		vTaskDelay(pdMS_TO_TICKS(500));
+		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+	}
+	
 	return err;
 }
 
@@ -667,6 +672,8 @@ esp_err_t gpio_actuator_start(void)
  */
 void actuator_wait_pressure(void* arg)
 {
+	bool barrier = *((bool *)arg)
+
 	TickType_t check_start = xTaskGetTickCount();
 
 	pressurizing = true;
@@ -677,7 +684,7 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			//system on
-			gpio_actuator_start();
+			gpio_actuator_start(barrier);
 			pressurizing = false;
 
 			// send current action
