@@ -265,6 +265,123 @@ esp_err_t gpio_actuator_config(pivot_config config)
 }
 
 /**
+ * @brief Controls the relay for percentage-based actions.
+ *
+ * This function controls the relay for percentage-based actions, such as adjusting the pivot angle.
+ *
+ * @param actions Pivot actions containing the percentage information.
+ */
+void percent_relay_control(pivot_actions actions)
+{
+    if (actions.percentimeter > 0 && actions.percentimeter < 100)
+    {
+        perc_timer_handleOn = xTimerCreate(
+            "percTimerON",           /* name */
+            pdMS_TO_TICKS(perc_sec), /* period/time */
+            pdFALSE,                 /* auto reload */
+            (void *)0,               /* timer ID */
+            vPercTimerOnExpire);     /* callback */
+
+        perc_timer_handleOff = xTimerCreate(
+            "percTimerOff",                                       /* name */
+            pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE - perc_sec)), /* period/time */
+            pdFALSE,                                              /* auto reload */
+            (void *)0,                                            /* timer ID */
+            vPercTimerOffExpire);                                 /* callback */
+
+        if ((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
+        {
+            gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+            gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+            xTimerStart(perc_timer_handleOn, 100);
+        }
+    }
+    else if (actions.percentimeter == 0)
+    {
+        gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+        gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+
+        if (perc_timer_handleOn != 0)
+        {
+            xTimerStop(perc_timer_handleOn, 1000);
+            xTimerDelete(perc_timer_handleOn, 1000);
+            negedge_perc = 0;
+        }
+
+        if (perc_timer_handleOff != 0)
+        {
+            xTimerStop(perc_timer_handleOff, 1000);
+            xTimerDelete(perc_timer_handleOff, 1000);
+            posedge_perc = 0;
+        }
+
+        pivot_actions_read.percentimeter = 0;
+    }
+    else if (actions.percentimeter == 100)
+    {
+        gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
+        gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
+
+        if (perc_timer_handleOn != 0)
+        {
+            xTimerStop(perc_timer_handleOn, 1000);
+            xTimerDelete(perc_timer_handleOn, 1000);
+        }
+
+        if (perc_timer_handleOff != 0)
+        {
+            xTimerStop(perc_timer_handleOff, 1000);
+            xTimerDelete(perc_timer_handleOff, 1000);
+        }
+    }
+}
+
+/**
+ * @brief Controls the relay for water pump actions.
+ *
+ * This function controls the relay for water pump actions based on the pivot's watering state.
+ *
+ * @param actions Pivot actions containing the watering state information.
+ */
+void water_pump_relay_control(pivot_actions actions)
+{
+    if (actions.watering_state == PIVOT_DRY)
+    {
+        gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+        gpio_actuator_pressure_off();
+        gpio_actuator_start();
+    }
+    else if (actions.watering_state == PIVOT_WET)
+    {
+        gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+        gpio_actuator_pressure_on();
+    }
+}
+
+/**
+ * @brief Controls the relay for pivot rotation actions.
+ *
+ * This function controls the relay for pivot rotation actions, such as clockwise or counterclockwise rotation.
+ *
+ * @param actions Pivot actions containing the rotation information.
+ */
+void rotation_ralay_control(pivot_actions actions)
+{
+    if (actions.rotation == PIVOT_CW)
+    {
+        gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
+        gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+        gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+    }
+    else if (actions.rotation == PIVOT_CCW)
+    {
+        gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+        gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
+        gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
+    }
+}
+
+/**
  * @brief Sets the GPIO actuator actions based on the provided actions.
  *
  * This function sets the GPIO actuator actions based on the provided actions.
@@ -292,85 +409,9 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-
-					if(actions.percentimeter > 0 && actions.percentimeter < 100)
-					{
-						perc_timer_handleOn = xTimerCreate(
-								"percTimerON", /* name */
-								pdMS_TO_TICKS(perc_sec), /* period/time */
-								pdFALSE, /* auto reload */
-								(void*)0, /* timer ID */
-								vPercTimerOnExpire); /* callback */
-
-						perc_timer_handleOff = xTimerCreate(
-								"percTimerOff", /* name */
-								pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
-								pdFALSE, /* auto reload */
-								(void*)0, /* timer ID */
-								vPercTimerOffExpire); /* callback */
-
-						if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
-						{
-							gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-							gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-							xTimerStart(perc_timer_handleOn, 100);
-						}
-
-					}
-					else if(actions.percentimeter == 0)
-					{
-						gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-						gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-
-						if(perc_timer_handleOn != 0)
-						{
-							xTimerStop(perc_timer_handleOn, 1000);
-							xTimerDelete(perc_timer_handleOn,1000);
-							negedge_perc = 0;
-						}
-
-						if(perc_timer_handleOff != 0)
-						{
-							xTimerStop(perc_timer_handleOff, 1000);
-							xTimerDelete(perc_timer_handleOff, 1000);
-							posedge_perc = 0;
-						}
-
-						pivot_actions_read.percentimeter = 0;
-					}
-					else if(actions.percentimeter == 100)
-					{
-						gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-
-						if(perc_timer_handleOn != 0)
-						{
-							xTimerStop(perc_timer_handleOn, 1000);
-							xTimerDelete(perc_timer_handleOn, 1000);
-						}
-
-						if(perc_timer_handleOff != 0)
-						{
-							xTimerStop(perc_timer_handleOff, 1000);
-							xTimerDelete(perc_timer_handleOff, 1000);
-						}
-					}
-
-					if(actions.watering_state == PIVOT_DRY)
-					{
-						gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-						gpio_actuator_pressure_off();
-						gpio_actuator_start();
-					}
-					else if(actions.watering_state == PIVOT_WET)
-					{
-						gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-						gpio_actuator_pressure_on();
-					}
-
+					rotation_ralay_control(actions);
+					percent_relay_control(actions);
+					water_pump_relay_control(actions);
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
@@ -387,175 +428,16 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
-
-					if(actions.percentimeter > 0 && actions.percentimeter < 100)
-					{
-						perc_timer_handleOn = xTimerCreate(
-								"percTimerON", /* name */
-								pdMS_TO_TICKS(perc_sec), /* period/time */
-								pdFALSE, /* auto reload */
-								(void*)0, /* timer ID */
-								vPercTimerOnExpire); /* callback */
-
-						perc_timer_handleOff = xTimerCreate(
-								"percTimerOff", /* name */
-								pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
-								pdFALSE, /* auto reload */
-								(void*)0, /* timer ID */
-								vPercTimerOffExpire); /* callback */
-
-						if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
-						{
-							gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-							gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-							xTimerStart(perc_timer_handleOn, 100);
-						}
-
-					}
-					else if(actions.percentimeter == 0)
-					{
-						gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-						gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-
-						if(perc_timer_handleOn != 0)
-						{
-							xTimerStop(perc_timer_handleOn, 1000);
-							xTimerDelete(perc_timer_handleOn,1000);
-							negedge_perc = 0;
-						}
-
-						if(perc_timer_handleOff != 0)
-						{
-							xTimerStop(perc_timer_handleOff, 1000);
-							xTimerDelete(perc_timer_handleOff, 1000);
-							posedge_perc = 0;
-						}
-
-						pivot_actions_read.percentimeter = 0;
-					}
-					else if(actions.percentimeter == 100)
-					{
-						gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-
-						if(perc_timer_handleOn != 0)
-						{
-							xTimerStop(perc_timer_handleOn, 1000);
-							xTimerDelete(perc_timer_handleOn, 1000);
-						}
-
-						if(perc_timer_handleOff != 0)
-						{
-							xTimerStop(perc_timer_handleOff, 1000);
-							xTimerDelete(perc_timer_handleOff, 1000);
-						}
-					}
-
-					if(actions.watering_state == PIVOT_DRY)
-					{
-						gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-						gpio_actuator_pressure_off();
-						gpio_actuator_start();
-					}
-					else if(actions.watering_state == PIVOT_WET)
-					{
-						gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-						gpio_actuator_pressure_on();
-					}					
+					rotation_ralay_control(actions);
+					percent_relay_control(actions);
+					water_pump_relay_control(actions);		
 				}
 			}
 			else
 			{
-				if(actions.rotation == PIVOT_CW)
-				{
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-				}
-				else if(actions.rotation == PIVOT_CCW)
-				{
-					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
-				}
-
-				if(actions.percentimeter > 0 && actions.percentimeter < 100)
-				{
-					perc_timer_handleOn = xTimerCreate(
-							"percTimerON", /* name */
-							pdMS_TO_TICKS(perc_sec), /* period/time */
-							pdFALSE, /* auto reload */
-							(void*)0, /* timer ID */
-							vPercTimerOnExpire); /* callback */
-
-					perc_timer_handleOff = xTimerCreate(
-							"percTimerOff", /* name */
-							pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
-							pdFALSE, /* auto reload */
-							(void*)0, /* timer ID */
-							vPercTimerOffExpire); /* callback */
-
-					if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
-					{
-						gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-						gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-						xTimerStart(perc_timer_handleOn, 100);
-					}
-
-				}
-				else if(actions.percentimeter == 0)
-				{
-					gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-					gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-
-					if(perc_timer_handleOn != 0)
-					{
-						xTimerStop(perc_timer_handleOn, 1000);
-						xTimerDelete(perc_timer_handleOn,1000);
-						negedge_perc = 0;
-					}
-
-					if(perc_timer_handleOff != 0)
-					{
-						xTimerStop(perc_timer_handleOff, 1000);
-						xTimerDelete(perc_timer_handleOff, 1000);
-						posedge_perc = 0;
-					}
-
-					pivot_actions_read.percentimeter = 0;
-				}
-				else if(actions.percentimeter == 100)
-				{
-					gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-
-					if(perc_timer_handleOn != 0)
-					{
-						xTimerStop(perc_timer_handleOn, 1000);
-						xTimerDelete(perc_timer_handleOn, 1000);
-					}
-
-					if(perc_timer_handleOff != 0)
-					{
-						xTimerStop(perc_timer_handleOff, 1000);
-						xTimerDelete(perc_timer_handleOff, 1000);
-					}
-				}
-
-				if(actions.watering_state == PIVOT_DRY)
-				{
-					gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-					gpio_actuator_pressure_off();
-					gpio_actuator_start();
-				}
-				else if(actions.watering_state == PIVOT_WET)
-				{
-					gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-					gpio_actuator_pressure_on();
-				}
+				rotation_ralay_control(actions);
+				percent_relay_control(actions);
+				water_pump_relay_control(actions);
 			}
 		}
 		else if(actions.power_state == PIVOT_OFF)
@@ -568,93 +450,9 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
-			if(actions.rotation == PIVOT_CW)
-			{
-				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
-				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-			}
-			else if(actions.rotation == PIVOT_CCW)
-			{
-				gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-				gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
-				gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
-			}
-
-			if(actions.percentimeter > 0 && actions.percentimeter < 100)
-			{
-				perc_timer_handleOn = xTimerCreate(
-						"percTimerON", /* name */
-						pdMS_TO_TICKS(perc_sec), /* period/time */
-						pdFALSE, /* auto reload */
-						(void*)0, /* timer ID */
-						vPercTimerOnExpire); /* callback */
-
-				perc_timer_handleOff = xTimerCreate(
-						"percTimerOff", /* name */
-						pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE-perc_sec)), /* period/time */
-						pdFALSE, /* auto reload */
-						(void*)0, /* timer ID */
-						vPercTimerOffExpire); /* callback */
-
-				if((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
-				{
-					gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-					gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-					xTimerStart(perc_timer_handleOn, 100);
-				}
-
-			}
-			else if(actions.percentimeter == 0)
-			{
-				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-
-				if(perc_timer_handleOn != 0)
-				{
-					xTimerStop(perc_timer_handleOn, 1000);
-					xTimerDelete(perc_timer_handleOn,1000);
-					negedge_perc = 0;
-				}
-
-				if(perc_timer_handleOff != 0)
-				{
-					xTimerStop(perc_timer_handleOff, 1000);
-					xTimerDelete(perc_timer_handleOff, 1000);
-					posedge_perc = 0;
-				}
-
-				pivot_actions_read.percentimeter = 0;
-			}
-			else if(actions.percentimeter == 100)
-			{
-				gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-				gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
-
-				if(perc_timer_handleOn != 0)
-				{
-					xTimerStop(perc_timer_handleOn, 1000);
-					xTimerDelete(perc_timer_handleOn, 1000);
-				}
-
-				if(perc_timer_handleOff != 0)
-				{
-					xTimerStop(perc_timer_handleOff, 1000);
-					xTimerDelete(perc_timer_handleOff, 1000);
-				}
-			}
-
-			if(actions.watering_state == PIVOT_DRY)
-			{
-				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-				gpio_actuator_pressure_off();
-				gpio_actuator_start();
-			}
-			else if(actions.watering_state == PIVOT_WET)
-			{
-				gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-				gpio_actuator_pressure_on();
-			}
+			rotation_ralay_control(actions);
+			percent_relay_control(actions);
+			water_pump_relay_control(actions);
 		}
 		else if(actions.power_state == PIVOT_OFF)
 		{
