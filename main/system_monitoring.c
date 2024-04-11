@@ -76,15 +76,6 @@ static void system_monitoring_task(void* arg);
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
 /**
- * @brief getter that will return the state of the barrier
- *
- */
-bool barrier_get()
-{
-    return barrier_status;
-}
-
-/**
  * @brief Executes the actuation process based on the system configuration.
  *
  * This function performs the actuation process based on the current system configuration.
@@ -190,7 +181,6 @@ static void system_monitoring_task(void* arg)
     {
         if(system_monitoring_config.start_angle < system_monitoring_config.end_angle)
         {
-            barrier_status = true;
             if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
             || *system_monitoring_current_angle > system_monitoring_config.end_angle)
             {
@@ -206,7 +196,6 @@ static void system_monitoring_task(void* arg)
         }
         else
         {
-            barrier_status = false;
             if(*system_monitoring_current_angle > system_monitoring_config.start_angle
             || *system_monitoring_current_angle < system_monitoring_config.end_angle)
             {

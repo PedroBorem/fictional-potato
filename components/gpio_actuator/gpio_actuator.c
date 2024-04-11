@@ -292,8 +292,6 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
-					vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
-					ESP_LOGE(GPIO_ACT_TAG, "EEEEEEEEEEEEEEEEEEEEEE");
 					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
 					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
@@ -376,8 +374,6 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
-					ESP_LOGE(GPIO_ACT_TAG, "Angulo atual: %i, Angulo final: %i", *system_monitoring_current_angle, system_monitoring_config.end_angle);
-					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier DDDDDDDDDDDDDDDDDDDDDDDDDDD");
 					vTaskDelay(pdMS_TO_TICKS(500)); 
 					gpio_actuator_shutdown();
 				}
@@ -386,15 +382,11 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
-					ESP_LOGE(GPIO_ACT_TAG, "Pivot moving towards the barrier  CCCCCCCCCCCCCCCCCCCCCCC");
-
 					vTaskDelay(pdMS_TO_TICKS(500)); 
 					gpio_actuator_shutdown();
 				}
 				else if(actions.rotation == PIVOT_CCW)
 				{
-					vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
-					ESP_LOGE(GPIO_ACT_TAG, "BBBBBBBBBBBBBBBBBBBBBBB");
 					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
 					gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_ENABLE);
 					gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_ENABLE);
@@ -477,7 +469,6 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 			}
 			else
 			{
-				ESP_LOGE(GPIO_ACT_TAG, "Angulo atual: %i, Angulo inicial: %i", *system_monitoring_current_angle, system_monitoring_config.start_angle);
 				if(actions.rotation == PIVOT_CW)
 				{
 					gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_ENABLE);
