@@ -405,12 +405,15 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 	
-	if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.start_angle /* Angulo inicial*/
-	|| *system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.end_angle /* Angulo final */) 
+	if((*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle - 3 
+	&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.start_angle + 3 ) /* Angulo inicial*/
+	|| (*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.end_angle -3 
+	&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.end_angle + 3) /* Angulo final */) 
 	{
 		if(actions.power_state == PIVOT_ON)
 		{
-			if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
+			if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle - 3 
+			&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.start_angle + 3) /* Angulo atual igual ao angulo inicial, PIVO NAO PODE IR REVERSO */
 			{
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
@@ -425,7 +428,8 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 					water_pump_relay_control(actions, true);
 				}
 			}
-			else if(*system_monitoring_virtual_barrier_current_angle == virtual_barrier_config.end_angle) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
+			else if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.end_angle - 3 
+			&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.end_angle + 3) /* Angulo atual igual ao angulo final, PIVO NAO PODE IR AVANCO */
 			{
 				if(actions.rotation == PIVOT_CW)
 				{
