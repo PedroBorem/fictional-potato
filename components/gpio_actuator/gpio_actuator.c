@@ -274,6 +274,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
  */
 void percent_relay_control(pivot_actions actions)
 {
+	int perc_sec = 0;
     if (actions.percentimeter > 0 && actions.percentimeter < 100)
     {
         perc_timer_handleOn = xTimerCreate(
@@ -393,7 +394,6 @@ void rotation_relay_control(pivot_actions actions)
 esp_err_t gpio_actuator_set(pivot_actions actions)
 {
 	esp_err_t err = ESP_FAIL;
-	int perc_sec = 0;
 
 	//task_actions_set = actions;
 	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
