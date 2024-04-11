@@ -272,9 +272,8 @@ esp_err_t gpio_actuator_config(pivot_config config)
  *
  * @param actions Pivot actions containing the percentage information.
  */
-void percent_relay_control(pivot_actions actions)
+void percent_relay_control(pivot_actions actions, int perc_sec)
 {
-	int perc_sec = 0;
     if (actions.percentimeter > 0 && actions.percentimeter < 100)
     {
         perc_timer_handleOn = xTimerCreate(
@@ -394,6 +393,7 @@ void rotation_relay_control(pivot_actions actions)
 esp_err_t gpio_actuator_set(pivot_actions actions)
 {
 	esp_err_t err = ESP_FAIL;
+	int perc_sec = 0;
 
 	//task_actions_set = actions;
 	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
@@ -411,13 +411,13 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				if(actions.rotation == PIVOT_CW) /* Se foi mandado rotacao HORARIO - AVANCO */
 				{
 					rotation_relay_control(actions);
-					percent_relay_control(actions);
+					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions);
 				}
 				else if(actions.rotation == PIVOT_CCW) /* Se foi mandado rotacao ANTI-HORARIO - REVERSO */
 				{
 					rotation_relay_control(actions);
-					percent_relay_control(actions);
+					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions);
 
 					vTaskDelay(pdMS_TO_TICKS(500)); 
@@ -429,7 +429,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				if(actions.rotation == PIVOT_CW)
 				{
 					rotation_relay_control(actions);
-					percent_relay_control(actions);
+					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions);
 					
 					vTaskDelay(pdMS_TO_TICKS(500)); 
@@ -438,14 +438,14 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 				else if(actions.rotation == PIVOT_CCW)
 				{
 					rotation_relay_control(actions);
-					percent_relay_control(actions);
+					percent_relay_control(actions, perc_sec);
 					water_pump_relay_control(actions);		
 				}
 			}
 			else
 			{
 				rotation_relay_control(actions);
-				percent_relay_control(actions);
+				percent_relay_control(actions, perc_sec);
 				water_pump_relay_control(actions);
 			}
 		}
@@ -461,7 +461,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 		if(actions.power_state == PIVOT_ON)
 		{
 			rotation_relay_control(actions);
-			percent_relay_control(actions);
+			percent_relay_control(actions, perc_sec);
 			water_pump_relay_control(actions);
 		}
 		else if(actions.power_state == PIVOT_OFF)
