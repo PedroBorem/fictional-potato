@@ -672,7 +672,7 @@ esp_err_t gpio_actuator_start(bool on_barrier)
  */
 void actuator_wait_pressure(void* arg)
 {
-	bool barrier = *((bool *)arg)
+	bool barrier = *((bool *)arg);
 
 	TickType_t check_start = xTaskGetTickCount();
 
