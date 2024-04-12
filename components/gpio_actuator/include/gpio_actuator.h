@@ -14,6 +14,20 @@
 #include "driver/gpio.h"
 
 /**
+ * @brief Indicates that the pivot is inside the barrier.
+ *
+ * This macro is used to represent the state where the pivot is inside the barrier.
+ */
+#define PIVOT_IN_THE_BARRIER		true
+
+/**
+ * @brief Indicates that the pivot is outside the barrier.
+ *
+ * This macro is used to represent the state where the pivot is outside the barrier.
+ */
+#define PIVOT_OUTSIDE_THE_BARRIER	false
+
+/**
  * @brief Macro to enable the GPIO actuator system.
  */
 #define GPIO_ACT_SYS_ENABLE			0
