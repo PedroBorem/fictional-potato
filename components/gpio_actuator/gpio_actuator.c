@@ -581,7 +581,8 @@ void gpio_actuator_pump_off(void)
  */
 void gpio_actuator_pressure_on()
 {
-	if(xTask_waitpressure == NULL)
+	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO BARREIRA: ", pivot_is_on_barrier);
+	if(pivot_is_on_barrier)
 	{
 		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
 								ACTUATOR_CHECK_TASK_NAME,
@@ -591,13 +592,44 @@ void gpio_actuator_pressure_on()
 								&xTask_waitpressure);
 		if(xReturn != pdPASS || xTask_waitpressure == NULL)
 		{
-			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
+									ACTUATOR_CHECK_TASK_NAME,
+									ACTUATOR_CHECK_STACK_SIZE,
+									(void *) 1,
+									ACTUATOR_CHECK_TASK_PRIORITY,
+									&xTask_waitpressure);
+			if(xReturn != pdPASS || xTask_waitpressure == NULL)
+			{
+				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			}
+		}
+		else
+		{
+			vTaskResume(xTask_waitpressure);
 		}
 	}
 	else
 	{
-		vTaskResume(xTask_waitpressure);
+		ESP_LOGE(GPIO_ACT_TAG, "%i, AAAAAAAAAAAAAAAAAAAAAAAAAAA ", pivot_is_on_barrier);
+		if(xTask_waitpressure == NULL)
+		{
+			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
+									ACTUATOR_CHECK_TASK_NAME,
+									ACTUATOR_CHECK_STACK_SIZE,
+									(void *) 0,
+									ACTUATOR_CHECK_TASK_PRIORITY,
+									&xTask_waitpressure);
+			if(xReturn != pdPASS || xTask_waitpressure == NULL)
+			{
+				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			}
+		}
+		else
+		{
+			vTaskResume(xTask_waitpressure);
+		}
 	}
+
 }
 
 /**
