@@ -579,23 +579,49 @@ void gpio_actuator_pump_off(void)
  */
 void gpio_actuator_pressure_on(bool pivot_is_on_barrier)
 {
-	if(xTask_waitpressure == NULL)
+	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO BARREIRA: ", pivot_is_on_barrier);
+	if(pivot_is_on_barrier)
 	{
-		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
-								ACTUATOR_CHECK_TASK_NAME,
-								ACTUATOR_CHECK_STACK_SIZE,
-								(void *) &pivot_is_on_barrier,
-								ACTUATOR_CHECK_TASK_PRIORITY,
-								&xTask_waitpressure);
-		if(xReturn != pdPASS || xTask_waitpressure == NULL)
+		if(xTask_waitpressure == NULL)
 		{
-			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
+									ACTUATOR_CHECK_TASK_NAME,
+									ACTUATOR_CHECK_STACK_SIZE,
+									(void *) 1,
+									ACTUATOR_CHECK_TASK_PRIORITY,
+									&xTask_waitpressure);
+			if(xReturn != pdPASS || xTask_waitpressure == NULL)
+			{
+				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			}
+		}
+		else
+		{
+			vTaskResume(xTask_waitpressure);
 		}
 	}
 	else
 	{
-		vTaskResume(xTask_waitpressure);
+		ESP_LOGE(GPIO_ACT_TAG, "%i, AAAAAAAAAAAAAAAAAAAAAAAAAAA ", pivot_is_on_barrier);
+		if(xTask_waitpressure == NULL)
+		{
+			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
+									ACTUATOR_CHECK_TASK_NAME,
+									ACTUATOR_CHECK_STACK_SIZE,
+									(void *) 0,
+									ACTUATOR_CHECK_TASK_PRIORITY,
+									&xTask_waitpressure);
+			if(xReturn != pdPASS || xTask_waitpressure == NULL)
+			{
+				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
+			}
+		}
+		else
+		{
+			vTaskResume(xTask_waitpressure);
+		}
 	}
+
 }
 
 /**
@@ -668,8 +694,6 @@ esp_err_t gpio_actuator_start(bool on_barrier)
  */
 void actuator_wait_pressure(void* arg)
 {
-	bool barrier = *((bool *)arg);
-
 	TickType_t check_start = xTaskGetTickCount();
 
 	pressurizing = true;
@@ -680,7 +704,8 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			//system on
-			gpio_actuator_start(barrier);
+			gpio_actuator_start((uint8_t)arg);
+			ESP_LOGE(GPIO_ACT_TAG, "%i, EStado da barreira", (uint8_t)arg);
 			pressurizing = false;
 
 			// send current action
