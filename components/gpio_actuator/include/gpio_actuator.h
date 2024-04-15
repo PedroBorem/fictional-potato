@@ -14,20 +14,6 @@
 #include "driver/gpio.h"
 
 /**
- * @brief Indicates that the pivot is inside the barrier.
- *
- * This macro is used to represent the state where the pivot is inside the barrier.
- */
-#define PIVOT_IN_THE_BARRIER		true
-
-/**
- * @brief Indicates that the pivot is outside the barrier.
- *
- * This macro is used to represent the state where the pivot is outside the barrier.
- */
-#define PIVOT_OUTSIDE_THE_BARRIER	false
-
-/**
  * @brief Macro to enable the GPIO actuator system.
  */
 #define GPIO_ACT_SYS_ENABLE			0
@@ -208,7 +194,7 @@ void gpio_actuator_pump_off(void);
  *
  * This function turns on the pressure relay and starts pressure monitoring in the GPIO actuator module.
  */
-void gpio_actuator_pressure_on(bool pivot_is_on_barrier);
+void gpio_actuator_pressure_on();
 
 /**
  * @brief Turns off the pressure relay and stops pressure monitoring.

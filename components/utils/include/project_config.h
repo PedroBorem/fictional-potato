@@ -302,6 +302,20 @@ typedef struct __attribute__((__packed__))
 } pivot_history;
 
 /**
+ * @brief Indicates that the pivot is outside the barrier.
+ *
+ * This macro is used to represent the state where the pivot is outside the barrier.
+ * This macro is used to represent the state where the pivot is inside the barrier.
+ */
+
+typedef enum 
+{
+    PIVOT_OUTSIDE_THE_BARRIER = 0,
+    PIVOT_IN_THE_BARRIER,
+    PIVOT_LEAVING_THE_BARRIER
+} barrier_status;
+
+/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.

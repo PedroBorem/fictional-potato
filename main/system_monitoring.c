@@ -47,7 +47,6 @@ static pivot_return_config system_monitoring_config = {}; /**< Configuration for
 
 static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
 
-static bool barrier_status;
 /* Private methods ----------------------------------- */
 
 /**
