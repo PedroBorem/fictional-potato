@@ -46,7 +46,7 @@ static pivot_actions task_actions_set = {};
 // Barrier config variables
 const pivot_return_config barrier_config = {}; /**< Configuration for system monitoring. */
 static uint16_t* system_monitoring_virtual_barrier_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
-static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+static uint8_t status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -581,8 +581,8 @@ void gpio_actuator_pump_off(void)
  */
 void gpio_actuator_pressure_on()
 {
-	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO BARREIRA: ", pivot_is_on_barrier);
-	if(pivot_is_on_barrier)
+	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO BARREIRA: ", status_barrier);
+	if(xTask_waitpressure == NULL)
 	{
 		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
 								ACTUATOR_CHECK_TASK_NAME,
@@ -592,44 +592,13 @@ void gpio_actuator_pressure_on()
 								&xTask_waitpressure);
 		if(xReturn != pdPASS || xTask_waitpressure == NULL)
 		{
-			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
-									ACTUATOR_CHECK_TASK_NAME,
-									ACTUATOR_CHECK_STACK_SIZE,
-									(void *) 1,
-									ACTUATOR_CHECK_TASK_PRIORITY,
-									&xTask_waitpressure);
-			if(xReturn != pdPASS || xTask_waitpressure == NULL)
-			{
-				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
-			}
-		}
-		else
-		{
-			vTaskResume(xTask_waitpressure);
+			ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
 		}
 	}
 	else
 	{
-		ESP_LOGE(GPIO_ACT_TAG, "%i, AAAAAAAAAAAAAAAAAAAAAAAAAAA ", pivot_is_on_barrier);
-		if(xTask_waitpressure == NULL)
-		{
-			BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
-									ACTUATOR_CHECK_TASK_NAME,
-									ACTUATOR_CHECK_STACK_SIZE,
-									(void *) 0,
-									ACTUATOR_CHECK_TASK_PRIORITY,
-									&xTask_waitpressure);
-			if(xReturn != pdPASS || xTask_waitpressure == NULL)
-			{
-				ESP_LOGE(GPIO_ACT_TAG, "%s, failed to create task: %s", __func__, ACTUATOR_CHECK_TASK_NAME);
-			}
-		}
-		else
-		{
-			vTaskResume(xTask_waitpressure);
-		}
+		vTaskResume(xTask_waitpressure);
 	}
-
 }
 
 /**
