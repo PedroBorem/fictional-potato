@@ -46,7 +46,7 @@ static pivot_actions task_actions_set = {};
 // Barrier config variables
 const pivot_return_config barrier_config = {}; /**< Configuration for system monitoring. */
 static uint16_t* system_monitoring_virtual_barrier_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
-static uint8_t status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -581,7 +581,6 @@ void gpio_actuator_pump_off(void)
  */
 void gpio_actuator_pressure_on()
 {
-	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO BARREIRA: ", status_barrier);
 	if(xTask_waitpressure == NULL)
 	{
 		BaseType_t xReturn = xTaskCreate(&actuator_wait_pressure,
