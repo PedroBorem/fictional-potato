@@ -75,10 +75,6 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
-barrier_status get_barrier_status()
-{
-    return status_barrier;
-}
 
 /**
  * @brief Executes the actuation process based on the system configuration.
@@ -188,24 +184,24 @@ static void system_monitoring_task(void* arg)
 
     while(1)
     {
-        if((*system_monitoring_current_angle >= virtual_barrier_config.start_angle - 3 
-	    && *system_monitoring_current_angle <= virtual_barrier_config.start_angle + 3 ) /* Start Angle*/
-	    || (*system_monitoring_current_angle >= virtual_barrier_config.end_angle -3 
-	    && *system_monitoring_current_angle <= virtual_barrier_config.end_angle + 3) /* End Angle */)
+        if(system_monitoring_config.start_angle < system_monitoring_config.end_angle
+        || system_monitoring_config.start_angle > system_monitoring_config.end_angle)
         {
-            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle -3
-            && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 3)
+            ESP_LOGI(SYSTEM_MONITORING_TAG, "FFFFFFFFFFFFFFFFFFFFFFF");
+            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle
+            && *system_monitoring_current_angle <= system_monitoring_config.end_angle)
             {
+                 ESP_LOGI(SYSTEM_MONITORING_TAG, "AAAAAAAAAAAAAAAAAAAAAAAAAAA");
                 if(pivot_actions.rotation == PIVOT_CW)
                 {
-                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                    status_barrier = PIVOT_IN_THE_BARRIER;
                 }
                 else if(pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
 				{
-					status_barrier = PIVOT_IN_THE_BARRIER;
+					status_barrier = PIVOT_LEAVING_THE_BARRIER;
 				}
 
-                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_IN_THE_BARRIER)
                 {
                     system_monitoring_actuation();
                 }
@@ -213,16 +209,19 @@ static void system_monitoring_task(void* arg)
             else if (*system_monitoring_current_angle <= system_monitoring_config.start_angle
             && *system_monitoring_current_angle >= system_monitoring_config.end_angle)
             {
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "BBBBBBBBBBBBBBBBBBBBB");
                 if(pivot_actions.rotation == PIVOT_CW)
 				{
-					status_barrier = PIVOT_IN_THE_BARRIER;
+                    ESP_LOGI(SYSTEM_MONITORING_TAG, "CCCCCCCCCCCCCCCCCCCCCCCC");
+					status_barrier = PIVOT_LEAVING_THE_BARRIER;
 				}
 				else if(pivot_actions.rotation == PIVOT_CCW)
 				{
-					status_barrier = PIVOT_LEAVING_THE_BARRIER;	
+                    ESP_LOGI(SYSTEM_MONITORING_TAG, "DDDDDDDDDDDDDDDDDDDDDDD");
+					status_barrier = PIVOT_IN_THE_BARRIER;	
 				}
 
-                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_IN_THE_BARRIER)
                 {
                     system_monitoring_actuation();
                 }
@@ -230,6 +229,7 @@ static void system_monitoring_task(void* arg)
         }
         else
         {
+            ESP_LOGI(SYSTEM_MONITORING_TAG, "EEEEEEEEEEEEEEEEEEE");
             status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
             system_states = SYSTEM_RUNNING;
         }
@@ -344,4 +344,9 @@ void system_monitoring_stop(void)
 void system_monitoring_register_callback(const app_callback callback)
 {
 	system_monitoring_callback = callback;
+}
+
+barrier_status get_barrier_status(void)
+{
+    return status_barrier;
 }
