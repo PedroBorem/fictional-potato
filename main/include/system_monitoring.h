@@ -41,4 +41,7 @@ void system_monitoring_stop(void);
  */
 void system_monitoring_register_callback(const app_callback callback);
 
+
+barrier_status get_barrier_status()
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */
