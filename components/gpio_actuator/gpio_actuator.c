@@ -46,7 +46,6 @@ static pivot_actions task_actions_set = {};
 // Barrier config variables
 const pivot_return_config barrier_config = {}; /**< Configuration for system monitoring. */
 static uint16_t* system_monitoring_virtual_barrier_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
-static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -406,64 +405,15 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 
 	LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 	
-	if((*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle - 3 
-	&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.start_angle + 3 ) /* Start Angle*/
-	|| (*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.end_angle -3 
-	&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.end_angle + 3) /* End Angle */) 
+	if(actions.power_state == PIVOT_ON)
 	{
-		if(actions.power_state == PIVOT_ON)
-		{
-			rotation_relay_control(actions);
-			percent_relay_control(actions, perc_sec);
-			
-			if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.start_angle - 3 
-			&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.start_angle + 3) /* Current angle equal to the initial angle, PIVO CANNOT GO REVERSE */
-			{
-				if(actions.rotation == PIVOT_CW) /* If rotation was sent CLOCKWISE - ADVANCE */
-				{
-					status_barrier = PIVOT_LEAVING_THE_BARRIER;
-					water_pump_relay_control(actions);
-				}
-				else if(actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
-				{
-					status_barrier = PIVOT_IN_THE_BARRIER;
-					water_pump_relay_control(actions);
-				}
-			}
-			else if(*system_monitoring_virtual_barrier_current_angle >= virtual_barrier_config.end_angle - 3 
-			&& *system_monitoring_virtual_barrier_current_angle <= virtual_barrier_config.end_angle + 3) /* Current angle equal to the final angle, Pivot CANNOT GO FORWARD */
-			{
-				if(actions.rotation == PIVOT_CW)
-				{
-					status_barrier = PIVOT_IN_THE_BARRIER;
-					water_pump_relay_control(actions);
-				}
-				else if(actions.rotation == PIVOT_CCW)
-				{
-					status_barrier = PIVOT_LEAVING_THE_BARRIER;
-					water_pump_relay_control(actions);		
-				}
-			}
-		}
-		else if(actions.power_state == PIVOT_OFF)
-		{
-			gpio_actuator_shutdown();
-		}
-
+		rotation_relay_control(actions);
+		percent_relay_control(actions, perc_sec);
+		water_pump_relay_control(actions);
 	}
-	else
+	else if(actions.power_state == PIVOT_OFF)
 	{
-		if(actions.power_state == PIVOT_ON)
-		{
-			status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
-			rotation_relay_control(actions);
-			percent_relay_control(actions, perc_sec);
-			water_pump_relay_control(actions);
-		}
-		else if(actions.power_state == PIVOT_OFF)
-		{
-			gpio_actuator_shutdown();
-		}
+		gpio_actuator_shutdown();
 	}
 
 	err = ESP_OK;
@@ -644,6 +594,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  */
 esp_err_t gpio_actuator_start()
 {
+	static barrier_status status_barrier = get_barrier_status();
 	esp_err_t err = ESP_FAIL;
 
 	if(status_barrier == PIVOT_LEAVING_THE_BARRIER)
