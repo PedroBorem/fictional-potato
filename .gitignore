@@ -69,3 +69,5 @@ sdkconfig
 # doxygen files
 _build
 html
+docs/latex
+docs/html
