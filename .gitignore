@@ -56,11 +56,15 @@ build/
 sdkconfig.old
 sdkconfig
 
+# vscode
+.vscode/
+
 # eclipse project
 .cproject
 .project
 .orig
 .metadata/
+.settings/
 
 # doxygen files
 _build

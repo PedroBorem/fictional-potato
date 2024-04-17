@@ -124,17 +124,35 @@
 /* Public function prototypes ------------------------------------------- */
 /**
  * @brief Initializes the GPIO actuator module.
+ *
+ * This function initializes the GPIO actuator module, setting up GPIO pins and configurations.
+ *
  * @return
  *     - ESP_OK: Success
  *     - ESP_FAIL: Failed to initialize
  */
-esp_err_t gpio_actuator_init(void);
+esp_err_t gpio_actuator_init(const app_callback callback);
 
+/**
+ * @brief Configures the GPIO actuator module with the specified configuration.
+ *
+ * This function configures the GPIO actuator module based on the provided configuration.
+ *
+ * @param config The configuration to apply
+ *
+ * @return
+ *     - ESP_OK: Success
+ *     - ESP_FAIL: Failed to configure
+ */
 esp_err_t gpio_actuator_config(pivot_config config);
 
 /**
  * @brief Sets the pivot configuration.
- * @param config The pivot configuration to set
+ *
+ * This function sets the pivot configuration for the GPIO actuator module.
+ *
+ * @param actions The pivot actions to set
+ *
  * @return
  *     - ESP_OK: Success
  *     - ESP_FAIL: Failed to set the configuration
@@ -143,32 +161,45 @@ esp_err_t gpio_actuator_set(pivot_actions actions);
 
 /**
  * @brief Gets the current pivot configuration.
+ *
+ * This function retrieves the current pivot configuration from the GPIO actuator module.
+ *
  * @return The current pivot configuration
  */
 pivot_actions gpio_actuator_get(void);
 
 /**
  * @brief Shuts down all relays.
+ *
+ * This function shuts down all relays in the GPIO actuator module.
  */
 void gpio_actuator_shutdown(void);
 
 /**
  * @brief Turns on the pump relay.
+ *
+ * This function turns on the pump relay in the GPIO actuator module.
  */
 void gpio_actuator_pump_on(void);
 
 /**
  * @brief Turns off the pump relay.
+ *
+ * This function turns off the pump relay in the GPIO actuator module.
  */
 void gpio_actuator_pump_off(void);
 
 /**
  * @brief Turns on the pressure relay and starts pressure monitoring.
+ *
+ * This function turns on the pressure relay and starts pressure monitoring in the GPIO actuator module.
  */
 void gpio_actuator_pressure_on(void);
 
 /**
  * @brief Turns off the pressure relay and stops pressure monitoring.
+ *
+ * This function turns off the pressure relay and stops pressure monitoring in the GPIO actuator module.
  */
 void gpio_actuator_pressure_off(void);
 

@@ -27,18 +27,20 @@
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
 
 /* Global variables ---------------------------------------------- */
+// Callback variables
+static app_callback gpio_actuator_callback = NULL;
 
-//FreeRTOS variables
+// FreeRTOS variables
 static TimerHandle_t perc_timer_handleOn = NULL;
 static TimerHandle_t perc_timer_handleOff = NULL;
 static TaskHandle_t xTask_waitpressure = NULL;
 static TaskHandle_t xTask_readpercent = NULL;
 
-//actionsuration variables
+// Actions duration variables
 static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
 
-//Percentimeter variables
+// Percentimeter variables
 static uint64_t posedge_perc = 0;
 static uint64_t negedge_perc = 0;
 static uint32_t perc_diff_onoff = 0;
@@ -46,13 +48,13 @@ static uint32_t perc_pct_on = 0;
 static uint32_t perc_sec_on = 0;
 static uint64_t percent_watchdog = 0;
 
-/* configuration variables */
+/* Configuration variables */
 static uint32_t gpio_act_pressure_timeout = 0;
 static uint32_t gpio_act_on_off_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
-//Pressurizing flag
+// Pressurizing flag
 static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
@@ -91,6 +93,11 @@ void actuator_read_percent(void* arg);
 
 
 /* Public methods ------------------------------------------------ */
+
+/**
+ * @brief GPIO ISR handler for percentimeter interrupt.
+ * @param arg ISR handler argument.
+ */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
 	if(xTask_readpercent != NULL)
@@ -103,9 +110,25 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 	}
 }
 
-esp_err_t gpio_actuator_init()
+/**
+ * @brief Initializes the GPIO actuator module.
+ *
+ * This function initializes the GPIO actuator module, configures GPIO pins, and sets up timers and tasks.
+ *
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
+esp_err_t gpio_actuator_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
+
+	if(callback != NULL)
+	{
+		gpio_actuator_callback = callback;
+	}
+	else
+	{
+		return err;
+	}
 
 	perc_pct_on = 0;
 	perc_sec_on = 0;
@@ -182,6 +205,14 @@ esp_err_t gpio_actuator_init()
 	return err;
 }
 
+/**
+ * @brief Configures the GPIO actuator module based on the provided configuration.
+ *
+ * This function configures the GPIO actuator module based on the provided configuration.
+ *
+ * @param config Pivot configuration.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t gpio_actuator_config(pivot_config config)
 {
 	esp_err_t err = ESP_FAIL;
@@ -198,6 +229,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 	else
 	{
 		ESP_LOGE(GPIO_ACT_TAG,"Invalid contactor type configuration");
+		LOG_DBG_ERROR(GPIO_ACT_TAG, "Invalid_contactor_type");
 		return err;
 	}
 
@@ -212,16 +244,26 @@ esp_err_t gpio_actuator_config(pivot_config config)
 	else
 	{
 		ESP_LOGE(GPIO_ACT_TAG,"Invalid pressure type configuration");
+		LOG_DBG_ERROR(GPIO_ACT_TAG, "Invalid_pressure_type");
 		return err;
 	}
 
 	// convert sec to mili;
 	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
-	gpio_act_on_off_delay = (config.on_off_time*1000);
+	gpio_act_on_off_delay = (config.on_off_time * 1000);
+	// TODO testar no pivo o tempo de retorno
 
 	return ESP_OK;
 }
 
+/**
+ * @brief Sets the GPIO actuator actions based on the provided actions.
+ *
+ * This function sets the GPIO actuator actions based on the provided actions.
+ *
+ * @param actions Pivot actions to set.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
 esp_err_t gpio_actuator_set(pivot_actions actions)
 {
 	esp_err_t err = ESP_FAIL;
@@ -333,6 +375,13 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	return err;
 }
 
+/**
+ * @brief Gets the current GPIO actuator state.
+ *
+ * This function retrieves the current GPIO actuator state.
+ *
+ * @return pivot_actions Current pivot actions.
+ */
 pivot_actions gpio_actuator_get(void)
 {
 	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == gpio_act_contactor_type)
@@ -379,6 +428,11 @@ pivot_actions gpio_actuator_get(void)
 	return pivot_actions_read;
 }
 
+/**
+ * @brief Shuts down the GPIO actuator module.
+ *
+ * This function shuts down the GPIO actuator module by turning off relays and cleaning up resources.
+ */
 void gpio_actuator_shutdown(void)
 {
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_ENABLE);
@@ -391,7 +445,7 @@ void gpio_actuator_shutdown(void)
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_actuator_pump_off();
 
-	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+	vTaskDelay(pdMS_TO_TICKS(500));
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
 	if(perc_timer_handleOn != NULL)
@@ -410,16 +464,25 @@ void gpio_actuator_shutdown(void)
 	pivot_actions_read.percentimeter = 0;
 }
 
+/**
+ * @brief Turns on the pump in the GPIO actuator module.
+ */
 void gpio_actuator_pump_on(void)
 {
 	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_ENABLE);
 }
 
+/**
+ * @brief Turns off the pump in the GPIO actuator module.
+ */
 void gpio_actuator_pump_off(void)
 {
 	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 }
 
+/**
+ * @brief Turns on pressure application in the GPIO actuator module.
+ */
 void gpio_actuator_pressure_on(void)
 {
 	if(xTask_waitpressure == NULL)
@@ -441,6 +504,9 @@ void gpio_actuator_pressure_on(void)
 	}
 }
 
+/**
+ * @brief Turns off pressure application in the GPIO actuator module.
+ */
 void gpio_actuator_pressure_off(void)
 {
 	pressurizing = false;
@@ -453,22 +519,37 @@ void gpio_actuator_pressure_off(void)
 }
 
 /* Private methods  ---------------------------------------------- */
+/**
+ * @brief Callback function for the expiration of the Perc On timer.
+ * @param pxTimer The timer handle
+ */
 void vPercTimerOnExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	xTimerStart(perc_timer_handleOff, 1000);
+	xTimerStart(perc_timer_handleOff, pdMS_TO_TICKS(5000));
 }
 
+/**
+ * @brief Callback function for the expiration of the Perc Off timer.
+ * @param pxTimer The timer handle
+ */
 void vPercTimerOffExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-	xTimerStart(perc_timer_handleOn, 1000);
+	xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(5000));
 }
 
+/**
+ * @brief Start the relays accordingly after pressure check or dry mode.
+ * @return
+ *     - ESP_OK: Success
+ *     - ESP_FAIL: Fail to initialize
+ */
 esp_err_t gpio_actuator_start(void)
 {
 	esp_err_t err = ESP_FAIL;
 
+	vTaskDelay(pdMS_TO_TICKS(500));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
@@ -476,6 +557,10 @@ esp_err_t gpio_actuator_start(void)
 	return err;
 }
 
+/**
+ * @brief Water pressure application task.
+ * @param arg Task argument (default NULL)
+ */
 void actuator_wait_pressure(void* arg)
 {
 	TickType_t check_start = xTaskGetTickCount();
@@ -490,6 +575,9 @@ void actuator_wait_pressure(void* arg)
 			//system on
 			gpio_actuator_start();
 			pressurizing = false;
+
+			// send current action
+			gpio_actuator_callback("#00$", COMM_MQTT);
 
 			//suspend own task
 			vTaskSuspend(NULL);
@@ -513,7 +601,7 @@ void actuator_wait_pressure(void* arg)
 			gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 			gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-			vTaskDelay(pdMS_TO_TICKS(gpio_act_on_off_delay));
+			vTaskDelay(pdMS_TO_TICKS(500));
 
 			gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 
@@ -545,6 +633,10 @@ void actuator_wait_pressure(void* arg)
 	}
 }
 
+/**
+ * @brief Percentimeter reading task.
+ * @param arg Task argument (default NULL)
+ */
 void actuator_read_percent(void* arg)
 {
 	while(1)

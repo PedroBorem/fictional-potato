@@ -1,19 +1,24 @@
-/*
- * idp_parser.h
+/**
+ * @file idp_parser.h
+ * @date July 12, 2023
+ * @brief IDP Parser class for handling IDP protocol packets.
  *
- *  Created on: 12 de jul. de 2023
- *      Author: bruno
+ * This file contains the declaration of the IDP Parser class, which is responsible for parsing
+ * and handling IDP (Integrated Data Protocol) protocol packets.
  */
 
 #ifndef COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_
 #define COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_
 
-
 #include "project_config.h"
 
-typedef struct arg_pair{
-    const char* type;
-    void* value;
+/**
+ * @struct arg_pair
+ * @brief Structure representing an argument pair (type and value).
+ */
+typedef struct arg_pair {
+    const char* type; /**< Type of the argument. */
+    void* value;      /**< Value of the argument. */
 } arg_pair_t;
 
 /**
@@ -22,16 +27,49 @@ typedef struct arg_pair{
  * This function extracts the IDP type from the received IDP packet.
  *
  * @param[in] string_in The received IDP packet string.
+ * @param[out] string_out The IDP type extracted from the packet.
  * @return The IDP type extracted from the packet, or IDP_INVALID if the packet is invalid.
  */
 idp_type idp_parser_get(const char* string_in, char* string_out);
 
+/**
+ * @brief Validate the specified pivot actions.
+ *
+ * This function validates the specified pivot actions to ensure they conform to the IDP protocol.
+ *
+ * @param[in] actions The pivot actions to be validated.
+ * @return true if the actions are valid, false otherwise.
+ */
 bool idp_parser_validate_actions(const pivot_actions actions);
+
+/**
+ * @brief Validate the specified network configuration.
+ *
+ * This function validates the specified network configuration to ensure it conforms to the IDP protocol.
+ *
+ * @param[in] net_config The network configuration to be validated.
+ * @return true if the network configuration is valid, false otherwise.
+ */
 bool idp_parser_validate_network(const network_config net_config);
 
+/**
+ * @brief Create an IDP packet with a generated password based on the specified pivot actions.
+ *
+ * This function creates an IDP packet with a generated password based on the specified pivot actions.
+ *
+ * @param[in] actions The pivot actions used to generate the password.
+ * @return The generated password.
+ */
 uint16_t idp_parser_create_pwd(pivot_actions actions);
 
-
+/**
+ * @brief Get pivot actions from the specified password.
+ *
+ * This function retrieves pivot actions from the specified password.
+ *
+ * @param[in] pwd The password from which to extract pivot actions.
+ * @param[out] actions The pivot actions extracted from the password.
+ */
 void idp_parser_get_pwd(uint16_t pwd, pivot_actions* actions);
 
 /**
@@ -53,5 +91,18 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[]);
  * @param[out] arg_pairs The array of argument pairs to be populated with data from the packet.
  */
 void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[]);
+
+/**
+ * @brief Returns the number of delimiters '-' present in the buffer.
+ *
+ * This function counts the number of delimiters '-' present in the provided buffer.
+ *
+ * @param buffer The buffer containing the data to be analyzed.
+ * @return The number of '-' delimiters in the buffer.
+ * @note The provided buffer must be a valid null-terminated string.
+ * @warning This function does not check whether the provided buffer is valid or null-terminated.
+ * Ensure that the buffer is valid and null-terminated to avoid undefined behavior.
+ */
+uint8_t idp_parser_get_delimiter(const char *buffer);
 
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

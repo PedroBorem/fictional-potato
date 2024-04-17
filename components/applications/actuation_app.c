@@ -1,8 +1,7 @@
 /**
  * @file actuation_app.c
- * @date June 23, 2022
- * @brief actuation control class
-*/
+ * @brief Actuation control class responsible for managing actuator actions.
+ */
 
 /* Self include */
 #include "actuation_app.h"
@@ -16,35 +15,77 @@
 #include <string.h>
 
 /* Private definitions ------------------------------------------- */
-#define ACTUATION_APP_TAG			"actuation_app"
 
-// manual config timeout
-#define ACTUATION_APP_POWER_TIME			10000	// 10 sec
-#define ACTUATION_APP_WATERING_TIME			30000	// 30 sec
-#define ACTUATION_APP_ROTATION_TIME			6000	// 6 sec
-#define ACTUATION_APP_PERCENTIMETER_TIME	120000	// 2 min
+/**
+ * @def ACTUATION_APP_TAG
+ * @brief Tag used for logging within the actuation_app module.
+ */
+#define ACTUATION_APP_TAG "actuation_app"
+
+/**
+ * @def ACTUATION_APP_POWER_TIME
+ * @brief Timeout duration for manual power configuration in milliseconds (10 seconds).
+ */
+#define ACTUATION_APP_POWER_TIME 15000    // 10 sec
+
+/**
+ * @def ACTUATION_APP_WATERING_TIME
+ * @brief Timeout duration for manual watering configuration in milliseconds (30 seconds).
+ */
+#define ACTUATION_APP_WATERING_TIME 35000 // 30 sec
+
+/**
+ * @def ACTUATION_APP_ROTATION_TIME
+ * @brief Timeout duration for manual rotation configuration in milliseconds (6 seconds).
+ */
+#define ACTUATION_APP_ROTATION_TIME 15000  // 6 sec
+
+/**
+ * @def ACTUATION_APP_PERCENTIMETER_TIME
+ * @brief Timeout duration for manual percentimeter configuration in milliseconds (2 minutes).
+ */
+#define ACTUATION_APP_PERCENTIMETER_TIME 120000 // 2 min
 
 /* Private variables  -------------------------------------------- */
-static TaskHandle_t xTask_actuation_app = NULL;
-static app_callback actuation_app_call = NULL;
-static pivot_actions actuation_config = {};
+
+static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
+static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
+static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
 
 const pivot_actions pivot_actions_off = {
-		.power_state = PIVOT_OFF,
-		.rotation = PIVOT_CW,
-		.watering_state = PIVOT_DRY,
-		.percentimeter = 0};
+    .power_state = PIVOT_OFF,
+    .rotation = PIVOT_CW,
+    .watering_state = PIVOT_DRY,
+    .percentimeter = 0
+};
 
 /* Private methods  ---------------------------------------------- */
+
+/**
+ * @brief Task responsible for monitoring possible changes in equipment status.
+ * @param arg [in]: Task argument (default NULL).
+ */
 void actuation_app_task(void* arg);
+
+/**
+ * @brief Perform a manual call based on the given parameters.
+ * @param on_off [in]: The state to set (true for on, false for off).
+ * @param current_action [in]: The current pivot actions.
+ */
 void actuation_app_manual_call(bool on_off, pivot_actions current_action);
 
+
 /* Public methods ------------------------------------------------ */
+/**
+ * @brief Initialize the actuation control class.
+ * @param callback [in]: Callback function for actuation events.
+ * @return esp_err_t: Error code indicating the success of the initialization.
+ */
 esp_err_t actuation_app_init(const app_callback callback)
 {
 	esp_err_t err = ESP_OK;
 
-	err = gpio_actuator_init();
+	err = gpio_actuator_init(callback);
 	if(callback != NULL && err == ESP_OK)
 	{
 		actuation_app_call = callback;
@@ -70,11 +111,21 @@ esp_err_t actuation_app_init(const app_callback callback)
 	return err;
 }
 
+/**
+ * @brief Set the configuration for the actuator.
+ * @param config [in]: The pivot configuration to set.
+ * @return esp_err_t: Error code indicating the success of the configuration.
+ */
 esp_err_t actuation_app_set_config(pivot_config config)
 {
 	return gpio_actuator_config(config);
 }
 
+/**
+ * @brief Set the actions for the actuator.
+ * @param config_in [in]: The pivot actions to set.
+ * @param alert_change [in]: Flag indicating whether to alert about manual configuration.
+ */
 void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 {
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
@@ -95,6 +146,11 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	}
 }
 
+/**
+ * @brief Get the current actions of the actuator.
+ * @param config_out [out]: The buffer to store the current pivot actions.
+ * @param config_size [in]: The size of the config_out buffer.
+ */
 void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
 {
 	pivot_actions current_action = {};
@@ -115,6 +171,10 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
 	}
 }
 
+/**
+ * @brief Set the state of the pump.
+ * @param pump_state [in]: The state to set (true for on, false for off).
+ */
 void actuation_app_set_pump(bool pump_state)
 {
 	if(pump_state)
@@ -127,6 +187,9 @@ void actuation_app_set_pump(bool pump_state)
 	}
 }
 
+/**
+ * @brief Shutdown the actuation control class.
+ */
 void actuation_app_shutdown(void)
 {
 	gpio_actuator_shutdown();
@@ -147,24 +210,6 @@ void actuation_app_task(void* arg)
 	while(1)
 	{
 		current_action = gpio_actuator_get();
-		data_app_load(DATA_TYPE_ACTIONS, &actuation_config);
-
-		/*
-		LOG_DATA(ACTUATION_APP_TAG, "");
-		LOG_DATA(ACTUATION_APP_TAG, " ------ NVS Current Config ------");
-		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", current_action.power_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", current_action.rotation);
-		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", current_action.watering_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
-		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
-
-		LOG_DATA(ACTUATION_APP_TAG, "");
-		LOG_DATA(ACTUATION_APP_TAG, " Power state: %d", actuation_config.power_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Advance mode: %d", actuation_config.rotation);
-		LOG_DATA(ACTUATION_APP_TAG, " Watering state: %d", actuation_config.watering_state);
-		LOG_DATA(ACTUATION_APP_TAG, " Percentimeter %.3d %%", actuation_config.percentimeter);
-		LOG_DATA(ACTUATION_APP_TAG, " --------------------------------\n");
-		*/
 
 		if((current_action.power_state != actuation_config.power_state)
 		&& (current_action.watering_state != PIVOT_PRESSURIZING))
@@ -193,7 +238,7 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_action.watering_state == PIVOT_DRY)
 				{
-					actuation_app_manual_call(false, current_action);
+					actuation_app_manual_call(true, current_action);
 				}
 				else if(current_action.watering_state == PIVOT_WET)
 				{
@@ -232,6 +277,11 @@ void actuation_app_task(void* arg)
 	}
 }
 
+/**
+ * @brief Perform a manual call based on the given parameters.
+ * @param on_off [in]: The state to set (true for on, false for off).
+ * @param current_action [in]: The current pivot actions.
+ */
 void actuation_app_manual_call(bool on_off, pivot_actions current_action)
 {
 	if(on_off == true)

@@ -1,5 +1,5 @@
-\hypertarget{nvs__data_8c}{}\doxysection{components/nvs\+\_\+data/nvs\+\_\+data.c File Reference}
-\label{nvs__data_8c}\index{components/nvs\_data/nvs\_data.c@{components/nvs\_data/nvs\_data.c}}
+\hypertarget{nvs__data_8c}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/nvs\+\_\+data/nvs\+\_\+data.c File Reference}
+\label{nvs__data_8c}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/nvs\_data/nvs\_data.c@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/nvs\_data/nvs\_data.c}}
 
 
 Class for direct access to flash memory (NVS).  
@@ -10,8 +10,7 @@ Class for direct access to flash memory (NVS).
 {\ttfamily \#include \char`\"{}nvs.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}esp\+\_\+log.\+h\char`\"{}}\newline
 {\ttfamily \#include \char`\"{}string.\+h\char`\"{}}\newline
-Include dependency graph for nvs\+\_\+data.\+c\+:
-\nopagebreak
+Include dependency graph for nvs\+\_\+data.\+c\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
@@ -29,25 +28,25 @@ Include dependency graph for nvs\+\_\+data.\+c\+:
 \item 
 esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8c_a9518e6186a319cf55ca290301dd7f6d5}{nvs\+\_\+data\+\_\+init}} (void)
 \begin{DoxyCompactList}\small\item\em Initializes the NVS data class. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8c_ad42982baba3ea3c1b35cd8ca83e2a69a}{nvs\+\_\+data\+\_\+set}} (const char $\ast$label\+\_\+name, const char $\ast$key, const void $\ast$value, size\+\_\+t length)
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8c_a407762421447a1e133e9eb91d05f92bc}{nvs\+\_\+data\+\_\+set}} (const char $\ast$label\+\_\+name, const void $\ast$value, size\+\_\+t length)
 \begin{DoxyCompactList}\small\item\em Sets the value in the NVS data. \end{DoxyCompactList}\item 
-size\+\_\+t \mbox{\hyperlink{nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79}{nvs\+\_\+data\+\_\+get\+\_\+size}} (const char $\ast$label\+\_\+name, const char $\ast$key)
+size\+\_\+t \mbox{\hyperlink{nvs__data_8c_a539c7eaa5d77074e513b9ce4d5e18da3}{nvs\+\_\+data\+\_\+get\+\_\+size}} (const char $\ast$label\+\_\+name)
 \begin{DoxyCompactList}\small\item\em Gets the size of the NVS data. \end{DoxyCompactList}\item 
-esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8c_a97615c98bf7f09b2021bfc2bb230d73f}{nvs\+\_\+data\+\_\+get\+\_\+blob}} (const char $\ast$label\+\_\+name, const char $\ast$key, uint8\+\_\+t $\ast$out\+\_\+value)
+esp\+\_\+err\+\_\+t \mbox{\hyperlink{nvs__data_8c_aa2ecf5c088d633f6d1620933cb8ba8d6}{nvs\+\_\+data\+\_\+get\+\_\+blob}} (const char $\ast$label\+\_\+name, uint8\+\_\+t $\ast$out\+\_\+value)
 \begin{DoxyCompactList}\small\item\em Gets the NVS data as a blob. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
 Class for direct access to flash memory (NVS). 
 
-
+This file contains the implementation of the NVS Data class, which provides functions for direct access to flash memory using the Non-\/\+Volatile Storage (NVS) API. 
 
 \doxysubsection{Function Documentation}
-\mbox{\Hypertarget{nvs__data_8c_a97615c98bf7f09b2021bfc2bb230d73f}\label{nvs__data_8c_a97615c98bf7f09b2021bfc2bb230d73f}} 
+\mbox{\Hypertarget{nvs__data_8c_aa2ecf5c088d633f6d1620933cb8ba8d6}\label{nvs__data_8c_aa2ecf5c088d633f6d1620933cb8ba8d6}} 
 \index{nvs\_data.c@{nvs\_data.c}!nvs\_data\_get\_blob@{nvs\_data\_get\_blob}}
 \index{nvs\_data\_get\_blob@{nvs\_data\_get\_blob}!nvs\_data.c@{nvs\_data.c}}
 \doxysubsubsection{\texorpdfstring{nvs\_data\_get\_blob()}{nvs\_data\_get\_blob()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+blob (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key,  }\item[{uint8\+\_\+t $\ast$}]{out\+\_\+value }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+blob (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{uint8\+\_\+t $\ast$}]{out\+\_\+value }\end{DoxyParamCaption})}
 
 
 
@@ -59,19 +58,17 @@ This function retrieves the NVS data as a blob under the specified label and key
 \begin{DoxyParams}{Parameters}
 {\em label\+\_\+name} & The label name for the NVS data. \\
 \hline
-{\em key} & The key for which to retrieve the data. \\
-\hline
 {\em out\+\_\+value} & The buffer to store the retrieved data. \\
 \hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 esp\+\_\+err\+\_\+t An error code indicating the success or failure of the operation. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79}\label{nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79}} 
+\mbox{\Hypertarget{nvs__data_8c_a539c7eaa5d77074e513b9ce4d5e18da3}\label{nvs__data_8c_a539c7eaa5d77074e513b9ce4d5e18da3}} 
 \index{nvs\_data.c@{nvs\_data.c}!nvs\_data\_get\_size@{nvs\_data\_get\_size}}
 \index{nvs\_data\_get\_size@{nvs\_data\_get\_size}!nvs\_data.c@{nvs\_data.c}}
 \doxysubsubsection{\texorpdfstring{nvs\_data\_get\_size()}{nvs\_data\_get\_size()}}
-{\footnotesize\ttfamily size\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily size\+\_\+t nvs\+\_\+data\+\_\+get\+\_\+size (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name }\end{DoxyParamCaption})}
 
 
 
@@ -83,20 +80,10 @@ This function retrieves the size of the NVS data under the specified label and k
 \begin{DoxyParams}{Parameters}
 {\em label\+\_\+name} & The label name for the NVS data. \\
 \hline
-{\em key} & The key for which to retrieve the size. \\
-\hline
 \end{DoxyParams}
 \begin{DoxyReturn}{Returns}
 size\+\_\+t The size of the NVS data. 
 \end{DoxyReturn}
-Here is the caller graph for this function\+:
-\nopagebreak
-\begin{figure}[H]
-\begin{center}
-\leavevmode
-\includegraphics[width=350pt]{nvs__data_8c_a3ffa3a4ee01e5a70c79bb0b297a11c79_icgraph}
-\end{center}
-\end{figure}
 \mbox{\Hypertarget{nvs__data_8c_a9518e6186a319cf55ca290301dd7f6d5}\label{nvs__data_8c_a9518e6186a319cf55ca290301dd7f6d5}} 
 \index{nvs\_data.c@{nvs\_data.c}!nvs\_data\_init@{nvs\_data\_init}}
 \index{nvs\_data\_init@{nvs\_data\_init}!nvs\_data.c@{nvs\_data.c}}
@@ -112,11 +99,11 @@ This function initializes the NVS data class by initializing the NVS flash memor
 \begin{DoxyReturn}{Returns}
 esp\+\_\+err\+\_\+t An error code indicating the success or failure of the initialization. 
 \end{DoxyReturn}
-\mbox{\Hypertarget{nvs__data_8c_ad42982baba3ea3c1b35cd8ca83e2a69a}\label{nvs__data_8c_ad42982baba3ea3c1b35cd8ca83e2a69a}} 
+\mbox{\Hypertarget{nvs__data_8c_a407762421447a1e133e9eb91d05f92bc}\label{nvs__data_8c_a407762421447a1e133e9eb91d05f92bc}} 
 \index{nvs\_data.c@{nvs\_data.c}!nvs\_data\_set@{nvs\_data\_set}}
 \index{nvs\_data\_set@{nvs\_data\_set}!nvs\_data.c@{nvs\_data.c}}
 \doxysubsubsection{\texorpdfstring{nvs\_data\_set()}{nvs\_data\_set()}}
-{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+set (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const char $\ast$}]{key,  }\item[{const void $\ast$}]{value,  }\item[{size\+\_\+t}]{length }\end{DoxyParamCaption})}
+{\footnotesize\ttfamily esp\+\_\+err\+\_\+t nvs\+\_\+data\+\_\+set (\begin{DoxyParamCaption}\item[{const char $\ast$}]{label\+\_\+name,  }\item[{const void $\ast$}]{value,  }\item[{size\+\_\+t}]{length }\end{DoxyParamCaption})}
 
 
 
@@ -127,8 +114,6 @@ This function sets the value in the NVS data under the specified label and key.
 
 \begin{DoxyParams}{Parameters}
 {\em label\+\_\+name} & The label name for the NVS data. \\
-\hline
-{\em key} & The key under which the value is stored. \\
 \hline
 {\em value} & The value to be stored. \\
 \hline

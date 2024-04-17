@@ -54,13 +54,33 @@ static QueueHandle_t xQueue_wifi_app = NULL;
 static esp_netif_t* wifi_ap_netif = NULL;
 
 /* Private function prototype ------------------------------------ */
+/**
+ * @brief Start the Wi-Fi application.
+ * @return esp_err_t indicating success or failure.
+ */
 esp_err_t wifi_app_start(void);
-static void wifi_reloader(void);
+
+/**
+ * @brief Wi-Fi application task function.
+ * @param arg Task argument (not used).
+ */
 static void wifi_app_task(void * arg);
+
+/**
+ * @brief Handle Wi-Fi events.
+ * @param arg Task argument (not used).
+ * @param event_base Event base.
+ * @param event_id Event ID.
+ * @param event_data Event data.
+ */
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data);
 
 /* Public methods ------------------------------------------------ */
+/**
+ * @brief Initialize the Wi-Fi application.
+ * @return esp_err_t indicating success or failure.
+ */
 esp_err_t wifi_app_init(void)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -89,14 +109,30 @@ esp_err_t wifi_app_init(void)
     return ret;
 }
 
+/**
+ * @brief Set the Wi-Fi configuration.
+ * @param wifi_ssid Wi-Fi SSID.
+ * @param wifi_pass Wi-Fi password.
+ */
 void wifi_app_set_config(char* wifi_ssid, char* wifi_pass)
 {
 	strcpy(wifi_global_ssid, wifi_ssid);
 	strcpy(wifi_global_pass,wifi_pass);
 }
 
-
+/**
+ * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
+ */
+void wifi_reloader(void)
+{
+	uint8_t wifi_app_queue_req = 0;
+	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
+}
 /* Private methods ----------------------------------------------- */
+/**
+ * @brief Start the Wi-Fi application.
+ * @return esp_err_t indicating success or failure.
+ */
 esp_err_t wifi_app_start(void)
 {
 	esp_err_t ret = ESP_FAIL;
@@ -159,6 +195,7 @@ esp_err_t wifi_app_start(void)
 			{
 				ret = ESP_FAIL;
 				ESP_LOGE(WIFI_TAG, "%s, WiFi Failed to start", __func__);
+				LOG_DBG_ERROR(WIFI_TAG, "WiFi_Failed_to_start");
 			}
 		}
 		else
@@ -169,18 +206,16 @@ esp_err_t wifi_app_start(void)
 	else
 	{
 		ESP_LOGE(WIFI_TAG, "%s, error on init netif", __func__);
+		LOG_DBG_ERROR(WIFI_TAG, "WiFi_netif_error");
 	}
 
 	return ret;
 }
 
-
-static void wifi_reloader(void)
-{
-	uint8_t wifi_app_queue_req = 0;
-	xQueueSend(xQueue_wifi_app, &wifi_app_queue_req, portMAX_DELAY );
-}
-
+/**
+ * @brief Wi-Fi application task function.
+ * @param arg Task argument (not used).
+ */
 static void wifi_app_task(void * arg)
 {
 	uint8_t wifi_app_queue_req;
@@ -202,6 +237,13 @@ static void wifi_app_task(void * arg)
 	return;
 }
 
+/**
+ * @brief Handle Wi-Fi events.
+ * @param arg Task argument (not used).
+ * @param event_base Event base.
+ * @param event_id Event ID.
+ * @param event_data Event data.
+ */
 static void wifi_event_handler(void* arg, esp_event_base_t event_base,
                                     int32_t event_id, void* event_data)
 {
@@ -219,3 +261,5 @@ static void wifi_event_handler(void* arg, esp_event_base_t event_base,
 		wifi_reloader();
     }
 }
+
+/** @} */ // end of WIFI_APP group

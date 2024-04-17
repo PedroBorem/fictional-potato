@@ -1,0 +1,366 @@
+\hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g}{}\doxysection{Project Configuration}
+\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g}\index{Project Configuration@{Project Configuration}}
+\doxysubsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{structpivot__sectors}{pivot\+\_\+sectors}}
+\begin{DoxyCompactList}\small\item\em Configuration angles. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaf9e21dd00963e07390c14a7d103dbde7}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaf9e21dd00963e07390c14a7d103dbde7}} 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaf9e21dd00963e07390c14a7d103dbde7}{CONFIG\+\_\+\+FW\+\_\+\+VERSION}}~(\char`\"{}v2.\+0.\+0\char`\"{})
+\begin{DoxyCompactList}\small\item\em Firmware version. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga9e676762900f9ddf8c8d1354b0fb330e}{CONFIG\+\_\+\+SCHEDULING\+\_\+\+MAX\+\_\+\+VALUE}}~(10)
+\begin{DoxyCompactList}\small\item\em Maximum number of scheduling values. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga607ae8cced38a31b5d90b2580c8c1136}{CONFIG\+\_\+\+HISTORY\+\_\+\+MAX\+\_\+\+VALUE}}~(20)
+\begin{DoxyCompactList}\small\item\em Maximum number of history values. \end{DoxyCompactList}\item 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc6d74838d21c80a237f85eee780bbaf}{CONFIG\+\_\+\+SECTORS\+\_\+\+MAX\+\_\+\+VALUE}}~(04)
+\begin{DoxyCompactList}\small\item\em Maximum number of sectors. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc4f50d599c396c227cac19ceb884d7a}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc4f50d599c396c227cac19ceb884d7a}} 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc4f50d599c396c227cac19ceb884d7a}{CONFIG\+\_\+\+ACTIONS\+\_\+\+UNDEF\+\_\+\+VALUE}}~(655)
+\begin{DoxyCompactList}\small\item\em Undefined value for actions. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga82248faefca122c1a4b1111763aebfba}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga82248faefca122c1a4b1111763aebfba}} 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga82248faefca122c1a4b1111763aebfba}{CONFIG\+\_\+\+HTTP\+\_\+\+ERROR}}~(\char`\"{}400\char`\"{})
+\begin{DoxyCompactList}\small\item\em HTTP error response code. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gae733db163fff089a2e0dcf942cc5dae3}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gae733db163fff089a2e0dcf942cc5dae3}} 
+\#define \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gae733db163fff089a2e0dcf942cc5dae3}{CONFIG\+\_\+\+HTTP\+\_\+\+OK}}~(\char`\"{}200\char`\"{})
+\begin{DoxyCompactList}\small\item\em HTTP OK response code. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef void($\ast$ \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}{app\+\_\+callback}}) (const char $\ast$buffer\+\_\+request, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} communication)
+\begin{DoxyCompactList}\small\item\em Application callback function. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Enumerations}
+\begin{DoxyCompactItemize}
+\item 
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}} \{ \newline
+{\bfseries IDP\+\_\+0} = 0
+, {\bfseries IDP\+\_\+1}
+, {\bfseries IDP\+\_\+2}
+, {\bfseries IDP\+\_\+3}
+, \newline
+{\bfseries IDP\+\_\+4}
+, {\bfseries IDP\+\_\+5}
+, {\bfseries IDP\+\_\+6}
+, {\bfseries IDP\+\_\+7}
+, \newline
+{\bfseries IDP\+\_\+8}
+, {\bfseries IDP\+\_\+9}
+, {\bfseries IDP\+\_\+10}
+, {\bfseries IDP\+\_\+11}
+, \newline
+{\bfseries IDP\+\_\+12}
+, {\bfseries IDP\+\_\+13}
+, {\bfseries IDP\+\_\+14}
+, {\bfseries IDP\+\_\+15}
+, \newline
+{\bfseries IDP\+\_\+16}
+, {\bfseries IDP\+\_\+17}
+, {\bfseries IDP\+\_\+18}
+, {\bfseries IDP\+\_\+22} = 22
+, \newline
+{\bfseries IDP\+\_\+30} = 30
+, {\bfseries IDP\+\_\+90} = 90
+, {\bfseries IDP\+\_\+91}
+, {\bfseries IDP\+\_\+92}
+, \newline
+{\bfseries IDP\+\_\+\+INVALID} = 255
+ \}
+\begin{DoxyCompactList}\small\item\em Enumerates different packet identifiers for communication. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} \{ {\bfseries COMM\+\_\+\+HTTP\+\_\+\+POST} = 0
+, {\bfseries COMM\+\_\+\+HTTP\+\_\+\+GET}
+, {\bfseries COMM\+\_\+\+MQTT}
+ \}
+\begin{DoxyCompactList}\small\item\em Enumerates different communication types. \end{DoxyCompactList}\item 
+enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga352837298b8df9cea8ac12ff12e228ad}{pivot\+\_\+states}} \{ \newline
+\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}{PIVOT\+\_\+\+ON}} = 1
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}{PIVOT\+\_\+\+OFF}} = 2
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}{PIVOT\+\_\+\+CW}} = 3
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}{PIVOT\+\_\+\+CCW}} = 4
+, \newline
+\mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}{PIVOT\+\_\+\+DRY}} = 5
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}{PIVOT\+\_\+\+WET}} = 6
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}{PIVOT\+\_\+\+PRESSURIZING}} = 7
+, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}{PIVOT\+\_\+\+UNKNOWN}} = 8
+ \}
+\begin{DoxyCompactList}\small\item\em Pivot actions states. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+struct \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gad09246453a4dabd919c7541484046a87}{\+\_\+\+\_\+attribute\+\_\+\+\_\+}} ((\+\_\+\+\_\+packed\+\_\+\+\_\+))
+\begin{DoxyCompactList}\small\item\em Pivot actions parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga1cf43e68bcd6bb2e5c4e022e39e297b7}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga1cf43e68bcd6bb2e5c4e022e39e297b7}} 
+{\bfseries pivot\+\_\+actions}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaa1f367c9abfa9e2b2347080c4abef1fa}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gaa1f367c9abfa9e2b2347080c4abef1fa}} 
+{\bfseries pivot\+\_\+config}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac10c1bcc2fe34cf2a7c94eae56456081}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac10c1bcc2fe34cf2a7c94eae56456081}} 
+{\bfseries network\+\_\+config}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga769f160157f66e936b3508848967a7e7}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga769f160157f66e936b3508848967a7e7}} 
+{\bfseries eco\+\_\+mode\+\_\+config}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac99a2578d2beb14665f95be7a7884ec9}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac99a2578d2beb14665f95be7a7884ec9}} 
+{\bfseries sector\+\_\+config}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac95246a7d33c00de76e60f607eaaff7f}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac95246a7d33c00de76e60f607eaaff7f}} 
+{\bfseries pivot\+\_\+return\+\_\+config}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga7e38ab74825934d542c4198c59d45a36}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga7e38ab74825934d542c4198c59d45a36}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+date}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac1800c9f561bcdcbc4406008e2329a06}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gac1800c9f561bcdcbc4406008e2329a06}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+off\+\_\+date}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga467a533c67e784e079e40e8b443b2c23}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga467a533c67e784e079e40e8b443b2c23}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+angle}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga591599f80c250ae301eb4bb0f3d9511c}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga591599f80c250ae301eb4bb0f3d9511c}} 
+{\bfseries pivot\+\_\+scheduling\+\_\+off\+\_\+angle}
+\item 
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga15d3f47d3218061bb32e4e09a7e4f233}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga15d3f47d3218061bb32e4e09a7e4f233}} 
+{\bfseries pivot\+\_\+history}
+\item 
+uint16\+\_\+t \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga445bd0f9b82eb3459b30e00dd688e867}{global\+\_\+angle}}
+\begin{DoxyCompactList}\small\item\em Global angle variable. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+
+
+\doxysubsection{Macro Definition Documentation}
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga607ae8cced38a31b5d90b2580c8c1136}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga607ae8cced38a31b5d90b2580c8c1136}} 
+\index{Project Configuration@{Project Configuration}!CONFIG\_HISTORY\_MAX\_VALUE@{CONFIG\_HISTORY\_MAX\_VALUE}}
+\index{CONFIG\_HISTORY\_MAX\_VALUE@{CONFIG\_HISTORY\_MAX\_VALUE}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{CONFIG\_HISTORY\_MAX\_VALUE}{CONFIG\_HISTORY\_MAX\_VALUE}}
+{\footnotesize\ttfamily \#define CONFIG\+\_\+\+HISTORY\+\_\+\+MAX\+\_\+\+VALUE~(20)}
+
+
+
+Maximum number of history values. 
+
+This define specifies the maximum number of history values allowed in the project. It can be used to define the size of arrays or data structures related to history. \mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga9e676762900f9ddf8c8d1354b0fb330e}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga9e676762900f9ddf8c8d1354b0fb330e}} 
+\index{Project Configuration@{Project Configuration}!CONFIG\_SCHEDULING\_MAX\_VALUE@{CONFIG\_SCHEDULING\_MAX\_VALUE}}
+\index{CONFIG\_SCHEDULING\_MAX\_VALUE@{CONFIG\_SCHEDULING\_MAX\_VALUE}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{CONFIG\_SCHEDULING\_MAX\_VALUE}{CONFIG\_SCHEDULING\_MAX\_VALUE}}
+{\footnotesize\ttfamily \#define CONFIG\+\_\+\+SCHEDULING\+\_\+\+MAX\+\_\+\+VALUE~(10)}
+
+
+
+Maximum number of scheduling values. 
+
+This define specifies the maximum number of scheduling values allowed in the project. It can be used to define the size of arrays or data structures related to scheduling. \mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc6d74838d21c80a237f85eee780bbaf}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gadc6d74838d21c80a237f85eee780bbaf}} 
+\index{Project Configuration@{Project Configuration}!CONFIG\_SECTORS\_MAX\_VALUE@{CONFIG\_SECTORS\_MAX\_VALUE}}
+\index{CONFIG\_SECTORS\_MAX\_VALUE@{CONFIG\_SECTORS\_MAX\_VALUE}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{CONFIG\_SECTORS\_MAX\_VALUE}{CONFIG\_SECTORS\_MAX\_VALUE}}
+{\footnotesize\ttfamily \#define CONFIG\+\_\+\+SECTORS\+\_\+\+MAX\+\_\+\+VALUE~(04)}
+
+
+
+Maximum number of sectors. 
+
+This define specifies the maximum number of sectors allowed in the project. It can be used to define the size of arrays or data structures related to sectors. 
+
+\doxysubsection{Typedef Documentation}
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga6c0ec5c55838a25f79562a56c76ba58b}} 
+\index{Project Configuration@{Project Configuration}!app\_callback@{app\_callback}}
+\index{app\_callback@{app\_callback}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{app\_callback}{app\_callback}}
+{\footnotesize\ttfamily typedef void($\ast$ app\+\_\+callback) (const char $\ast$buffer\+\_\+request, \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}} communication)}
+
+
+
+Application callback function. 
+
+Function signature for the application callback function.
+
+
+\begin{DoxyParams}{Parameters}
+{\em buffer\+\_\+request} & The buffer containing the data associated with the request. \\
+\hline
+{\em communication} & The type of communication (HTTP POST, HTTP GET, MQTT). \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Enumeration Type Documentation}
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}} 
+\index{Project Configuration@{Project Configuration}!comm\_type@{comm\_type}}
+\index{comm\_type@{comm\_type}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{comm\_type}{comm\_type}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga28c7b657e452e70df5119825602a730b}{comm\+\_\+type}}}
+
+
+
+Enumerates different communication types. 
+
+This enum defines communication types used for packet transmission. \mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}} 
+\index{Project Configuration@{Project Configuration}!idp\_type@{idp\_type}}
+\index{idp\_type@{idp\_type}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{idp\_type}{idp\_type}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga4cacbe9d115aa478b72d22efc8a9dfce}{idp\+\_\+type}}}
+
+
+
+Enumerates different packet identifiers for communication. 
+
+This enum defines packet identifiers used for communication. Each identifier represents a specific action or configuration parameter. \mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga352837298b8df9cea8ac12ff12e228ad}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga352837298b8df9cea8ac12ff12e228ad}} 
+\index{Project Configuration@{Project Configuration}!pivot\_states@{pivot\_states}}
+\index{pivot\_states@{pivot\_states}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{pivot\_states}{pivot\_states}}
+{\footnotesize\ttfamily enum \mbox{\hyperlink{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga352837298b8df9cea8ac12ff12e228ad}{pivot\+\_\+states}}}
+
+
+
+Pivot actions states. 
+
+Enumeration defining pivot actions states. \begin{DoxyEnumFields}{Enumerator}
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_ON@{PIVOT\_ON}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_ON@{PIVOT\_ON}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada2b9586d4892d628f1c9a87f795785ea0}} 
+PIVOT\+\_\+\+ON&Pivot on \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_OFF@{PIVOT\_OFF}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_OFF@{PIVOT\_OFF}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adaf2f505bab44dcebafbf70074d33237cb}} 
+PIVOT\+\_\+\+OFF&Pivot off \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_CW@{PIVOT\_CW}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_CW@{PIVOT\_CW}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adad5afb1803d2e76181c81c339c1c19ccf}} 
+PIVOT\+\_\+\+CW&Pivot in Clock\+Wise mode (advanced) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_CCW@{PIVOT\_CCW}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_CCW@{PIVOT\_CCW}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228adabac33f34b5b6164bb576bd991d70331c}} 
+PIVOT\+\_\+\+CCW&Pivot in Counter Clock\+Wise mode (reverse) \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_DRY@{PIVOT\_DRY}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_DRY@{PIVOT\_DRY}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada8487e3e5581ecfa04d2f731f107b5128}} 
+PIVOT\+\_\+\+DRY&Irrigation off \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_WET@{PIVOT\_WET}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_WET@{PIVOT\_WET}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada19b373543ed6d147730428c3c53eef0f}} 
+PIVOT\+\_\+\+WET&Irrigation on \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_PRESSURIZING@{PIVOT\_PRESSURIZING}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_PRESSURIZING@{PIVOT\_PRESSURIZING}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada427982cf405f5fb12adbe17d2c304923}} 
+PIVOT\+\_\+\+PRESSURIZING&Pivot pressurizing \\
+\hline
+
+\raisebox{\heightof{T}}[0pt][0pt]{\index{PIVOT\_UNKNOWN@{PIVOT\_UNKNOWN}!Project Configuration@{Project Configuration}}\index{Project Configuration@{Project Configuration}!PIVOT\_UNKNOWN@{PIVOT\_UNKNOWN}}}\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gga352837298b8df9cea8ac12ff12e228ada188251938d4e550a726b29fe7ac1a17b}} 
+PIVOT\+\_\+\+UNKNOWN&Unknown pivot state \\
+\hline
+
+\end{DoxyEnumFields}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gad09246453a4dabd919c7541484046a87}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_gad09246453a4dabd919c7541484046a87}} 
+\index{Project Configuration@{Project Configuration}!\_\_attribute\_\_@{\_\_attribute\_\_}}
+\index{\_\_attribute\_\_@{\_\_attribute\_\_}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{\_\_attribute\_\_()}{\_\_attribute\_\_()}}
+{\footnotesize\ttfamily struct \+\_\+\+\_\+attribute\+\_\+\+\_\+ (\begin{DoxyParamCaption}\item[{(\+\_\+\+\_\+packed\+\_\+\+\_\+)}]{ }\end{DoxyParamCaption})}
+
+
+
+Pivot actions parameters. 
+
+History parameters.
+
+Scheduling angle parameters.
+
+Scheduling date parameters.
+
+Configuration parameters.
+
+Structure defining pivot actions parameters.
+
+Structure defining the configuration parameters.
+
+Structure defining the network configuration parameters.
+
+Structure defining the eco mode configuration parameters.
+
+Structure defining the sectors configuration parameters.
+
+Structure defining the scheduling parameters based on date.
+
+Structure defining the scheduling parameters based on angle.
+
+Structure defining the history parameters. $<$ Power state of the pivot (PIVOT\+\_\+\+ON or PIVOT\+\_\+\+OFF)
+
+$<$ Rotation mode of the pivot (PIVOT\+\_\+\+CW or PIVOT\+\_\+\+CCW)
+
+$<$ Watering state of the pivot (PIVOT\+\_\+\+DRY or PIVOT\+\_\+\+WET)
+
+$<$ Percentage value from 0 to 100
+
+$<$ Contactor type
+
+$<$ Pressure switch type
+
+$<$ Pressurization time
+
+$<$ On/off time
+
+$<$ Read time
+
+$<$ GPRS ID
+
+$<$ Start time
+
+$<$ End time
+
+$<$ Array of pivot sectors
+
+$<$ Start angle of the configuration
+
+$<$ End angle of the configuration
+
+$<$ Scheduling ID
+
+$<$ Start date
+
+$<$ End date
+
+$<$ Pivot actions
+
+$<$ Scheduling ID
+
+$<$ End date
+
+$<$ Scheduling ID
+
+$<$ Start date
+
+$<$ End angle
+
+$<$ Pivot actions
+
+$<$ Scheduling ID
+
+$<$ End angle
+
+$<$ Pivot actions
+
+$<$ Start angle
+
+$<$ End angle
+
+$<$ Start date
+
+$<$ End date
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga445bd0f9b82eb3459b30e00dd688e867}\label{group___p_r_o_j_e_c_t___c_o_n_f_i_g_ga445bd0f9b82eb3459b30e00dd688e867}} 
+\index{Project Configuration@{Project Configuration}!global\_angle@{global\_angle}}
+\index{global\_angle@{global\_angle}!Project Configuration@{Project Configuration}}
+\doxysubsubsection{\texorpdfstring{global\_angle}{global\_angle}}
+{\footnotesize\ttfamily global\+\_\+angle\hspace{0.3cm}{\ttfamily [extern]}}
+
+
+
+Global angle variable. 
+
+Global variable for the current angle. 

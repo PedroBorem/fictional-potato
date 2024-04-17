@@ -1,27 +1,29 @@
-/*
- * sectorization.c
- *
- *  Created on: 31 de jul. de 2023
- *      Author: soil-dev
+/**
+ * @file sectorization.c
+ * @brief Implementation file for sectorization functionality.
+ * @author soil-dev
+ * @date 31 de jul. de 2023
  */
-
 
 #include "sectorization.h"
 #include "FreeRTOS_defines.h"
 #include "log.h"
-
 #include "actuation_app.h"
-
 #include <string.h>
 
 #define SECTORIZATION_TAG	"sectorization"
 
+static TaskHandle_t xTask_sectorization = NULL; ///< Task handle for the sectorization task.
+static sector_config sectorization_config = {}; ///< Configuration for sectorization.
+static uint16_t* sectorization_current_angle = &global_angle; ///< Pointer to the current angle variable.
 
-static TaskHandle_t xTask_sectorization = NULL;
-static sector_config sectorization_config = {};
-
-static uint16_t* sectorization_current_angle  = &global_angle;
-
+/**
+ * @brief Sectorization task.
+ *
+ * This task monitors the current angle and activates the pump if the angle falls within specified sectors.
+ *
+ * @param arg Task argument (not used).
+ */
 static void sectorization_task(void* arg)
 {
 	bool pump_is_on = false;
@@ -67,6 +69,13 @@ static void sectorization_task(void* arg)
 	}
 }
 
+/**
+ * @brief Starts the sectorization task with the provided sector configuration.
+ *
+ * This function initializes the sectorization task with the specified sector configuration.
+ *
+ * @param sectors Configuration for sectorization.
+ */
 void sectorization_start(sector_config sectors)
 {
 	if(sectors.sector_number > 0)
@@ -82,6 +91,11 @@ void sectorization_start(sector_config sectors)
 	}
 }
 
+/**
+ * @brief Stops the sectorization task.
+ *
+ * This function stops the sectorization task.
+ */
 void sectorization_stop(void)
 {
 	if(xTask_sectorization != NULL)

@@ -1,5 +1,5 @@
-\hypertarget{log_8h}{}\doxysection{components/utils/include/log.h File Reference}
-\label{log_8h}\index{components/utils/include/log.h@{components/utils/include/log.h}}
+\hypertarget{log_8h}{}\doxysection{/home/brunolima/eclipse-\/workspace/fw\+\_\+\+Placa\+De\+Controle\+\_\+2.0/components/utils/include/log.h File Reference}
+\label{log_8h}\index{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/log.h@{/home/brunolima/eclipse-\/workspace/fw\_PlacaDeControle\_2.0/components/utils/include/log.h}}
 
 
 Creating customizable logs.  
@@ -7,12 +7,11 @@ Creating customizable logs.
 
 {\ttfamily \#include $<$inttypes.\+h$>$}\newline
 {\ttfamily \#include \char`\"{}esp\+\_\+log.\+h\char`\"{}}\newline
-Include dependency graph for log.\+h\+:
-\nopagebreak
+Include dependency graph for log.\+h\+:\nopagebreak
 \begin{figure}[H]
 \begin{center}
 \leavevmode
-\includegraphics[width=226pt]{log_8h__incl}
+\includegraphics[width=269pt]{log_8h__incl}
 \end{center}
 \end{figure}
 This graph shows which files directly or indirectly include this file\+:
@@ -35,7 +34,9 @@ This graph shows which files directly or indirectly include this file\+:
 \#define \mbox{\hyperlink{log_8h_af621f89ed247c0fef5741211bade9738}{LOG\+\_\+\+ACTUATION}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+PURPLE) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
 \begin{DoxyCompactList}\small\item\em Actuation logs. \end{DoxyCompactList}\item 
 \#define \mbox{\hyperlink{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}{LOG\+\_\+\+MANAGER}}(tag, ...)~ESP\+\_\+\+LOGI(LOG\+\_\+\+COLOR(LOG\+\_\+\+COLOR\+\_\+\+GREEN) tag, \+\_\+\+\_\+\+VA\+\_\+\+ARGS\+\_\+\+\_\+)
-\begin{DoxyCompactList}\small\item\em System manager logs. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em System manager logs. \end{DoxyCompactList}\item 
+\#define {\bfseries LOG\+\_\+\+DBG\+\_\+\+ERROR}(tag,  msg)
+\end{DoxyCompactItemize}
 
 
 \doxysubsection{Detailed Description}
@@ -114,6 +115,18 @@ This macro is used to create data logs with a customizable tag and message.
 {\em ...} & The message or additional parameters for the log message. \\
 \hline
 \end{DoxyParams}
+\mbox{\Hypertarget{log_8h_afe9169ffaf9ccd52d8195c733b003c96}\label{log_8h_afe9169ffaf9ccd52d8195c733b003c96}} 
+\index{log.h@{log.h}!LOG\_DBG\_ERROR@{LOG\_DBG\_ERROR}}
+\index{LOG\_DBG\_ERROR@{LOG\_DBG\_ERROR}!log.h@{log.h}}
+\doxysubsubsection{\texorpdfstring{LOG\_DBG\_ERROR}{LOG\_DBG\_ERROR}}
+{\footnotesize\ttfamily \#define LOG\+\_\+\+DBG\+\_\+\+ERROR(\begin{DoxyParamCaption}\item[{}]{tag,  }\item[{}]{msg }\end{DoxyParamCaption})}
+
+{\bfseries Value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{    \textcolor{keywordflow}{do} \{ \(\backslash\)}
+\DoxyCodeLine{    \} \textcolor{keywordflow}{while}(0)}
+
+\end{DoxyCode}
 \mbox{\Hypertarget{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}\label{log_8h_a991ac4b95eabf56342a78dc8f0fa4cf0}} 
 \index{log.h@{log.h}!LOG\_MANAGER@{LOG\_MANAGER}}
 \index{LOG\_MANAGER@{LOG\_MANAGER}!log.h@{log.h}}
