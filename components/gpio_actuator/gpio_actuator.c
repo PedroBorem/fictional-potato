@@ -396,9 +396,6 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	esp_err_t err = ESP_FAIL;
 	int perc_sec = 0;
 
-	pivot_return_config virtual_barrier_config = {};
-	data_app_load(DATA_TYPE_RETURN_CONFIG, &virtual_barrier_config);
-
 	//task_actions_set = actions;
 	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
 	perc_sec = actions.percentimeter*((GPIO_ACT_PERC_FULL_CYCLE)/100);
@@ -594,8 +591,10 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  */
 esp_err_t gpio_actuator_start()
 {
-	static barrier_status status_barrier = get_barrier_status();
+	barrier_status status_barrier = get_barrier_status();
 	esp_err_t err = ESP_FAIL;
+
+	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", status_barrier);
 
 	if(status_barrier == PIVOT_LEAVING_THE_BARRIER)
 	{
