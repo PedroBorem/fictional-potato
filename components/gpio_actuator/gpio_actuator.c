@@ -591,7 +591,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  */
 esp_err_t gpio_actuator_start()
 {
-	barrier_status status_barrier = get_barrier_status();
+	barrier_status status_barrier = system_monitoring_barrier();
 	esp_err_t err = ESP_FAIL;
 
 	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", status_barrier);
@@ -614,7 +614,7 @@ esp_err_t gpio_actuator_start()
 	{
 		vTaskDelay(pdMS_TO_TICKS(500));
 		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-		vTaskDelay(pdMS_TO_TICKS(3000));
+		vTaskDelay(pdMS_TO_TICKS(1000));
 		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 	}
 	return err;
