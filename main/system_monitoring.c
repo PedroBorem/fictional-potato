@@ -75,6 +75,7 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
+barrier_status system_monitoring_barrier(void);
 
 /**
  * @brief Executes the actuation process based on the system configuration.
@@ -179,80 +180,94 @@ static void system_monitoring_actuation(void)
 static void system_monitoring_task(void* arg)
 {
     pivot_actions pivot_actions = {};
-
-    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+    barrier_status status_barrier;
 
     while(1)
     {
-        if(system_monitoring_config.start_angle < system_monitoring_config.end_angle
-        || system_monitoring_config.start_angle > system_monitoring_config.end_angle)
+        if((system_monitoring_config.start_angle < system_monitoring_config.end_angle) && *system_monitoring_current_angle != 655)
         {
-            ESP_LOGI(SYSTEM_MONITORING_TAG, "FFFFFFFFFFFFFFFFFFFFFFF");
-            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle
-            && *system_monitoring_current_angle <= system_monitoring_config.end_angle)
+            if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
+            || *system_monitoring_current_angle > system_monitoring_config.end_angle)
             {
-                 ESP_LOGI(SYSTEM_MONITORING_TAG, "AAAAAAAAAAAAAAAAAAAAAAAAAAA");
-                if(pivot_actions.rotation == PIVOT_CW)
-                {
-                    status_barrier = PIVOT_IN_THE_BARRIER;
-                }
-                else if(pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
-				{
-					status_barrier = PIVOT_LEAVING_THE_BARRIER;
-				}
-
-                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_IN_THE_BARRIER)
+                status_barrier = system_monitoring_barrier();
+                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                 {
                     system_monitoring_actuation();
                 }
             }
-            else if (*system_monitoring_current_angle <= system_monitoring_config.start_angle
-            && *system_monitoring_current_angle >= system_monitoring_config.end_angle)
+            else
             {
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "BBBBBBBBBBBBBBBBBBBBB");
-                if(pivot_actions.rotation == PIVOT_CW)
-				{
-                    ESP_LOGI(SYSTEM_MONITORING_TAG, "CCCCCCCCCCCCCCCCCCCCCCCC");
-					status_barrier = PIVOT_LEAVING_THE_BARRIER;
-				}
-				else if(pivot_actions.rotation == PIVOT_CCW)
-				{
-                    ESP_LOGI(SYSTEM_MONITORING_TAG, "DDDDDDDDDDDDDDDDDDDDDDD");
-					status_barrier = PIVOT_IN_THE_BARRIER;	
-				}
-
-                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_IN_THE_BARRIER)
-                {
-                    system_monitoring_actuation();
-                }
+                system_states = SYSTEM_RUNNING;
             }
         }
         else
         {
-            ESP_LOGI(SYSTEM_MONITORING_TAG, "EEEEEEEEEEEEEEEEEEE");
-            status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
-            system_states = SYSTEM_RUNNING;
+            if(*system_monitoring_current_angle > system_monitoring_config.start_angle
+            || *system_monitoring_current_angle < system_monitoring_config.end_angle)
+            {
+                status_barrier = system_monitoring_barrier();
+                if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                {
+                    system_monitoring_actuation();
+                }
+            }
+            else
+            {
+                system_states = SYSTEM_RUNNING;
+            }
+
         }
-        // else
-        // {
-        //     if(*system_monitoring_current_angle > system_monitoring_config.start_angle
-        //     || *system_monitoring_current_angle < system_monitoring_config.end_angle)
-        //     {
-        //         if(system_states != SYSTEM_PAUSE)
-        //         {
-        //             system_monitoring_actuation();
-        //         }
-        //     }
-        //     else
-        //     {
-        //         system_states = SYSTEM_RUNNING;
-        //     }
-        // }
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
 }
 
+barrier_status system_monitoring_barrier(void)
+{
+    pivot_actions current_pivot_actions = {};
+    data_app_load(DATA_TYPE_ACTIONS, &current_pivot_actions);
+
+    if((system_monitoring_config.start_angle < system_monitoring_config.end_angle
+    || system_monitoring_config.start_angle > system_monitoring_config.end_angle)
+    && *system_monitoring_current_angle != 655)
+    {
+        if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 3
+        && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 3)
+        {
+            if(current_pivot_actions.rotation == PIVOT_CW)
+            {
+			    ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO SAINDO DA BARREIRA");
+                status_barrier = PIVOT_LEAVING_THE_BARRIER;
+            }
+            else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+			{
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO INDO NA DIRECAO DA BARREIRA");
+				status_barrier = PIVOT_IN_THE_BARRIER;
+			}           
+        }
+        else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle -3
+        && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 3)
+        {
+            if(current_pivot_actions.rotation == PIVOT_CW)
+			{
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO INDO NA DIRECAO DA BARREIRA");
+			    status_barrier = PIVOT_IN_THE_BARRIER;
+			}
+			else if(current_pivot_actions.rotation == PIVOT_CCW)
+			{
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO SAINDO DA BARREIRA");
+				status_barrier = PIVOT_LEAVING_THE_BARRIER;	
+			}
+        }
+        else
+        {
+            ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO FORA DA BARREIRA");
+            status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+        }
+    }
+
+    return status_barrier;
+}
 /**
  * @brief Timer callback for periodic system actions.
  *
@@ -344,9 +359,4 @@ void system_monitoring_stop(void)
 void system_monitoring_register_callback(const app_callback callback)
 {
 	system_monitoring_callback = callback;
-}
-
-barrier_status get_barrier_status(void)
-{
-    return status_barrier;
 }
