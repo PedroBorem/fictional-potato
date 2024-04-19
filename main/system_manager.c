@@ -492,6 +492,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 				// act on the equipment
+				system_monitoring_barrier(new_actions);
 				actuation_app_set_actions(new_actions, false);
 
 				// time for the percentage to stabilize
