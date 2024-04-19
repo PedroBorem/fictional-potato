@@ -171,7 +171,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions);
  *     - ESP_OK: Operation successful
  *     - ESP_FAIL: Failed to set time duration
  */
-barrier_status gpio_actuator_set_time(barrier_status barrier_status);
+esp_err_t gpio_actuator_set_time(barrier_status barrier_status);
 
 /**
  * @brief Gets the current pivot configuration.
