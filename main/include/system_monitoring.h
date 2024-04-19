@@ -41,7 +41,15 @@ void system_monitoring_stop(void);
  */
 void system_monitoring_register_callback(const app_callback callback);
 
-
-barrier_status system_monitoring_barrier(void);
+/**
+ * @brief Determines and triggers actuation based on the barrier status.
+ *
+ * This function evaluates the current angle of the pivot and determines the barrier status
+ * based on the angle configuration. It then triggers actuation accordingly to handle the
+ * pivot's movement in relation to the barrier.
+ *
+ * @param[in] current_pivot_actions The current actions and configuration of the pivot.
+ */
+void system_monitoring_barrier(pivot_actions current_current_pivot_actions);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */
