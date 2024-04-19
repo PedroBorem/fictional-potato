@@ -320,8 +320,8 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Indicates that the pivot is outside the barrier.
  *
- * This macro is used to represent the state where the pivot is outside the barrier.
- * This macro is used to represent the state where the pivot is inside the barrier.
+ * This macro is used to represent the state where the pivot is outside/inside the barrier.
+ *
  */
 
 typedef enum 
