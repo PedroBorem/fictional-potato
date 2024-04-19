@@ -43,7 +43,7 @@ static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
 
 // GPIO variable time to start
-static uint16_t gpio_act_time_to_start;
+static uint16_t gpio_act_time_to_start = 1000;
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -215,6 +215,8 @@ esp_err_t gpio_actuator_set_time(barrier_status barrier_status)
 {	
 	esp_err_t err = ESP_FAIL;
 
+	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", barrier_status);
+
 	if(barrier_status == PIVOT_LEAVING_THE_BARRIER)
 	{
 		gpio_act_time_to_start = gpio_act_on_delay;
@@ -228,7 +230,7 @@ esp_err_t gpio_actuator_set_time(barrier_status barrier_status)
 		gpio_act_time_to_start = 1000;
 	}
 
-	esp_err = ESP_OK;
+	err = ESP_OK;
 
 	return err;
 }
@@ -610,10 +612,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  */
 esp_err_t gpio_actuator_start()
 {
-	barrier_status status_barrier = system_monitoring_barrier();
 	esp_err_t err = ESP_FAIL;
-
-	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", status_barrier);
 
 	vTaskDelay(pdMS_TO_TICKS(500));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
