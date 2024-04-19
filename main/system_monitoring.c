@@ -236,12 +236,10 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
             {
-			    ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO SAINDO DA BARREIRA");
                 gpio_actuator_set_time(PIVOT_LEAVING_THE_BARRIER);
             }
             else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
 			{
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO INDO NA DIRECAO DA BARREIRA");
 				gpio_actuator_set_time(PIVOT_IN_THE_BARRIER);
 			}           
         }
@@ -250,18 +248,15 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
 			{
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO INDO NA DIRECAO DA BARREIRA");
 			    gpio_actuator_set_time(PIVOT_IN_THE_BARRIER);
 			}
 			else if(current_pivot_actions.rotation == PIVOT_CCW)
 			{
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO SAINDO DA BARREIRA");
 				gpio_actuator_set_time(PIVOT_LEAVING_THE_BARRIER);	
 			}
         }
         else
         {
-            ESP_LOGI(SYSTEM_MONITORING_TAG, "PIVO FORA DA BARREIRA");
             gpio_actuator_set_time(PIVOT_OUTSIDE_THE_BARRIER);
         }
     }
