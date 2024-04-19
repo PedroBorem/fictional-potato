@@ -160,6 +160,20 @@ esp_err_t gpio_actuator_config(pivot_config config);
 esp_err_t gpio_actuator_set(pivot_actions actions);
 
 /**
+ * @brief Sets operating time based on barrier status for GPIO actuator module.
+ *
+ * Adjusts GPIO actuator runtime according to barrier status,
+ * optimizing performance for efficient and responsive operation.
+ *
+ * @param barrier_status The barrier status
+ *
+ * @return
+ *     - ESP_OK: Operation successful
+ *     - ESP_FAIL: Failed to set time duration
+ */
+barrier_status gpio_actuator_set_time(barrier_status barrier_status);
+
+/**
  * @brief Gets the current pivot configuration.
  *
  * This function retrieves the current pivot configuration from the GPIO actuator module.
