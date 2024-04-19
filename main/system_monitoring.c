@@ -16,6 +16,7 @@
 #include "rtc_app.h"
 #include "idp_parser.h"
 #include "gpio_actuator.h"
+#include "project_config.h"
 
 #include <string.h>
 
@@ -37,7 +38,7 @@ typedef enum {
 /* Private variables  -------------------------------------------- */
 
 static system_monitoring_states system_states = SYSTEM_RUNNING; /**< Current state of the system monitoring. */
-static bool system_monitoring_bacK_flag = false; /**< Flag indicating the return state. */
+static bool system_monitoring_bacK_flag = true; /**< Flag indicating the return state. */
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
@@ -46,6 +47,7 @@ static app_callback system_monitoring_callback = NULL; /**< Callback function fo
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
+static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
 
 static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
@@ -84,39 +86,42 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  */
 static void system_monitoring_actuation(void)
 {
-    uint8_t idp = IDP_INVALID;
-    uint16_t dwp = 0;
-    char str_out[50] = {};
-
-    pivot_actions pivot_actions = {};
-
-    // act on the equipment (pivo_off) - send IDP 01
-    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
-    pivot_actions.power_state = PIVOT_OFF;
-
-    idp = IDP_1;
-    dwp = idp_parser_create_pwd(pivot_actions);
-    uint16_t percent = 0;
-
-    arg_pair_t arg_idp_01[] =
-    {
-        { "uint8_t", &idp },
-        { "string", SYSTEM_MONITORING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &percent },
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_01);
-    system_monitoring_callback(str_out, COMM_MQTT);
-
     if(system_monitoring_config.automatic_return == true)
     {
+        uint8_t idp = IDP_INVALID;
+        uint16_t dwp = 0;
+        char str_out[50] = {};
+
+        pivot_actions pivot_actions = {};
+
+        // act on the equipment (pivo_off) - send IDP 01
+        actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+        pivot_actions.power_state = PIVOT_OFF;
+
+        idp = IDP_1;
+        dwp = idp_parser_create_pwd(pivot_actions);
+        uint16_t percent = 0;
+
+        arg_pair_t arg_idp_01[] =
+        {
+            { "uint8_t", &idp },
+            { "string", SYSTEM_MONITORING_TAG },
+            { "uint16_t", &dwp },
+            { "uint16_t", &percent },
+            { NULL, NULL }
+        };
+
+        memset(str_out, 0x00, sizeof(str_out));
+        idp_parser_create_package(str_out, arg_idp_01);
+        system_monitoring_callback(str_out, COMM_MQTT);
+
+        ESP_LOGI(SYSTEM_MONITORING_TAG, "AAAAAAAAAAAAAAAAAAAAA");
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
         if(system_monitoring_bacK_flag == false)
         {
+
+            ESP_LOGI(SYSTEM_MONITORING_TAG, "INVERTENDO O SENTIDO DO PIVO");
             // act on the equipment - send IDP 01
             pivot_actions.power_state = PIVOT_ON;
 
@@ -166,6 +171,7 @@ static void system_monitoring_actuation(void)
     }
     else
     {
+         ESP_LOGI(SYSTEM_MONITORING_TAG, "NAO INVERTENDO O SENTIDO DO PIVO");
         system_states = SYSTEM_PAUSE;
     }
 }
@@ -181,37 +187,41 @@ static void system_monitoring_task(void* arg)
 {
     while(1)
     {
-        if((system_monitoring_config.start_angle < system_monitoring_config.end_angle) && *system_monitoring_current_angle != 655)
+        if(*system_monitoring_current_angle != 655)
         {
-            if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
-            || *system_monitoring_current_angle > system_monitoring_config.end_angle)
+            if((system_monitoring_config.start_angle < system_monitoring_config.end_angle))
             {
-                if(system_states != SYSTEM_PAUSE)
+                if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
+                || *system_monitoring_current_angle > system_monitoring_config.end_angle)
                 {
-                    system_monitoring_actuation();
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    {
+                        system_monitoring_actuation();
+                    }
+                }
+                else
+                {
+                    system_states = SYSTEM_RUNNING;
                 }
             }
             else
             {
-                system_states = SYSTEM_RUNNING;
-            }
-        }
-        else
-        {
-            if(*system_monitoring_current_angle > system_monitoring_config.start_angle
-            || *system_monitoring_current_angle < system_monitoring_config.end_angle)
-            {
-                if(system_states != SYSTEM_PAUSE)
+                if(*system_monitoring_current_angle > system_monitoring_config.start_angle
+                || *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
-                    system_monitoring_actuation();
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    {
+                        system_monitoring_actuation();
+                    }
                 }
-            }
-            else
-            {
-                system_states = SYSTEM_RUNNING;
-            }
+                else
+                {
+                    system_states = SYSTEM_RUNNING;
+                }
 
+            }            
         }
+        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
@@ -236,11 +246,13 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
             {
-                gpio_actuator_set_time(PIVOT_LEAVING_THE_BARRIER);
+                status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                gpio_actuator_set_time(status_barrier);
             }
             else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
 			{
-				gpio_actuator_set_time(PIVOT_IN_THE_BARRIER);
+                status_barrier = PIVOT_IN_THE_BARRIER;
+				gpio_actuator_set_time(status_barrier);
 			}           
         }
         else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle -3
@@ -248,16 +260,19 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
 			{
-			    gpio_actuator_set_time(PIVOT_IN_THE_BARRIER);
+                status_barrier = PIVOT_IN_THE_BARRIER;
+				gpio_actuator_set_time(status_barrier);
 			}
 			else if(current_pivot_actions.rotation == PIVOT_CCW)
 			{
-				gpio_actuator_set_time(PIVOT_LEAVING_THE_BARRIER);	
+                status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                gpio_actuator_set_time(status_barrier);
 			}
         }
         else
         {
-            gpio_actuator_set_time(PIVOT_OUTSIDE_THE_BARRIER);
+            status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+            gpio_actuator_set_time(status_barrier);
         }
     }
 }
