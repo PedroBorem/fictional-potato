@@ -13,7 +13,6 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
-#include "system_monitoring.h"
 #include "data_app.h"
 #include "project_config.h"
 
@@ -43,9 +42,8 @@ static TaskHandle_t xTask_readpercent = NULL;
 static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
 
-// Barrier config variables
-const pivot_return_config barrier_config = {}; /**< Configuration for system monitoring. */
-static uint16_t* system_monitoring_virtual_barrier_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
+// GPIO variable time to start
+static uint16_t gpio_act_time_to_start;
 
 // Percentimeter variables
 static uint64_t posedge_perc = 0;
@@ -213,6 +211,27 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
+esp_err_t gpio_actuator_set_time(barrier_status barrier_status)
+{	
+	esp_err_t err = ESP_FAIL;
+
+	if(barrier_status == PIVOT_LEAVING_THE_BARRIER)
+	{
+		gpio_act_time_to_start = gpio_act_on_delay;
+	}
+	else if(barrier_status == PIVOT_IN_THE_BARRIER)
+	{
+		gpio_act_time_to_start = 100;
+	}
+	else
+	{
+		gpio_act_time_to_start = 1000;
+	}
+
+	esp_err = ESP_OK;
+
+	return err;
+}
 /**
  * @brief Configures the GPIO actuator module based on the provided configuration.
  *
@@ -596,27 +615,11 @@ esp_err_t gpio_actuator_start()
 
 	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", status_barrier);
 
-	if(status_barrier == PIVOT_LEAVING_THE_BARRIER)
-	{
-		vTaskDelay(pdMS_TO_TICKS(500));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-		vTaskDelay(pdMS_TO_TICKS(gpio_act_on_delay));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-	}
-	else if(status_barrier == PIVOT_IN_THE_BARRIER)
-	{
-		vTaskDelay(pdMS_TO_TICKS(500));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-		vTaskDelay(pdMS_TO_TICKS(100));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-	}
-	else
-	{
-		vTaskDelay(pdMS_TO_TICKS(500));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
-		vTaskDelay(pdMS_TO_TICKS(1000));
-		gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-	}
+	vTaskDelay(pdMS_TO_TICKS(500));
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_ENABLE);
+	vTaskDelay(pdMS_TO_TICKS(gpio_act_time_to_start));
+	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+
 	return err;
 }
 
