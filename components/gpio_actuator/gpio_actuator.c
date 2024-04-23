@@ -627,6 +627,7 @@ esp_err_t gpio_actuator_start()
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_time_to_start));
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 
+	err = ESP_OK;
 	return err;
 }
 
