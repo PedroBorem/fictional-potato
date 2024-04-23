@@ -211,6 +211,16 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
+/**
+* @brief Sets the time to start for the GPIO actuator based on the barrier status.
+* 
+* This function sets the time to start for the GPIO actuator based on whether the pivot is leaving the barrier,
+* inside the barrier, or outside the barrier.
+*
+* @param barrier_status The status of the barrier (PIVOT_LEAVING_THE_BARRIER, PIVOT_IN_THE_BARRIER, or others).
+* @return esp_err_t Error code indicating the success of the operation.
+*/
+
 esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status)
 {	
 	esp_err_t err = ESP_FAIL;
