@@ -211,11 +211,9 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
-esp_err_t gpio_actuator_set_time(barrier_status barrier_status)
+esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status)
 {	
 	esp_err_t err = ESP_FAIL;
-
-	ESP_LOGE(GPIO_ACT_TAG, "%i, ESTADO DA BARREIRA", barrier_status);
 
 	if(barrier_status == PIVOT_LEAVING_THE_BARRIER)
 	{
@@ -223,11 +221,11 @@ esp_err_t gpio_actuator_set_time(barrier_status barrier_status)
 	}
 	else if(barrier_status == PIVOT_IN_THE_BARRIER)
 	{
-		gpio_act_time_to_start = 100;
+		gpio_act_time_to_start = HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER;
 	}
 	else
 	{
-		gpio_act_time_to_start = 1000;
+		gpio_act_time_to_start = HIGH_LOGIC_LEVEL_TIME_OUTSIDE_BARRIER;
 	}
 
 	err = ESP_OK;
