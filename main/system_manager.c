@@ -402,6 +402,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 			{ "uint16_t", &actions.percentimeter },
 			{ "uint16_t", &system_initial_angle },
 			{ "uint16_t", &global_angle },
+			{ "uint16_t", &global_pressure},
 			{ "string", str_date_time },
 			{ NULL, NULL }
 		};
