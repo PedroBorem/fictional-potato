@@ -185,7 +185,7 @@ static void system_monitoring_task(void* arg)
     {
         if(*system_monitoring_current_angle != 655)
         {
-            if((system_monitoring_config.start_angle < system_monitoring_config.end_angle))
+            if((system_monitoring_config.start_angle > system_monitoring_config.end_angle))
             {
                 if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
                 || *system_monitoring_current_angle > system_monitoring_config.end_angle)
@@ -267,7 +267,6 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
             status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
         }
     }
-    
     gpio_actuator_set_time_start(status_barrier);
 }
 
