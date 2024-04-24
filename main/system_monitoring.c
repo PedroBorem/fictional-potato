@@ -203,7 +203,7 @@ static void system_monitoring_task(void* arg)
             else
             {
                 if(*system_monitoring_current_angle > system_monitoring_config.start_angle
-                || *system_monitoring_current_angle < system_monitoring_config.end_angle)
+                && *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
                     if(system_states != SYSTEM_PAUSE)
                     {
