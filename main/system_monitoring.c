@@ -46,7 +46,6 @@ static app_callback system_monitoring_callback = NULL; /**< Callback function fo
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
-static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
 
