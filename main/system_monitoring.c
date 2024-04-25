@@ -37,8 +37,9 @@ typedef enum {
 
 /* Private variables  -------------------------------------------- */
 
-static system_monitoring_states system_states = SYSTEM_RUNNING; /**< Current state of the system monitoring. */
+static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state of the system monitoring. */
 static bool system_monitoring_bacK_flag = true; /**< Flag indicating the return state. */
+static bool start_system_monitoring_flag = false;
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
@@ -85,39 +86,39 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  */
 static void system_monitoring_actuation(void)
 {
+    uint8_t idp = IDP_INVALID;
+    uint16_t dwp = 0;
+    char str_out[50] = {};
+
+    pivot_actions pivot_actions = {};
+
+    // act on the equipment (pivo_off) - send IDP 01
+    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+    pivot_actions.power_state = PIVOT_OFF;
+
+    idp = IDP_1;
+    dwp = idp_parser_create_pwd(pivot_actions);
+    uint16_t percent_off = 0;
+
+    arg_pair_t arg_idp_01[] =
+    {
+        { "uint8_t", &idp },
+        { "string", SYSTEM_MONITORING_TAG },
+        { "uint16_t", &dwp },
+        { "uint16_t", &percent_off },
+        { NULL, NULL }
+    };
+
+    memset(str_out, 0x00, sizeof(str_out));
+    idp_parser_create_package(str_out, arg_idp_01);
+    system_monitoring_callback(str_out, COMM_MQTT);
+
     if(system_monitoring_config.automatic_return == true)
     {
+        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+
         if(system_monitoring_bacK_flag == false)
         {
-            uint8_t idp = IDP_INVALID;
-            uint16_t dwp = 0;
-            char str_out[50] = {};
-
-            pivot_actions pivot_actions = {};
-
-            // act on the equipment (pivo_off) - send IDP 01
-            actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
-            pivot_actions.power_state = PIVOT_OFF;
-
-            idp = IDP_1;
-            dwp = idp_parser_create_pwd(pivot_actions);
-            uint16_t percent_off = 0;
-
-            arg_pair_t arg_idp_01[] =
-            {
-                { "uint8_t", &idp },
-                { "string", SYSTEM_MONITORING_TAG },
-                { "uint16_t", &dwp },
-                { "uint16_t", &percent_off },
-                { NULL, NULL }
-            };
-
-            memset(str_out, 0x00, sizeof(str_out));
-            idp_parser_create_package(str_out, arg_idp_01);
-            system_monitoring_callback(str_out, COMM_MQTT);
-
-            vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-
             // act on the equipment - send IDP 01
             pivot_actions.power_state = PIVOT_ON;
 
@@ -168,7 +169,7 @@ static void system_monitoring_actuation(void)
     else
     {
         system_states = SYSTEM_PAUSE;
-    }
+    } 
 }
 
 /**
@@ -189,7 +190,7 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle  > system_monitoring_config.start_angle
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
-                    if(system_states != SYSTEM_PAUSE)
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                     {
                         system_monitoring_actuation();
                     }
@@ -197,6 +198,7 @@ static void system_monitoring_task(void* arg)
                 else
                 {
                     system_states = SYSTEM_RUNNING;
+                    status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
                 }
             }
             else
@@ -204,7 +206,7 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle > system_monitoring_config.start_angle
                 && *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
-                    if(system_states != SYSTEM_PAUSE)
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                     {
                         system_monitoring_actuation();
                     }
@@ -212,11 +214,18 @@ static void system_monitoring_task(void* arg)
                 else
                 {
                     system_states = SYSTEM_RUNNING;
+                    status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
                 }
 
             }            
         }
         
+        if(system_states == SYSTEM_RETURN)
+        {
+            pivot_actions pivot_actions = {};
+            actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+            system_monitoring_barrier(pivot_actions);
+        }        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
