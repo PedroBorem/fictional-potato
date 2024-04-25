@@ -92,7 +92,6 @@ static void system_monitoring_actuation(void)
             uint8_t idp = IDP_INVALID;
             uint16_t dwp = 0;
             char str_out[50] = {};
-            esp_err_t ret = ESP_FAIL;
 
             pivot_actions pivot_actions = {};
 
@@ -142,18 +141,7 @@ static void system_monitoring_actuation(void)
 
             idp = IDP_1;
             dwp = idp_parser_create_pwd(pivot_actions);
-            uint16_t percent_return;
-
-            ret = data_app_load(DATA_TYPE_PIVOT_CONFIG, &pivot_actions);
-
-            if(ret == ESP_OK)
-            {
-                percent_return = pivot_actions.percentimeter;
-            }
-            else
-            {
-                percent_return = 0;
-            }
+            uint16_t percent_return = pivot_actions.percentimeter;
 
             arg_pair_t arg_idp_02[] =
             {
@@ -198,8 +186,8 @@ static void system_monitoring_task(void* arg)
         {
             if((system_monitoring_config.start_angle > system_monitoring_config.end_angle))
             {
-                if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
-                || *system_monitoring_current_angle > system_monitoring_config.end_angle)
+                if(*system_monitoring_current_angle  > system_monitoring_config.start_angle
+                || *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
                     if(system_states != SYSTEM_PAUSE)
                     {
