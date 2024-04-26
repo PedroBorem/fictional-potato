@@ -38,8 +38,7 @@ typedef enum {
 /* Private variables  -------------------------------------------- */
 
 static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state of the system monitoring. */
-static bool system_monitoring_bacK_flag = true; /**< Flag indicating the return state. */
-static bool start_system_monitoring_flag = false;
+static bool system_monitoring_bacK_flag = false; /**< Flag indicating the return state. */
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
@@ -219,7 +218,7 @@ static void system_monitoring_task(void* arg)
 
             }            
         }
-        
+
         if(system_states == SYSTEM_RETURN)
         {
             pivot_actions pivot_actions = {};
@@ -245,8 +244,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
     || system_monitoring_config.start_angle > system_monitoring_config.end_angle)
     && *system_monitoring_current_angle != 655)
     {
-        if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 3
-        && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 3)
+        if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 5
+        && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 5)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
             {
@@ -258,8 +257,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                 status_barrier = PIVOT_IN_THE_BARRIER;
 			}           
         }
-        else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle -3
-        && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 3)
+        else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle - 5
+        && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 5)
         {
             if(current_pivot_actions.rotation == PIVOT_CW)
 			{
