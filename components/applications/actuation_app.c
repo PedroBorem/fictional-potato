@@ -51,6 +51,7 @@
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
 static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
+static bool actuation_new_notify = false;
 
 const pivot_actions pivot_actions_off = {
     .power_state = PIVOT_OFF,
@@ -133,6 +134,7 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	if(alert_change == false)
 	{
 		gpio_actuator_set(config_in);
+		actuation_new_notify = true;
 	}
 	else
 	{
@@ -270,6 +272,12 @@ void actuation_app_task(void* arg)
 		}
 		else
 		{
+			last_tick = xTaskGetTickCount();
+		}
+
+		if(actuation_new_notify)
+		{
+			actuation_new_notify = false;
 			last_tick = xTaskGetTickCount();
 		}
 
