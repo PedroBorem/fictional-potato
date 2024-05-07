@@ -13,8 +13,6 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
-#include "data_app.h"
-#include "project_config.h"
 
 /* Private definitions ------------------------------------------- */
 
