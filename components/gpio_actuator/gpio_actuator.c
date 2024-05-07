@@ -81,7 +81,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer);
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start();
+esp_err_t gpio_actuator_start(void);
 
 /**
  * @brief Water pressure application task.
@@ -304,25 +304,38 @@ void percent_relay_control(pivot_actions actions, int perc_sec)
 {
     if (actions.percentimeter > 0 && actions.percentimeter < 100)
     {
-        perc_timer_handleOn = xTimerCreate(
-            "percTimerON",           /* name */
-            pdMS_TO_TICKS(perc_sec), /* period/time */
-            pdFALSE,                 /* auto reload */
-            (void *)0,               /* timer ID */
-            vPercTimerOnExpire);     /* callback */
 
-        perc_timer_handleOff = xTimerCreate(
-            "percTimerOff",                                       /* name */
-            pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE - perc_sec)), /* period/time */
-            pdFALSE,                                              /* auto reload */
-            (void *)0,                                            /* timer ID */
-            vPercTimerOffExpire);                                 /* callback */
+		perc_timer_handleOn = xTimerCreate(
+			"percTimerON",           /* name */
+			pdMS_TO_TICKS(perc_sec), /* period/time */
+			pdFALSE,                 /* auto reload */
+			(void *)0,               /* timer ID */
+			vPercTimerOnExpire);     /* callback */
+		
+		if(GPIO_ACT_PERC_FULL_CYCLE - perc_sec > 0)
+		{
+			perc_timer_handleOff = xTimerCreate(
+				"percTimerOff",                                       /* name */
+				pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE - perc_sec)), /* period/time */
+				pdFALSE,                                              /* auto reload */
+				(void *)0,                                            /* timer ID */
+				vPercTimerOffExpire);     							  /* callback */
+		}
+		else
+		{
+			perc_timer_handleOff = xTimerCreate(
+			"percTimerOff",                                       /* name */
+			pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE)), 			  /* period/time */
+			pdFALSE,                                              /* auto reload */
+			(void *)0,                                            /* timer ID */
+			vPercTimerOffExpire);     							  /* callback */
+		}
 
         if ((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
         {
             gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
             gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-            xTimerStart(perc_timer_handleOn, 100);
+            xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(100));
         }
     }
     else if (actions.percentimeter == 0)
@@ -332,15 +345,15 @@ void percent_relay_control(pivot_actions actions, int perc_sec)
 
         if (perc_timer_handleOn != 0)
         {
-            xTimerStop(perc_timer_handleOn, 1000);
-            xTimerDelete(perc_timer_handleOn, 1000);
+            xTimerStop(perc_timer_handleOn, psMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOn, psMS_TO_TICKS(1000));
             negedge_perc = 0;
         }
 
         if (perc_timer_handleOff != 0)
         {
-            xTimerStop(perc_timer_handleOff, 1000);
-            xTimerDelete(perc_timer_handleOff, 1000);
+            xTimerStop(perc_timer_handleOff, psMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOff, psMS_TO_TICKS(1000));
             posedge_perc = 0;
         }
 
@@ -353,14 +366,14 @@ void percent_relay_control(pivot_actions actions, int perc_sec)
 
         if (perc_timer_handleOn != 0)
         {
-            xTimerStop(perc_timer_handleOn, 1000);
-            xTimerDelete(perc_timer_handleOn, 1000);
+            xTimerStop(perc_timer_handleOn, psMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOn, psMS_TO_TICKS(1000));
         }
 
         if (perc_timer_handleOff != 0)
         {
-            xTimerStop(perc_timer_handleOff, 1000);
-            xTimerDelete(perc_timer_handleOff, 1000);
+            xTimerStop(perc_timer_handleOff, psMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOff, psMS_TO_TICKS(1000));
         }
     }
 }
@@ -553,7 +566,7 @@ void gpio_actuator_pump_off(void)
 /**
  * @brief Turns on pressure application in the GPIO actuator module.
  */
-void gpio_actuator_pressure_on()
+void gpio_actuator_pressure_on(void)
 {
 	if(xTask_waitpressure == NULL)
 	{
@@ -616,7 +629,7 @@ void vPercTimerOffExpire(TimerHandle_t pxTimer)
  *     - ESP_OK: Success
  *     - ESP_FAIL: Fail to initialize
  */
-esp_err_t gpio_actuator_start()
+esp_err_t gpio_actuator_start(void)
 {
 	esp_err_t err = ESP_FAIL;
 
