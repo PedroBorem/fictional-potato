@@ -18,8 +18,6 @@
 #include "esp_system.h"
 #include "FreeRTOS_defines.h"
 
-#include "http_api.h"
-
 // Private includes
 #include <string.h>
 

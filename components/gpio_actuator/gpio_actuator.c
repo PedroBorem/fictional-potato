@@ -533,14 +533,14 @@ void gpio_actuator_shutdown(void)
 
 	if(perc_timer_handleOn != NULL)
 	{
-		xTimerStop(perc_timer_handleOn, 1000);
-		xTimerDelete(perc_timer_handleOn, 1000);
+		xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
+		xTimerDelete(perc_timer_handleOn, pdMS_TO_TICKS(1000));
 		perc_timer_handleOn = NULL;
 	}
 	if(perc_timer_handleOff != NULL)
 	{
-		xTimerStop(perc_timer_handleOff, 1000);
-		xTimerDelete(perc_timer_handleOff, 1000);
+		xTimerStop(perc_timer_handleOff, pdMS_TO_TICKS(1000));
+		xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
 		perc_timer_handleOff = NULL;
 	}
 

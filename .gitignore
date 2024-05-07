@@ -65,6 +65,7 @@ sdkconfig
 .orig
 .metadata/
 .settings/
+.settings/*
 
 # doxygen files
 _build
