@@ -30,6 +30,7 @@ typedef enum
     DATA_TYPE_NETWORK_CONFIG, /**< Network configuration data type. */
     DATA_TYPE_ECO_MODE_CONFIG, /**< Eco mode configuration data type. */
     DATA_TYPE_SECTOR_CONFIG, /**< Sector configuration data type. */
+    DATA_TYPE_GPS_CONFIG, /**< GPS configuration data type. */
     DATA_TYPE_RETURN_CONFIG, /**< Return configuration data type. */
     DATA_TYPE_SCHEDULING_DATE, /**< Scheduling date data type. */
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */

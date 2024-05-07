@@ -15,6 +15,8 @@
 #include "comm_app.h"
 #include "rtc_app.h"
 #include "idp_parser.h"
+#include "gpio_actuator.h"
+#include "project_config.h"
 
 #include <string.h>
 
@@ -35,7 +37,7 @@ typedef enum {
 
 /* Private variables  -------------------------------------------- */
 
-static system_monitoring_states system_states = SYSTEM_RUNNING; /**< Current state of the system monitoring. */
+static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state of the system monitoring. */
 static bool system_monitoring_bacK_flag = false; /**< Flag indicating the return state. */
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
@@ -44,6 +46,8 @@ static app_callback system_monitoring_callback = NULL; /**< Callback function fo
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
+static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
+
 
 static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
 
@@ -93,14 +97,14 @@ static void system_monitoring_actuation(void)
 
     idp = IDP_1;
     dwp = idp_parser_create_pwd(pivot_actions);
-    uint16_t percent = 0;
+    uint16_t percent_off = 0;
 
     arg_pair_t arg_idp_01[] =
     {
         { "uint8_t", &idp },
         { "string", SYSTEM_MONITORING_TAG },
         { "uint16_t", &dwp },
-        { "uint16_t", &percent },
+        { "uint16_t", &percent_off },
         { NULL, NULL }
     };
 
@@ -137,14 +141,14 @@ static void system_monitoring_actuation(void)
 
             idp = IDP_1;
             dwp = idp_parser_create_pwd(pivot_actions);
-            uint16_t percent = 0;
+            uint16_t percent_return = pivot_actions.percentimeter;
 
             arg_pair_t arg_idp_02[] =
             {
                 { "uint8_t", &idp },
                 { "string", SYSTEM_MONITORING_TAG },
                 { "uint16_t", &dwp },
-                { "uint16_t", &percent },
+                { "uint16_t", &percent_return },
                 { NULL, NULL }
             };
 
@@ -164,7 +168,7 @@ static void system_monitoring_actuation(void)
     else
     {
         system_states = SYSTEM_PAUSE;
-    }
+    } 
 }
 
 /**
@@ -178,40 +182,102 @@ static void system_monitoring_task(void* arg)
 {
     while(1)
     {
-        if(system_monitoring_config.start_angle < system_monitoring_config.end_angle)
+        if(*system_monitoring_current_angle != 655)
         {
-            if(*system_monitoring_current_angle  < system_monitoring_config.start_angle
-            || *system_monitoring_current_angle > system_monitoring_config.end_angle)
+            if((system_monitoring_config.start_angle > system_monitoring_config.end_angle))
             {
-                if(system_states != SYSTEM_PAUSE)
+                if(*system_monitoring_current_angle  > system_monitoring_config.start_angle
+                || *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
-                    system_monitoring_actuation();
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    {
+                        system_monitoring_actuation();
+                    }
+                }
+                else
+                {
+                    system_states = SYSTEM_RUNNING;
+                    status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
                 }
             }
             else
             {
-                system_states = SYSTEM_RUNNING;
-            }
-        }
-        else
-        {
-            if(*system_monitoring_current_angle > system_monitoring_config.start_angle
-            || *system_monitoring_current_angle < system_monitoring_config.end_angle)
-            {
-                if(system_states != SYSTEM_PAUSE)
+                if(*system_monitoring_current_angle > system_monitoring_config.start_angle
+                && *system_monitoring_current_angle < system_monitoring_config.end_angle)
                 {
-                    system_monitoring_actuation();
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    {
+                        system_monitoring_actuation();
+                    }
                 }
-            }
-            else
-            {
-                system_states = SYSTEM_RUNNING;
-            }
+                else
+                {
+                    system_states = SYSTEM_RUNNING;
+                    status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+                }
 
+            }            
         }
+
+        if(system_states == SYSTEM_RETURN)
+        {
+            pivot_actions pivot_actions = {};
+            actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+            system_monitoring_barrier(pivot_actions);
+        }        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
+}
+/**
+ * @brief Determines and triggers actuation based on the barrier status.
+ *
+ * This function evaluates the current angle of the pivot and determines the barrier status
+ * based on the angle configuration. It then triggers actuation accordingly to handle the
+ * pivot's movement in relation to the barrier.
+ *
+ * @param[in] current_pivot_actions The current actions and configuration of the pivot.
+ */
+void system_monitoring_barrier(const pivot_actions current_pivot_actions)
+{
+    if(*system_monitoring_current_angle != 655)
+    {
+        if((system_monitoring_config.start_angle < system_monitoring_config.end_angle
+        || system_monitoring_config.start_angle > system_monitoring_config.end_angle))
+        {
+            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 5)
+            {
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
+
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                {
+                    status_barrier = PIVOT_IN_THE_BARRIER;
+                }           
+            }
+            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 5)
+            {
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_IN_THE_BARRIER;
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW)
+                {
+                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                }
+            }
+            else
+            {
+                status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+            }
+        }
+    }
+    
+    gpio_actuator_set_time_start(status_barrier);
 }
 
 /**

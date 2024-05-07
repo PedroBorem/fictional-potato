@@ -93,6 +93,7 @@
  * @var IDP_14 Scheduling type 1 (On by date and off by date)
  * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
  * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_23 GPS configurations via LoraMesh
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -117,6 +118,7 @@ typedef enum
     IDP_17,
     IDP_18,
     IDP_22 = 22,
+    IDP_23,
     IDP_30 = 30,
     IDP_90 = 90,
     IDP_91,
@@ -133,12 +135,14 @@ typedef enum
  * @var COMM_HTTP_POST HTTP POST communication
  * @var COMM_HTTP_GET HTTP GET communication
  * @var COMM_MQTT MQTT communication
+ * @var COMM_RF RadioLoraMesh communication
  */
 typedef enum
 {
     COMM_HTTP_POST = 0,
     COMM_HTTP_GET,
     COMM_MQTT,
+    COMM_RF,
 } comm_type;
 
 /**
@@ -192,8 +196,9 @@ typedef struct __attribute__((__packed__))
     char contactor[50];             /*!< Contactor type */ //todo: usar isso nas classes
     char pressure[50];              /*!< Pressure switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
-    uint8_t on_off_time;            /*!< On/off time */
-    uint8_t read_time;            /*!< Read time */
+    uint8_t on_time;                /*!< On time */
+    uint8_t off_time;               /*!< Off time */
+    uint8_t read_time;              /*!< Read time */
 } pivot_config;
 
 /**
@@ -230,6 +235,22 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
     uint8_t sector_number;  //todo olhar isso na implementação
     pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } sector_config;
+
+/**
+ * @brief GPS Configuration parameters.
+ *
+ * Structure defining the GPS Configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t sinal_lat;
+    char latitude[17];
+    uint8_t sinal_lon;
+    char longitude[17];
+    uint16_t time_payload;
+    uint16_t offset;
+
+} gps_config;
 
 typedef struct __attribute__((__packed__))
 {
@@ -295,6 +316,20 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
 } pivot_history;
+
+/**
+ * @brief Indicates that the pivot is outside the barrier.
+ *
+ * This macro is used to represent the state where the pivot is outside/inside the barrier.
+ *
+ */
+
+typedef enum 
+{
+    PIVOT_OUTSIDE_THE_BARRIER = 0,
+    PIVOT_IN_THE_BARRIER,
+    PIVOT_LEAVING_THE_BARRIER
+} barrier_status;
 
 /**
  * @brief Application callback function.
