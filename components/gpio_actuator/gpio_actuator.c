@@ -345,15 +345,15 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
 
         if (perc_timer_handleOn != 0)
         {
-            xTimerStop(perc_timer_handleOn, psMS_TO_TICKS(1000));
-            xTimerDelete(perc_timer_handleOn, psMS_TO_TICKS(1000));
+            xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOn, pdMS_TO_TICKS(1000));
             negedge_perc = 0;
         }
 
         if (perc_timer_handleOff != 0)
         {
-            xTimerStop(perc_timer_handleOff, psMS_TO_TICKS(1000));
-            xTimerDelete(perc_timer_handleOff, psMS_TO_TICKS(1000));
+            xTimerStop(perc_timer_handleOff, pdMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
             posedge_perc = 0;
         }
 
@@ -366,14 +366,14 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
 
         if (perc_timer_handleOn != 0)
         {
-            xTimerStop(perc_timer_handleOn, psMS_TO_TICKS(1000));
-            xTimerDelete(perc_timer_handleOn, psMS_TO_TICKS(1000));
+            xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOn, pdMS_TO_TICKS(1000));
         }
 
         if (perc_timer_handleOff != 0)
         {
-            xTimerStop(perc_timer_handleOff, psMS_TO_TICKS(1000));
-            xTimerDelete(perc_timer_handleOff, psMS_TO_TICKS(1000));
+            xTimerStop(perc_timer_handleOff, pdMS_TO_TICKS(1000));
+            xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
         }
     }
 }
