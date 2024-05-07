@@ -300,7 +300,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
  *
  * @param actions Pivot actions containing the percentage information.
  */
-void percent_relay_control(pivot_actions actions, int perc_sec)
+void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
 {
     if (actions.percentimeter > 0 && actions.percentimeter < 100)
     {
@@ -434,7 +434,7 @@ void rotation_relay_control(pivot_actions actions)
 esp_err_t gpio_actuator_set(pivot_actions actions)
 {
 	esp_err_t err = ESP_FAIL;
-	int perc_sec = 0;
+	uint16_t perc_sec = 0;
 
 	//task_actions_set = actions;
 	memcpy(&task_actions_set, &actions, sizeof(task_actions_set));
