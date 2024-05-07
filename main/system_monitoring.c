@@ -240,40 +240,43 @@ static void system_monitoring_task(void* arg)
  */
 void system_monitoring_barrier(const pivot_actions current_pivot_actions)
 {
-    if((system_monitoring_config.start_angle < system_monitoring_config.end_angle
-    || system_monitoring_config.start_angle > system_monitoring_config.end_angle)
-    && *system_monitoring_current_angle != 655)
+    if(*system_monitoring_current_angle != 655)
     {
-        if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 5
-        && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 5)
+        if((system_monitoring_config.start_angle < system_monitoring_config.end_angle
+        || system_monitoring_config.start_angle > system_monitoring_config.end_angle))
         {
-            if(current_pivot_actions.rotation == PIVOT_CW)
+            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 5)
             {
-                status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
 
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                {
+                    status_barrier = PIVOT_IN_THE_BARRIER;
+                }           
             }
-            else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
-			{
-                status_barrier = PIVOT_IN_THE_BARRIER;
-			}           
-        }
-        else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle - 5
-        && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 5)
-        {
-            if(current_pivot_actions.rotation == PIVOT_CW)
-			{
-                status_barrier = PIVOT_IN_THE_BARRIER;
-			}
-			else if(current_pivot_actions.rotation == PIVOT_CCW)
-			{
-                status_barrier = PIVOT_LEAVING_THE_BARRIER;
-			}
-        }
-        else
-        {
-            status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 5)
+            {
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_IN_THE_BARRIER;
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW)
+                {
+                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                }
+            }
+            else
+            {
+                status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+            }
         }
     }
+    
     gpio_actuator_set_time_start(status_barrier);
 }
 
