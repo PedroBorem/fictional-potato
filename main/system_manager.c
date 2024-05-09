@@ -384,6 +384,19 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	}
 }
 
+static bool check_valid_characters(char buffer[], uint8_t size)
+{
+	for(uint8_t i = 0; i < size; i++)
+	{
+		if(buffer[i] <= 32 || buffer[i] >= 125)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
 /**
  * @brief Handle IDP package type 0.
  *
@@ -966,12 +979,22 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		rtc_app_set_timestamp(timestamp);
 
-		if (system_initial_angle == 655)
+		bool payload_valid = check_valid_characters(buffer, strlen(buffer));
+	
+		if(payload_valid == true)
 		{
-			system_initial_angle = global_angle;
-			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			rtc_app_set_timestamp(timestamp);
+
+			if (system_initial_angle == 655)
+			{
+				system_initial_angle = global_angle;
+				ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			}
+		}
+		else
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", buffer);
 		}
 
 		if(gps_flag_send_to_mqtt)
