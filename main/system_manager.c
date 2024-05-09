@@ -384,7 +384,19 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	}
 }
 
-static bool check_valid_characters(char buffer[], uint8_t size)
+/**
+ * @brief Validates if characters in a buffer are within the printable ASCII range.
+ *
+ * Iterates over each character in the buffer to ensure they are within the ASCII printable 
+ * range (32 to 125). This validation helps prevent processing issues related to non-printable 
+ * characters.
+ *
+ * @param buffer Array of characters to be validated.
+ * @param size Number of characters in the buffer.
+ * @return true if all characters are valid, otherwise false.
+ */
+
+static bool check_valid_characters(const char *buffer, uint8_t size)
 {
 	for(uint8_t i = 0; i < size; i++)
 	{
