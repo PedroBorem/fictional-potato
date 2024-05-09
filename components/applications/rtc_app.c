@@ -71,7 +71,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	if(timestamp > 1670123456) // date: 04/12/2022
+	if(timestamp > 1715280638 && timestamp < 2220202096) // date: 09/05/2024 09/05/2040
 	{
 		struct tm time = *localtime(&timestamp); //obs time + 1900
 		time.tm_year += 1900;
