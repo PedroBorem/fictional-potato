@@ -476,6 +476,10 @@ pivot_actions gpio_actuator_get(void)
 	{
 		pivot_actions_read.rotation = PIVOT_CCW;
 		pivot_actions_read.power_state = PIVOT_ON;
+	}else if(gpio_get_level(GPIO_ACT_PIN_SAFE))
+	{
+		pivot_actions_read.power_state = PIVOT_OFF;
+		pivot_actions_read.rotation = PIVOT_SAFE;
 	}
 	else
 	{
