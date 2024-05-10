@@ -129,7 +129,7 @@
  */
 #define GPIO_INPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_CW_IN)		\
 								| (1ULL<<GPIO_ACT_PIN_CCW_IN)	\
-								| (1ULL<<GPIO_ACT_PIN_PRESS))	\
+								| (1ULL<<GPIO_ACT_PIN_PRESS)	\
 								| (1ULL<<GPIO_ACT_PIN_SAFE))	\
 
 /* Interrupt Pins Group */
