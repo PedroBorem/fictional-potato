@@ -159,7 +159,9 @@ typedef enum
     PIVOT_DRY = 5,          /*!< Irrigation off */
     PIVOT_WET = 6,          /*!< Irrigation on */
     PIVOT_PRESSURIZING = 7, /*!< Pivot pressurizing */
-    PIVOT_UNKNOWN = 8       /*!< Unknown pivot state */
+    PIVOT_UNKNOWN = 8,      /*!< Unknown pivot state */
+    PIVOT_SAFE = 9          /*!< Pivot Safety Triggered */
+
 } pivot_states;
 
 /**
