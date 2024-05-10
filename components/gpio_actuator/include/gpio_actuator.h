@@ -103,6 +103,12 @@
  */
 #define GPIO_ACT_PIN_PRESS       	GPIO_NUM_4 /*!< Water pressure reading*/
 
+/**
+ * @brief GPIO pin number for safety status reading input.
+ */
+#define GPIO_ACT_PIN_SAFE       	GPIO_NUM_15 /*!< Safety Status reading*/
+
+
 /* Output Pins Group */
 /**
  * @brief GPIO pin bitmask for all output pins.
@@ -124,6 +130,7 @@
 #define GPIO_INPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_CW_IN)		\
 								| (1ULL<<GPIO_ACT_PIN_CCW_IN)	\
 								| (1ULL<<GPIO_ACT_PIN_PRESS))	\
+								| (1ULL<<GPIO_ACT_PIN_SAFE))	\
 
 /* Interrupt Pins Group */
 /**
