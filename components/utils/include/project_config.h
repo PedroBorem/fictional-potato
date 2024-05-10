@@ -197,6 +197,7 @@ typedef struct __attribute__((__packed__))
 {
     char contactor[50];             /*!< Contactor type */ //todo: usar isso nas classes
     char pressure[50];              /*!< Pressure switch type *///todo usar isso nas classes
+    char safety[50];                /*!< Safety switch type *///todo usar isso nas classes
     uint16_t pressurization_time;   /*!< Pressurization time */
     uint8_t on_time;                /*!< On time */
     uint8_t off_time;               /*!< Off time */

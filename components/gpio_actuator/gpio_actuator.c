@@ -56,6 +56,7 @@ static uint32_t gpio_act_pressure_timeout = 0;
 static uint32_t gpio_act_on_delay = 0;
 static uint32_t gpio_act_off_delay = 0;
 static bool gpio_act_contactor_type = 0;
+static bool gpio_act_safety_type = 0;
 static bool gpio_act_pressure_type = 0;
 
 // Pressurizing flag
@@ -283,6 +284,21 @@ esp_err_t gpio_actuator_config(pivot_config config)
 		return err;
 	}
 
+	if(strcmp(config.safety, "NA") == 0)
+	{
+		gpio_act_safety_type = 0;
+	}
+	else if(strcmp(config.safety, "NF") == 0)
+	{
+		gpio_act_safety_type = 1;
+	}
+	else
+	{
+		ESP_LOGE(GPIO_ACT_TAG,"Invalid safety type configuration");
+		LOG_DBG_ERROR(GPIO_ACT_TAG, "Invalid_safety_type");
+		return err;
+	}
+
 	// convert sec to mili;
 	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
 	gpio_act_on_delay = (config.on_time * 1000);
@@ -476,9 +492,8 @@ pivot_actions gpio_actuator_get(void)
 	{
 		pivot_actions_read.rotation = PIVOT_CCW;
 		pivot_actions_read.power_state = PIVOT_ON;
-	}else if(gpio_get_level(GPIO_ACT_PIN_SAFE))
+	}else if(gpio_get_level(GPIO_ACT_PIN_SAFE)== gpio_act_safety_type)
 	{
-		pivot_actions_read.power_state = PIVOT_OFF;
 		pivot_actions_read.rotation = PIVOT_SAFE;
 	}
 	else
