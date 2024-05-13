@@ -333,6 +333,11 @@ static void system_manager_callback(const char* buffer_request, comm_type comm_m
 			system_manager_idp_18(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_19:
+		{
+			system_manager_idp_19(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_22:
 		{
 			system_manager_idp_22(str_pkg, comm_mode);
@@ -402,7 +407,7 @@ static void system_manager_idp_00(const char* buffer, comm_type comm_mode)
 			{ "uint16_t", &actions.percentimeter },
 			{ "uint16_t", &system_initial_angle },
 			{ "uint16_t", &global_angle },
-			{ "uint16_t", &global_pressure},
+			//{ "uint16_t", &global_pressure},
 			{ "string", str_date_time },
 			{ NULL, NULL }
 		};
@@ -1665,6 +1670,44 @@ static void system_manager_idp_18(const char* buffer, comm_type comm_mode)
 
 		idp_parser_create_package(str_out, arg_send);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+}
+
+/**
+ * @brief Handle IDP package type 19.
+ *
+ * This function handles IDP package type 19, extracting Pressure data and sending the response.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
+static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
+{
+	if(comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	{
+		pivot_actions actions = {};
+		char str_out[200] = {};
+		char str_date_time[50] = {};
+		uint16_t dwp = 0;
+		uint8_t idp = 19;
+
+		actuation_app_get_actions(&actions, sizeof(actions));
+		dwp = idp_parser_create_pwd(actions);
+
+		time_t timestamp = rtc_app_get_timestamp(false);
+		rtc_app_get_str_date_time(timestamp, str_date_time);
+
+		arg_pair_t arg_pairs[] = {
+			{ "uint8_t", &idp },
+			{ "string", system_id },
+			{ "uint16_t", &dwp },
+			{ "uint16_t", &global_pressure},
+			{ "string", str_date_time },
+			{ NULL, NULL }
+		};
+
+		idp_parser_create_package(str_out,arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
