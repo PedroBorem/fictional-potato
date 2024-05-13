@@ -32,6 +32,19 @@
 #define RTC_SCL_PIN 37
 
 /**
+ * @def TIMESTAMP_09_05_2024
+ * @brief Timestamp representing May 9th, 2024.
+ */
+#define TIMESTAMP_09_05_2024 1715280638
+
+/**
+ * @def TIMESTAMP_09_05_2040
+ * @brief Timestamp representing May 9th, 2040.
+ */
+#define TIMESTAMP_09_05_2040 2220202096
+
+
+/**
  * @var dev
  * @brief The RTC I2C device structure.
  */
@@ -71,7 +84,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	if(timestamp > 1715280638 && timestamp < 2220202096) // date: 09/05/2024 09/05/2040
+	if(timestamp > TIMESTAMP_09_05_2024 && timestamp < TIMESTAMP_09_05_2040) // date: 09/05/2024 09/05/2040
 	{
 		struct tm time = *localtime(&timestamp); //obs time + 1900
 		time.tm_year += 1900;
