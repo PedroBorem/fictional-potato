@@ -385,6 +385,31 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 }
 
 /**
+ * @brief Validates if characters in a buffer are within the printable ASCII range.
+ *
+ * Iterates over each character in the buffer to ensure they are within the ASCII printable 
+ * range (32 to 125). This validation helps prevent processing issues related to non-printable 
+ * characters.
+ *
+ * @param buffer Array of characters to be validated.
+ * @param size Number of characters in the buffer.
+ * @return true if all characters are valid, otherwise false.
+ */
+
+static bool check_valid_characters(const char *buffer, uint8_t size)
+{
+	for(uint8_t i = 0; i < size; i++)
+	{
+		if(buffer[i] <= 32 || buffer[i] >= 125)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * @brief Handle IDP package type 0.
  *
  * This function handles IDP package type 0, extracting relevant data and sending the response.
@@ -966,12 +991,22 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		rtc_app_set_timestamp(timestamp);
 
-		if (system_initial_angle == 655)
+		bool payload_valid = check_valid_characters(buffer, strlen(buffer));
+	
+		if(payload_valid == true)
 		{
-			system_initial_angle = global_angle;
-			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			rtc_app_set_timestamp(timestamp);
+
+			if (system_initial_angle == 655)
+			{
+				system_initial_angle = global_angle;
+				ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			}
+		}
+		else
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", buffer);
 		}
 
 		if(gps_flag_send_to_mqtt)
