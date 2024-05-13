@@ -110,6 +110,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
@@ -339,6 +340,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	case IDP_18:
 	{
 		system_manager_idp_18(str_pkg, comm_mode);
+		break;
+	}
+	case IDP_21:
+	{
+		system_manager_idp_21(str_pkg, comm_mode);
 		break;
 	}
 	case IDP_22:
@@ -1655,6 +1661,36 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
 
 		idp_parser_create_package(str_out, arg_send);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+}
+
+/**
+ * @brief Handles IDP 21 requests for timestamp update.
+ *
+ * This function handles the update of the system timestamp based on the provided parameters.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (MQTT).
+ */
+static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_MQTT)
+	{
+		uint8_t idp = 0;
+		time_t timestamp;
+		char pivot_id[50] = {};
+
+		// get timestamp
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"time_t", &timestamp},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		rtc_app_set_timestamp(timestamp);
 	}
 }
 
