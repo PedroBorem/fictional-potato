@@ -119,6 +119,7 @@ esp_err_t data_app_init(void)
 	const pivot_config default_config = {
 			.contactor = "NA",
 			.pressure = "NA",
+			.safety = "NA",
 			.pressurization_time = 30,
 			.on_time = 1,
 			.off_time = 1,
