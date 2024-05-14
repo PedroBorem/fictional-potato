@@ -187,6 +187,30 @@ void system_manager_init(void)
 }
 
 /**
+ * @brief Validates if characters in a buffer are within the printable ASCII range.
+ *
+ * Iterates over each character in the buffer to ensure they are within the ASCII printable 
+ * range (32 to 125). This validation helps prevent processing issues related to non-printable 
+ * characters.
+ *
+ * @param buffer Array of characters to be validated.
+ * @param size Number of characters in the buffer.
+ * @return true if all characters are valid, otherwise false.
+ */
+static bool check_valid_characters(const char *buffer, uint8_t size)
+{
+	for(uint8_t i = 0; i < size; i++)
+	{
+		if(buffer[i] <= 32 || buffer[i] >= 125)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
  * @brief Performs a system reboot based on certain conditions.
  *
  * This function checks the timestamp stored in non-volatile storage (NVS) and, if certain conditions are met, performs a system reboot.
@@ -265,154 +289,139 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 
 	LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
 
-	switch (idp_request)
-	{
-	case IDP_0:
-	{
-		system_manager_idp_00(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_1:
-	{
-		system_manager_idp_01(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_2:
-	{
-		system_manager_idp_02(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_3:
-	{
-		system_manager_idp_03(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_4:
-	{
-		system_manager_idp_04(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_5:
-	{
-		system_manager_idp_05(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_6:
-	{
-		system_manager_idp_06(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_7:
-	{
-		system_manager_idp_07(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_12:
-	{
-		system_manager_idp_12(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_13:
-	{
-		system_manager_idp_13(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_14:
-	{
-		system_manager_idp_14(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_15:
-	{
-		system_manager_idp_15(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_16:
-	{
-		system_manager_idp_16(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_17:
-	{
-		system_manager_idp_17(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_18:
-	{
-		system_manager_idp_18(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_21:
-	{
-		system_manager_idp_21(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_22:
-	{
-		system_manager_idp_22(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_23:
-	{
-		system_manager_idp_23(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_30:
-	{
-		system_manager_idp_30(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_90:
-	{
-		system_manager_idp_90(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_91:
-	{
-		system_manager_idp_91(str_pkg, comm_mode);
-		break;
-	}
-	case IDP_92:
-	{
-		system_manager_idp_92(str_pkg, comm_mode);
-		break;
-	}
-	default:
-	{
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
-		vTaskDelay(pdMS_TO_TICKS(1000));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
+	bool payload_ascii_valid = check_valid_characters(str_pkg, strlen(str_pkg));
 
-		comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
-		break;
-	}
-	}
-}
-
-/**
- * @brief Validates if characters in a buffer are within the printable ASCII range.
- *
- * Iterates over each character in the buffer to ensure they are within the ASCII printable 
- * range (32 to 125). This validation helps prevent processing issues related to non-printable 
- * characters.
- *
- * @param buffer Array of characters to be validated.
- * @param size Number of characters in the buffer.
- * @return true if all characters are valid, otherwise false.
- */
-
-static bool check_valid_characters(const char *buffer, uint8_t size)
-{
-	for(uint8_t i = 0; i < size; i++)
+	if(payload_ascii_valid == true)
 	{
-		if(buffer[i] <= 32 || buffer[i] >= 125)
+		switch (idp_request)
 		{
-			return false;
+		case IDP_0:
+		{
+			system_manager_idp_00(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_1:
+		{
+			system_manager_idp_01(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_2:
+		{
+			system_manager_idp_02(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_3:
+		{
+			system_manager_idp_03(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_4:
+		{
+			system_manager_idp_04(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_5:
+		{
+			system_manager_idp_05(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_6:
+		{
+			system_manager_idp_06(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_7:
+		{
+			system_manager_idp_07(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_12:
+		{
+			system_manager_idp_12(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_13:
+		{
+			system_manager_idp_13(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_14:
+		{
+			system_manager_idp_14(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_15:
+		{
+			system_manager_idp_15(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_16:
+		{
+			system_manager_idp_16(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_17:
+		{
+			system_manager_idp_17(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_18:
+		{
+			system_manager_idp_18(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_21:
+		{
+			system_manager_idp_21(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_22:
+		{
+			system_manager_idp_22(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_23:
+		{
+			system_manager_idp_23(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_30:
+		{
+			system_manager_idp_30(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_90:
+		{
+			system_manager_idp_90(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_91:
+		{
+			system_manager_idp_91(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_92:
+		{
+			system_manager_idp_92(str_pkg, comm_mode);
+			break;
+		}
+		default:
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
+			vTaskDelay(pdMS_TO_TICKS(1000));
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
+
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			break;
+		}
 		}
 	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", buffer);
+	}
 
-	return true;
 }
 
 /**
@@ -1010,10 +1019,7 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 				ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
 			}
 		}
-		else
-		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", buffer);
-		}
+
 
 		if(gps_flag_send_to_mqtt)
 		{
