@@ -186,6 +186,24 @@ uint16_t idp_parser_create_pwd(pivot_actions actions)
 }
 
 /**
+ * @brief Create a password from the actions in a `pivot actions + safety state` structure.
+ *
+ * This function creates a password from the actions in a `pivot actions + safety state` structure.
+ *
+ * @param[in] actions The `pivot actions + safety state` structure.
+ * @return The generated password.
+ */
+uint16_t idp_parser_create_pwds(pivot_actions actions, pivot_safety safety)
+{
+	uint16_t dwps = ((actions.rotation * 1000)
+	+ (actions.watering_state * 100)
+    + (actions.power_state * 10) 
+    + safety);
+
+	return dwps;
+}
+
+/**
  * @brief Get the `pivot_actions` structure from a password.
  *
  * This function extracts the `pivot_actions` structure from a password.

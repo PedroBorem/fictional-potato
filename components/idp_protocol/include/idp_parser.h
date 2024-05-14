@@ -63,6 +63,16 @@ bool idp_parser_validate_network(const network_config net_config);
 uint16_t idp_parser_create_pwd(pivot_actions actions);
 
 /**
+ * @brief Create an IDP packet with a generated password based on the specified pivot actions + safety state.
+ *
+ * This function creates an IDP packet with a generated password based on the specified pivot actions + safety state.
+ *
+ * @param[in] actions The pivot actions + safety state used to generate the password.
+ * @return The generated password.
+ */
+uint16_t idp_parser_create_pwds(pivot_actions actions, pivot_safety safety);
+
+/**
  * @brief Get pivot actions from the specified password.
  *
  * This function retrieves pivot actions from the specified password.
