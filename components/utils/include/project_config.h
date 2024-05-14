@@ -179,6 +179,16 @@ typedef struct __attribute__((__packed__))
 } pivot_actions;
 
 /**
+ * @brief Pivot safety status.
+ *
+ * Structure defining pivot safety status.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t safety_state;     /*!< Safety state of the pivot (PIVOT_SAFE_ON or PIVOT_SAFE_OFF) */
+} pivot_safety;
+
+/**
  * @brief Configuration angles.
  *
  * Structure defining the configuration angles.
