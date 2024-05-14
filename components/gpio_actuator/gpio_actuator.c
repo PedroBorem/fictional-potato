@@ -40,6 +40,9 @@ static TaskHandle_t xTask_readpercent = NULL;
 static pivot_actions pivot_actions_read = {};
 static pivot_actions task_actions_set = {};
 
+// Safety duration variable
+static pivot_safety pivot_safety_read = {};
+
 // GPIO variable time to start
 static uint16_t gpio_act_time_to_start = 1000;
 
@@ -492,9 +495,6 @@ pivot_actions gpio_actuator_get(void)
 	{
 		pivot_actions_read.rotation = PIVOT_CCW;
 		pivot_actions_read.power_state = PIVOT_ON;
-	}else if(gpio_get_level(GPIO_ACT_PIN_SAFE)== gpio_act_safety_type)
-	{
-		pivot_actions_read.rotation = PIVOT_SAFE;
 	}
 	else
 	{
@@ -529,6 +529,33 @@ pivot_actions gpio_actuator_get(void)
 
 	return pivot_actions_read;
 }
+
+
+/**
+ * @brief Gets the current GPIO safety state.
+ *
+ * This function retrieves the current GPIO safety state.
+ *
+ * @return pivot_safety Current pivot safety.
+ */
+pivot_safety gpio_safety_get(void)
+{
+	if(gpio_get_level(GPIO_ACT_PIN_SAFE) == gpio_act_safety_type)
+	{
+		pivot_safety_read.safety_state = PIVOT_SAFE_ON;
+	}
+	else if(gpio_get_level(GPIO_ACT_PIN_SAFE) == gpio_act_safety_type)
+	{
+		pivot_safety_read.safety_state = PIVOT_SAFE_OFF;
+	}
+	else
+	{
+		pivot_safety_read.safety_state = PIVOT_UNKNOWN;
+	}
+	return pivot_safety_read;
+}
+
+
 
 /**
  * @brief Shuts down the GPIO actuator module.

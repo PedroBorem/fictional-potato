@@ -200,6 +200,15 @@ esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status);
 pivot_actions gpio_actuator_get(void);
 
 /**
+ * @brief Gets the current pivot safety state.
+ *
+ * This function retrieves the current pivot safety from the GPIO actuator module.
+ *
+ * @return The current pivot safety
+ */
+pivot_safety gpio_safety_get(void);
+
+/**
  * @brief Shuts down all relays.
  *
  * This function shuts down all relays in the GPIO actuator module.
