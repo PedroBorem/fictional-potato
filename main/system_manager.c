@@ -397,13 +397,14 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
 	{
 		pivot_actions actions = {};
+		pivot_safety safety = {};
 		char str_out[200] = {};
 		char str_date_time[50] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
 
-		actuation_app_get_actions(&actions, sizeof(actions));
-		dwp = idp_parser_create_pwd(actions);
+		actuation_app_get_actions(&actions, sizeof(actions), &safety, sizeof(safety));
+		dwps = idp_parser_create_pwds(actions, safety);
 
 		time_t timestamp = rtc_app_get_timestamp(false);
 		rtc_app_get_str_date_time(timestamp, str_date_time);
@@ -411,7 +412,7 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs[] = {
 			{"uint8_t", &idp},
 			{"string", system_id},
-			{"uint16_t", &dwp},
+			{"uint16_t", &dwps},
 			{"uint16_t", &actions.percentimeter},
 			{"uint16_t", &system_initial_angle},
 			{"uint16_t", &global_angle},
@@ -467,7 +468,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
 				{
-					actuation_app_get_actions(&new_actions, sizeof(new_actions));
+					actuation_app_get_actions(&new_actions, sizeof(new_actions), NULL,0);
 					new_actions.percentimeter = 0;
 					new_actions.power_state = PIVOT_OFF;
 					new_actions.watering_state = PIVOT_DRY;
@@ -1930,8 +1931,9 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		}
 
 		// send ack
-		actuation_app_get_actions(&actions, sizeof(actions));
-		dwp = idp_parser_create_pwd(actions);
+		pivot_safety safety = {};
+		actuation_app_get_actions(&actions, sizeof(actions), &safety, sizeof(safety));
+		dwps = idp_parser_create_pwds(actions, safety);
 
 		time_t timestamp = rtc_app_get_timestamp(false);
 		rtc_app_get_str_date_time(timestamp, str_date_time);
@@ -1939,7 +1941,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		arg_pair_t arg_pairs_ack[] = {
 			{"uint8_t", &idp},
 			{"string", system_id},
-			{"uint16_t", &dwp},
+			{"uint16_t", &dwps},
 			{"uint16_t", &actions.percentimeter},
 			{"uint16_t", &system_initial_angle},
 			{"uint16_t", &global_angle},
