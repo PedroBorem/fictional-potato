@@ -46,6 +46,12 @@
  */
 #define ACTUATION_APP_PERCENTIMETER_TIME 120000 // 2 min
 
+/**
+ * @def ACTUATION_APP_SAFETY_TIME
+ * @brief Timeout duration for manual safety configuration in milliseconds (30 seconds).
+ */
+#define ACTUATION_APP_SAFETY_TIME 35000  // 30 sec
+
 /* Private variables  -------------------------------------------- */
 
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
@@ -151,23 +157,30 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
  * @param config_out [out]: The buffer to store the current pivot actions.
  * @param config_size [in]: The size of the config_out buffer.
  */
-void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
+void actuation_app_get_actions(pivot_actions* config_out, size_t config_size, pivot_safety* safety_out, size_t safety_size)
 {
 	pivot_actions current_action = {};
+	pivot_safety current_safety = {};
 
-	if(config_size > 0 && config_out != NULL )
+	if(config_size > 0 && config_out != NULL)
 	{
 		current_action = gpio_actuator_get();
+		current_safety = gpio_safety_get();
 		LOG_ACTUATION(ACTUATION_APP_TAG,"power_state %d", current_action.power_state);
 		LOG_ACTUATION(ACTUATION_APP_TAG,"rotation %d", current_action.rotation);
 		LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state %d", current_action.watering_state);
 		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_action.percentimeter);
-
+		if(safety_size > 0 && safety_out != NULL)
+		{
+			LOG_ACTUATION(ACTUATION_APP_TAG,"safety %d", current_safety.safety);
+			memcpy(safety_out, &current_safety, safety_size);
+		}
 		if(current_action.percentimeter > 100)
 		{
 			current_action.percentimeter = CONFIG_ACTIONS_UNDEF_VALUE;
 		}
 		memcpy(config_out, &current_action, config_size);
+
 	}
 }
 
@@ -205,11 +218,13 @@ void actuation_app_task(void* arg)
 	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 	pivot_actions current_action = {};
+	pivot_safety current_safety = {};
 	TickType_t last_tick = xTaskGetTickCount();
 
 	while(1)
 	{
 		current_action = gpio_actuator_get();
+		current_safety = gpio_safety_get();
 
 		if((current_action.power_state != actuation_config.power_state)
 		&& (current_action.watering_state != PIVOT_PRESSURIZING))
@@ -249,7 +264,7 @@ void actuation_app_task(void* arg)
 				last_tick = xTaskGetTickCount();
 			}
 		}
-		else if(current_action.rotation != actuation_config.rotation && current_action.rotation != PIVOT_UNKNOWN && current_action.rotation != PIVOT_SAFE)
+		else if(current_action.rotation != actuation_config.rotation && current_action.rotation != PIVOT_UNKNOWN)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_ROTATION_TIME)
 			{
@@ -264,6 +279,15 @@ void actuation_app_task(void* arg)
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_PERCENTIMETER_TIME)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
+				last_tick = xTaskGetTickCount();
+				actuation_app_manual_call(true, current_action);
+			}
+		}
+		else if(current_safety.safety_state != safety_config.safety && current_safety.safety_state != PIVOT_UNKNOWN)
+		{
+			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_SAFETY_TIME)
+			{
+				LOG_ACTUATION(ACTUATION_APP_TAG,"safety change");
 				last_tick = xTaskGetTickCount();
 				actuation_app_manual_call(true, current_action);
 			}
