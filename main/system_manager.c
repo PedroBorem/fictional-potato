@@ -409,7 +409,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
-			vTaskDelay(pdMS_TO_TICKS(1000));
+			vTaskDelay(pdMS_TO_TICKS(2000));
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
 
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
@@ -419,9 +419,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	}
 	else
 	{
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", str_pkg);
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from %i", str_pkg, comm_mode);
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid characters found");
+		vTaskDelay(pdMS_TO_TICKS(2000));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, str_pkg);
 	}
-
 }
 
 /**
