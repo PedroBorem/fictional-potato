@@ -1007,19 +1007,13 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		bool payload_valid = check_valid_characters(buffer, strlen(buffer));
-	
-		if(payload_valid == true)
+		rtc_app_set_timestamp(timestamp);
+
+		if (system_initial_angle == 655)
 		{
-			rtc_app_set_timestamp(timestamp);
-
-			if (system_initial_angle == 655)
-			{
-				system_initial_angle = global_angle;
-				ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
-			}
+			system_initial_angle = global_angle;
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
 		}
-
 
 		if(gps_flag_send_to_mqtt)
 		{
