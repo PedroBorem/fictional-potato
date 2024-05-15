@@ -419,7 +419,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	}
 	else
 	{
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", buffer);
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from GPS", str_pkg);
 	}
 
 }
