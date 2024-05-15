@@ -106,6 +106,8 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	{
 		ESP_LOGE(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
 		LOG_DBG_ERROR(RTC_APP_TAG, "set_invalid_timestamp");
+		vTaskDelay(pdMS_TO_TICKS(2000));
+		LOG_DBG_ERROR(RTC_APP_TAG, timestamp);
 	}
 
 	return ret;
