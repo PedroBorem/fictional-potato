@@ -62,7 +62,7 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
  * @param config_out - [out]: Pivot configuration structure.
  * @param config_size - [out]: Structure size.
  */
-void actuation_app_get_actions(pivot_actions* config_out, size_t config_size);
+void actuation_app_get_actions(pivot_actions* config_out, size_t config_size, pivot_safety* safety_out, size_t safety_size);
 
 /**
  * @brief Sets the pump state for the actuation application.
