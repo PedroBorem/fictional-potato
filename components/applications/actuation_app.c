@@ -57,6 +57,7 @@
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
 static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
+static pivot_safety safety_config = {}; /**< Current pivot safety configuration. */
 
 const pivot_actions pivot_actions_off = {
     .power_state = PIVOT_OFF,
@@ -134,6 +135,10 @@ esp_err_t actuation_app_set_config(pivot_config config)
  */
 void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 {
+	pivot_safety init_safety = {};
+	init_safety = gpio_safety_get();
+	memcpy(&safety_config, &init_safety, sizeof(safety_config));
+
 	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
 
 	if(alert_change == false)
@@ -172,7 +177,7 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size, pi
 		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_action.percentimeter);
 		if(safety_size > 0 && safety_out != NULL)
 		{
-			LOG_ACTUATION(ACTUATION_APP_TAG,"safety %d", current_safety.safety);
+			LOG_ACTUATION(ACTUATION_APP_TAG,"safety %d", current_safety.safety_state);
 			memcpy(safety_out, &current_safety, safety_size);
 		}
 		if(current_action.percentimeter > 100)
@@ -283,7 +288,7 @@ void actuation_app_task(void* arg)
 				actuation_app_manual_call(true, current_action);
 			}
 		}
-		else if(current_safety.safety_state != safety_config.safety && current_safety.safety_state != PIVOT_UNKNOWN)
+		else if(current_safety.safety_state != safety_config.safety_state && current_safety.safety_state != PIVOT_UNKNOWN)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_SAFETY_TIME)
 			{
