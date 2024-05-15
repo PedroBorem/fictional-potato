@@ -198,7 +198,7 @@ uint16_t idp_parser_create_pwds(pivot_actions actions, pivot_safety safety)
 	uint16_t dwps = ((actions.rotation * 1000)
 	+ (actions.watering_state * 100)
     + (actions.power_state * 10) 
-    + safety);
+    + safety.safety_state);
 
 	return dwps;
 }
