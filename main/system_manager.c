@@ -400,7 +400,7 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 		pivot_safety safety = {};
 		char str_out[200] = {};
 		char str_date_time[50] = {};
-		uint16_t dwp = 0;
+		uint16_t dwps = 0;
 		uint8_t idp = 0;
 
 		actuation_app_get_actions(&actions, sizeof(actions), &safety, sizeof(safety));
@@ -1932,6 +1932,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		// send ack
 		pivot_safety safety = {};
+		uint16_t dwps = 0;
 		actuation_app_get_actions(&actions, sizeof(actions), &safety, sizeof(safety));
 		dwps = idp_parser_create_pwds(actions, safety);
 

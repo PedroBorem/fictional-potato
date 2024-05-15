@@ -92,7 +92,7 @@ static void system_monitoring_actuation(void)
     pivot_actions pivot_actions = {};
 
     // act on the equipment (pivo_off) - send IDP 01
-    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions),NULL,0);
     pivot_actions.power_state = PIVOT_OFF;
 
     idp = IDP_1;
@@ -222,7 +222,7 @@ static void system_monitoring_task(void* arg)
         if(system_states == SYSTEM_RETURN)
         {
             pivot_actions pivot_actions = {};
-            actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+            actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions),NULL,0);
             system_monitoring_barrier(pivot_actions);
         }        
 
