@@ -103,6 +103,7 @@ static void system_manager_idp_15(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_19(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char* buffer, comm_type comm_mode);
