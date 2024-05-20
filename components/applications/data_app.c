@@ -437,6 +437,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_TIMESTAMP, data);
 			break;
 		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_get_blob(DATA_BARRIER, data);
+			break;
+		}
 		default:
 		{
 			break;
