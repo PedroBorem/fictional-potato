@@ -544,11 +544,11 @@ pivot_safety gpio_safety_get(void)
 	{
 		pivot_safety_read.safety_state = PIVOT_SAFE_ON;
 	}
-	else if(gpio_get_level(GPIO_ACT_PIN_SAFE) == gpio_act_safety_type)
+	else if(gpio_get_level(GPIO_ACT_PIN_SAFE) == !gpio_act_safety_type)
 	{
 		pivot_safety_read.safety_state = PIVOT_SAFE_OFF;
 	}
-	else
+	else // implementar condicao quando nao tem a leitura no hw
 	{
 		pivot_safety_read.safety_state = PIVOT_UNKNOWN;
 	}
