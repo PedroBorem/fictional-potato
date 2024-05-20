@@ -88,6 +88,7 @@ static void system_monitoring_actuation(void)
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
+    bool *automatic_return_Back_flag;
 
     pivot_actions pivot_actions = {};
 
@@ -112,11 +113,14 @@ static void system_monitoring_actuation(void)
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, COMM_MQTT);
 
+
     if(system_monitoring_config.automatic_return == true)
     {
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
-        if(system_monitoring_bacK_flag == false)
+        data_app_load(DATA_TYPE_BARRIER, &automatic_return_Back_flag);
+
+        if(automatic_return_Back_flag == false)
         {
             // act on the equipment - send IDP 01
             pivot_actions.power_state = PIVOT_ON;
@@ -157,11 +161,13 @@ static void system_monitoring_actuation(void)
             system_monitoring_callback(str_out, COMM_MQTT);
 
             system_monitoring_bacK_flag = true;
+            data_app_save(DATA_TYPE_BARRIER, system_monitoring_bacK_flag, 1);
             system_states = SYSTEM_RETURN;
         }
         else
         {
             system_monitoring_bacK_flag = false;
+            data_app_save(DATA_TYPE_BARRIER, system_monitoring_bacK_flag, 1);
             system_states = SYSTEM_PAUSE;
         }
     }
