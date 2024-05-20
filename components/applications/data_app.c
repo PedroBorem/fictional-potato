@@ -102,6 +102,12 @@
 #define DATA_TIMESTAMP "timestamp"
 
 /**
+ * @def DATA_BARRIER
+ * @brief NVS access space for barrier status data.
+ */
+#define DATA_BARRIER "barrier"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -338,6 +344,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_TIMESTAMP:
 		{
 			ret = nvs_data_set(DATA_TIMESTAMP, data, data_size);
+			break;
+		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_set(DATA_BARRIER, data, data_size);
 			break;
 		}
 		default:
