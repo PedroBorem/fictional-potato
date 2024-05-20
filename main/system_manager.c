@@ -33,7 +33,7 @@
 /** @def SYSTEM_MANAGER_TAG
  *  @brief Log tag for the system manager module.
  */
-#define SYSTEM_MANAGER_TAG "system manager"
+#define SYSTEM_MANAGER_TAG "system_manager"
 
 /** @def SYSTEM_REBOOT_DELAY_MS
  *  @brief Delay time (in milliseconds) for system reboot.
