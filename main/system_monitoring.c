@@ -36,10 +36,7 @@ typedef enum {
 } system_monitoring_states;
 
 /* Private variables  -------------------------------------------- */
-
 static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state of the system monitoring. */
-static bool system_monitoring_bacK_flag = false; /**< Flag indicating the return state. */
-uint8_t automatic_return_Back_flag = false; /**< Flag indicating if the automatic return is enabled. */
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
@@ -113,15 +110,14 @@ static void system_monitoring_actuation(void)
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, COMM_MQTT);
 
-    ESP_LOGE(SYSTEM_MONITORING_TAG, "AAAAAAAAAAAAAAAAAAAAA"); 
-
     if(system_monitoring_config.automatic_return == true)
     {
+    	bool return_back_flag = false;
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
-        data_app_load(DATA_TYPE_BARRIER, &automatic_return_Back_flag);
+        data_app_load(DATA_TYPE_BARRIER, &return_back_flag);
 
-        if(automatic_return_Back_flag == false)
+        if(return_back_flag == false)
         {
             // act on the equipment - send IDP 01
             pivot_actions.power_state = PIVOT_ON;
@@ -161,16 +157,14 @@ static void system_monitoring_actuation(void)
             idp_parser_create_package(str_out, arg_idp_02);
             system_monitoring_callback(str_out, COMM_MQTT);
 
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "bbbbbbbbbbbbbbbbbbb"); 
-            system_monitoring_bacK_flag = true;
-            data_app_save(DATA_TYPE_BARRIER, &system_monitoring_bacK_flag, sizeof(system_monitoring_bacK_flag));
+            return_back_flag = true;
+            data_app_save(DATA_TYPE_BARRIER, &return_back_flag, sizeof(return_back_flag));
             system_states = SYSTEM_RETURN;
         }
         else
         {
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "CCCCCCCCCCCCCCCCCCCCC"); 
-            system_monitoring_bacK_flag = false;
-            data_app_save(DATA_TYPE_BARRIER, &system_monitoring_bacK_flag, sizeof(system_monitoring_bacK_flag));
+        	return_back_flag = false;
+            data_app_save(DATA_TYPE_BARRIER, &return_back_flag, sizeof(return_back_flag));
             system_states = SYSTEM_PAUSE;
         }
     }

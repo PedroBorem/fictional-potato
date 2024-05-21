@@ -148,6 +148,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
+	const bool default_barrier = false;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -209,12 +210,16 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
 		{
-			data_app_save(DATA_TYPE_HISTORY, &default_history, sizeof(default_history));
+			nvs_data_set(DATA_HISTORY, &default_history, sizeof(default_history));
 		}
 
 		if(nvs_data_get_size(DATA_TIMESTAMP) == 0)
 		{
 			data_app_save(DATA_TYPE_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
+		}
+		if(nvs_data_get_size(DATA_BARRIER) == 0)
+		{
+			data_app_save(DATA_TYPE_BARRIER, &default_barrier, sizeof(default_barrier));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
