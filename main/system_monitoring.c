@@ -37,6 +37,7 @@ typedef enum {
 
 /* Private variables  -------------------------------------------- */
 static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state of the system monitoring. */
+bool return_back_flag = false;
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
@@ -112,7 +113,6 @@ static void system_monitoring_actuation(void)
 
     if(system_monitoring_config.automatic_return == true)
     {
-    	bool return_back_flag = false;
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
         data_app_load(DATA_TYPE_BARRIER, &return_back_flag);
