@@ -43,7 +43,7 @@
 /** @def SYSTEM_REBOOT_TIMEOUT_MS
  *  @brief Timeout duration (in milliseconds) for system reboot.
  */
-#define SYSTEM_REBOOT_TIMEOUT_MS (46800000) // 3 hours
+#define SYSTEM_REBOOT_TIMEOUT_MS (14400000) // 4 hours
 
 /** @def SYSTEM_SAVE_FLASH_TIME_MS
  *  @brief Time interval (in milliseconds) for saving data to flash memory.
