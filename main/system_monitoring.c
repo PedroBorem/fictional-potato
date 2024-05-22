@@ -229,6 +229,9 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
     // save current Timestamp
     time_t timestamp_now = rtc_app_get_timestamp(false);
     data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
+
+    // send IDP 19 (current pressure status)
+    system_monitoring_callback("#19$", COMM_MQTT);
 }
 
 /**
