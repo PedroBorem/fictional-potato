@@ -333,7 +333,6 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
 
         if ((perc_timer_handleOn != NULL) && (perc_timer_handleOff != NULL))
         {
-			ESP_LOGE(GPIO_ACT_TAG,"%s, TESTE3", __func__);
             gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
             gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
             xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(1000));
