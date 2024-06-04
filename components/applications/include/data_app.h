@@ -32,6 +32,7 @@ typedef enum
     DATA_TYPE_SECTOR_CONFIG, /**< Sector configuration data type. */
     DATA_TYPE_GPS_CONFIG, /**< GPS configuration data type. */
     DATA_TYPE_RETURN_CONFIG, /**< Return configuration data type. */
+    DATA_TYPE_REBOOT_CONFIG, /**< Reboot configuration data type. */
     DATA_TYPE_SCHEDULING_DATE, /**< Scheduling date data type. */
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */
     DATA_TYPE_SCHEDULING_ANGLE, /**< Scheduling angle data type. */
