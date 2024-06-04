@@ -113,6 +113,7 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -219,6 +220,11 @@ static bool check_valid_characters(const char *buffer, uint8_t size)
  */
 static void system_manager_reboot(void)
 {
+	reboot_config current_reboot = {};
+	data_app_load(DATA_TYPE_REBOOT_CONFIG, &current_reboot);
+
+	uint16_t timeout = 0;
+
 	pivot_actions current_action = {};
 
 	time_t timestamp_nvs = 0;
@@ -233,7 +239,16 @@ static void system_manager_reboot(void)
 	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-	if ((timestamp_now - timestamp_nvs) < (SYSTEM_REBOOT_TIMEOUT_MS/1000))
+	if(current_reboot.reboot_timeout_time < 1)
+	{
+		timeout = SYSTEM_REBOOT_TIMEOUT_MS/1000;
+		ESP_LOGE(, "Invalid current reboot timeout, default applied...");
+
+	}else{
+		timeout = current_reboot.reboot_timeout_time * 60 * 60;
+	}
+
+	if ((current_reboot.enable == 1)&&((timestamp_now - timestamp_nvs) < (timeout)))
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -259,7 +274,11 @@ static void system_manager_reboot(void)
 		}
 	}
 	else
-	{
+	{	
+		if(current_reboot.enable == 0)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Automatic Reboot Disabled ...");
+		}
 		// save old history
 		data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 	}
@@ -389,6 +408,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_23:
 		{
 			system_manager_idp_23(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_24:
+		{
+			system_manager_idp_24(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -1960,6 +1984,86 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+	}
+}
+
+/**
+ * @brief Handles IDP 24 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if (comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if (delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		uint8_t idp = 0;
+		char pivot_id[50] = {};
+		reboot_config reboot_config = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint8_t", &reboot_config.enable},
+				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{NULL, NULL}
+			};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			system_monitoring_stop();
+			system_monitoring_start(reboot_config, system_read_time);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_24;
+		pivot_return_config reboot_config = {};
+
+		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint8_t", &reboot_config.enable},
+				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{NULL, NULL}
+			};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
