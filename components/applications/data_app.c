@@ -66,6 +66,12 @@
 #define DATA_RETURN_CONFIG "return_config"
 
 /**
+ * @def DATA_REBOOT_CONFIG
+ * @brief NVS access space for reboot configuration data.
+ */
+#define DATA_REBOOT_CONFIG "reboot_config"
+
+/**
  * @def DATA_SCHEDULING_DATE
  * @brief NVS access space for scheduling date data.
  */
@@ -132,6 +138,11 @@ esp_err_t data_app_init(void)
 			.wifi_pass = "soiltech",
 	};
 
+	const reboot_config default_reboot = {
+			.enable = 1,
+			.reboot_timeout_time = 4,
+	}
+
 	const gps_config gps_config = {};
 	const pivot_return_config return_config = {};
 	const eco_mode_config default_eco =	{};
@@ -179,6 +190,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		}
+
+		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
+		{
+			data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
 		}
 
 		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
@@ -268,6 +284,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_RETURN_CONFIG:
 		{
 			ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
+			break;
+		}
+		case DATA_TYPE_REBOOT_CONFIG:
+		{
+			ret = nvs_data_set(DATA_REBOOT_CONFIG, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_DATE:
@@ -394,6 +415,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_RETURN_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
+			break;
+		}
+		case DATA_TYPE_REBOOT_CONFIG:
+		{
+			ret = nvs_data_get_blob(DATA_REBOOT_CONFIG, data);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_DATE:
