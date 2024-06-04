@@ -93,7 +93,9 @@
  * @var IDP_14 Scheduling type 1 (On by date and off by date)
  * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
  * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_22 Barrier configurations
  * @var IDP_23 GPS configurations via LoraMesh
+ * @var IDP_24 Automatic Reboot configurations
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -120,6 +122,7 @@ typedef enum
     IDP_21 = 21,
     IDP_22,
     IDP_23,
+    IDP_24,
     IDP_30 = 30,
     IDP_90 = 90,
     IDP_91,
@@ -201,6 +204,17 @@ typedef struct __attribute__((__packed__))
     uint8_t off_time;               /*!< Off time */
     uint8_t read_time;              /*!< Read time */
 } pivot_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the reboot configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t enable;                /*!< Enable or Disable */
+    uint16_t reboot_timeout_time;  /*!< Reboot time */
+} reboot_config;
 
 /**
  * @brief Configuration parameters.
