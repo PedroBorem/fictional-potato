@@ -2072,6 +2072,86 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 }
 
 /**
+ * @brief Handles IDP 24 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if (comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if (delimiter_num == 1)
+		{
+			mqtt_load_pkg = true;
+		}
+		else
+		{
+			mqtt_save_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		uint8_t idp = 0;
+		char pivot_id[50] = {};
+		reboot_config reboot_config = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint8_t", &reboot_config.enable},
+				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{NULL, NULL}
+			};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			system_monitoring_stop();
+			system_monitoring_start(reboot_config, system_read_time);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_24;
+		pivot_return_config reboot_config = {};
+
+		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint8_t", &reboot_config.enable},
+				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{NULL, NULL}
+			};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+}
+
+/**
  * @brief Handles IDP 30 requests for system actions.
  *
  * This function handles system actions based on the provided parameters.
