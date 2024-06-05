@@ -2003,13 +2003,13 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
+		if (delimiter_num == 3)
 		{
-			mqtt_load_pkg = true;
+			mqtt_save_pkg = true;
 		}
 		else
 		{
-			mqtt_save_pkg = true;
+			mqtt_load_pkg = true;
 		}
 	}
 
