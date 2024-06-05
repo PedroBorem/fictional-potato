@@ -141,7 +141,7 @@ esp_err_t data_app_init(void)
 	const reboot_config default_reboot = {
 			.enable = 1,
 			.reboot_timeout_time = 4,
-	}
+	};
 
 	const gps_config gps_config = {};
 	const pivot_return_config return_config = {};
@@ -194,7 +194,7 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
 		{
-			data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
+			data_app_save(DATA_TYPE_REBOOT_CONFIG, &default_reboot, sizeof(default_reboot));
 		}
 
 		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
