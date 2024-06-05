@@ -244,7 +244,6 @@ static void system_manager_reboot(void)
 		timeout = SYSTEM_REBOOT_TIMEOUT_MS/1000;
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
-		
 	}else{
 		timeout = current_reboot.reboot_timeout_time * 60 * 60;
 	}
@@ -2119,8 +2118,6 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 		{
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-			system_monitoring_stop();
-			system_monitoring_start(reboot_config, system_read_time);
 		}
 		else
 		{
@@ -2132,14 +2129,14 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 		char str_out[200] = {};
 
 		uint8_t idp = IDP_24;
-		pivot_return_config reboot_config = {};
+		reboot_config reboot_config = {};
 
 		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
-				{"string", pivot_id},
+				{"string", system_id},
 				{"uint8_t", &reboot_config.enable},
 				{"uint16_t", &reboot_config.reboot_timeout_time},
 				{NULL, NULL}
