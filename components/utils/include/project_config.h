@@ -207,7 +207,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in pivot_config struct.
  */
-const int PIVOT_CONFIG_VAR_COUNT = 6;
+#define PIVOT_CONFIG_VAR_COUNT  (6)
 
 /**
  * @brief Configuration parameters.
@@ -227,7 +227,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in network_config struct.
  */
-const int NETWORK_CONFIG_VAR_COUNT = 4;
+#define NETWORK_CONFIG_VAR_COUNT    (4)
 
 /**
  * @brief Configuration parameters.
@@ -245,7 +245,7 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
  *
  * How many configuration parameters in eco_mode_config struct.
  */
-const int ECO_MODE_CONFIG_VAR_COUNT = 2;
+#define ECO_MODE_CONFIG_VAR_COUNT   (2)
 
 /**
  * @brief Configuration parameters.
@@ -279,7 +279,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in gps_config struct.
  */
-const int GPS_CONFIG_VAR_COUNT = 6;
+#define GPS_CONFIG_VAR_COUNT    (6)
 
 /**
  * @brief Configuration parameters.
@@ -299,7 +299,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in pivot_return_config struct.
  */
-const int PIVOT_RETURN_CONFIG_VAR_COUNT = 4;
+#define PIVOT_RETURN_CONFIG_VAR_COUNT   (4)
 
 /**
  * @brief Scheduling date parameters.
