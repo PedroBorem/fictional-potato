@@ -1823,7 +1823,23 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 {
-	if ( comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+
+	if (comm_mode == COMM_MQTT)
+	{
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		if (delimiter_num == 7) //quantidade de campos no payload - 1
+		{
+			mqtt_save_pkg = true;
+		}
+		else
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
 		size_t len_buffer = strlen(buffer);
 
@@ -1849,7 +1865,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if (comm_mode == COMM_HTTP_GET)
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
