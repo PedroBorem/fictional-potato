@@ -221,7 +221,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in reboot_config struct.
  */
-const int REBOOT_CONFIG_VAR_COUNT = 2;
+#define REBOOT_CONFIG_VAR_COUNT     (2)
 
 /**
  * @brief Configuration parameters.
