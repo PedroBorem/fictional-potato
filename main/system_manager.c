@@ -598,7 +598,7 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 5) //quantidade de campos no payload - 1
+		if (delimiter_num >= (NETWORK_CONFIG_VAR_COUNT - 1)) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -703,7 +703,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 7) //quantidade de campos no payload - 1
+		if (delimiter_num >= (PIVOT_CONFIG_VAR_COUNT - 1)) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -795,7 +795,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 3) //quantidade de campos no payload - 1
+		if (delimiter_num >= (ECO_MODE_CONFIG_VAR_COUNT - 1)) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -1747,7 +1747,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 5) //quantidade de campos no payload - 1
+		if (delimiter_num >= (PIVOT_RETURN_CONFIG_VAR_COUNT - 1)) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -1829,7 +1829,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_MQTT)
 	{
 		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 7) //quantidade de campos no payload - 1
+		if (delimiter_num >= (GPS_CONFIG_VAR_COUNT - 1)) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
