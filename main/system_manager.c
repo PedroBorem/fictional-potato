@@ -2014,6 +2014,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 	}
 	else{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
