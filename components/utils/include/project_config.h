@@ -205,6 +205,13 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
+ * How many configuration parameters in pivot_config struct.
+ */
+const int PIVOT_CONFIG_VAR_COUNT = 6;
+
+/**
+ * @brief Configuration parameters.
+ *
  * Structure defining the network configuration parameters.
  */
 typedef struct __attribute__((__packed__))
@@ -218,6 +225,13 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
+ * How many configuration parameters in network_config struct.
+ */
+const int NETWORK_CONFIG_VAR_COUNT = 4;
+
+/**
+ * @brief Configuration parameters.
+ *
  * Structure defining the eco mode configuration parameters.
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
@@ -225,6 +239,13 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
     time_t start_time;              /*!< Start time */
     time_t end_time;                /*!< End time */
 } eco_mode_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in eco_mode_config struct.
+ */
+const int ECO_MODE_CONFIG_VAR_COUNT = 2;
 
 /**
  * @brief Configuration parameters.
@@ -253,6 +274,18 @@ typedef struct __attribute__((__packed__))
 
 } gps_config;
 
+/**
+ * @brief GPS Configuration parameters.
+ *
+ * How many configuration parameters in gps_config struct.
+ */
+const int GPS_CONFIG_VAR_COUNT = 6;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the Return Configuration parameters.
+ */
 typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle;   /*!< Start angle of the configuration */
@@ -260,6 +293,13 @@ typedef struct __attribute__((__packed__))
     bool automatic_return;
     bool water_return;
 } pivot_return_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_return_config struct.
+ */
+const int PIVOT_RETURN_CONFIG_VAR_COUNT = 4;
 
 /**
  * @brief Scheduling date parameters.
