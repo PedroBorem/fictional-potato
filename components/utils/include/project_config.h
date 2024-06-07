@@ -259,6 +259,12 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 } sector_config;
 
 /**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in sector_config struct. sector_number = 0 -> 1 parametro.
+ */
+#define SECTOR_CONFIG_VAR_COUNT   (1)
+/**
  * @brief GPS Configuration parameters.
  *
  * Structure defining the GPS Configuration parameters.
