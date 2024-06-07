@@ -43,7 +43,7 @@
 /** @def SYSTEM_REBOOT_TIMEOUT_MS
  *  @brief Timeout duration (in milliseconds) for system reboot.
  */
-#define SYSTEM_REBOOT_TIMEOUT_MS (46800000) // 3 hours
+#define SYSTEM_REBOOT_TIMEOUT_MS (14400000) // 4 hours
 
 /** @def SYSTEM_SAVE_FLASH_TIME_MS
  *  @brief Time interval (in milliseconds) for saving data to flash memory.
@@ -227,7 +227,13 @@ static void system_manager_reboot(void)
 	data_app_load(DATA_TYPE_TIMESTAMP, &timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
 
-	if ((timestamp_now - timestamp_nvs) < SYSTEM_REBOOT_TIMEOUT_MS)
+	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_now: %lld", timestamp_now);
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_nvs: %lld", timestamp_nvs);
+	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
+	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+
+	if ((timestamp_now - timestamp_nvs) < (SYSTEM_REBOOT_TIMEOUT_MS/1000))
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
