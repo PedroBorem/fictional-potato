@@ -243,7 +243,8 @@ static void system_manager_reboot(void)
 	{
 		timeout = SYSTEM_REBOOT_TIMEOUT_MS/1000;
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
-
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
+		
 	}else{
 		timeout = current_reboot.reboot_timeout_time * 60 * 60;
 	}
