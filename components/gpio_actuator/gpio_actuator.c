@@ -313,7 +313,7 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
 			vPercTimerOnExpire);     /* callback */
 		
 		if(GPIO_ACT_PERC_FULL_CYCLE - perc_sec > 0)
-		{
+		{	
 			perc_timer_handleOff = xTimerCreate(
 				"percTimerOff",                                       /* name */
 				pdMS_TO_TICKS((GPIO_ACT_PERC_FULL_CYCLE - perc_sec)), /* period/time */
@@ -335,7 +335,7 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
         {
             gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
             gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-            xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(100));
+            xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(1000));
         }
     }
     else if (actions.percentimeter == 0)
@@ -343,17 +343,19 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
         gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
         gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
 
-        if (perc_timer_handleOn != 0)
+        if (perc_timer_handleOn != NULL)
         {
             xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
             xTimerDelete(perc_timer_handleOn, pdMS_TO_TICKS(1000));
+			perc_timer_handleOn = NULL;
             negedge_perc = 0;
         }
 
-        if (perc_timer_handleOff != 0)
+        if (perc_timer_handleOff != NULL)
         {
             xTimerStop(perc_timer_handleOff, pdMS_TO_TICKS(1000));
             xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
+			perc_timer_handleOff = NULL;
             posedge_perc = 0;
         }
 
@@ -364,16 +366,18 @@ void percent_relay_control(pivot_actions actions, uint16_t perc_sec)
         gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
         gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_ENABLE);
 
-        if (perc_timer_handleOn != 0)
+        if (perc_timer_handleOn != NULL)
         {
             xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
             xTimerDelete(perc_timer_handleOn, pdMS_TO_TICKS(1000));
+			perc_timer_handleOn = NULL;
         }
 
-        if (perc_timer_handleOff != 0)
+        if (perc_timer_handleOff != NULL)
         {
             xTimerStop(perc_timer_handleOff, pdMS_TO_TICKS(1000));
             xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
+			perc_timer_handleOff = NULL;
         }
     }
 }
@@ -530,7 +534,7 @@ void gpio_actuator_shutdown(void)
 
 	vTaskDelay(pdMS_TO_TICKS(gpio_act_off_delay));
 	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
-
+	
 	if(perc_timer_handleOn != NULL)
 	{
 		xTimerStop(perc_timer_handleOn, pdMS_TO_TICKS(1000));
@@ -543,7 +547,7 @@ void gpio_actuator_shutdown(void)
 		xTimerDelete(perc_timer_handleOff, pdMS_TO_TICKS(1000));
 		perc_timer_handleOff = NULL;
 	}
-
+	
 	pivot_actions_read.percentimeter = 0;
 }
 
@@ -609,7 +613,10 @@ void gpio_actuator_pressure_off(void)
 void vPercTimerOnExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	xTimerStart(perc_timer_handleOff, pdMS_TO_TICKS(5000));
+	if(perc_timer_handleOff != NULL)
+	{
+		xTimerStart(perc_timer_handleOff, pdMS_TO_TICKS(5000));
+	}
 }
 
 /**
@@ -619,7 +626,10 @@ void vPercTimerOnExpire(TimerHandle_t pxTimer)
 void vPercTimerOffExpire(TimerHandle_t pxTimer)
 {
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_ENABLE);
-	xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(5000));
+	if(perc_timer_handleOn != NULL)
+	{
+		xTimerStart(perc_timer_handleOn, pdMS_TO_TICKS(5000));
+	}
 }
 
 /**

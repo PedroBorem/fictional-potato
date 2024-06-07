@@ -39,6 +39,7 @@ typedef enum
     DATA_TYPE_HISTORY, /**< History data type. */
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
     DATA_TYPE_TIMESTAMP, /**< Timestamp data type. */
+    DATA_TYPE_BARRIER, /**< Barrier status data. */
 } data_type_t;
 
 

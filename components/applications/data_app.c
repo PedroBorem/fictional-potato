@@ -102,6 +102,12 @@
 #define DATA_TIMESTAMP "timestamp"
 
 /**
+ * @def DATA_BARRIER
+ * @brief NVS access space for barrier status data.
+ */
+#define DATA_BARRIER "barrier"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -142,6 +148,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
+	const bool default_barrier = false;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -203,12 +210,16 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
 		{
-			data_app_save(DATA_TYPE_HISTORY, &default_history, sizeof(default_history));
+			nvs_data_set(DATA_HISTORY, &default_history, sizeof(default_history));
 		}
 
 		if(nvs_data_get_size(DATA_TIMESTAMP) == 0)
 		{
 			data_app_save(DATA_TYPE_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
+		}
+		if(nvs_data_get_size(DATA_BARRIER) == 0)
+		{
+			data_app_save(DATA_TYPE_BARRIER, &default_barrier, sizeof(default_barrier));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -340,6 +351,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_TIMESTAMP, data, data_size);
 			break;
 		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_set(DATA_BARRIER, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -424,6 +440,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_TIMESTAMP:
 		{
 			ret = nvs_data_get_blob(DATA_TIMESTAMP, data);
+			break;
+		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_get_blob(DATA_BARRIER, data);
 			break;
 		}
 		default:
