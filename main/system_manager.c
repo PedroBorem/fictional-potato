@@ -456,6 +456,8 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 		time_t timestamp = rtc_app_get_timestamp(false);
 		rtc_app_get_str_date_time(timestamp, str_date_time);
 
+		data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
+
 		arg_pair_t arg_pairs[] = {
 			{"uint8_t", &idp},
 			{"string", system_id},
@@ -514,11 +516,11 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				if(global_angle != 655 && system_initial_angle != 655)
 				{
 					system_initial_angle = global_angle;
-					data_app_save(DATA_TYPE_INITIAL_ANGLE, system_initial_angle, sizeof(system_initial_angle));
+					data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 				}
 				else
 				{
-
+					data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 				}
 
 				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
@@ -1053,7 +1055,7 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 		{
 			system_initial_angle = global_angle;
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
-			data_app_save(DATA_TYPE_INITIAL_ANGLE, system_initial_angle, sizeof(system_initial_angle));
+			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 		}
 
 		if(gps_flag_send_to_mqtt)
