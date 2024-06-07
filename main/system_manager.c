@@ -511,7 +511,15 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		{
 			if (new_actions.power_state == PIVOT_OFF)
 			{
-				system_initial_angle = global_angle;
+				if(global_angle != 655 && system_initial_angle != 655)
+				{
+					system_initial_angle = global_angle;
+					data_app_save(DATA_TYPE_INITIAL_ANGLE, system_initial_angle, sizeof(system_initial_angle));
+				}
+				else
+				{
+
+				}
 
 				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
 				{
@@ -1041,10 +1049,11 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 
 		rtc_app_set_timestamp(timestamp);
 
-		if (system_initial_angle == 655)
+		if (system_initial_angle == 655 && global_angle != 655)
 		{
 			system_initial_angle = global_angle;
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			data_app_save(DATA_TYPE_INITIAL_ANGLE, system_initial_angle, sizeof(system_initial_angle));
 		}
 
 		if(gps_flag_send_to_mqtt)
