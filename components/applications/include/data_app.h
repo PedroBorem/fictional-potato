@@ -40,6 +40,7 @@ typedef enum
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
     DATA_TYPE_TIMESTAMP, /**< Timestamp data type. */
     DATA_TYPE_BARRIER, /**< Barrier status data. */
+    DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
 } data_type_t;
 
 
