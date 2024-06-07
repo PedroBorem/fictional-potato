@@ -205,6 +205,13 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
+ * How many configuration parameters in pivot_config struct.
+ */
+#define PIVOT_CONFIG_VAR_COUNT  (6)
+
+/**
+ * @brief Configuration parameters.
+ *
  * Structure defining the network configuration parameters.
  */
 typedef struct __attribute__((__packed__))
@@ -214,6 +221,13 @@ typedef struct __attribute__((__packed__))
     char wifi_ssid[50];
     char wifi_pass[50];
 } network_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in network_config struct.
+ */
+#define NETWORK_CONFIG_VAR_COUNT    (4)
 
 /**
  * @brief Configuration parameters.
@@ -229,6 +243,13 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 /**
  * @brief Configuration parameters.
  *
+ * How many configuration parameters in eco_mode_config struct.
+ */
+#define ECO_MODE_CONFIG_VAR_COUNT   (2)
+
+/**
+ * @brief Configuration parameters.
+ *
  * Structure defining the sectors configuration parameters.
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
@@ -237,6 +258,12 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
     pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
 } sector_config;
 
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in sector_config struct. sector_number = 0 -> 1 parametro.
+ */
+#define SECTOR_CONFIG_VAR_COUNT   (1)
 /**
  * @brief GPS Configuration parameters.
  *
@@ -253,6 +280,18 @@ typedef struct __attribute__((__packed__))
 
 } gps_config;
 
+/**
+ * @brief GPS Configuration parameters.
+ *
+ * How many configuration parameters in gps_config struct.
+ */
+#define GPS_CONFIG_VAR_COUNT    (6)
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the Return Configuration parameters.
+ */
 typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle;   /*!< Start angle of the configuration */
@@ -260,6 +299,13 @@ typedef struct __attribute__((__packed__))
     bool automatic_return;
     bool water_return;
 } pivot_return_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_return_config struct.
+ */
+#define PIVOT_RETURN_CONFIG_VAR_COUNT   (4)
 
 /**
  * @brief Scheduling date parameters.

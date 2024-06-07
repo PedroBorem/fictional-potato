@@ -600,17 +600,18 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (NETWORK_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT)
 	{
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
-		{
-			mqtt_load_pkg = true;
-		}
-		else
+		if (delimiter_num >= expected_delimiter_num)
 		{
 			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
 		}
 	}
 
@@ -691,6 +692,11 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
 }
 
 /**
@@ -705,17 +711,18 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT)
 	{
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
-		{
-			mqtt_load_pkg = true;
-		}
-		else
+		if (delimiter_num >= expected_delimiter_num) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
 		}
 	}
 
@@ -783,6 +790,11 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+	}
 }
 
 /**
@@ -797,17 +809,18 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (ECO_MODE_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT)
 	{
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
-		{
-			mqtt_load_pkg = true;
-		}
-		else
+		if (delimiter_num >= expected_delimiter_num) //quantidade de campos no payload - 1
 		{
 			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
 		}
 	}
 
@@ -863,6 +876,11 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+	}
 }
 
 /**
@@ -877,17 +895,18 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (SECTOR_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT)
 	{
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
-		{
-			mqtt_load_pkg = true;
-		}
-		else
+		if (delimiter_num >= expected_delimiter_num)
 		{
 			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
 		}
 	}
 
@@ -953,6 +972,11 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
 	}
 }
 
@@ -1749,17 +1773,18 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT)
 	{
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		if (delimiter_num == 1)
-		{
-			mqtt_load_pkg = true;
-		}
-		else
+		if (delimiter_num >= expected_delimiter_num)
 		{
 			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
 		}
 	}
 
@@ -1817,6 +1842,11 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+	}
 }
 
 /**
@@ -1829,7 +1859,24 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 {
-	if ( comm_mode == COMM_MQTT || comm_mode == COMM_HTTP_POST)
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (GPS_CONFIG_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
 		size_t len_buffer = strlen(buffer);
 
@@ -1855,7 +1902,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
-	else if (comm_mode == COMM_HTTP_GET)
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
 
@@ -1908,6 +1955,11 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 		{
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_MQTT);
 		}
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
 	}
 }
 
