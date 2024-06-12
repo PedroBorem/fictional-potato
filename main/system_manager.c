@@ -2003,6 +2003,14 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		if (strcmp(pivot_id, "off") == 0)
 		{
+			if(global_angle != 655 && system_initial_angle != 655)
+			{
+				system_initial_angle = global_angle;
+				data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
+			}
+
+			data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
+			
 			pivot_actions current_action = {
 				.power_state = PIVOT_OFF,
 				.rotation = PIVOT_UNKNOWN,
