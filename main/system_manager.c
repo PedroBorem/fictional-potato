@@ -210,6 +210,33 @@ static bool check_valid_characters(const char *buffer, uint8_t size)
 	return true;
 }
 
+static void load_gps_configurations(const char *buffer, comm_type comm_mode)
+{
+	size_t len_buffer = strlen(buffer);
+
+	size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
+	char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
+
+	buffer_gps_config[0] = 0x01;
+	buffer_gps_config[1] = 0x00;
+
+	memcpy(buffer_gps_config + 2, buffer, len_buffer);
+
+	buffer_gps_config[len_buffer_gps_config] = '\0';
+
+	esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+	if (ret == ESP_OK)
+	{
+		// send ACK
+		comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+	}
+	else
+	{
+		comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+	}
+}
+
 /**
  * @brief Performs a system reboot based on certain conditions.
  *
@@ -1878,29 +1905,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
-		size_t len_buffer = strlen(buffer);
-
-		size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
-		char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
-
-		buffer_gps_config[0] = 0x01;
-		buffer_gps_config[1] = 0x00;
-
-		memcpy(buffer_gps_config + 2, buffer, len_buffer);
-
-		buffer_gps_config[len_buffer_gps_config] = '\0';
-
-		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
-
-		if (ret == ESP_OK)
-		{
-			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-		}
-		else
-		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}
+		load_gps_configurations(buffer, comm_mode);
 	}
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
@@ -1926,6 +1931,8 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+
+		load_gps_configurations(buffer, comm_mode);
 	}
 	else if (comm_mode == COMM_RF)
 	{
