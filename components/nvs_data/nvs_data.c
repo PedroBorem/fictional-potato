@@ -153,7 +153,7 @@ esp_err_t nvs_data_get_blob(const char* label_name, uint8_t* out_value)
 		}
 		else
 		{
-			ESP_LOGE(NVS_DATA_TAG, "%s,failed to get configuration, invalid length", __func__);
+			ESP_LOGE(NVS_DATA_TAG, "%s, failed to get configuration, invalid length (%s)", __func__, label_name);
 		}
 	}
 	else
