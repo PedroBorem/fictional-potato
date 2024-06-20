@@ -108,6 +108,12 @@
 #define DATA_BARRIER "barrier"
 
 /**
+ * @def DATA_INITIAL_ANGLE
+ * @brief NVS access space for initial angle data
+*/
+#define DATA_INITIAL_ANGLE	"initial_angle"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -356,6 +362,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_BARRIER, data, data_size);
 			break;
 		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_set(DATA_INITIAL_ANGLE, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -445,6 +456,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_BARRIER:
 		{
 			ret = nvs_data_get_blob(DATA_BARRIER, data);
+			break;
+		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_get_blob(DATA_INITIAL_ANGLE, data);
 			break;
 		}
 		default:
