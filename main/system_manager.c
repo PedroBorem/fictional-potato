@@ -1809,8 +1809,8 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint16_t", &return_config.start_angle},
-				{"uint16_t", &return_config.end_angle},
+				{"uint16_t", &return_config.start_angle_physical_barrier},
+				{"uint16_t", &return_config.end_angle_physical_barrier},
 				{"bool", &return_config.automatic_return},
 				{"bool", &return_config.water_return},
 				{NULL, NULL}};
@@ -1843,8 +1843,8 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint16_t", &return_config.start_angle},
-				{"uint16_t", &return_config.end_angle},
+				{"uint16_t", &return_config.start_angle_physical_barrier},
+				{"uint16_t", &return_config.end_angle_physical_barrier},
 				{"bool", &return_config.automatic_return},
 				{"bool", &return_config.water_return},
 				{NULL, NULL}};
