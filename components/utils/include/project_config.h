@@ -294,8 +294,10 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    uint16_t start_angle;   /*!< Start angle of the configuration */
-    uint16_t end_angle;     /*!< End angle of the configuration */
+    uint16_t start_angle_virtual_barrier;   /*!< Start angle of the configuration of the virtual barrier*/
+    uint16_t end_angle_virtual_barrier;     /*!< End angle of the configuration of the virtual barrier*/
+    uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
+    uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
     bool automatic_return;
     bool water_return;
 } pivot_return_config;
