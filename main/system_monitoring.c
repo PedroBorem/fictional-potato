@@ -77,40 +77,8 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
-/**
- * @brief Executes the actuation process based on the system configuration.
- *
- * This function performs the actuation process based on the current system configuration.
- */
-static void system_monitoring_actuation(void)
+static void system_monitoring_automatic_return()
 {
-    uint8_t idp = IDP_INVALID;
-    uint16_t dwp = 0;
-    char str_out[50] = {};
-
-    pivot_actions pivot_actions = {};
-
-    // act on the equipment (pivo_off) - send IDP 01
-    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
-    pivot_actions.power_state = PIVOT_OFF;
-
-    idp = IDP_1;
-    dwp = idp_parser_create_pwd(pivot_actions);
-    uint16_t percent_off = 0;
-
-    arg_pair_t arg_idp_01[] =
-    {
-        { "uint8_t", &idp },
-        { "string", SYSTEM_MONITORING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &percent_off },
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_01);
-    system_monitoring_callback(str_out, COMM_MQTT);
-
     if(system_monitoring_config.automatic_return == true)
     {
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
@@ -175,6 +143,43 @@ static void system_monitoring_actuation(void)
 }
 
 /**
+ * @brief Executes the actuation process based on the system configuration.
+ *
+ * This function performs the actuation process based on the current system configuration.
+ */
+static void system_monitoring_actuation_virtual_barrier(void)
+{
+    uint8_t idp = IDP_INVALID;
+    uint16_t dwp = 0;
+    char str_out[50] = {};
+
+    pivot_actions pivot_actions = {};
+
+    act on the equipment (pivo_off) - send IDP 01
+    actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+    pivot_actions.power_state = PIVOT_OFF;
+
+    idp = IDP_1;
+    dwp = idp_parser_create_pwd(pivot_actions);
+    uint16_t percent_off = 0;
+
+    arg_pair_t arg_idp_01[] =
+    {
+        { "uint8_t", &idp },
+        { "string", SYSTEM_MONITORING_TAG },
+        { "uint16_t", &dwp },
+        { "uint16_t", &percent_off },
+        { NULL, NULL }
+    };
+
+    memset(str_out, 0x00, sizeof(str_out));
+    idp_parser_create_package(str_out, arg_idp_01);
+    system_monitoring_callback(str_out, COMM_MQTT);
+
+    system_monitoring_automatic_return();
+}
+
+/**
  * @brief Task function for system monitoring.
  *
  * This task monitors the system state and triggers actuation as needed.
@@ -187,14 +192,14 @@ static void system_monitoring_task(void* arg)
     {
         if(*system_monitoring_current_angle != 655)
         {
-            if((system_monitoring_config.start_angle > system_monitoring_config.end_angle))
+            if((system_monitoring_config.start_angle_virtual_barrier > system_monitoring_config.end_angle_virtual_barrier))
             {
-                if(*system_monitoring_current_angle  > system_monitoring_config.start_angle
-                || *system_monitoring_current_angle < system_monitoring_config.end_angle)
+                if(*system_monitoring_current_angle  > system_monitoring_config.start_angle_virtual_barrier
+                || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                     {
-                        system_monitoring_actuation();
+                        system_monitoring_actuation_virtual_barrier();
                     }
                 }
                 else
@@ -205,12 +210,12 @@ static void system_monitoring_task(void* arg)
             }
             else
             {
-                if(*system_monitoring_current_angle > system_monitoring_config.start_angle
-                && *system_monitoring_current_angle < system_monitoring_config.end_angle)
+                if(*system_monitoring_current_angle > system_monitoring_config.start_angle_virtual_barrier
+                && *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                     {
-                        system_monitoring_actuation();
+                        system_monitoring_actuation_virtual_barrier();
                     }
                 }
                 else
@@ -245,11 +250,11 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
 {
     if(*system_monitoring_current_angle != 655)
     {
-        if((system_monitoring_config.start_angle < system_monitoring_config.end_angle
-        || system_monitoring_config.start_angle > system_monitoring_config.end_angle))
+        if((system_monitoring_config.start_angle_physical_barrier < system_monitoring_config.end_angle_physical_barrier
+        || system_monitoring_config.start_angle_physical_barrier > system_monitoring_config.end_angle_physical_barrier))
         {
-            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.start_angle + 5)
+            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle_physical_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.start_angle_physical_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -259,10 +264,12 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                 else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
                 {
                     status_barrier = PIVOT_IN_THE_BARRIER;
-                }           
+                }
+
+                system_monitoring_automatic_return();          
             }
-            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.end_angle + 5)
+            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle_physical_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.end_angle_physical_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -272,6 +279,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                 {
                     status_barrier = PIVOT_LEAVING_THE_BARRIER;
                 }
+
+                system_monitoring_automatic_return();
             }
             else
             {
