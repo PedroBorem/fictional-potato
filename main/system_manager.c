@@ -142,6 +142,7 @@ void system_manager_init(void)
 	system_read_time = config.read_time;
 	pivot_return_config return_config = {};
 	data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+	actuation_app_leaving_barrier_time(return_config);
 	system_monitoring_register_callback(&system_manager_callback);
 	system_monitoring_start(return_config, system_read_time);
 
@@ -1813,6 +1814,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &return_config.end_angle_physical_barrier},
 				{"bool", &return_config.automatic_return},
 				{"bool", &return_config.water_return},
+				{"uint8_t", &return_config.time_leaving_barrier},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -1820,6 +1822,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
 		if (ret == ESP_OK)
 		{
+			actuation_app_leaving_barrier_time(return_config);
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			system_monitoring_stop();
@@ -1847,8 +1850,8 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &return_config.end_angle_physical_barrier},
 				{"bool", &return_config.automatic_return},
 				{"bool", &return_config.water_return},
+				{"uint8_t", &return_config.time_leaving_barrier},
 				{NULL, NULL}};
-
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
