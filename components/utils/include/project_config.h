@@ -217,8 +217,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    uint8_t enable;                /*!< Enable or Disable */
-    uint16_t reboot_timeout_time;  /*!< Reboot time */
+    bool enable;                    /*!< Enable or Disable */
+    time_t reboot_timeout_sec;     /*!< Reboot time */
 } reboot_config;
 
 /**
