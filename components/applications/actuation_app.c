@@ -121,6 +121,11 @@ esp_err_t actuation_app_set_config(pivot_config config)
 	return gpio_actuator_config(config);
 }
 
+void actuation_app_leaving_barrier_time(pivot_return_config barrier_config)
+{
+	set_gpio_leaving_barrier_time(barrier_config);
+}
+
 /**
  * @brief Set the actions for the actuator.
  * @param config_in [in]: The pivot actions to set.
