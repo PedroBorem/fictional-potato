@@ -55,6 +55,7 @@ static uint64_t percent_watchdog = 0;
 static uint32_t gpio_act_pressure_timeout = 0;
 static uint32_t gpio_act_on_delay = 0;
 static uint32_t gpio_act_off_delay = 0;
+static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
@@ -209,6 +210,10 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
+void set_gpio_leaving_barrier_time(pivot_return_config barrier_config)
+{
+	gpio_act_leaving_barrier_delay = (barrier_config.time_leaving_barrier * 1000);
+}
 /**
 * @brief Sets the time to start for the GPIO actuator based on the barrier status.
 * 
@@ -225,7 +230,7 @@ esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status)
 
 	if(barrier_status == PIVOT_LEAVING_THE_BARRIER)
 	{
-		gpio_act_time_to_start = gpio_act_on_delay;
+		gpio_act_time_to_start = gpio_act_leaving_barrier_delay;
 	}
 	else if(barrier_status == PIVOT_IN_THE_BARRIER)
 	{
@@ -233,7 +238,8 @@ esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status)
 	}
 	else
 	{
-		gpio_act_time_to_start = HIGH_LOGIC_LEVEL_TIME_OUTSIDE_BARRIER;
+		gpio_act_time_to_start = gpio_act_on_delay;
+		// gpio_act_time_to_start = HIGH_LOGIC_LEVEL_TIME_OUTSIDE_BARRIER;
 	}
 
 	err = ESP_OK;
