@@ -113,6 +113,7 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -390,6 +391,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_23:
 		{
 			system_manager_idp_23(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_26:
+		{
+			system_manager_idp_26(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -1786,7 +1792,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1);
+	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 2);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -1977,6 +1983,87 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	}
 }
 
+// Criar comentario aqui
+static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAA");
+			mqtt_save_pkg = true;
+		}
+		else if(delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		uint8_t idp = 0;
+		char pivot_id[50] = {};
+		pivot_return_config return_config = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint16_t", &return_config.start_angle_virtual_barrier},
+				{"uint16_t", &return_config.end_angle_virtual_barrier},
+				{"bool", &return_config.automatic_return},
+				{"bool", &return_config.water_return},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			system_monitoring_stop();
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "CAINDO AQUI");
+			system_monitoring_start(return_config, system_read_time);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_26;
+		pivot_return_config return_config = {};
+
+		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"uint16_t", &return_config.start_angle_virtual_barrier},
+				{"uint16_t", &return_config.end_angle_virtual_barrier},
+				{"bool", &return_config.automatic_return},
+				{"bool", &return_config.water_return},
+				{NULL, NULL}};
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+	}
+}
 /**
  * @brief Handles IDP 30 requests for system actions.
  *
