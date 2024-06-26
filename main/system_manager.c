@@ -239,16 +239,16 @@ static void system_manager_reboot(void)
 	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-	if(current_reboot.reboot_timeout_time < 1)
+	if(current_reboot.reboot_timeout_sec < 1)
 	{
 		timeout = SYSTEM_REBOOT_TIMEOUT_MS/1000;
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 	}else{
-		timeout = current_reboot.reboot_timeout_time * 60 * 60;
+		timeout = current_reboot.reboot_timeout_sec;
 	}
 
-	if ((current_reboot.enable == 1)&&((timestamp_now - timestamp_nvs) < (timeout)))
+	if ((current_reboot.enable)&&((timestamp_now - timestamp_nvs) < (timeout)))
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -275,7 +275,7 @@ static void system_manager_reboot(void)
 	}
 	else
 	{	
-		if(current_reboot.enable == 0)
+		if(!current_reboot.enable)
 		{
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Automatic Reboot Disabled ...");
 		}
@@ -2024,8 +2024,8 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{"bool", &reboot_config.enable},
+				{"time_t", &reboot_config.reboot_timeout_sec},
 				{NULL, NULL}
 			};
 
@@ -2055,174 +2055,8 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
-				{NULL, NULL}
-			};
-
-		// send
-		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, comm_mode);
-	}
-	else{
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
-	}
-}
-
-/**
- * @brief Handles IDP 24 requests for return configuration modification.
- *
- * This function handles the modification of return configuration.
- *
- * @param buffer The input buffer containing request data.
- * @param comm_mode The communication mode (HTTP or MQTT).
- */
-static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
-{
-	bool mqtt_load_pkg = false;
-	bool mqtt_save_pkg = false;
-	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (REBOOT_CONFIG_VAR_COUNT + 1);
-
-	if (comm_mode == COMM_MQTT)
-	{
-		if (delimiter_num >= expected_delimiter_num)
-		{
-			mqtt_save_pkg = true;
-		}
-		else if (delimiter_num == 1 || delimiter_num == 0)
-		{
-			mqtt_load_pkg = true;
-		}
-	}
-
-	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
-	{
-		uint8_t idp = 0;
-		char pivot_id[50] = {};
-		reboot_config reboot_config = {};
-
-		arg_pair_t arg_pairs[] =
-			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
-				{NULL, NULL}
-			};
-
-		idp_parser_get_packet_data(buffer, arg_pairs);
-
-		esp_err_t ret = data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
-		if (ret == ESP_OK)
-		{
-			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-		}
-		else
-		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}
-	}
-	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
-	{
-		char str_out[200] = {};
-
-		uint8_t idp = IDP_24;
-		reboot_config reboot_config = {};
-
-		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
-
-		arg_pair_t arg_pairs[] =
-			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
-				{NULL, NULL}
-			};
-
-		// send
-		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, comm_mode);
-	}
-	else{
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
-	}
-}
-
-/**
- * @brief Handles IDP 24 requests for return configuration modification.
- *
- * This function handles the modification of return configuration.
- *
- * @param buffer The input buffer containing request data.
- * @param comm_mode The communication mode (HTTP or MQTT).
- */
-static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
-{
-	bool mqtt_load_pkg = false;
-	bool mqtt_save_pkg = false;
-	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (REBOOT_CONFIG_VAR_COUNT + 1);
-
-	if (comm_mode == COMM_MQTT)
-	{
-		if (delimiter_num >= expected_delimiter_num)
-		{
-			mqtt_save_pkg = true;
-		}
-		else if (delimiter_num == 1 || delimiter_num == 0)
-		{
-			mqtt_load_pkg = true;
-		}
-	}
-
-	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
-	{
-		uint8_t idp = 0;
-		char pivot_id[50] = {};
-		reboot_config reboot_config = {};
-
-		arg_pair_t arg_pairs[] =
-			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
-				{NULL, NULL}
-			};
-
-		idp_parser_get_packet_data(buffer, arg_pairs);
-
-		esp_err_t ret = data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
-		if (ret == ESP_OK)
-		{
-			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-		}
-		else
-		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}
-	}
-	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
-	{
-		char str_out[200] = {};
-
-		uint8_t idp = IDP_24;
-		reboot_config reboot_config = {};
-
-		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
-
-		arg_pair_t arg_pairs[] =
-			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint8_t", &reboot_config.enable},
-				{"uint16_t", &reboot_config.reboot_timeout_time},
+				{"bool", &reboot_config.enable},
+				{"time_t", &reboot_config.reboot_timeout_sec},
 				{NULL, NULL}
 			};
 
