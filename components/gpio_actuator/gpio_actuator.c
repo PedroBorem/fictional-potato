@@ -210,10 +210,12 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
+// Criar comentario aqui 
 void set_gpio_leaving_barrier_time(pivot_return_config barrier_config)
 {
 	gpio_act_leaving_barrier_delay = (barrier_config.time_leaving_barrier * 1000);
 }
+
 /**
 * @brief Sets the time to start for the GPIO actuator based on the barrier status.
 * 

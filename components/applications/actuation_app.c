@@ -121,6 +121,7 @@ esp_err_t actuation_app_set_config(pivot_config config)
 	return gpio_actuator_config(config);
 }
 
+// Criar comentario aqui 
 void actuation_app_leaving_barrier_time(pivot_return_config barrier_config)
 {
 	set_gpio_leaving_barrier_time(barrier_config);

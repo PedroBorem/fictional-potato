@@ -120,6 +120,7 @@ typedef enum
     IDP_21 = 21,
     IDP_22,
     IDP_23,
+    IDP_26 = 26,
     IDP_30 = 30,
     IDP_90 = 90,
     IDP_91,
@@ -308,7 +309,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in pivot_return_config struct.
  */
-#define PIVOT_RETURN_CONFIG_VAR_COUNT   (4)
+#define PIVOT_RETURN_CONFIG_VAR_COUNT   (5)
 
 /**
  * @brief Scheduling date parameters.
