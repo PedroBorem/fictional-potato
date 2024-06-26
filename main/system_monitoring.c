@@ -77,8 +77,12 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
-static void system_monitoring_automatic_return()
+static void system_monitoring_automatic_return(pivot_actions pivot_actions)
 {
+    uint8_t idp = IDP_INVALID;
+    uint16_t dwp = 0;
+    char str_out[50] = {};
+
     if(system_monitoring_config.automatic_return == true)
     {
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
@@ -155,7 +159,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
 
     pivot_actions pivot_actions = {};
 
-    act on the equipment (pivo_off) - send IDP 01
+    // act on the equipment (pivo_off) - send IDP 01
     actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
     pivot_actions.power_state = PIVOT_OFF;
 
@@ -176,7 +180,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, COMM_MQTT);
 
-    system_monitoring_automatic_return();
+    system_monitoring_automatic_return(pivot_actions);
 }
 
 /**
@@ -266,7 +270,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                     status_barrier = PIVOT_IN_THE_BARRIER;
                 }
 
-                system_monitoring_automatic_return();          
+                system_monitoring_automatic_return(current_pivot_actions);          
             }
             else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle_physical_barrier - 5
             && *system_monitoring_current_angle <= system_monitoring_config.end_angle_physical_barrier + 5)
@@ -280,7 +284,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                     status_barrier = PIVOT_LEAVING_THE_BARRIER;
                 }
 
-                system_monitoring_automatic_return();
+                system_monitoring_automatic_return(current_pivot_actions);
             }
             else
             {
@@ -335,7 +339,7 @@ void system_monitoring_start(const pivot_return_config return_config, uint8_t mo
         xTimerStart(system_monitoring_timer_handle, 1000);
     }
 
-    if(return_config.start_angle == 0 && return_config.end_angle == 0)
+    if(return_config.start_angle_physical_barrier == 0 && return_config.end_angle_physical_barrier == 0)
     {
         ESP_LOGI(SYSTEM_MONITORING_TAG, "Pivot configured from 0° to 360°, without barrier");
     }
