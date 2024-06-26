@@ -300,6 +300,7 @@ typedef struct __attribute__((__packed__))
     uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
     bool automatic_return;
     bool water_return;
+    uint8_t time_leaving_barrier;
 } pivot_return_config;
 
 /**
