@@ -32,6 +32,19 @@
 #define RTC_SCL_PIN 37
 
 /**
+ * @def TIMESTAMP_09_05_2024
+ * @brief Timestamp representing May 9th, 2024.
+ */
+#define TIMESTAMP_09_05_2024 1715280638
+
+/**
+ * @def TIMESTAMP_09_05_2040
+ * @brief Timestamp representing May 9th, 2040.
+ */
+#define TIMESTAMP_09_05_2040 2220202096
+
+
+/**
  * @var dev
  * @brief The RTC I2C device structure.
  */
@@ -71,7 +84,7 @@ bool rtc_app_set_timestamp(time_t timestamp)
 {
 	bool ret = false;
 
-	if(timestamp > 1670123456) // date: 04/12/2022
+	if(timestamp > TIMESTAMP_09_05_2024 && timestamp < TIMESTAMP_09_05_2040) // date: 09/05/2024 09/05/2040
 	{
 		struct tm time = *localtime(&timestamp); //obs time + 1900
 		time.tm_year += 1900;
@@ -93,6 +106,10 @@ bool rtc_app_set_timestamp(time_t timestamp)
 	{
 		ESP_LOGE(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
 		LOG_DBG_ERROR(RTC_APP_TAG, "set_invalid_timestamp");
+		vTaskDelay(pdMS_TO_TICKS(2000));
+		char buffer[20];
+    	sprintf(buffer, "%lld", timestamp);
+		LOG_DBG_ERROR(RTC_APP_TAG, buffer);
 	}
 
 	return ret;

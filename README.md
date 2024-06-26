@@ -1,3 +1,10 @@
+### :warning: Aviso Importante :warning:
+
+**ATENÇÃO:** Este código está programado para funcionar até 9 de maio de 2040. Após essa data, pode ser necessário atualizar o código para garantir seu funcionamento correto.
+
+Certifique-se de revisar e adaptar o código conforme necessário para futuras datas além de 2040.
+
+
 # _Sample project_
 
 (See the README.md file in the upper level 'examples' directory for more information about examples.)

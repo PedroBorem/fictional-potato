@@ -182,7 +182,7 @@ static void rf_uart_event_task(void* arg)
 
                         // LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
 
-                        rf_callback(buff_in, COMM_MQTT);
+                        rf_callback(buff_in, COMM_RF);
                         free(buff_in);
                     }
                     break;
