@@ -145,8 +145,8 @@ esp_err_t data_app_init(void)
 	};
 
 	const reboot_config default_reboot = {
-			.enable = 1,
-			.reboot_timeout_time = 4,
+			.enable = true,
+			.reboot_timeout_sec = 14400, 	//4 hours in sec
 	};
 
 	const gps_config gps_config = {};
