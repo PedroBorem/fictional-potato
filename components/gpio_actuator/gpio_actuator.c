@@ -210,7 +210,10 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	return err;
 }
 
-// Criar comentario aqui 
+/**
+ * @brief Set the delay time for the GPIO actuator when leaving the barrier.
+ * @param barrier_config [in]: Configuration structure containing the time leaving barrier settings.
+ */
 void set_gpio_leaving_barrier_time(pivot_return_config barrier_config)
 {
 	gpio_act_leaving_barrier_delay = (barrier_config.time_leaving_barrier * 1000);

@@ -77,7 +77,15 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
-// Criar comentario aqui 
+/**
+ * @brief Executes the automatic return process based on the pivot actions and system configuration.
+ *
+ * This function handles automatic pivot return based on configured settings.
+ * Loads the barrier data,
+ * and determines whether the pivot should be driven to its return state or paused the system.
+ *
+ * @param pivot_actions Structure containing the pivot actions to be performed.
+ */
 static void system_monitoring_automatic_return(pivot_actions pivot_actions)
 {
     uint8_t idp = IDP_INVALID;

@@ -1983,7 +1983,14 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	}
 }
 
-// Criar comentario aqui
+/**
+ * @brief Handles IDP 26 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
@@ -1995,7 +2002,6 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAA");
 			mqtt_save_pkg = true;
 		}
 		else if(delimiter_num == 1 || delimiter_num == 0)
@@ -2028,7 +2034,6 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			system_monitoring_stop();
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "CAINDO AQUI");
 			system_monitoring_start(return_config, system_read_time);
 		}
 		else
