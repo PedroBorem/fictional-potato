@@ -215,13 +215,9 @@ static void system_monitoring_task(void* arg)
             }
             else
             {
-                ESP_LOGE(SYSTEM_MONITORING_TAG, "ANGULO INICIAL MAIOR QUE O FINAL");
-                ESP_LOGE(SYSTEM_MONITORING_TAG, "Valor do angulo inicial: %i", system_monitoring_config.start_angle_virtual_barrier);
-                ESP_LOGE(SYSTEM_MONITORING_TAG, "Valor do angulo final: %i", system_monitoring_config.end_angle_virtual_barrier);
                 if(*system_monitoring_current_angle > system_monitoring_config.start_angle_virtual_barrier
                 && *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "NA BARREIRA");
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
                     {
                         system_monitoring_actuation_virtual_barrier();
@@ -229,7 +225,6 @@ static void system_monitoring_task(void* arg)
                 }
                 else
                 {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "FORA DA BARREIRA");
                     system_states = SYSTEM_RUNNING;
                     status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
                 }
@@ -330,7 +325,6 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
 void system_monitoring_start(const pivot_return_config return_config, uint8_t monitoring_time)
 {
     system_monitoring_stop();
-    ESP_LOGE(SYSTEM_MONITORING_TAG, "TASK");
 
     if(monitoring_time > 0)
     {
@@ -353,7 +347,6 @@ void system_monitoring_start(const pivot_return_config return_config, uint8_t mo
     }
     else
     {
-        ESP_LOGE(SYSTEM_MONITORING_TAG, "TASK CRIADA");
         memcpy(&system_monitoring_config, &return_config, sizeof(system_monitoring_config));
         xTaskCreate(&system_monitoring_task,
                     SYSTEM_MONITORING_TASK_NAME,
