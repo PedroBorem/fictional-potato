@@ -727,11 +727,11 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				{"string", system_id},
 				{"string", config.contactor},
 				{"string", config.pressure},
-				{"string", config.safety},
 				{"uint16_t", &config.pressurization_time},
 				{"uint8_t", &config.on_time},
 				{"uint8_t", &config.off_time},
 				{"uint8_t", &config.read_time},
+				{"string", config.safety},
 				{NULL, NULL}};
 
 		// send
