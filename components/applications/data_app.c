@@ -101,11 +101,15 @@
  */
 #define DATA_TIMESTAMP "timestamp"
 
+#define DATA_STATUS_BARRIER	"status_barrier"
+
 /**
  * @def DATA_BARRIER
  * @brief NVS access space for barrier status data.
  */
-#define DATA_BARRIER "barrier"
+#define DATA_VIRTUAL_BARRIER "virtual_barrier"
+
+#define DATA_PHYSICAL_BARRIER	"physical_barrier"
 
 /**
  * @def DATA_INITIAL_ANGLE
@@ -188,12 +192,6 @@ esp_err_t data_app_init(void)
 		{
 			data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
 		}
-
-		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
-		}
-
 		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
 		{
 			data_app_save(DATA_TYPE_SCHEDULING_DATE, &default_scheduling_date, sizeof(default_scheduling_date));
@@ -223,9 +221,17 @@ esp_err_t data_app_init(void)
 		{
 			data_app_save(DATA_TYPE_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
 		}
-		if(nvs_data_get_size(DATA_BARRIER) == 0)
+		if(nvs_data_get_size(DATA_STATUS_BARRIER) == 0)
 		{
-			data_app_save(DATA_TYPE_BARRIER, &default_barrier, sizeof(default_barrier));
+			data_app_save(DATA_TYPE_BARRIER_STATUS, &default_barrier, sizeof(default_barrier));
+		}
+		if(nvs_data_get_size(DATA_VIRTUAL_BARRIER) == 0)
+		{
+			data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &default_barrier, sizeof(default_barrier));
+		}
+		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
+		{
+			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_barrier, sizeof(default_barrier));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -280,11 +286,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_GPS_CONFIG:
 		{
 			ret = nvs_data_set(DATA_GPS_CONFIG, data, data_size);
-			break;
-		}
-		case DATA_TYPE_RETURN_CONFIG:
-		{
-			ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_DATE:
@@ -357,9 +358,19 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_TIMESTAMP, data, data_size);
 			break;
 		}
-		case DATA_TYPE_BARRIER:
+		case DATA_TYPE_BARRIER_STATUS:
 		{
-			ret = nvs_data_set(DATA_BARRIER, data, data_size);
+			ret = nvs_data_set(DATA_STATUS_BARRIER, data, data_size);
+			break;
+		}
+		case DATA_TYPE_VIRTUAL_BARRIER:
+		{
+			ret = nvs_data_set(DATA_VIRTUAL_BARRIER, data, data_size);
+			break;
+		}
+		case DATA_TYPE_PHYSICAL_BARRIER:
+		{
+			ret = nvs_data_set(DATA_PHYSICAL_BARRIER, data, data_size);
 			break;
 		}
 		case DATA_TYPE_INITIAL_ANGLE:
@@ -418,11 +429,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_GPS_CONFIG, data);
 			break;
 		}
-		case DATA_TYPE_RETURN_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
-			break;
-		}
 		case DATA_TYPE_SCHEDULING_DATE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_DATE, data);
@@ -453,9 +459,19 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_TIMESTAMP, data);
 			break;
 		}
-		case DATA_TYPE_BARRIER:
+		case DATA_TYPE_BARRIER_STATUS:
 		{
-			ret = nvs_data_get_blob(DATA_BARRIER, data);
+			ret = nvs_data_get_blob(DATA_STATUS_BARRIER, data);
+			break;
+		}
+		case DATA_TYPE_VIRTUAL_BARRIER:
+		{
+			ret = nvs_data_get_blob(DATA_VIRTUAL_BARRIER, data);
+			break;
+		}
+		case DATA_TYPE_PHYSICAL_BARRIER:
+		{
+			ret = nvs_data_get_blob(DATA_PHYSICAL_BARRIER, data);
 			break;
 		}
 		case DATA_TYPE_INITIAL_ANGLE:
