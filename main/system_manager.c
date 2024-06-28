@@ -142,8 +142,9 @@ void system_manager_init(void)
 	// system monitoring init
 	system_read_time = config.read_time;
 	pivot_return_config return_config = {};
-	data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+	data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &return_config);
 	actuation_app_leaving_barrier_time(return_config);
+	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
 	system_monitoring_register_callback(&system_manager_callback);
 	system_monitoring_start(return_config, system_read_time);
 
@@ -766,16 +767,16 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 		esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 		if (ret == ESP_OK)
 		{
-			pivot_return_config return_config = {};
-			data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+			// pivot_return_config return_config = {};
+			// data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
 
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			actuation_app_set_config(new_config);
 			system_read_time = new_config.read_time;
 
-			system_monitoring_stop();
-			system_monitoring_start(return_config, system_read_time);
+			// system_monitoring_stop();
+			// system_monitoring_start(return_config, system_read_time);
 		}
 		else
 		{
@@ -1792,7 +1793,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 2);
+	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1	);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -1825,7 +1826,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		esp_err_t ret = data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &return_config, sizeof(return_config));
 		if (ret == ESP_OK)
 		{
 			actuation_app_leaving_barrier_time(return_config);
@@ -1846,7 +1847,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		uint8_t idp = IDP_22;
 		pivot_return_config return_config = {};
 
-		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+		data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &return_config);
 
 		arg_pair_t arg_pairs[] =
 			{
@@ -1996,7 +1997,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1);
+	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -2028,7 +2029,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		esp_err_t ret = data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &return_config, sizeof(return_config));
 		if (ret == ESP_OK)
 		{
 			// send ACK
@@ -2048,7 +2049,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 		uint8_t idp = IDP_26;
 		pivot_return_config return_config = {};
 
-		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+		data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
 
 		arg_pair_t arg_pairs[] =
 			{

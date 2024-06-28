@@ -96,7 +96,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions)
     {
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
-        data_app_load(DATA_TYPE_BARRIER, &return_back_flag);
+        data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
 
         if(return_back_flag == false)
         {
@@ -139,13 +139,13 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions)
             system_monitoring_callback(str_out, COMM_MQTT);
 
             return_back_flag = true;
-            data_app_save(DATA_TYPE_BARRIER, &return_back_flag, sizeof(return_back_flag));
+            data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
             system_states = SYSTEM_RETURN;
         }
         else
         {
         	return_back_flag = false;
-            data_app_save(DATA_TYPE_BARRIER, &return_back_flag, sizeof(return_back_flag));
+            data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
             system_states = SYSTEM_PAUSE;
         }
     }
