@@ -31,7 +31,7 @@ typedef enum
     DATA_TYPE_ECO_MODE_CONFIG, /**< Eco mode configuration data type. */
     DATA_TYPE_SECTOR_CONFIG, /**< Sector configuration data type. */
     DATA_TYPE_GPS_CONFIG, /**< GPS configuration data type. */
-    DATA_TYPE_RETURN_CONFIG, /**< Return configuration data type. */
+    // DATA_TYPE_RETURN_CONFIG, /**< Return configuration data type. */
     DATA_TYPE_SCHEDULING_DATE, /**< Scheduling date data type. */
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */
     DATA_TYPE_SCHEDULING_ANGLE, /**< Scheduling angle data type. */
@@ -39,7 +39,9 @@ typedef enum
     DATA_TYPE_HISTORY, /**< History data type. */
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
     DATA_TYPE_TIMESTAMP, /**< Timestamp data type. */
-    DATA_TYPE_BARRIER, /**< Barrier status data. */
+    DATA_TYPE_BARRIER_STATUS,  /**< Barrier status data. */
+    DATA_TYPE_VIRTUAL_BARRIER,
+    DATA_TYPE_PHYSICAL_BARRIER,
     DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
 } data_type_t;
 
