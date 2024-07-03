@@ -355,3 +355,349 @@ uint8_t idp_parser_get_delimiter(const char *buffer)
 
     return count;
 }
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param net_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_02(const network_config net_config)
+{
+	bool ret = false;
+
+	if(strlen(net_config.gprs_id) > 0 && strlen(net_config.modem_apn) > 0
+			&& strlen(net_config.wifi_ssid) > 0 && strlen(net_config.wifi_pass) > 0)
+	{
+		ret = true;
+	}
+
+	return ret;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param pivot_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_03(const pivot_config pivot_config)
+{
+    bool ret = false;
+    
+    if(strcmp(pivot_config.contactor, "NA") != 0){
+        if(strcmp(pivot_config.contactor, "NF") != 0){
+            return ret;
+        }
+    }
+
+    if(strcmp(pivot_config.pressure, "NA") != 0){
+        if(strcmp(pivot_config.pressure, "NF") != 0){
+            return ret;
+        }
+    }
+
+    if(!(pivot_config.pressurization_time >= 30 && pivot_config.pressurization_time <= 1500)){
+        return ret;
+    }
+
+    if(!(pivot_config.on_time >= 1 && pivot_config.on_time <= 10)){
+        return ret;
+    }
+
+    if(!(pivot_config.off_time >= 1 && pivot_config.off_time <= 10)){
+        return ret;
+    }
+
+    if(!(pivot_config.read_time >= 5 && pivot_config.read_time <= 30)){
+        return ret;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param eco_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_04(const eco_mode_config eco_config)
+{
+    bool ret = false;
+
+    return ret;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param sector_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_05(const sector_config sector_config)
+{
+    bool ret = false;
+
+    if(!(sector_config.sector_number <= 4))
+    {
+        return ret;
+    }
+
+    for (size_t i = 1; i < sector_config.sector_number; i++)
+    {
+        if(!(sector_config.sectors[i].start_angle <= 360))
+        {
+            return ret;
+        }
+
+        if(!(sector_config.sectors[i].end_angle <= 360))
+        {
+            return ret;
+        }
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_14(const pivot_scheduling_date scheduling, const char* srt_author)
+{
+    bool ret = false;
+
+    if(!(scheduling.start_date > 0))
+    {
+        return ret;
+    }
+
+    if(!(scheduling.end_date > 0))
+    {
+        return ret;
+    }
+
+    if(!(idp_parser_validate_actions(scheduling.actions))){
+        return ret;
+    }
+
+    if(!((scheduling.actions.percentimeter > 0) && (scheduling.actions.percentimeter <= 100)))
+    {
+        return ret;
+    }
+
+    if(!(strlen(srt_author) > 0))
+    {
+        return ret;
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_15(const pivot_scheduling_angle scheduling, const char* srt_author)
+{
+    bool ret = false;
+
+    if(!(scheduling.start_date > 0))
+    {
+        return ret;
+    }
+
+    if(!(scheduling.end_angle <= 360))
+    {
+        return ret;
+    }
+
+    if(!(idp_parser_validate_actions(scheduling.actions))){
+        return ret;
+    }
+
+    if(!((scheduling.actions.percentimeter > 0) && (scheduling.actions.percentimeter <= 100)))
+    {
+        return ret;
+    }
+
+    if(!(strlen(srt_author) > 0))
+    {
+        return ret;
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_16(const pivot_scheduling_off_date scheduling, const char* srt_author)
+{
+    bool ret = false;
+
+    if(!(scheduling.end_date > 0))
+    {
+        return ret;
+    }
+
+    if(!(strlen(srt_author) > 0))
+    {
+        return ret;
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_17(const pivot_scheduling_off_angle scheduling, const char* srt_author)
+{
+    bool ret = false;
+
+    if(!(scheduling.end_angle <= 360))
+    {
+        return ret;
+    }
+
+    if(!(strlen(srt_author) > 0))
+    {
+        return ret;
+    }
+    
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param timestamp data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_21(const time_t timestamp)
+{
+    bool ret = false;
+
+    if(!(timestamp > 1720106718))
+    {
+        return ret;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param return_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_22(const pivot_return_config return_config)
+{
+    bool ret = false;
+
+    if(!(return_config.start_angle <= 360))
+    {
+        return ret;
+    }
+
+    if(!(return_config.end_angle <= 360))
+    {
+        return ret;
+    }
+
+    if(!(return_config.automatic_return == 0 || return_config.automatic_return == 1))
+    {
+        return ret;
+    }
+
+    if(!(return_config.water_return == 0 || return_config.water_return == 1))
+    {
+        return ret;
+    }
+
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_23(const gps_config gps_config)
+{
+    bool ret = false;
+    double latitude = atof(gps_config.latitude);
+    double longitude = atof(gps_config.longitude);
+
+    if(!(gps_config.sinal_lat == 0 || gps_config.sinal_lat == 1))
+    {
+        return ret;
+    }
+
+    if(!(latitude > 0 && latitude < 90 ))
+    {
+        return ret;
+    }    
+    
+    if(!(gps_config.sinal_lon == 0 || gps_config.sinal_lon == 1))
+    {
+        return ret;
+    }
+
+    if(!(longitude > 0 && longitude < 180 ))
+    {
+        return ret;
+    }
+
+    if(!(gps_config.time_payload >= 1 && gps_config.time_payload <= 120 ))
+    {
+        return ret;
+    }
+
+    if(!(gps_config.offset > 0))
+    {
+        return ret;
+    }
+
+    return true;
+}
