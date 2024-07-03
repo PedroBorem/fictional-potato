@@ -2025,7 +2025,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 				{"uint8_t", &idp},
 				{"string", pivot_id},
 				{"bool", &reboot_config.enable},
-				{"time_t", &reboot_config.reboot_timeout_sec},
+				{"uint32_t", &reboot_config.reboot_timeout_sec},
 				{NULL, NULL}
 			};
 
@@ -2056,7 +2056,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 				{"uint8_t", &idp},
 				{"string", system_id},
 				{"bool", &reboot_config.enable},
-				{"time_t", &reboot_config.reboot_timeout_sec},
+				{"uint32_t", &reboot_config.reboot_timeout_sec},
 				{NULL, NULL}
 			};
 
