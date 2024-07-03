@@ -43,7 +43,7 @@
 /** @def SYSTEM_REBOOT_TIMEOUT_MS
  *  @brief Timeout duration (in milliseconds) for system reboot.
  */
-#define SYSTEM_REBOOT_TIMEOUT_MS (14400000) // 4 hours
+#define SYSTEM_REBOOT_TIMEOUT_SEC (14400) // 4 hours
 
 /** @def SYSTEM_SAVE_FLASH_TIME_MS
  *  @brief Time interval (in milliseconds) for saving data to flash memory.
@@ -234,6 +234,7 @@ static void system_manager_reboot(void)
 	timestamp_now = rtc_app_get_timestamp(false);
 
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Timeout Configurado: %lld", current_reboot.reboot_timeout_sec);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_now: %lld", timestamp_now);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_nvs: %lld", timestamp_nvs);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
@@ -241,7 +242,7 @@ static void system_manager_reboot(void)
 
 	if(current_reboot.reboot_timeout_sec < 1)
 	{
-		timeout = SYSTEM_REBOOT_TIMEOUT_MS/1000;
+		timeout = SYSTEM_REBOOT_TIMEOUT_SEC;
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 	}else{
