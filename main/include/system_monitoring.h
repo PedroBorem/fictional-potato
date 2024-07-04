@@ -22,7 +22,7 @@
  * @param[in] return_config The configuration for pivot return, including start and end angles.
  * @param[in] monitoring_time The time interval (in minutes) for monitoring the system.
  */
-void system_monitoring_start(pivot_return_config return_config, uint8_t monitoring_time);
+void system_monitoring_start(pivot_physical_config physical_config, pivot_return_config return_config, uint8_t monitoring_time);
 
 /**
  * @brief Stops the system monitoring.

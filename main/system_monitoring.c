@@ -45,6 +45,7 @@ static app_callback system_monitoring_callback = NULL; /**< Callback function fo
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
+static pivot_physical_config system_monitoring_physical_config = {};
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
 
@@ -92,7 +93,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions)
     uint16_t dwp = 0;
     char str_out[50] = {};
 
-    if(system_monitoring_config.automatic_return == true)
+    if(system_monitoring_config.automatic_return == true || system_monitoring_physical_config.automatic_return == true)
     {
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
@@ -112,7 +113,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions)
                 pivot_actions.rotation = PIVOT_CW;
             }
 
-            if(system_monitoring_config.water_return == true)
+            if(system_monitoring_config.water_return == true || system_monitoring_physical_config.water_return == true)
             {
                 pivot_actions.watering_state = PIVOT_WET;
             }
@@ -210,8 +211,10 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle  > system_monitoring_config.start_angle_virtual_barrier
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
-                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    ESP_LOGE(SYSTEM_MONITORING_TAG, "ESTOU NA BARREIRA");
+                    if(system_states != SYSTEM_PAUSE)
                     {
+                        ESP_LOGE(SYSTEM_MONITORING_TAG, "Desligando o pivo");
                         system_monitoring_actuation_virtual_barrier();
                     }
                 }
@@ -226,8 +229,10 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle > system_monitoring_config.start_angle_virtual_barrier
                 && *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
-                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    ESP_LOGE(SYSTEM_MONITORING_TAG, "ESTOU NA BARREIRA 2");
+                    if(system_states != SYSTEM_PAUSE)
                     {
+                        ESP_LOGE(SYSTEM_MONITORING_TAG, "Desligando o pivo 2");
                         system_monitoring_actuation_virtual_barrier();
                     }
                 }
@@ -263,11 +268,11 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
 {
     if(*system_monitoring_current_angle != 655)
     {
-        if((system_monitoring_config.start_angle_physical_barrier < system_monitoring_config.end_angle_physical_barrier
-        || system_monitoring_config.start_angle_physical_barrier > system_monitoring_config.end_angle_physical_barrier))
+        if((system_monitoring_physical_config.start_angle_physical_barrier < system_monitoring_physical_config.end_angle_physical_barrier
+        || system_monitoring_physical_config.start_angle_physical_barrier > system_monitoring_physical_config.end_angle_physical_barrier))
         {
-            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle_physical_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.start_angle_physical_barrier + 5)
+            if(*system_monitoring_current_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -281,8 +286,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
 
                 system_monitoring_automatic_return(current_pivot_actions);          
             }
-            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle_physical_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.end_angle_physical_barrier + 5)
+            else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -330,7 +335,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
  * @param return_config Configuration for system monitoring.
  * @param monitoring_time Time interval for system monitoring (in minutes).
  */
-void system_monitoring_start(const pivot_return_config return_config, uint8_t monitoring_time)
+void system_monitoring_start(const pivot_physical_config physical_config, const pivot_return_config return_config, uint8_t monitoring_time)
 {
     system_monitoring_stop();
 
@@ -348,7 +353,7 @@ void system_monitoring_start(const pivot_return_config return_config, uint8_t mo
         xTimerStart(system_monitoring_timer_handle, 1000);
     }
 
-    if((return_config.start_angle_physical_barrier == 0 && return_config.end_angle_physical_barrier == 0)
+    if((physical_config.start_angle_physical_barrier == 0 && physical_config.end_angle_physical_barrier == 0)
     && (return_config.start_angle_virtual_barrier == 0 && return_config.end_angle_virtual_barrier == 0))
     {
         ESP_LOGI(SYSTEM_MONITORING_TAG, "Pivot configured from 0° to 360°, without barrier");
@@ -356,6 +361,7 @@ void system_monitoring_start(const pivot_return_config return_config, uint8_t mo
     else
     {
         memcpy(&system_monitoring_config, &return_config, sizeof(system_monitoring_config));
+        memcpy(&system_monitoring_physical_config, &physical_config, sizeof(system_monitoring_physical_config));
         xTaskCreate(&system_monitoring_task,
                     SYSTEM_MONITORING_TASK_NAME,
                     SYSTEM_MONITORING_TASK_SIZE,
