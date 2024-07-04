@@ -29,6 +29,16 @@
 #define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec
 
 /**
+* @brief Time duration for high logic level against the barrier (in milliseconds).
+*/
+#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	100
+
+/**
+* @brief Time duration for high logic level outside the barrier (in milliseconds).
+*/
+#define HIGH_LOGIC_LEVEL_TIME_OUTSIDE_BARRIER	1000
+
+/**
  * @brief GPIO pin number for turning the system on.
  */
 #define GPIO_ACT_PIN_ON       		GPIO_NUM_13	/*!< Main system relay off*/
@@ -158,6 +168,20 @@ esp_err_t gpio_actuator_config(pivot_config config);
  *     - ESP_FAIL: Failed to set the configuration
  */
 esp_err_t gpio_actuator_set(pivot_actions actions);
+
+/**
+ * @brief Sets operating time based on barrier status for GPIO actuator module.
+ *
+ * Adjusts GPIO actuator runtime according to barrier status,
+ * optimizing performance for efficient and responsive operation.
+ *
+ * @param barrier_status The barrier status
+ *
+ * @return
+ *     - ESP_OK: Operation successful
+ *     - ESP_FAIL: Failed to set time duration
+ */
+esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status);
 
 /**
  * @brief Gets the current pivot configuration.

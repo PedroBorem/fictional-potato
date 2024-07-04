@@ -54,6 +54,12 @@
 #define DATA_SECTOR_CONFIG "sector_config"
 
 /**
+ * @def DATA_GPS_CONFIG
+ * @brief NVS access space for gps configuration data.
+ */
+#define DATA_GPS_CONFIG "gps_config"
+
+/**
  * @def DATA_RETURN_CONFIG
  * @brief NVS access space for return configuration data.
  */
@@ -96,6 +102,18 @@
 #define DATA_TIMESTAMP "timestamp"
 
 /**
+ * @def DATA_BARRIER
+ * @brief NVS access space for barrier status data.
+ */
+#define DATA_BARRIER "barrier"
+
+/**
+ * @def DATA_INITIAL_ANGLE
+ * @brief NVS access space for initial angle data
+*/
+#define DATA_INITIAL_ANGLE	"initial_angle"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -114,7 +132,8 @@ esp_err_t data_app_init(void)
 			.contactor = "NA",
 			.pressure = "NA",
 			.pressurization_time = 30,
-			.on_off_time = 1,
+			.on_time = 1,
+			.off_time = 1,
 			.read_time = 10
 	};
 
@@ -125,6 +144,7 @@ esp_err_t data_app_init(void)
 			.wifi_pass = "soiltech",
 	};
 
+	const gps_config gps_config = {};
 	const pivot_return_config return_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
@@ -134,6 +154,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
+	const bool default_barrier = false;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -163,6 +184,11 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SECTOR_CONFIG, &default_sector, sizeof(default_sector));
 		}
 
+		if(nvs_data_get_size(DATA_GPS_CONFIG) == 0)
+		{
+			data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
+		}
+
 		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
@@ -190,12 +216,16 @@ esp_err_t data_app_init(void)
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
 		{
-			data_app_save(DATA_TYPE_HISTORY, &default_history, sizeof(default_history));
+			nvs_data_set(DATA_HISTORY, &default_history, sizeof(default_history));
 		}
 
 		if(nvs_data_get_size(DATA_TIMESTAMP) == 0)
 		{
 			data_app_save(DATA_TYPE_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
+		}
+		if(nvs_data_get_size(DATA_BARRIER) == 0)
+		{
+			data_app_save(DATA_TYPE_BARRIER, &default_barrier, sizeof(default_barrier));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -245,6 +275,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_SECTOR_CONFIG:
 		{
 			ret = nvs_data_set(DATA_SECTOR_CONFIG, data, data_size);
+			break;
+		}
+		case DATA_TYPE_GPS_CONFIG:
+		{
+			ret = nvs_data_set(DATA_GPS_CONFIG, data, data_size);
 			break;
 		}
 		case DATA_TYPE_RETURN_CONFIG:
@@ -322,6 +357,16 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_TIMESTAMP, data, data_size);
 			break;
 		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_set(DATA_BARRIER, data, data_size);
+			break;
+		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_set(DATA_INITIAL_ANGLE, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -368,6 +413,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_SECTOR_CONFIG, data);
 			break;
 		}
+		case DATA_TYPE_GPS_CONFIG:
+		{
+			ret = nvs_data_get_blob(DATA_GPS_CONFIG, data);
+			break;
+		}
 		case DATA_TYPE_RETURN_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
@@ -401,6 +451,16 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_TIMESTAMP:
 		{
 			ret = nvs_data_get_blob(DATA_TIMESTAMP, data);
+			break;
+		}
+		case DATA_TYPE_BARRIER:
+		{
+			ret = nvs_data_get_blob(DATA_BARRIER, data);
+			break;
+		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_get_blob(DATA_INITIAL_ANGLE, data);
 			break;
 		}
 		default:
