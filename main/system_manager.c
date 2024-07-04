@@ -481,6 +481,8 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 		time_t timestamp = rtc_app_get_timestamp(false);
 		rtc_app_get_str_date_time(timestamp, str_date_time);
 
+		data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
+
 		arg_pair_t arg_pairs[] = {
 			{"uint8_t", &idp},
 			{"string", system_id},
@@ -514,6 +516,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		esp_err_t ret = ESP_FAIL;
+		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
@@ -534,16 +537,32 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
+			data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+
 			if (new_actions.power_state == PIVOT_OFF)
 			{
-				system_initial_angle = global_angle;
-
-				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
+				if(global_angle != 655 && system_initial_angle != 655)
 				{
-					actuation_app_get_actions(&new_actions, sizeof(new_actions));
-					new_actions.percentimeter = 0;
-					new_actions.power_state = PIVOT_OFF;
-					new_actions.watering_state = PIVOT_DRY;
+					system_initial_angle = global_angle;
+					data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
+				}
+				else
+				{
+					data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
+				}
+
+				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				new_actions.percentimeter = 0;
+				new_actions.power_state = PIVOT_OFF;
+				new_actions.watering_state = PIVOT_DRY;
+
+				// Save old History
+				if (old_actions.power_state != PIVOT_OFF)
+				{
+					pivot_history old_history = {};
+					old_history.end_date = rtc_app_get_timestamp(false);
+					old_history.end_angle = global_angle;
+					data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 				}
 			}
 
@@ -554,13 +573,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{
 					comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 				}
-
-				// save old history
-				pivot_history old_history = {};
-				old_history.end_date = rtc_app_get_timestamp(false);
-				old_history.end_angle = global_angle;
-
-				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 				// act on the equipment
 				system_monitoring_barrier(new_actions);
@@ -573,7 +585,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_manager_idp_00("#00$", COMM_MQTT);
 
 				// save new history
-				if (new_actions.power_state != PIVOT_OFF)
+				if ((new_actions.power_state != PIVOT_OFF)
+				&& (old_actions.power_state == PIVOT_OFF))
 				{
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = global_angle;
@@ -1066,10 +1079,11 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 
 		rtc_app_set_timestamp(timestamp);
 
-		if (system_initial_angle == 655)
+		if (system_initial_angle == 655 && global_angle != 655)
 		{
 			system_initial_angle = global_angle;
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Initial angle : %d", system_initial_angle);
+			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 		}
 
 		if(gps_flag_send_to_mqtt)
@@ -2081,112 +2095,116 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	esp_err_t ret = ESP_FAIL;
+	pivot_actions old_actions = {};
+	pivot_actions new_actions = {};
+	pivot_history new_history = {};
+
+	char str_out[200] = {};
+	char str_date_time[50] = {};
+
+	uint16_t dwp = 0;
+	uint8_t idp = 0;
+
+	arg_pair_t arg_pairs[] = {
+	{"uint8_t", &idp},
+	{"uint16_t", &dwp},
+	{"uint16_t", &new_actions.percentimeter},
+	{NULL, NULL}};
+
+	idp_parser_get_packet_data(buffer, arg_pairs);
+	idp_parser_get_pwd(dwp, &new_actions);
+
+	data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+
+	if (new_actions.power_state == PIVOT_OFF)
 	{
-		uint8_t idp = 0;
-		uint16_t dwp = 0;
-		pivot_actions actions = {};
-
-		char str_out[200] = {};
-		char str_date_time[50] = {};
-		char pivot_id[50] = {};
-
-		arg_pair_t arg_buffer[] =
-			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{NULL, NULL}};
-		idp_parser_get_packet_data(buffer, arg_buffer);
-
-		if (strcmp(pivot_id, "off") == 0)
+		if(global_angle != 655 && system_initial_angle != 655)
 		{
-			pivot_actions current_action = {
-				.power_state = PIVOT_OFF,
-				.rotation = PIVOT_UNKNOWN,
-				.watering_state = PIVOT_UNKNOWN,
-				.percentimeter = PIVOT_UNKNOWN,
-			};
-
-			// act on the equipment
-			actuation_app_set_actions(current_action, true);
-			actuation_app_shutdown();
-
-			// save old history
-			pivot_history old_history = {};
-			old_history.end_date = rtc_app_get_timestamp(false);
-			old_history.end_angle = global_angle;
-
-			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
-
-			// send current status
-			system_manager_idp_00("#00$", COMM_MQTT);
-
-			// save current config
-			data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
+			system_initial_angle = global_angle;
+			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 		}
 		else
 		{
-			esp_err_t ret = ESP_FAIL;
-			pivot_actions new_actions = {};
-			pivot_history new_history = {};
-
-			uint16_t dwp = 0;
-
-			arg_pair_t arg_pairs[] =
-				{
-					{"uint8_t", &idp},
-					{"uint16_t", &dwp},
-					{"uint16_t", &new_actions.percentimeter},
-					{NULL, NULL}};
-
-			idp_parser_get_packet_data(buffer, arg_pairs);
-			idp_parser_get_pwd(dwp, &new_actions);
-
-			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
-			if (ret == ESP_OK)
-			{
-				// save old history
-				pivot_history old_history = {};
-				old_history.end_date = rtc_app_get_timestamp(false);
-				old_history.end_angle = global_angle;
-
-				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
-
-				// act on the equipment
-				actuation_app_set_actions(new_actions, true);
-
-				// save new history
-				if (new_actions.power_state != PIVOT_OFF)
-				{
-					new_history.start_date = rtc_app_get_timestamp(false);
-					new_history.start_angle = global_angle;
-					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
-					data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
-				}
-			}
+			data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 		}
 
-		// send ack
-		actuation_app_get_actions(&actions, sizeof(actions));
-		dwp = idp_parser_create_pwd(actions);
+		actuation_app_get_actions(&new_actions, sizeof(new_actions));
+		new_actions.percentimeter = 0;
+		new_actions.power_state = PIVOT_OFF;
+		new_actions.watering_state = PIVOT_DRY;
 
-		time_t timestamp = rtc_app_get_timestamp(false);
-		rtc_app_get_str_date_time(timestamp, str_date_time);
-
-		arg_pair_t arg_pairs_ack[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"uint16_t", &dwp},
-			{"uint16_t", &actions.percentimeter},
-			{"uint16_t", &system_initial_angle},
-			{"uint16_t", &global_angle},
-			{"string", str_date_time},
-			{NULL, NULL}};
-
-		vTaskDelay(pdMS_TO_TICKS(1000));
-		idp_parser_create_package(str_out, arg_pairs_ack);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);
+		// Save old History
+		if (old_actions.power_state != PIVOT_OFF)
+		{
+			pivot_history old_history = {};
+			old_history.end_date = rtc_app_get_timestamp(false);
+			old_history.end_angle = global_angle;
+			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
+		}
 	}
+
+	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
+	if (ret == ESP_OK)
+	{
+		if (comm_mode == COMM_HTTP_POST)
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+		}
+
+		// act on the equipment
+		actuation_app_set_actions(new_actions, true);
+
+		// time for the percentage to stabilize
+		system_rtc_percent = rtc_app_get_timestamp(false);
+
+		// send current status
+		system_manager_idp_00("#00$", COMM_MQTT);
+
+		// save new history
+		if ((new_actions.power_state != PIVOT_OFF)
+		&& (old_actions.power_state == PIVOT_OFF))
+		{
+			new_history.start_date = rtc_app_get_timestamp(false);
+			new_history.start_angle = global_angle;
+			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
+			data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
+		}
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed_to_save_new_state");
+	}
+	
+	// start timer percent and pressure
+	if (system_timer != NULL)
+	{
+		xTimerStop(system_timer, 1000);
+		xTimerStart(system_timer, 1000);
+	}
+
+	// Wait modem sync
+	vTaskDelay(pdMS_TO_TICKS(1500));
+
+	// send ack
+	dwp = idp_parser_create_pwd(new_actions);
+
+	time_t timestamp = rtc_app_get_timestamp(false);
+	rtc_app_get_str_date_time(timestamp, str_date_time);
+
+	arg_pair_t arg_pairs_ack[] = {
+		{"uint8_t", &idp},
+		{"string", system_id},
+		{"uint16_t", &dwp},
+		{"uint16_t", &new_actions.percentimeter},
+		{"uint16_t", &system_initial_angle},
+		{"uint16_t", &global_angle},
+		{"string", str_date_time},
+		{NULL, NULL}};
+
+	idp_parser_create_package(str_out, arg_pairs_ack);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 }
 
 /**
