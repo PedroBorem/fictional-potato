@@ -491,6 +491,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		esp_err_t ret = ESP_FAIL;
+		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
@@ -511,6 +512,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
+			data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+
 			if (new_actions.power_state == PIVOT_OFF)
 			{
 				if(global_angle != 655 && system_initial_angle != 655)
@@ -523,12 +526,18 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 				}
 
-				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
+				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				new_actions.percentimeter = 0;
+				new_actions.power_state = PIVOT_OFF;
+				new_actions.watering_state = PIVOT_DRY;
+
+				// Save old History
+				if (old_actions.power_state != PIVOT_OFF)
 				{
-					actuation_app_get_actions(&new_actions, sizeof(new_actions));
-					new_actions.percentimeter = 0;
-					new_actions.power_state = PIVOT_OFF;
-					new_actions.watering_state = PIVOT_DRY;
+					pivot_history old_history = {};
+					old_history.end_date = rtc_app_get_timestamp(false);
+					old_history.end_angle = global_angle;
+					data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 				}
 			}
 
@@ -539,13 +548,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{
 					comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 				}
-
-				// save old history
-				pivot_history old_history = {};
-				old_history.end_date = rtc_app_get_timestamp(false);
-				old_history.end_angle = global_angle;
-
-				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 				// act on the equipment
 				system_monitoring_barrier(new_actions);
@@ -558,7 +560,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_manager_idp_00("#00$", COMM_MQTT);
 
 				// save new history
-				if (new_actions.power_state != PIVOT_OFF)
+				if ((new_actions.power_state != PIVOT_OFF)
+				&& (old_actions.power_state == PIVOT_OFF))
 				{
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = global_angle;
