@@ -59,11 +59,11 @@
  */
 #define DATA_GPS_CONFIG "gps_config"
 
-/**
- * @def DATA_RETURN_CONFIG
- * @brief NVS access space for return configuration data.
- */
-#define DATA_RETURN_CONFIG "return_config"
+// /**
+//  * @def DATA_RETURN_CONFIG
+//  * @brief NVS access space for return configuration data.
+//  */
+// #define DATA_RETURN_CONFIG "return_config"
 
 /**
  * @def DATA_SCHEDULING_DATE
@@ -109,7 +109,7 @@
  */
 #define DATA_VIRTUAL_BARRIER "virtual_barrier"
 
-#define DATA_PHYSICAL_BARRIER	"physical_barrier"
+#define DATA_PHYSICAL_BARRIER "phy_barrier"
 
 /**
  * @def DATA_INITIAL_ANGLE
@@ -149,7 +149,6 @@ esp_err_t data_app_init(void)
 	};
 
 	const gps_config gps_config = {};
-	const pivot_return_config return_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};

@@ -297,11 +297,8 @@ typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle_virtual_barrier;   /*!< Start angle of the configuration of the virtual barrier*/
     uint16_t end_angle_virtual_barrier;     /*!< End angle of the configuration of the virtual barrier*/
-    uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
-    uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
     bool automatic_return;
     bool water_return;
-    uint8_t time_leaving_barrier;
 } pivot_return_config;
 
 /**
@@ -310,6 +307,17 @@ typedef struct __attribute__((__packed__))
  * How many configuration parameters in pivot_return_config struct.
  */
 #define PIVOT_RETURN_CONFIG_VAR_COUNT   (5)
+
+typedef struct __attribute__((__packed__))
+{
+    uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
+    uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
+    bool automatic_return;
+    bool water_return;
+    uint8_t time_leaving_barrier;
+} pivot_physical_config;
+
+#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (6)
 
 /**
  * @brief Scheduling date parameters.

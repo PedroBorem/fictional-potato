@@ -227,6 +227,6 @@ void gpio_actuator_pressure_on(void);
  */
 void gpio_actuator_pressure_off(void);
 
-void set_gpio_leaving_barrier_time(pivot_return_config barrier_config);
+void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */
