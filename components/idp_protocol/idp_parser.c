@@ -30,6 +30,67 @@
  */
 #define IDP_MAX_PKG_SIZE 200
 
+/**
+ * @brief The minimum time value accepted for pressurization in seconds.
+ */
+#define PRESSURE_TIME_MIN_SEC 30
+
+/**
+ * @brief The maximum time value accepted for pressurization in seconds.
+ */
+#define PRESSURE_TIME_MAX_SEC 1800
+
+/**
+ * @brief The minimum time value accepted for On_Off_relay activation in seconds.
+ */
+#define RELAY_TIME_MIN_SEC 1
+
+/**
+ * @brief The maximum time value accepted for On_Off_relay activation in seconds.
+ */
+#define RELAY_TIME_MAX_SEC 30
+
+/**
+ * @brief The minimum time value accepted for periodically read status (IDP_0) in minutes.
+ */
+#define READ_TIME_MIN_MINUTES 5
+
+/**
+ * @brief The maximum time value accepted for periodically read status (IDP_0) in minutes.
+ */
+#define READ_TIME_MAX_MINUTES 30
+
+/**
+ * @brief The minimum time value accepted for latitude.
+ */
+#define LATITUDE_MIN 0
+
+/**
+ * @brief The maximum time value accepted for latitude.
+ */
+#define LATITUDE_MAX 90
+
+/**
+ * @brief The minimum time value accepted for longitude.
+ */
+#define LONGITUDE_MIN 0
+
+/**
+ * @brief The maximum time value accepted for longitude.
+ */
+#define LONGITUDE_MAX 180
+
+/**
+ * @brief The minimum time value accepted for periodically payload from GPS (IDP_7) in seconds.
+ */
+#define PAYLOAD_TIME_MIN_SEC 1
+
+/**
+ * @brief The maximum time value accepted for periodically payload from GPS (IDP_7) in seconds.
+ */
+#define PAYLOAD_TIME_MAX_SEC 120
+
+
 /* Private function prototype ------------------------------------ */
 /**
  * @brief Check if the received IDP packet is valid.
@@ -401,19 +462,19 @@ bool idp_parser_validate_idp_03(const pivot_config pivot_config)
         }
     }
 
-    if(!(pivot_config.pressurization_time >= 30 && pivot_config.pressurization_time <= 1500)){
+    if(!(pivot_config.pressurization_time >= PRESSURE_TIME_MIN_SEC && pivot_config.pressurization_time <= PRESSURE_TIME_MAX_SEC)){
         return ret;
     }
 
-    if(!(pivot_config.on_time >= 1 && pivot_config.on_time <= 10)){
+    if(!(pivot_config.on_time >= RELAY_TIME_MIN_SEC && pivot_config.on_time <= RELAY_TIME_MAX_SEC)){
         return ret;
     }
 
-    if(!(pivot_config.off_time >= 1 && pivot_config.off_time <= 10)){
+    if(!(pivot_config.off_time >= RELAY_TIME_MIN_SEC && pivot_config.off_time <= RELAY_TIME_MAX_SEC)){
         return ret;
     }
 
-    if(!(pivot_config.read_time >= 5 && pivot_config.read_time <= 30)){
+    if(!(pivot_config.read_time >= READ_TIME_MIN_MINUTES && pivot_config.read_time <= READ_TIME_MAX_MINUTES)){
         return ret;
     }
 
@@ -447,7 +508,7 @@ bool idp_parser_validate_idp_05(const sector_config sector_config)
 {
     bool ret = false;
 
-    if(!(sector_config.sector_number <= 4))
+    if(!(sector_config.sector_number <= CONFIG_SECTORS_MAX_VALUE))
     {
         return ret;
     }
@@ -674,7 +735,7 @@ bool idp_parser_validate_idp_23(const gps_config gps_config)
         return ret;
     }
 
-    if(!(latitude > 0 && latitude < 90 ))
+    if(!(latitude > LATITUDE_MIN && latitude < LATITUDE_MAX ))
     {
         return ret;
     }    
@@ -684,12 +745,12 @@ bool idp_parser_validate_idp_23(const gps_config gps_config)
         return ret;
     }
 
-    if(!(longitude > 0 && longitude < 180 ))
+    if(!(longitude > LONGITUDE_MIN && longitude < LONGITUDE_MAX ))
     {
         return ret;
     }
 
-    if(!(gps_config.time_payload >= 1 && gps_config.time_payload <= 120 ))
+    if(!(gps_config.time_payload >= PAYLOAD_TIME_MIN_SEC && gps_config.time_payload <= PAYLOAD_TIME_MAX_SEC ))
     {
         return ret;
     }
