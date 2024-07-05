@@ -291,9 +291,9 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 typedef struct __attribute__((__packed__))
 {
     uint8_t sinal_lat;
-    char latitude[17];
+    char latitude[30];
     uint8_t sinal_lon;
-    char longitude[17];
+    char longitude[30];
     uint16_t time_payload;
     uint16_t offset;
 
