@@ -2050,6 +2050,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
+		reboot_config reboot_config = {};
 
 		arg_pair_t arg_pairs[] =
 			{
