@@ -66,6 +66,13 @@
 // #define DATA_RETURN_CONFIG "return_config"
 
 /**
+ * @def DATA_REBOOT_CONFIG
+ * @brief NVS access space for reboot configuration data.
+ */
+#define DATA_REBOOT_CONFIG "reboot_config"
+
+
+/**
  * @def DATA_SCHEDULING_DATE
  * @brief NVS access space for scheduling date data.
  */
@@ -197,10 +204,10 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
 		}
 
-		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
-		}
+		// if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
+		// {
+		// 	data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		// }
 
 		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
 		{
@@ -303,11 +310,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_GPS_CONFIG, data, data_size);
 			break;
 		}
-		case DATA_TYPE_RETURN_CONFIG:
-		{
-			ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
-			break;
-		}
+		// case DATA_TYPE_RETURN_CONFIG:
+		// {
+		// 	ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
+		// 	break;
+		// }
 		case DATA_TYPE_REBOOT_CONFIG:
 		{
 			ret = nvs_data_set(DATA_REBOOT_CONFIG, data, data_size);
@@ -454,11 +461,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_GPS_CONFIG, data);
 			break;
 		}
-		case DATA_TYPE_RETURN_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
-			break;
-		}
+		// case DATA_TYPE_RETURN_CONFIG:
+		// {
+		// 	ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
+		// 	break;
+		// }
 		case DATA_TYPE_REBOOT_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_REBOOT_CONFIG, data);
