@@ -373,6 +373,18 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 			err = ESP_FAIL;
 		}
 	}
+	else if(strcmp(req->uri, "/config/religamento") == 0)
+	{
+		if(http_callback != NULL)
+		{
+			http_callback("#24$", COMM_HTTP_GET);
+		}
+		else
+		{
+			ESP_LOGE(HTTP_API_TAG,"unregistered HTTP callback");
+			err = ESP_FAIL;
+		}
+	}
 	else if (strcmp(req->uri, "/cycles") == 0)
 	{
 

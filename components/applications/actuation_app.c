@@ -51,6 +51,7 @@
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
 static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
+static bool actuation_new_action = false;
 
 const pivot_actions pivot_actions_off = {
     .power_state = PIVOT_OFF,
@@ -69,10 +70,9 @@ void actuation_app_task(void* arg);
 
 /**
  * @brief Perform a manual call based on the given parameters.
- * @param on_off [in]: The state to set (true for on, false for off).
  * @param current_action [in]: The current pivot actions.
  */
-void actuation_app_manual_call(bool on_off, pivot_actions current_action);
+void actuation_app_manual_call(pivot_actions current_action);
 
 
 /* Public methods ------------------------------------------------ */
@@ -142,10 +142,13 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 	if(alert_change == false)
 	{
 		gpio_actuator_set(config_in);
+		actuation_new_action = true;
 	}
 	else
 	{
-		ESP_LOGW(ACTUATION_APP_TAG,"alert, manual configuration !!");
+		ESP_LOGW(ACTUATION_APP_TAG,"Alert, Manual Configuration !!");
+		ESP_LOGW(ACTUATION_APP_TAG,"%d%d%d-%d", config_in.rotation, config_in.watering_state,
+		config_in.power_state, config_in.percentimeter);
 	}
 
 	if (eTaskGetState(xTask_actuation_app) == eSuspended
@@ -228,11 +231,11 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
 				if(current_action.power_state == PIVOT_OFF)
 				{
-					actuation_app_manual_call(false, current_action);
+					actuation_app_manual_call(current_action);
 				}
 				else
 				{
-					actuation_app_manual_call(true, current_action);
+					actuation_app_manual_call(current_action);
 				}
 
 				last_tick = xTaskGetTickCount();
@@ -247,12 +250,12 @@ void actuation_app_task(void* arg)
 				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
 				if(current_action.watering_state == PIVOT_DRY)
 				{
-					actuation_app_manual_call(true, current_action);
+					actuation_app_manual_call(current_action);
 				}
 				else if(current_action.watering_state == PIVOT_WET)
 				{
 					actuation_config.watering_state = PIVOT_WET;
-					actuation_app_manual_call(true, current_action);
+					actuation_app_manual_call(current_action);
 				}
 
 				last_tick = xTaskGetTickCount();
@@ -264,7 +267,7 @@ void actuation_app_task(void* arg)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_manual_call(true, current_action);
+				actuation_app_manual_call(current_action);
 			}
 		}
 		else if(current_action.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
@@ -274,11 +277,17 @@ void actuation_app_task(void* arg)
 			{
 				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
 				last_tick = xTaskGetTickCount();
-				actuation_app_manual_call(true, current_action);
+				actuation_app_manual_call(current_action);
 			}
 		}
 		else
 		{
+			last_tick = xTaskGetTickCount();
+		}
+
+		if(actuation_new_action)
+		{
+			actuation_new_action = false;
 			last_tick = xTaskGetTickCount();
 		}
 
@@ -288,32 +297,25 @@ void actuation_app_task(void* arg)
 
 /**
  * @brief Perform a manual call based on the given parameters.
- * @param on_off [in]: The state to set (true for on, false for off).
  * @param current_action [in]: The current pivot actions.
  */
-void actuation_app_manual_call(bool on_off, pivot_actions current_action)
+void actuation_app_manual_call(pivot_actions current_action)
 {
-	if(on_off == true)
-	{
-		// send current action
-		char str_out[200] = {};
-		uint16_t dwp = 0;
-		uint8_t idp = IDP_30;
+	// send current action
+	char str_out[200] = {};
+	uint16_t dwp = 0;
+	uint8_t idp = IDP_30;
 
-		dwp = idp_parser_create_pwd(current_action);
+	memcpy(&actuation_config, &current_action, sizeof(actuation_config));
+	dwp = idp_parser_create_pwd(current_action);
 
-		arg_pair_t arg_pairs[] = {
-			{ "uint8_t", &idp },
-			{ "uint16_t", &dwp },
-			{ "uint8_t", &current_action.percentimeter },
-			{ NULL, NULL }
-		};
+	arg_pair_t arg_pairs[] = {
+		{ "uint8_t", &idp },
+		{ "uint16_t", &dwp },
+		{ "uint8_t", &current_action.percentimeter },
+		{ NULL, NULL }
+	};
 
-		idp_parser_create_package(str_out,arg_pairs);
-		actuation_app_call(str_out, COMM_MQTT);
-	}
-	else
-	{
-		actuation_app_call("#30-off$", COMM_MQTT);
-	}
+	idp_parser_create_package(str_out,arg_pairs);
+	actuation_app_call(str_out, COMM_MQTT);
 }

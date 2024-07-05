@@ -43,7 +43,7 @@
 /** @def SYSTEM_REBOOT_TIMEOUT_MS
  *  @brief Timeout duration (in milliseconds) for system reboot.
  */
-#define SYSTEM_REBOOT_TIMEOUT_MS (14400000) // 4 hours
+#define SYSTEM_REBOOT_TIMEOUT_SEC (14400) // 4 hours
 
 /** @def SYSTEM_SAVE_FLASH_TIME_MS
  *  @brief Time interval (in milliseconds) for saving data to flash memory.
@@ -113,6 +113,7 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
@@ -225,6 +226,11 @@ static bool check_valid_characters(const char *buffer, uint8_t size)
  */
 static void system_manager_reboot(void)
 {
+	reboot_config current_reboot = {};
+	data_app_load(DATA_TYPE_REBOOT_CONFIG, &current_reboot);
+
+	uint16_t timeout = 0;
+
 	pivot_actions current_action = {};
 
 	time_t timestamp_nvs = 0;
@@ -234,12 +240,22 @@ static void system_manager_reboot(void)
 	timestamp_now = rtc_app_get_timestamp(false);
 
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Timeout Configurado: %lld", current_reboot.reboot_timeout_sec);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_now: %lld", timestamp_now);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_nvs: %lld", timestamp_nvs);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-	if ((timestamp_now - timestamp_nvs) < (SYSTEM_REBOOT_TIMEOUT_MS/1000))
+	if(current_reboot.reboot_timeout_sec < 1)
+	{
+		timeout = SYSTEM_REBOOT_TIMEOUT_SEC;
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
+	}else{
+		timeout = current_reboot.reboot_timeout_sec;
+	}
+
+	if ((current_reboot.enable)&&((timestamp_now - timestamp_nvs) < (timeout)))
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -265,7 +281,11 @@ static void system_manager_reboot(void)
 		}
 	}
 	else
-	{
+	{	
+		if(!current_reboot.enable)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Automatic Reboot Disabled ...");
+		}
 		// save old history
 		data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 	}
@@ -397,6 +417,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_23(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_24:
+		{
+			system_manager_idp_24(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_26:
 		{
 			system_manager_idp_26(str_pkg, comm_mode);
@@ -502,6 +527,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
 	{
 		esp_err_t ret = ESP_FAIL;
+		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
@@ -522,6 +548,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
+			data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+
 			if (new_actions.power_state == PIVOT_OFF)
 			{
 				if(global_angle != 655 && system_initial_angle != 655)
@@ -534,12 +562,18 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 				}
 
-				if (new_actions.rotation == 0 && new_actions.watering_state == 0)
+				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				new_actions.percentimeter = 0;
+				new_actions.power_state = PIVOT_OFF;
+				new_actions.watering_state = PIVOT_DRY;
+
+				// Save old History
+				if (old_actions.power_state != PIVOT_OFF)
 				{
-					actuation_app_get_actions(&new_actions, sizeof(new_actions));
-					new_actions.percentimeter = 0;
-					new_actions.power_state = PIVOT_OFF;
-					new_actions.watering_state = PIVOT_DRY;
+					pivot_history old_history = {};
+					old_history.end_date = rtc_app_get_timestamp(false);
+					old_history.end_angle = global_angle;
+					data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 				}
 			}
 
@@ -550,13 +584,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{
 					comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 				}
-
-				// save old history
-				pivot_history old_history = {};
-				old_history.end_date = rtc_app_get_timestamp(false);
-				old_history.end_angle = global_angle;
-
-				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 
 				// act on the equipment
 				system_monitoring_barrier(new_actions);
@@ -569,7 +596,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_manager_idp_00("#00$", COMM_MQTT);
 
 				// save new history
-				if (new_actions.power_state != PIVOT_OFF)
+				if ((new_actions.power_state != PIVOT_OFF)
+				&& (old_actions.power_state == PIVOT_OFF))
 				{
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = global_angle;
@@ -1992,6 +2020,88 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 }
 
 /**
+ * @brief Handles IDP 24 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (REBOOT_CONFIG_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		uint8_t idp = 0;
+		char pivot_id[50] = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"bool", &reboot_config.enable},
+				{"uint32_t", &reboot_config.reboot_timeout_sec},
+				{NULL, NULL}
+			};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		esp_err_t ret = data_app_save(DATA_TYPE_REBOOT_CONFIG, &reboot_config, sizeof(reboot_config));
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_24;
+		reboot_config reboot_config = {};
+
+		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"bool", &reboot_config.enable},
+				{"uint32_t", &reboot_config.reboot_timeout_sec},
+				{NULL, NULL}
+			};
+
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
+}
+
+/**
  * @brief Handles IDP 26 requests for return configuration modification.
  *
  * This function handles the modification of return configuration.
@@ -2077,6 +2187,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
 	}
 }
+
 /**
  * @brief Handles IDP 30 requests for system actions.
  *
@@ -2087,120 +2198,116 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	esp_err_t ret = ESP_FAIL;
+	pivot_actions old_actions = {};
+	pivot_actions new_actions = {};
+	pivot_history new_history = {};
+
+	char str_out[200] = {};
+	char str_date_time[50] = {};
+
+	uint16_t dwp = 0;
+	uint8_t idp = 0;
+
+	arg_pair_t arg_pairs[] = {
+	{"uint8_t", &idp},
+	{"uint16_t", &dwp},
+	{"uint16_t", &new_actions.percentimeter},
+	{NULL, NULL}};
+
+	idp_parser_get_packet_data(buffer, arg_pairs);
+	idp_parser_get_pwd(dwp, &new_actions);
+
+	data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+
+	if (new_actions.power_state == PIVOT_OFF)
 	{
-		uint8_t idp = 0;
-		uint16_t dwp = 0;
-		pivot_actions actions = {};
-
-		char str_out[200] = {};
-		char str_date_time[50] = {};
-		char pivot_id[50] = {};
-
-		arg_pair_t arg_buffer[] =
-			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{NULL, NULL}};
-		idp_parser_get_packet_data(buffer, arg_buffer);
-
-		if (strcmp(pivot_id, "off") == 0)
+		if(global_angle != 655 && system_initial_angle != 655)
 		{
-			if(global_angle != 655 && system_initial_angle != 655)
-			{
-				system_initial_angle = global_angle;
-				data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
-			}
-
-			data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
-			
-			pivot_actions current_action = {
-				.power_state = PIVOT_OFF,
-				.rotation = PIVOT_UNKNOWN,
-				.watering_state = PIVOT_UNKNOWN,
-				.percentimeter = PIVOT_UNKNOWN,
-			};
-
-			// act on the equipment
-			actuation_app_set_actions(current_action, true);
-			actuation_app_shutdown();
-
-			// save old history
-			pivot_history old_history = {};
-			old_history.end_date = rtc_app_get_timestamp(false);
-			old_history.end_angle = global_angle;
-
-			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
-
-			// send current status
-			system_manager_idp_00("#00$", COMM_MQTT);
-
-			// save current config
-			data_app_save(DATA_TYPE_ACTIONS, &current_action, sizeof(current_action));
+			system_initial_angle = global_angle;
+			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 		}
 		else
 		{
-			esp_err_t ret = ESP_FAIL;
-			pivot_actions new_actions = {};
-			pivot_history new_history = {};
-
-			uint16_t dwp = 0;
-
-			arg_pair_t arg_pairs[] =
-				{
-					{"uint8_t", &idp},
-					{"uint16_t", &dwp},
-					{"uint16_t", &new_actions.percentimeter},
-					{NULL, NULL}};
-
-			idp_parser_get_packet_data(buffer, arg_pairs);
-			idp_parser_get_pwd(dwp, &new_actions);
-
-			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
-			if (ret == ESP_OK)
-			{
-				// save old history
-				pivot_history old_history = {};
-				old_history.end_date = rtc_app_get_timestamp(false);
-				old_history.end_angle = global_angle;
-
-				data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
-
-				// act on the equipment
-				actuation_app_set_actions(new_actions, true);
-
-				// save new history
-				if (new_actions.power_state != PIVOT_OFF)
-				{
-					new_history.start_date = rtc_app_get_timestamp(false);
-					new_history.start_angle = global_angle;
-					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
-					data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
-				}
-			}
+			data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 		}
 
-		// send ack
-		actuation_app_get_actions(&actions, sizeof(actions));
-		dwp = idp_parser_create_pwd(actions);
+		actuation_app_get_actions(&new_actions, sizeof(new_actions));
+		new_actions.percentimeter = 0;
+		new_actions.power_state = PIVOT_OFF;
+		new_actions.watering_state = PIVOT_DRY;
 
-		time_t timestamp = rtc_app_get_timestamp(false);
-		rtc_app_get_str_date_time(timestamp, str_date_time);
-
-		arg_pair_t arg_pairs_ack[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"uint16_t", &dwp},
-			{"uint16_t", &actions.percentimeter},
-			{"uint16_t", &system_initial_angle},
-			{"uint16_t", &global_angle},
-			{"string", str_date_time},
-			{NULL, NULL}};
-
-		vTaskDelay(pdMS_TO_TICKS(1000));
-		idp_parser_create_package(str_out, arg_pairs_ack);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);
+		// Save old History
+		if (old_actions.power_state != PIVOT_OFF)
+		{
+			pivot_history old_history = {};
+			old_history.end_date = rtc_app_get_timestamp(false);
+			old_history.end_angle = global_angle;
+			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
+		}
 	}
+
+	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
+	if (ret == ESP_OK)
+	{
+		if (comm_mode == COMM_HTTP_POST)
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+		}
+
+		// act on the equipment
+		actuation_app_set_actions(new_actions, true);
+
+		// time for the percentage to stabilize
+		system_rtc_percent = rtc_app_get_timestamp(false);
+
+		// send current status
+		system_manager_idp_00("#00$", COMM_MQTT);
+
+		// save new history
+		if ((new_actions.power_state != PIVOT_OFF)
+		&& (old_actions.power_state == PIVOT_OFF))
+		{
+			new_history.start_date = rtc_app_get_timestamp(false);
+			new_history.start_angle = global_angle;
+			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
+			data_app_save(DATA_TYPE_HISTORY, &new_history, sizeof(new_history));
+		}
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed_to_save_new_state");
+	}
+	
+	// start timer percent and pressure
+	if (system_timer != NULL)
+	{
+		xTimerStop(system_timer, 1000);
+		xTimerStart(system_timer, 1000);
+	}
+
+	// Wait modem sync
+	vTaskDelay(pdMS_TO_TICKS(1500));
+
+	// send ack
+	dwp = idp_parser_create_pwd(new_actions);
+
+	time_t timestamp = rtc_app_get_timestamp(false);
+	rtc_app_get_str_date_time(timestamp, str_date_time);
+
+	arg_pair_t arg_pairs_ack[] = {
+		{"uint8_t", &idp},
+		{"string", system_id},
+		{"uint16_t", &dwp},
+		{"uint16_t", &new_actions.percentimeter},
+		{"uint16_t", &system_initial_angle},
+		{"uint16_t", &global_angle},
+		{"string", str_date_time},
+		{NULL, NULL}};
+
+	idp_parser_create_package(str_out, arg_pairs_ack);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 }
 
 /**
