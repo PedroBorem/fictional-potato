@@ -66,6 +66,12 @@
 #define DATA_RETURN_CONFIG "return_config"
 
 /**
+ * @def DATA_REBOOT_CONFIG
+ * @brief NVS access space for reboot configuration data.
+ */
+#define DATA_REBOOT_CONFIG "reboot_config"
+
+/**
  * @def DATA_SCHEDULING_DATE
  * @brief NVS access space for scheduling date data.
  */
@@ -108,6 +114,12 @@
 #define DATA_BARRIER "barrier"
 
 /**
+ * @def DATA_INITIAL_ANGLE
+ * @brief NVS access space for initial angle data
+*/
+#define DATA_INITIAL_ANGLE	"initial_angle"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -136,6 +148,11 @@ esp_err_t data_app_init(void)
 			.modem_apn = "virtueyes.com.br",
 			.wifi_ssid = "soil2023",
 			.wifi_pass = "soiltech",
+	};
+
+	const reboot_config default_reboot = {
+			.enable = true,
+			.reboot_timeout_sec = 14400, 	//4 hours in sec
 	};
 
 	const gps_config gps_config = {};
@@ -186,6 +203,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_RETURN_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+		}
+
+		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
+		{
+			data_app_save(DATA_TYPE_REBOOT_CONFIG, &default_reboot, sizeof(default_reboot));
 		}
 
 		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
@@ -281,6 +303,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_RETURN_CONFIG, data, data_size);
 			break;
 		}
+		case DATA_TYPE_REBOOT_CONFIG:
+		{
+			ret = nvs_data_set(DATA_REBOOT_CONFIG, data, data_size);
+			break;
+		}
 		case DATA_TYPE_SCHEDULING_DATE:
 		{
 			ret = nvs_data_set(DATA_SCHEDULING_DATE, data, data_size);
@@ -356,6 +383,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_BARRIER, data, data_size);
 			break;
 		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_set(DATA_INITIAL_ANGLE, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -412,6 +444,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_RETURN_CONFIG, data);
 			break;
 		}
+		case DATA_TYPE_REBOOT_CONFIG:
+		{
+			ret = nvs_data_get_blob(DATA_REBOOT_CONFIG, data);
+			break;
+		}
 		case DATA_TYPE_SCHEDULING_DATE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_DATE, data);
@@ -445,6 +482,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_BARRIER:
 		{
 			ret = nvs_data_get_blob(DATA_BARRIER, data);
+			break;
+		}
+		case DATA_TYPE_INITIAL_ANGLE:
+		{
+			ret = nvs_data_get_blob(DATA_INITIAL_ANGLE, data);
 			break;
 		}
 		default:
