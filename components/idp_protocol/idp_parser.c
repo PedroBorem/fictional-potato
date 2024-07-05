@@ -58,7 +58,7 @@
 /**
  * @brief The maximum time value accepted for periodically read status (IDP_0) in minutes.
  */
-#define READ_TIME_MAX_MINUTES 30
+#define READ_TIME_MAX_MINUTES 60
 
 /**
  * @brief The minimum time value accepted for latitude.
