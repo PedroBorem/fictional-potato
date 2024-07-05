@@ -355,3 +355,65 @@ uint8_t idp_parser_get_delimiter(const char *buffer)
 
     return count;
 }
+
+/**
+ * @brief Validates if characters in a buffer are within the printable ASCII range.
+ *
+ * Iterates over each character in the buffer to ensure they are within the ASCII printable 
+ * range (32 to 125). This validation helps prevent processing issues related to non-printable 
+ * characters.
+ *
+ * @param buffer Array of characters to be validated.
+ * @param size Number of characters in the buffer.
+ * @return true if all characters are valid, otherwise false.
+ */
+static bool check_valid_characters(const char *buffer, uint8_t size)
+{
+	for(uint8_t i = 0; i < size; i++)
+	{
+		if(buffer[i] <= 32 || buffer[i] >= 125)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * @brief Sends GPS configurations over UART.
+ *
+ * Prepares a configuration message by prefixing the buffer with specific control bytes and 
+ * sends it over UART. The message includes the original buffer content prefixed with 0x01 and 0x00 
+ * bytes and a null terminator at the end. The function then sends this message using UART and 
+ * sends an acknowledgment based on the success of the transmission.
+ *
+ * @param buffer Array of characters representing GPS configurations.
+ * @param comm_mode Communication mode for sending the acknowledgment.
+ */
+static void load_gps_configurations(const char *buffer, comm_type comm_mode)
+{
+	size_t len_buffer = strlen(buffer);
+
+	size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
+	char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
+
+	buffer_gps_config[0] = 0x01;
+	buffer_gps_config[1] = 0x00;
+
+	memcpy(buffer_gps_config + 2, buffer, len_buffer);
+
+	buffer_gps_config[len_buffer_gps_config] = '\0';
+
+	esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+	if (ret == ESP_OK)
+	{
+		// send ACK
+		comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+	}
+	else
+	{
+		comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+	}
+}
