@@ -116,19 +116,17 @@ uint8_t idp_parser_get_delimiter(const char *buffer);
  * @param size Number of characters in the buffer.
  * @return true if all characters are valid, otherwise false.
  */
-static bool check_valid_characters(const char *buffer, uint8_t size);
+bool check_valid_characters(const char *buffer, uint8_t size);
 
 /**
- * @brief Sends GPS configurations over UART.
+ * @brief Prepares GPS configuration message.
  *
- * Prepares a configuration message by prefixing the buffer with specific control bytes and 
- * sends it over UART. The message includes the original buffer content prefixed with 0x01 and 0x00 
- * bytes and a null terminator at the end. The function then sends this message using UART and 
- * sends an acknowledgment based on the success of the transmission.
+ * This function prefixes the input buffer with control bytes (0x01 and 0x00),
+ * and adds a null terminator at the end, preparing the GPS configuration message.
  *
- * @param buffer Array of characters representing GPS configurations.
- * @param comm_mode Communication mode for sending the acknowledgment.
+ * @param buffer Input character array representing GPS configurations.
+ * @param buffer_gps_config Output character array to store the prepared configuration message.
  */
-static void load_gps_configurations(const char *buffer, comm_type comm_mode);
+void prepare_gps_config_message(const char *buffer, char *buffer_gps_config);
 
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

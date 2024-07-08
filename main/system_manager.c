@@ -1893,7 +1893,23 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
-		load_gps_configurations(buffer, comm_mode);
+		size_t len_buffer = strlen(buffer);
+		size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+		char buffer_gps_config[len_buffer_gps_config];
+
+		prepare_gps_config_message(buffer, buffer_gps_config);
+
+		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}	
 	}
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
@@ -1916,11 +1932,29 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &gps_config.offset},
 				{NULL, NULL}};
 
-		// send
+		// send nvs saved config
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
 
-		load_gps_configurations(buffer, comm_mode);
+		// Try to request directly from GPS
+		size_t len_buffer = strlen(buffer);
+		size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+		char buffer_gps_config[len_buffer_gps_config];
+
+		prepare_gps_config_message(buffer, buffer_gps_config);
+
+		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+		if (ret == ESP_OK)
+		{
+			// send ACK
+			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+		}
+		else
+		{
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+		}	
 	}
 	else if (comm_mode == COMM_RF)
 	{

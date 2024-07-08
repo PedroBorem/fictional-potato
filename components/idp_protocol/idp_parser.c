@@ -367,7 +367,7 @@ uint8_t idp_parser_get_delimiter(const char *buffer)
  * @param size Number of characters in the buffer.
  * @return true if all characters are valid, otherwise false.
  */
-static bool check_valid_characters(const char *buffer, uint8_t size)
+bool check_valid_characters(const char *buffer, uint8_t size)
 {
 	for(uint8_t i = 0; i < size; i++)
 	{
@@ -381,39 +381,23 @@ static bool check_valid_characters(const char *buffer, uint8_t size)
 }
 
 /**
- * @brief Sends GPS configurations over UART.
+ * @brief Prepares GPS configuration message.
  *
- * Prepares a configuration message by prefixing the buffer with specific control bytes and 
- * sends it over UART. The message includes the original buffer content prefixed with 0x01 and 0x00 
- * bytes and a null terminator at the end. The function then sends this message using UART and 
- * sends an acknowledgment based on the success of the transmission.
+ * This function prefixes the input buffer with control bytes (0x01 and 0x00),
+ * and adds a null terminator at the end, preparing the GPS configuration message.
  *
- * @param buffer Array of characters representing GPS configurations.
- * @param comm_mode Communication mode for sending the acknowledgment.
+ * @param buffer Input character array representing GPS configurations.
+ * @param buffer_gps_config Output character array to store the prepared configuration message.
  */
-static void load_gps_configurations(const char *buffer, comm_type comm_mode)
+void prepare_gps_config_message(const char *buffer, char *buffer_gps_config)
 {
-	size_t len_buffer = strlen(buffer);
+    size_t len_buffer = strlen(buffer);
+    size_t len_buffer_gps_config = len_buffer + 2; // for 0x01 and 0x00
 
-	size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
-	char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
+    buffer_gps_config[0] = 0x01;
+    buffer_gps_config[1] = 0x00;
 
-	buffer_gps_config[0] = 0x01;
-	buffer_gps_config[1] = 0x00;
+    memcpy(buffer_gps_config + 2, buffer, len_buffer);
 
-	memcpy(buffer_gps_config + 2, buffer, len_buffer);
-
-	buffer_gps_config[len_buffer_gps_config] = '\0';
-
-	esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
-
-	if (ret == ESP_OK)
-	{
-		// send ACK
-		comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-	}
-	else
-	{
-		comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-	}
+    buffer_gps_config[len_buffer_gps_config] = '\0';
 }
