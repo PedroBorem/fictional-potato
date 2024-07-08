@@ -87,73 +87,140 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  *
  * @param pivot_actions Structure containing the pivot actions to be performed.
  */
-static void system_monitoring_automatic_return(pivot_actions pivot_actions)
+static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool flag_is_virtual)
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
 
-    if(system_monitoring_config.automatic_return == true || system_monitoring_physical_config.automatic_return == true)
+    if(flag_is_virtual == true)
     {
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
-
-        data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
-
-        if(return_back_flag == false)
+        if(system_monitoring_config.automatic_return == true)
         {
-            // act on the equipment - send IDP 01
-            pivot_actions.power_state = PIVOT_ON;
+            vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
-            if(pivot_actions.rotation == PIVOT_CW)
+            data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
+
+            if(return_back_flag == false)
             {
-                pivot_actions.rotation = PIVOT_CCW;
+                // act on the equipment - send IDP 01
+                pivot_actions.power_state = PIVOT_ON;
+
+                if(pivot_actions.rotation == PIVOT_CW)
+                {
+                    pivot_actions.rotation = PIVOT_CCW;
+                }
+                else
+                {
+                    pivot_actions.rotation = PIVOT_CW;
+                }
+
+                if(system_monitoring_config.water_return == true)
+                {
+                    pivot_actions.watering_state = PIVOT_WET;
+                }
+                else
+                {
+                    pivot_actions.watering_state = PIVOT_DRY;
+                }
+
+                idp = IDP_1;
+                dwp = idp_parser_create_pwd(pivot_actions);
+                uint16_t percent_return = pivot_actions.percentimeter;
+
+                arg_pair_t arg_idp_02[] =
+                {
+                    { "uint8_t", &idp },
+                    { "string", SYSTEM_MONITORING_TAG },
+                    { "uint16_t", &dwp },
+                    { "uint16_t", &percent_return },
+                    { NULL, NULL }
+                };
+
+                memset(str_out, 0x00, sizeof(str_out));
+                idp_parser_create_package(str_out, arg_idp_02);
+                system_monitoring_callback(str_out, COMM_MQTT);
+
+                return_back_flag = true;
+                data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
+                system_states = SYSTEM_RETURN;
             }
             else
             {
-                pivot_actions.rotation = PIVOT_CW;
+                return_back_flag = false;
+                data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
+                system_states = SYSTEM_PAUSE;
             }
-
-            if(system_monitoring_config.water_return == true || system_monitoring_physical_config.water_return == true)
-            {
-                pivot_actions.watering_state = PIVOT_WET;
-            }
-            else
-            {
-                pivot_actions.watering_state = PIVOT_DRY;
-            }
-
-            idp = IDP_1;
-            dwp = idp_parser_create_pwd(pivot_actions);
-            uint16_t percent_return = pivot_actions.percentimeter;
-
-            arg_pair_t arg_idp_02[] =
-            {
-                { "uint8_t", &idp },
-                { "string", SYSTEM_MONITORING_TAG },
-                { "uint16_t", &dwp },
-                { "uint16_t", &percent_return },
-                { NULL, NULL }
-            };
-
-            memset(str_out, 0x00, sizeof(str_out));
-            idp_parser_create_package(str_out, arg_idp_02);
-            system_monitoring_callback(str_out, COMM_MQTT);
-
-            return_back_flag = true;
-            data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
-            system_states = SYSTEM_RETURN;
         }
         else
         {
-        	return_back_flag = false;
-            data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
             system_states = SYSTEM_PAUSE;
-        }
+        } 
     }
-    else
+    else if(flag_is_virtual == false)
     {
-        system_states = SYSTEM_PAUSE;
-    } 
+        if(system_monitoring_physical_config.automatic_return == true)
+        {
+            vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+
+            data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
+
+            if(return_back_flag == false)
+            {
+                // act on the equipment - send IDP 01
+                pivot_actions.power_state = PIVOT_ON;
+
+                if(pivot_actions.rotation == PIVOT_CW)
+                {
+                    pivot_actions.rotation = PIVOT_CCW;
+                }
+                else
+                {
+                    pivot_actions.rotation = PIVOT_CW;
+                }
+
+                if(system_monitoring_physical_config.water_return == true)
+                {
+                    pivot_actions.watering_state = PIVOT_WET;
+                }
+                else
+                {
+                    pivot_actions.watering_state = PIVOT_DRY;
+                }
+
+                idp = IDP_1;
+                dwp = idp_parser_create_pwd(pivot_actions);
+                uint16_t percent_return = pivot_actions.percentimeter;
+
+                arg_pair_t arg_idp_02[] =
+                {
+                    { "uint8_t", &idp },
+                    { "string", SYSTEM_MONITORING_TAG },
+                    { "uint16_t", &dwp },
+                    { "uint16_t", &percent_return },
+                    { NULL, NULL }
+                };
+
+                memset(str_out, 0x00, sizeof(str_out));
+                idp_parser_create_package(str_out, arg_idp_02);
+                system_monitoring_callback(str_out, COMM_MQTT);
+
+                return_back_flag = true;
+                data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
+                system_states = SYSTEM_RETURN;
+            }
+            else
+            {
+                return_back_flag = false;
+                data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
+                system_states = SYSTEM_PAUSE;
+            }
+        }
+        else
+        {
+            system_states = SYSTEM_PAUSE;
+        } 
+    }
 }
 
 /**
@@ -166,6 +233,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
+    static bool is_virtual_barrier = true;  
 
     pivot_actions pivot_actions = {};
 
@@ -190,7 +258,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, COMM_MQTT);
 
-    system_monitoring_automatic_return(pivot_actions);
+    system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
 }
 
 /**
@@ -249,7 +317,7 @@ static void system_monitoring_task(void* arg)
         {
             pivot_actions pivot_actions = {};
             actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
-            system_monitoring_barrier(pivot_actions);
+            system_monitoring_barrier(pivot_actions, true);
         }        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
@@ -264,49 +332,54 @@ static void system_monitoring_task(void* arg)
  *
  * @param[in] current_pivot_actions The current actions and configuration of the pivot.
  */
-void system_monitoring_barrier(const pivot_actions current_pivot_actions)
+void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool is_virtual_barrier)
 {
-    if(*system_monitoring_current_angle != 655)
+    if(is_virtual_barrier == false)
     {
-        if((system_monitoring_physical_config.start_angle_physical_barrier < system_monitoring_physical_config.end_angle_physical_barrier
-        || system_monitoring_physical_config.start_angle_physical_barrier > system_monitoring_physical_config.end_angle_physical_barrier))
+        if(*system_monitoring_current_angle != 655)
         {
-            if(*system_monitoring_current_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
+            if((system_monitoring_physical_config.start_angle_physical_barrier < system_monitoring_physical_config.end_angle_physical_barrier
+            || system_monitoring_physical_config.start_angle_physical_barrier > system_monitoring_physical_config.end_angle_physical_barrier))
             {
-                if(current_pivot_actions.rotation == PIVOT_CW)
+                if(*system_monitoring_current_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
+                && *system_monitoring_current_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
                 {
-                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                    if(current_pivot_actions.rotation == PIVOT_CW)
+                    {
+                        status_barrier = PIVOT_LEAVING_THE_BARRIER;
 
+                    }
+                    else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                    {
+                        status_barrier = PIVOT_IN_THE_BARRIER;
+                    }
+
+                    system_monitoring_automatic_return(current_pivot_actions, is_virtual_barrier);          
                 }
-                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
+                && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
                 {
-                    status_barrier = PIVOT_IN_THE_BARRIER;
-                }
+                    if(current_pivot_actions.rotation == PIVOT_CW)
+                    {
+                        status_barrier = PIVOT_IN_THE_BARRIER;
 
-                system_monitoring_automatic_return(current_pivot_actions);          
+                    }
+                    else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                    {
+                        status_barrier = PIVOT_LEAVING_THE_BARRIER;
+                    }
+
+                    system_monitoring_automatic_return(current_pivot_actions, is_virtual_barrier);
+                }
+                else
+                {
+                    status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+                }
             }
-            else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
-            {
-                if(current_pivot_actions.rotation == PIVOT_CW)
-                {
-                    status_barrier = PIVOT_IN_THE_BARRIER;
-
-                }
-                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
-                {
-                    status_barrier = PIVOT_LEAVING_THE_BARRIER;
-                }
-
-                system_monitoring_automatic_return(current_pivot_actions);
-            }
-            else
-            {
-                status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
-            }
-        }
-
+        }       
+    }
+    else if(is_virtual_barrier == true)
+    {
         if((system_monitoring_config.start_angle_virtual_barrier < system_monitoring_config.end_angle_virtual_barrier
         || system_monitoring_config.start_angle_virtual_barrier > system_monitoring_config.end_angle_virtual_barrier))
         {
@@ -338,11 +411,11 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
             }
             else
             {
-                status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+                status_barrier = PIVOT_OUTSIDE_THE_VIRTUAL_BARRIER;
             }
         }
     }
-    
+
     gpio_actuator_set_time_start(status_barrier);
 }
 
