@@ -212,7 +212,7 @@ static void system_monitoring_task(void* arg)
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
                     ESP_LOGE(SYSTEM_MONITORING_TAG, "ESTOU NA BARREIRA");
-                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER  && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
                         ESP_LOGE(SYSTEM_MONITORING_TAG, "Desligando o pivo");
                         system_monitoring_actuation_virtual_barrier();
@@ -230,7 +230,7 @@ static void system_monitoring_task(void* arg)
                 && *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
                     ESP_LOGE(SYSTEM_MONITORING_TAG, "ESTOU NA BARREIRA 2");
-                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER)
+                    if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
                         ESP_LOGE(SYSTEM_MONITORING_TAG, "Desligando o pivo 2");
                         system_monitoring_actuation_virtual_barrier();
@@ -292,13 +292,49 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions)
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
                     status_barrier = PIVOT_IN_THE_BARRIER;
+
                 }
-                else if(current_pivot_actions.rotation == PIVOT_CCW)
+                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
                 {
                     status_barrier = PIVOT_LEAVING_THE_BARRIER;
                 }
 
                 system_monitoring_automatic_return(current_pivot_actions);
+            }
+            else
+            {
+                status_barrier = PIVOT_OUTSIDE_THE_BARRIER;
+            }
+        }
+
+        if((system_monitoring_config.start_angle_virtual_barrier < system_monitoring_config.end_angle_virtual_barrier
+        || system_monitoring_config.start_angle_virtual_barrier > system_monitoring_config.end_angle_virtual_barrier))
+        {
+            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle_virtual_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.start_angle_virtual_barrier + 5)
+            {
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_LEAVING_THE_VIRTUAL_BARRIER;
+
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                {
+                    status_barrier = PIVOT_IN_THE_VIRTUAL_BARRIER;
+                }
+            }
+            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle_virtual_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_config.end_angle_virtual_barrier + 5)
+            {
+                if(current_pivot_actions.rotation == PIVOT_CW)
+                {
+                    status_barrier = PIVOT_IN_THE_VIRTUAL_BARRIER;
+
+                }
+                else if(current_pivot_actions.rotation == PIVOT_CCW) /* If rotation was sent COUNTERCLOCKWISE - REVERSE */
+                {
+                    status_barrier = PIVOT_LEAVING_THE_VIRTUAL_BARRIER;
+                }
             }
             else
             {

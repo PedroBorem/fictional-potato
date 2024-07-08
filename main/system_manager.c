@@ -2135,6 +2135,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 		char pivot_id[50] = {};
 		pivot_return_config return_config = {};
 		pivot_physical_config physical_config = {};
+
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
