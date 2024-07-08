@@ -160,6 +160,14 @@ esp_err_t data_app_init(void)
 			.reboot_timeout_sec = 14400, 	//4 hours in sec
 	};
 
+	const pivot_physical_config default_phy_barrier = {
+			.start_angle_physical_barrier = 0,
+			.end_angle_physical_barrier = 0,
+			.automatic_return = 0, 
+			.water_return = 0,
+			.time_leaving_barrier = 3,
+	};
+
 	const gps_config gps_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
@@ -253,7 +261,7 @@ esp_err_t data_app_init(void)
 		}
 		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
 		{
-			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_barrier, sizeof(default_barrier));
+			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_phy_barrier, sizeof(default_phy_barrier));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
