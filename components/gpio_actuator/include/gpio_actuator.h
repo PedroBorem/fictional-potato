@@ -31,7 +31,7 @@
 /**
 * @brief Time duration for high logic level against the barrier (in milliseconds).
 */
-#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	100
+#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	500
 
 /**
 * @brief Time duration for high logic level outside the barrier (in milliseconds).
