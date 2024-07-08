@@ -279,10 +279,8 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle  > system_monitoring_config.start_angle_virtual_barrier
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "ESTOU NA BARREIRA");
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER  && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
-                        ESP_LOGE(SYSTEM_MONITORING_TAG, "Desligando o pivo");
                         system_monitoring_actuation_virtual_barrier();
                     }
                 }
