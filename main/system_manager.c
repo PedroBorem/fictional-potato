@@ -1913,47 +1913,53 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	}
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
-		size_t len_buffer = strlen(buffer);
-		size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
-		char buffer_gps_config[len_buffer_gps_config];
-
-		prepare_gps_config_message(buffer, buffer_gps_config);
-
-		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
-
-		if (ret == ESP_OK)
+		pivot_actions actions = {};
+		actuation_app_get_actions(&actions, sizeof(actions));
+		if(actions.power_state == PIVOT_ON)
 		{
-			// send ACK
-			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
-		}
-		else
-		{
-			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}
+			size_t len_buffer = strlen(buffer);
+			size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+			char buffer_gps_config[len_buffer_gps_config];
 
-		char str_out[200] = {};
+			prepare_gps_config_message(buffer, buffer_gps_config);
 
-		uint8_t idp = IDP_23;
-		gps_config gps_config = {};
+			esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
 
-		data_app_load(DATA_TYPE_GPS_CONFIG, &gps_config);
-
-		arg_pair_t arg_pairs[] =
+			if (ret == ESP_OK)
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint8_t", &gps_config.sinal_lat},
-				{"string", &gps_config.latitude},
-				{"uint8_t", &gps_config.sinal_lon},
-				{"string", &gps_config.longitude},
-				{"uint16_t", &gps_config.time_payload},
-				{"uint16_t", &gps_config.offset},
-				{NULL, NULL}};
+				// send ACK
+				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			}
+			else
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+			}
 
-		// send nvs saved config
-		idp_parser_create_package(str_out, arg_pairs);
-		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);		
+		}else{
+			char str_out[200] = {};
+
+			uint8_t idp = IDP_23;
+			gps_config gps_config = {};
+
+			data_app_load(DATA_TYPE_GPS_CONFIG, &gps_config);
+
+			arg_pair_t arg_pairs[] =
+				{
+					{"uint8_t", &idp},
+					{"string", system_id},
+					{"uint8_t", &gps_config.sinal_lat},
+					{"string", &gps_config.latitude},
+					{"uint8_t", &gps_config.sinal_lon},
+					{"string", &gps_config.longitude},
+					{"uint16_t", &gps_config.time_payload},
+					{"uint16_t", &gps_config.offset},
+					{NULL, NULL}};
+
+			// send nvs saved config
+			idp_parser_create_package(str_out, arg_pairs);
+			comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);		
+		}
 	}
 	else if (comm_mode == COMM_RF)
 	{
