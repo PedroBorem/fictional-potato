@@ -1911,7 +1911,32 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}	
 	}
-	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	else if(comm_mode == COMM_HTTP_GET)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_23;
+		gps_config gps_config = {};
+
+		data_app_load(DATA_TYPE_GPS_CONFIG, &gps_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"uint8_t", &gps_config.sinal_lat},
+				{"string", &gps_config.latitude},
+				{"uint8_t", &gps_config.sinal_lon},
+				{"string", &gps_config.longitude},
+				{"uint16_t", &gps_config.time_payload},
+				{"uint16_t", &gps_config.offset},
+				{NULL, NULL}};
+
+		// send nvs saved config
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+	}
+	else if (mqtt_load_pkg)
 	{
 		pivot_actions actions = {};
 		actuation_app_get_actions(&actions, sizeof(actions));
@@ -1957,7 +1982,6 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 			// send nvs saved config
 			idp_parser_create_package(str_out, arg_pairs);
-			comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
 			comm_app_send_idp_pack(str_out, COMM_MQTT);		
 		}
 	}
