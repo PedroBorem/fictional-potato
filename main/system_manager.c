@@ -585,8 +585,13 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 				}
 
+				if ((new_actions.power_state != PIVOT_OFF)
+				&& (old_actions.power_state == PIVOT_OFF))
+				{
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "NOVA ACAO NAO É UM DESLIGA, ACAO ANIGA É UM DESLIGA");
+					system_monitoring_barrier(new_actions, false);
+				}
 				// act on the equipment
-				system_monitoring_barrier(new_actions, false);
 				actuation_app_set_actions(new_actions, false);
 
 				// time for the percentage to stabilize
@@ -2235,7 +2240,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		}
 
 		actuation_app_get_actions(&new_actions, sizeof(new_actions));
-		new_actions.percentimeter = 0;
+		new_actions.percentimeter = old_actions.percentimeter;
 		new_actions.power_state = PIVOT_OFF;
 		new_actions.watering_state = PIVOT_DRY;
 
@@ -2259,6 +2264,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
+		system_monitoring_barrier(new_actions, false);
 
 		// time for the percentage to stabilize
 		system_rtc_percent = rtc_app_get_timestamp(false);
