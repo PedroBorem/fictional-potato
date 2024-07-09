@@ -93,6 +93,8 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
     uint16_t dwp = 0;
     char str_out[50] = {};
 
+    barrier_status status_barrier = PIVOT_IN_THE_BARRIER;
+
     if(flag_is_virtual == true)
     {
         if(system_monitoring_config.automatic_return == true)
@@ -161,14 +163,19 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
     {
         if(system_monitoring_physical_config.automatic_return == true)
         {
-            vTaskDelay(pdMS_TO_TICKS(30000)); // 30   seconds
+            vTaskDelay(pdMS_TO_TICKS(15000)); // 15   seconds
 
             data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
+
+            ESP_LOGE(SYSTEM_MONITORING_TAG, "Valor da flag de retorno: %i", return_back_flag);
+            ESP_LOGE(SYSTEM_MONITORING_TAG, "Valores do pivot_actions: %d%d%d-%d", pivot_actions.rotation, pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
 
             if(return_back_flag == false)
             {
                 // act on the equipment - send IDP 01
                 pivot_actions.power_state = PIVOT_ON;
+
+                status_barrier = PIVOT_LEAVING_THE_BARRIER;
 
                 if(pivot_actions.rotation == PIVOT_CW)
                 {
@@ -187,6 +194,8 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
                 {
                     pivot_actions.watering_state = PIVOT_DRY;
                 }
+
+                gpio_actuator_set_time_start(status_barrier);
 
                 idp = IDP_1;
                 dwp = idp_parser_create_pwd(pivot_actions);
@@ -280,7 +289,7 @@ static void system_monitoring_task(void* arg)
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
                     ESP_LOGE(SYSTEM_MONITORING_TAG, "Estou na barreira do: %i", *system_monitoring_current_angle);
-                     ESP_LOGE(SYSTEM_MONITORING_TAG, "Estado do systema: %i,  Estado da barreira: %i", system_states, status_barrier);
+                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Estado do systema: %i,  Estado da barreira: %i", system_states, status_barrier);
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER  && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
                         ESP_LOGE(SYSTEM_MONITORING_TAG, "DESLIGANDO O PIVO");
@@ -333,6 +342,8 @@ static void system_monitoring_task(void* arg)
  */
 void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool is_virtual_barrier)
 {
+    pivot_actions pivot_actions = {};
+
     if(is_virtual_barrier == false)
     {
         if(*system_monitoring_current_angle != 655)
@@ -353,7 +364,19 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
                         status_barrier = PIVOT_IN_THE_BARRIER;
                     }
 
-                    system_monitoring_automatic_return(current_pivot_actions, is_virtual_barrier);          
+                    if(current_pivot_actions.power_state == PIVOT_OFF)
+                    {
+                        actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+                        pivot_actions.rotation = PIVOT_CCW;
+                        pivot_actions.watering_state = current_pivot_actions.watering_state;
+                        pivot_actions.power_state = PIVOT_ON;
+
+                        pivot_actions.percentimeter = current_pivot_actions.percentimeter;
+
+                        ESP_LOGE(SYSTEM_MONITORING_TAG, "FUNCAO RESPONSAVEL PELO BATE E VOLTA BARREIRA DO REVERSO: %d%d%d-%d", pivot_actions.rotation,
+                        pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
+                        system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
+                    }
                 }
                 else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
                 && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
@@ -368,7 +391,19 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
                         status_barrier = PIVOT_LEAVING_THE_BARRIER;
                     }
 
-                    system_monitoring_automatic_return(current_pivot_actions, is_virtual_barrier);
+                    if(current_pivot_actions.power_state == PIVOT_OFF)
+                    {
+                        actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
+                        pivot_actions.rotation = PIVOT_CW;
+                        pivot_actions.watering_state = current_pivot_actions.watering_state;
+                        pivot_actions.power_state = PIVOT_ON;
+
+                        pivot_actions.percentimeter = current_pivot_actions.percentimeter;
+
+                        ESP_LOGE(SYSTEM_MONITORING_TAG, "FUNCAO RESPONSAVEL PELO BATE E VOLTA BARREIRA DO AVANCO: %d%d%d-%d", pivot_actions.rotation,
+                        pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
+                        system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
+                    }
                 }
                 else
                 {
