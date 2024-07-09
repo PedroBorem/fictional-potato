@@ -588,7 +588,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				if ((new_actions.power_state != PIVOT_OFF)
 				&& (old_actions.power_state == PIVOT_OFF))
 				{
-					ESP_LOGE(SYSTEM_MANAGER_TAG, "NOVA ACAO NAO É UM DESLIGA, ACAO ANIGA É UM DESLIGA");
 					system_monitoring_barrier(new_actions, false);
 				}
 				// act on the equipment

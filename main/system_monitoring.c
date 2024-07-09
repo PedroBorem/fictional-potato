@@ -167,9 +167,6 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
 
             data_app_load(DATA_TYPE_BARRIER_STATUS, &return_back_flag);
 
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "Valor da flag de retorno: %i", return_back_flag);
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "Valores do pivot_actions: %d%d%d-%d", pivot_actions.rotation, pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
-
             if(return_back_flag == false)
             {
                 // act on the equipment - send IDP 01
@@ -288,11 +285,8 @@ static void system_monitoring_task(void* arg)
                 if(*system_monitoring_current_angle  > system_monitoring_config.start_angle_virtual_barrier
                 || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
                 {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Estou na barreira do: %i", *system_monitoring_current_angle);
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Estado do systema: %i,  Estado da barreira: %i", system_states, status_barrier);
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER  && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
-                        ESP_LOGE(SYSTEM_MONITORING_TAG, "DESLIGANDO O PIVO");
                         system_monitoring_actuation_virtual_barrier();
                     }
                 }
@@ -373,8 +367,6 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
 
                         pivot_actions.percentimeter = current_pivot_actions.percentimeter;
 
-                        ESP_LOGE(SYSTEM_MONITORING_TAG, "FUNCAO RESPONSAVEL PELO BATE E VOLTA BARREIRA DO REVERSO: %d%d%d-%d", pivot_actions.rotation,
-                        pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
                         system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
                     }
                 }
@@ -400,8 +392,6 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
 
                         pivot_actions.percentimeter = current_pivot_actions.percentimeter;
 
-                        ESP_LOGE(SYSTEM_MONITORING_TAG, "FUNCAO RESPONSAVEL PELO BATE E VOLTA BARREIRA DO AVANCO: %d%d%d-%d", pivot_actions.rotation,
-                        pivot_actions.watering_state, pivot_actions.power_state, pivot_actions.percentimeter);
                         system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
                     }
                 }
