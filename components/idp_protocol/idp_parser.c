@@ -418,6 +418,52 @@ uint8_t idp_parser_get_delimiter(const char *buffer)
 }
 
 /**
+ * @brief Validates if characters in a buffer are within the printable ASCII range.
+ *
+ * Iterates over each character in the buffer to ensure they are within the ASCII printable 
+ * range (32 to 125). This validation helps prevent processing issues related to non-printable 
+ * characters.
+ *
+ * @param buffer Array of characters to be validated.
+ * @param size Number of characters in the buffer.
+ * @return true if all characters are valid, otherwise false.
+ */
+bool check_valid_characters(const char *buffer, uint8_t size)
+{
+	for(uint8_t i = 0; i < size; i++)
+	{
+		if(buffer[i] <= 32 || buffer[i] >= 125)
+		{
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * @brief Prepares GPS configuration message.
+ *
+ * This function prefixes the input buffer with control bytes (0x01 and 0x00),
+ * and adds a null terminator at the end, preparing the GPS configuration message.
+ *
+ * @param buffer Input character array representing GPS configurations.
+ * @param buffer_gps_config Output character array to store the prepared configuration message.
+ */
+void prepare_gps_config_message(const char *buffer, char *buffer_gps_config)
+{
+    size_t len_buffer = strlen(buffer);
+    size_t len_buffer_gps_config = len_buffer + 2; // for 0x01 and 0x00
+
+    buffer_gps_config[0] = 0x01;
+    buffer_gps_config[1] = 0x00;
+
+    memcpy(buffer_gps_config + 2, buffer, len_buffer);
+
+    buffer_gps_config[len_buffer_gps_config] = '\0';
+}
+
+/**
  * @brief Validate the specified configuration paramters.
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.

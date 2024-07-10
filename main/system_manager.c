@@ -188,30 +188,6 @@ void system_manager_init(void)
 }
 
 /**
- * @brief Validates if characters in a buffer are within the printable ASCII range.
- *
- * Iterates over each character in the buffer to ensure they are within the ASCII printable 
- * range (32 to 125). This validation helps prevent processing issues related to non-printable 
- * characters.
- *
- * @param buffer Array of characters to be validated.
- * @param size Number of characters in the buffer.
- * @return true if all characters are valid, otherwise false.
- */
-static bool check_valid_characters(const char *buffer, uint8_t size)
-{
-	for(uint8_t i = 0; i < size; i++)
-	{
-		if(buffer[i] <= 32 || buffer[i] >= 125)
-		{
-			return false;
-		}
-	}
-
-	return true;
-}
-
-/**
  * @brief Performs a system reboot based on certain conditions.
  *
  * This function checks the timestamp stored in non-volatile storage (NVS) and, if certain conditions are met, performs a system reboot.
@@ -2048,16 +2024,10 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
 		size_t len_buffer = strlen(buffer);
+		size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+		char buffer_gps_config[len_buffer_gps_config];
 
-		size_t len_buffer_gps_config = len_buffer + 2;	   // for 0x01 and 0x00
-		char buffer_gps_config[len_buffer_gps_config + 1]; // +1 for null terminator
-
-		buffer_gps_config[0] = 0x01;
-		buffer_gps_config[1] = 0x00;
-
-		memcpy(buffer_gps_config + 2, buffer, len_buffer);
-
-		buffer_gps_config[len_buffer_gps_config] = '\0';
+		prepare_gps_config_message(buffer, buffer_gps_config);
 
 		esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
 
@@ -2069,9 +2039,9 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 		else
 		{
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}
+		}	
 	}
-	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	else if(comm_mode == COMM_HTTP_GET)
 	{
 		char str_out[200] = {};
 
@@ -2092,9 +2062,58 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &gps_config.offset},
 				{NULL, NULL}};
 
-		// send
+		// send nvs saved config
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, COMM_HTTP_GET);
+	}
+	else if (mqtt_load_pkg)
+	{
+		pivot_actions actions = {};
+		actuation_app_get_actions(&actions, sizeof(actions));
+		if(actions.power_state == PIVOT_ON)
+		{
+			size_t len_buffer = strlen(buffer);
+			size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+			char buffer_gps_config[len_buffer_gps_config];
+
+			prepare_gps_config_message(buffer, buffer_gps_config);
+
+			esp_err_t ret = rf_uart_send_event(buffer_gps_config, len_buffer_gps_config);
+
+			if (ret == ESP_OK)
+			{
+				// send ACK
+				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			}
+			else
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+			}
+
+		}else{
+			char str_out[200] = {};
+
+			uint8_t idp = IDP_23;
+			gps_config gps_config = {};
+
+			data_app_load(DATA_TYPE_GPS_CONFIG, &gps_config);
+
+			arg_pair_t arg_pairs[] =
+				{
+					{"uint8_t", &idp},
+					{"string", system_id},
+					{"uint8_t", &gps_config.sinal_lat},
+					{"string", &gps_config.latitude},
+					{"uint8_t", &gps_config.sinal_lon},
+					{"string", &gps_config.longitude},
+					{"uint16_t", &gps_config.time_payload},
+					{"uint16_t", &gps_config.offset},
+					{NULL, NULL}};
+
+			// send nvs saved config
+			idp_parser_create_package(str_out, arg_pairs);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);		
+		}
 	}
 	else if (comm_mode == COMM_RF)
 	{
