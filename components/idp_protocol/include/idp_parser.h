@@ -129,4 +129,119 @@ bool check_valid_characters(const char *buffer, uint8_t size);
  */
 void prepare_gps_config_message(const char *buffer, char *buffer_gps_config);
 
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param net_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_02(const network_config net_config)
+;
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param pivot_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_03(const pivot_config pivot_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param eco_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_04(const eco_mode_config eco_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param sector_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_05(const sector_config sector_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_14(const pivot_scheduling_date scheduling, const char* srt_author);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_15(const pivot_scheduling_angle scheduling, const char* srt_author);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_16(const pivot_scheduling_off_date scheduling, const char* srt_author);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param scheduling data to be validated.
+ * @param srt_author Pointer to data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_17(const pivot_scheduling_off_angle scheduling, const char* srt_author);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param timestamp data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_21(const time_t timestamp);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param return_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_22(const pivot_return_config return_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_23(const gps_config gps_config);
+
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */
