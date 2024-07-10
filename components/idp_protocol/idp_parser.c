@@ -493,6 +493,11 @@ bool idp_parser_validate_idp_04(const eco_mode_config eco_config)
 {
     bool ret = false;
 
+    if(eco_config.start_time >= 0 && eco_config.end_time >= 0)
+    {
+    	ret = true;
+    }
+
     return ret;
 }
 
