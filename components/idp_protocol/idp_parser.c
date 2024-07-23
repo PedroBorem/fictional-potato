@@ -744,12 +744,12 @@ bool idp_parser_validate_idp_22(const pivot_return_config return_config)
 {
     bool ret = false;
 
-    if(!(return_config.start_angle <= 360))
+    if(!(return_config.start_angle_virtual_barrier <= 360))
     {
         return ret;
     }
 
-    if(!(return_config.end_angle <= 360))
+    if(!(return_config.end_angle_virtual_barrier <= 360))
     {
         return ret;
     }

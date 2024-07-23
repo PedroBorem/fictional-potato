@@ -790,16 +790,17 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				pivot_return_config return_config = {};
 				data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
 
-			pivot_physical_config physical_config = {};
-			data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
+				pivot_physical_config physical_config = {};
+				data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
 
 				// send ACK
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 				actuation_app_set_config(new_config);
 				system_read_time = new_config.read_time;
 
-			system_monitoring_stop();
-			system_monitoring_start(physical_config, return_config, system_read_time);
+				system_monitoring_stop();
+				system_monitoring_start(physical_config, return_config, system_read_time);
+			}
 		}
 		else
 		{
