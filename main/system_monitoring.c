@@ -44,7 +44,7 @@ static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle fo
 static app_callback system_monitoring_callback = NULL; /**< Callback function for system monitoring events. */
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
-static pivot_return_config system_monitoring_config = {}; /**< Configuration for system monitoring. */
+static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configuration for system monitoring. */
 static pivot_physical_config system_monitoring_physical_config = {};
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
@@ -87,7 +87,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  *
  * @param pivot_actions Structure containing the pivot actions to be performed.
  */
-static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool flag_is_virtual)
+static void system_monitoring_automatic_return(pivot_actions pivot_actions, type_barrier barrier_type)
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
@@ -95,9 +95,9 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
 
     barrier_status status_barrier = PIVOT_IN_THE_BARRIER;
 
-    if(flag_is_virtual == true)
+    if(barrier_type == VIRTUAL_BARRIER)
     {
-        if(system_monitoring_config.automatic_return == true)
+        if(system_monitoring_virtual_config.automatic_return == true)
         {
             vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
 
@@ -117,7 +117,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
                     pivot_actions.rotation = PIVOT_CW;
                 }
 
-                if(system_monitoring_config.water_return == true)
+                if(system_monitoring_virtual_config.water_return == true)
                 {
                     pivot_actions.watering_state = PIVOT_WET;
                 }
@@ -159,7 +159,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, bool
             system_states = SYSTEM_PAUSE;
         } 
     }
-    else if(flag_is_virtual == false)
+    else if(barrier_type == PHYSICAL_BARRIER)
     {
         if(system_monitoring_physical_config.automatic_return == true)
         {
@@ -239,7 +239,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
-    static bool is_virtual_barrier = true;  
+    type_barrier barrier_type = VIRTUAL_BARRIER;  
 
     pivot_actions pivot_actions = {};
 
@@ -264,7 +264,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, COMM_MQTT);
 
-    system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
+    system_monitoring_automatic_return(pivot_actions, barrier_type);
 }
 
 /**
@@ -280,10 +280,10 @@ static void system_monitoring_task(void* arg)
     {
         if(*system_monitoring_current_angle != 655)
         {
-            if((system_monitoring_config.start_angle_virtual_barrier > system_monitoring_config.end_angle_virtual_barrier))
+            if((system_monitoring_virtual_config.start_angle_virtual_barrier > system_monitoring_virtual_config.end_angle_virtual_barrier))
             {
-                if(*system_monitoring_current_angle  > system_monitoring_config.start_angle_virtual_barrier
-                || *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
+                if(*system_monitoring_current_angle  > system_monitoring_virtual_config.start_angle_virtual_barrier
+                || *system_monitoring_current_angle < system_monitoring_virtual_config.end_angle_virtual_barrier)
                 {
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER  && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
@@ -298,8 +298,8 @@ static void system_monitoring_task(void* arg)
             }
             else
             {
-                if(*system_monitoring_current_angle > system_monitoring_config.start_angle_virtual_barrier
-                && *system_monitoring_current_angle < system_monitoring_config.end_angle_virtual_barrier)
+                if(*system_monitoring_current_angle > system_monitoring_virtual_config.start_angle_virtual_barrier
+                && *system_monitoring_current_angle < system_monitoring_virtual_config.end_angle_virtual_barrier)
                 {
                     if(system_states != SYSTEM_PAUSE && status_barrier != PIVOT_LEAVING_THE_BARRIER && status_barrier != PIVOT_LEAVING_THE_VIRTUAL_BARRIER)
                     {
@@ -319,7 +319,7 @@ static void system_monitoring_task(void* arg)
         {
             pivot_actions pivot_actions = {};
             actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
-            system_monitoring_barrier(pivot_actions, true);
+            system_monitoring_barrier(pivot_actions, VIRTUAL_BARRIER);
         }        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
@@ -334,11 +334,11 @@ static void system_monitoring_task(void* arg)
  *
  * @param[in] current_pivot_actions The current actions and configuration of the pivot.
  */
-void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool is_virtual_barrier)
+void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_barrier barrier_type)
 {
     pivot_actions pivot_actions = {};
 
-    if(is_virtual_barrier == false)
+    if(barrier_type == PHYSICAL_BARRIER)
     {
         if(*system_monitoring_current_angle != 655)
         {
@@ -367,7 +367,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
 
                         pivot_actions.percentimeter = current_pivot_actions.percentimeter;
 
-                        system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
+                        system_monitoring_automatic_return(pivot_actions, barrier_type);
                     }
                 }
                 else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
@@ -392,7 +392,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
 
                         pivot_actions.percentimeter = current_pivot_actions.percentimeter;
 
-                        system_monitoring_automatic_return(pivot_actions, is_virtual_barrier);
+                        system_monitoring_automatic_return(pivot_actions, barrier_type);
                     }
                 }
                 else
@@ -402,13 +402,13 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
             }
         }       
     }
-    else if(is_virtual_barrier == true)
+    else if(barrier_type == VIRTUAL_BARRIER)
     {
-        if((system_monitoring_config.start_angle_virtual_barrier < system_monitoring_config.end_angle_virtual_barrier
-        || system_monitoring_config.start_angle_virtual_barrier > system_monitoring_config.end_angle_virtual_barrier))
+        if((system_monitoring_virtual_config.start_angle_virtual_barrier < system_monitoring_virtual_config.end_angle_virtual_barrier
+        || system_monitoring_virtual_config.start_angle_virtual_barrier > system_monitoring_virtual_config.end_angle_virtual_barrier))
         {
-            if(*system_monitoring_current_angle >= system_monitoring_config.start_angle_virtual_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.start_angle_virtual_barrier + 5)
+            if(*system_monitoring_current_angle >= system_monitoring_virtual_config.start_angle_virtual_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_virtual_config.start_angle_virtual_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -420,8 +420,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, bool i
                     status_barrier = PIVOT_IN_THE_VIRTUAL_BARRIER;
                 }
             }
-            else if (*system_monitoring_current_angle >= system_monitoring_config.end_angle_virtual_barrier - 5
-            && *system_monitoring_current_angle <= system_monitoring_config.end_angle_virtual_barrier + 5)
+            else if (*system_monitoring_current_angle >= system_monitoring_virtual_config.end_angle_virtual_barrier - 5
+            && *system_monitoring_current_angle <= system_monitoring_virtual_config.end_angle_virtual_barrier + 5)
             {
                 if(current_pivot_actions.rotation == PIVOT_CW)
                 {
@@ -465,10 +465,10 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
  *
  * This function initializes the system monitoring task with the specified configuration.
  *
- * @param return_config Configuration for system monitoring.
+ * @param virtual_config Configuration for system monitoring.
  * @param monitoring_time Time interval for system monitoring (in minutes).
  */
-void system_monitoring_start(const pivot_physical_config physical_config, const pivot_return_config return_config, uint8_t monitoring_time)
+void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time)
 {
     system_monitoring_stop();
 
@@ -487,13 +487,13 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
     }
 
     if((physical_config.start_angle_physical_barrier == 0 && physical_config.end_angle_physical_barrier == 0)
-    && (return_config.start_angle_virtual_barrier == 0 && return_config.end_angle_virtual_barrier == 0))
+    && (virtual_config.start_angle_virtual_barrier == 0 && virtual_config.end_angle_virtual_barrier == 0))
     {
         ESP_LOGI(SYSTEM_MONITORING_TAG, "Pivot configured from 0° to 360°, without barrier");
     }
     else
     {
-        memcpy(&system_monitoring_config, &return_config, sizeof(system_monitoring_config));
+        memcpy(&system_monitoring_virtual_config, &virtual_config, sizeof(system_monitoring_virtual_config));
         memcpy(&system_monitoring_physical_config, &physical_config, sizeof(system_monitoring_physical_config));
         xTaskCreate(&system_monitoring_task,
                     SYSTEM_MONITORING_TASK_NAME,

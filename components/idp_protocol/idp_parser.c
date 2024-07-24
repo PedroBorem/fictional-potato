@@ -737,29 +737,29 @@ bool idp_parser_validate_idp_21(const time_t timestamp)
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param return_config data to be validated.
+ * @param virtual_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_22(const pivot_return_config return_config)
+bool idp_parser_validate_idp_22(const pivot_virtual_config virtual_config)
 {
     bool ret = false;
 
-    if(!(return_config.start_angle_virtual_barrier <= 360))
+    if(!(virtual_config.start_angle_virtual_barrier <= 360))
     {
         return ret;
     }
 
-    if(!(return_config.end_angle_virtual_barrier <= 360))
+    if(!(virtual_config.end_angle_virtual_barrier <= 360))
     {
         return ret;
     }
 
-    if(!(return_config.automatic_return == 0 || return_config.automatic_return == 1))
+    if(!(virtual_config.automatic_return == 0 || virtual_config.automatic_return == 1))
     {
         return ret;
     }
 
-    if(!(return_config.water_return == 0 || return_config.water_return == 1))
+    if(!(virtual_config.water_return == 0 || virtual_config.water_return == 1))
     {
         return ret;
     }

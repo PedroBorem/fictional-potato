@@ -318,14 +318,14 @@ typedef struct __attribute__((__packed__))
     uint16_t end_angle_virtual_barrier;     /*!< End angle of the configuration of the virtual barrier*/
     bool automatic_return;
     bool water_return;
-} pivot_return_config;
+} pivot_virtual_config;
 
 /**
  * @brief Configuration parameters.
  *
- * How many configuration parameters in pivot_return_config struct.
+ * How many configuration parameters in pivot_virtual_config struct.
  */
-#define PIVOT_RETURN_CONFIG_VAR_COUNT   (5)
+#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (5)
 
 typedef struct __attribute__((__packed__))
 {
@@ -394,6 +394,18 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
 } pivot_history;
+
+/**
+ * @brief Indicates which type the barrier
+ * 
+ * This macro is used to represent which type of barrier is being used
+ * 
+ */
+typedef enum
+{
+    VIRTUAL_BARRIER = 0,
+    PHYSICAL_BARRIER,
+} type_barrier;
 
 /**
  * @brief Indicates that the pivot is outside the barrier.

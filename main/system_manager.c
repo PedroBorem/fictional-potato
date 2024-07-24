@@ -146,11 +146,11 @@ void system_manager_init(void)
 	data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
 	actuation_app_leaving_barrier_time(physical_config);
 
-	pivot_return_config return_config = {};
-	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
+	pivot_virtual_config virtual_config = {};
+	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 	system_monitoring_register_callback(&system_manager_callback);
 
-	system_monitoring_start(physical_config, return_config, system_read_time);
+	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
 	// communication modules init
 	network_config network = {};
@@ -564,7 +564,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				if ((new_actions.power_state != PIVOT_OFF)
 				&& (old_actions.power_state == PIVOT_OFF))
 				{
-					system_monitoring_barrier(new_actions, false);
+					system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 				}
 				// act on the equipment
 				actuation_app_set_actions(new_actions, false);
@@ -787,8 +787,8 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 			esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 			if (ret == ESP_OK)
 			{
-				pivot_return_config return_config = {};
-				data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
+				pivot_virtual_config virtual_config = {};
+				data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 
 				pivot_physical_config physical_config = {};
 				data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
@@ -799,7 +799,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				system_read_time = new_config.read_time;
 
 				system_monitoring_stop();
-				system_monitoring_start(physical_config, return_config, system_read_time);
+				system_monitoring_start(physical_config, virtual_config, system_read_time);
 			}
 		}
 		else
@@ -1931,7 +1931,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
 		pivot_physical_config physical_config = {};
-		pivot_return_config return_config = {};
+		pivot_virtual_config virtual_config = {};
 
 		arg_pair_t arg_pairs[] =
 			{
@@ -1946,7 +1946,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(idp_parser_validate_idp_22(return_config))
+		if(idp_parser_validate_idp_22(virtual_config))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &physical_config, sizeof(physical_config));
 			if (ret == ESP_OK)
@@ -1955,7 +1955,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 				// send ACK
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 				system_monitoring_stop();
-				system_monitoring_start(physical_config, return_config, system_read_time);
+				system_monitoring_start(physical_config, virtual_config, system_read_time);
 			}
 			else
 			{
@@ -2271,7 +2271,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT);
+	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -2289,28 +2289,28 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
-		pivot_return_config return_config = {};
+		pivot_virtual_config virtual_config = {};
 		pivot_physical_config physical_config = {};
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint16_t", &return_config.start_angle_virtual_barrier},
-				{"uint16_t", &return_config.end_angle_virtual_barrier},
-				{"bool", &return_config.automatic_return},
-				{"bool", &return_config.water_return},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
+				{"bool", &virtual_config.automatic_return},
+				{"bool", &virtual_config.water_return},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		esp_err_t ret = data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &return_config, sizeof(return_config));
+		esp_err_t ret = data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config, sizeof(virtual_config));
 		if (ret == ESP_OK)
 		{
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			system_monitoring_stop();
-			system_monitoring_start(physical_config, return_config, system_read_time);
+			system_monitoring_start(physical_config, virtual_config, system_read_time);
 		}
 		else
 		{
@@ -2322,18 +2322,18 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 		char str_out[200] = {};
 
 		uint8_t idp = IDP_26;
-		pivot_return_config return_config = {};
+		pivot_virtual_config virtual_config = {};
 
-		data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &return_config);
+		data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint16_t", &return_config.start_angle_virtual_barrier},
-				{"uint16_t", &return_config.end_angle_virtual_barrier},
-				{"bool", &return_config.automatic_return},
-				{"bool", &return_config.water_return},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
+				{"bool", &virtual_config.automatic_return},
+				{"bool", &virtual_config.water_return},
 				{NULL, NULL}};
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
@@ -2415,7 +2415,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
-		system_monitoring_barrier(new_actions, false);
+		system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 
 		// time for the percentage to stabilize
 		system_rtc_percent = rtc_app_get_timestamp(false);

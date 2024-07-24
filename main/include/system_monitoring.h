@@ -19,10 +19,10 @@
  * This function initiates the system monitoring module with the provided configuration.
  * It sets up a task to monitor the system based on the specified return configuration and monitoring time.
  *
- * @param[in] return_config The configuration for pivot return, including start and end angles.
+ * @param[in] virtual_config The configuration for pivot return, including start and end angles.
  * @param[in] monitoring_time The time interval (in minutes) for monitoring the system.
  */
-void system_monitoring_start(pivot_physical_config physical_config, pivot_return_config return_config, uint8_t monitoring_time);
+void system_monitoring_start(pivot_physical_config physical_config, pivot_virtual_config virtual_config, uint8_t monitoring_time);
 
 /**
  * @brief Stops the system monitoring.
@@ -50,6 +50,6 @@ void system_monitoring_register_callback(const app_callback callback);
  *
  * @param[in] current_pivot_actions The current actions and configuration of the pivot.
  */
-void system_monitoring_barrier(pivot_actions current_current_pivot_actions, bool is_virtual_barrier);
+void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type_barrier barrier_type);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

@@ -229,10 +229,10 @@ bool idp_parser_validate_idp_21(const time_t timestamp);
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param return_config data to be validated.
+ * @param virtual_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_22(const pivot_return_config return_config);
+bool idp_parser_validate_idp_22(const pivot_virtual_config virtual_config);
 
 /**
  * @brief Validate the specified configuration paramters.
