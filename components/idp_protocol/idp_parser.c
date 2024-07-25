@@ -764,7 +764,7 @@ bool idp_parser_validate_idp_22(const pivot_physical_config physical_config)
         return ret;
     }
 
-    if(!(physical_config.time_leaving_barrier >= RELAY_TIME_MIN_SEC && pivot_config.time_leaving_barrier <= RELAY_TIME_MAX_SEC))
+    if(!(physical_config.time_leaving_barrier >= RELAY_TIME_MIN_SEC && physical_config.time_leaving_barrier <= RELAY_TIME_MAX_SEC))
     {
         return ret;
     }
