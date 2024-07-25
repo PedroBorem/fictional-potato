@@ -737,29 +737,34 @@ bool idp_parser_validate_idp_21(const time_t timestamp)
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param virtual_config data to be validated.
+ * @param physical_barrier_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_22(const pivot_virtual_config virtual_config)
+bool idp_parser_validate_idp_22(const pivot_physical_config physical_config)
 {
     bool ret = false;
 
-    if(!(virtual_config.start_angle_virtual_barrier <= 360))
+    if(!(physical_config.start_angle_physical_barrier <= 360))
     {
         return ret;
     }
 
-    if(!(virtual_config.end_angle_virtual_barrier <= 360))
+    if(!(physical_config.end_angle_physical_barrier <= 360))
     {
         return ret;
     }
 
-    if(!(virtual_config.automatic_return == 0 || virtual_config.automatic_return == 1))
+    if(!(physical_config.automatic_return == 0 || physical_config.automatic_return == 1))
     {
         return ret;
     }
 
-    if(!(virtual_config.water_return == 0 || virtual_config.water_return == 1))
+    if(!(physical_config.water_return == 0 || physical_config.water_return == 1))
+    {
+        return ret;
+    }
+
+    if(!(physical_config.time_leaving_barrier >= RELAY_TIME_MIN_SEC && pivot_config.time_leaving_barrier <= RELAY_TIME_MAX_SEC))
     {
         return ret;
     }
@@ -813,3 +818,39 @@ bool idp_parser_validate_idp_23(const gps_config gps_config)
 
     return true;
 }
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param virtual_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_26(const pivot_virtual_config virtual_config)
+{
+    bool ret = false;
+
+    if(!(virtual_config.start_angle_virtual_barrier <= 360))
+    {
+        return ret;
+    }
+
+    if(!(virtual_config.end_angle_virtual_barrier <= 360))
+    {
+        return ret;
+    }
+
+    if(!(virtual_config.automatic_return == 0 || virtual_config.automatic_return == 1))
+    {
+        return ret;
+    }
+
+    if(!(virtual_config.water_return == 0 || virtual_config.water_return == 1))
+    {
+        return ret;
+    }
+
+    return true;
+}
+
