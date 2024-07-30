@@ -337,7 +337,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 			err = ESP_FAIL;
 		}
 	}
-	else if(strcmp(req->uri, "/config/virtual") == 0) // Barreira fisica - Nao mudar rota
+	else if(strcmp(req->uri, "/config/virtual") == 0) // Physical barrier - Do not change route
 	{
 		if(http_callback != NULL)
 		{
@@ -349,7 +349,7 @@ static esp_err_t http_get_handler(httpd_req_t *req)
 			err = ESP_FAIL;
 		}
 	}
-	else if(strcmp(req->uri, "/config/new_virtual") == 0) // Barreira virtual
+	else if(strcmp(req->uri, "/config/new_virtual") == 0) // Virtual barrier
 	{
 		if(http_callback != NULL)
 		{

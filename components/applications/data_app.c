@@ -102,14 +102,23 @@
  */
 #define DATA_TIMESTAMP "timestamp"
 
-#define DATA_STATUS_BARRIER	"status_barrier"
-
 /**
  * @def DATA_BARRIER
  * @brief NVS access space for barrier status data.
  */
+
+#define DATA_STATUS_BARRIER	"status_barrier"
+
+/**
+ * @def DATA_VIRTUAL_BARRIER
+ * @brief NVS access space for virtual barrier data.
+ */
 #define DATA_VIRTUAL_BARRIER "virtual_barrier"
 
+/**
+ * @def DATA_PHYSICS_BARRIER
+ * @brief NVS access space for physical barrier data.
+ */
 #define DATA_PHYSICAL_BARRIER "phy_barrier"
 
 /**

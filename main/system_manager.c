@@ -752,7 +752,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT)
 	{
-		if (delimiter_num >= expected_delimiter_num) // quantidade de campos no payload - 1
+		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -856,7 +856,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT)
 	{
-		if (delimiter_num >= expected_delimiter_num) // quantidade de campos no payload - 1
+		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
