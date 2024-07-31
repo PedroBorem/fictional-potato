@@ -91,7 +91,7 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
-uint8_t counter_reading_panel = 0;
+uint32_t counter_reading_panel = 0;
 
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);

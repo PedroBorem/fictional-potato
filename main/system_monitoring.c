@@ -48,7 +48,7 @@ static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configur
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
-static uint8_t* panel_reading = &counter_reading_panel;
+static uint32_t* panel_reading = &counter_reading_panel;
 
 static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
 
