@@ -1290,10 +1290,10 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if (idp_parser_validate_idp_14(scheduling, str_author))
-		{
-			idp_parser_get_pwd(dwp, &scheduling.actions);
+		idp_parser_get_pwd(dwp, &scheduling.actions);
 
+		if(idp_parser_validate_idp_14(scheduling, str_author))
+		{
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 
@@ -1450,11 +1450,10 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if (idp_parser_validate_idp_15(scheduling, str_author))
+		idp_parser_get_pwd(dwp, &scheduling.actions);
+
+		if(idp_parser_validate_idp_15(scheduling, str_author))
 		{
-
-			idp_parser_get_pwd(dwp, &scheduling.actions);
-
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
