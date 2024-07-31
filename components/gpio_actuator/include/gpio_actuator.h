@@ -31,7 +31,7 @@
 /**
 * @brief Time duration for high logic level against the barrier (in milliseconds).
 */
-#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	100
+#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	500
 
 /**
 * @brief Time duration for high logic level outside the barrier (in milliseconds).
@@ -226,5 +226,7 @@ void gpio_actuator_pressure_on(void);
  * This function turns off the pressure relay and stops pressure monitoring in the GPIO actuator module.
  */
 void gpio_actuator_pressure_off(void);
+
+void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */

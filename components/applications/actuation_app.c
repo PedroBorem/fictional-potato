@@ -122,6 +122,15 @@ esp_err_t actuation_app_set_config(pivot_config config)
 }
 
 /**
+ * @brief Set the barrier leaving time for the actuator.
+ * @param barrier_config [in]: Configuration structure containing the barrier leaving time settings.
+ */
+void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config)
+{
+	set_gpio_leaving_barrier_time(barrier_config);
+}
+
+/**
  * @brief Set the actions for the actuator.
  * @param config_in [in]: The pivot actions to set.
  * @param alert_change [in]: Flag indicating whether to alert about manual configuration.
