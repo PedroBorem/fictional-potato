@@ -444,6 +444,8 @@ extern uint16_t global_angle;
  */
 extern char system_id[50];
 
+extern uint8_t counter_reading_panel;
+
 /** @} */ // end of PROJECT_CONFIG group
 
 #endif /* COMPONENTS_UTILS_INCLUDE_PROJECT_CONFIG_H_ */

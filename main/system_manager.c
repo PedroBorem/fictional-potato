@@ -91,6 +91,8 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
+uint8_t counter_reading_panel = 0;
+
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
@@ -614,6 +616,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 			xTimerStop(system_timer, 1000);
 			xTimerStart(system_timer, 1000);
 		}
+
+		counter_reading_panel = 0;
 	}
 }
 
@@ -2427,6 +2431,12 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
+		counter_reading_panel++;
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "CONTAGEM DE LEITURA MANUEL: %d", counter_reading_panel);
+		if(counter_reading_panel >= 5)
+		{
+			counter_reading_panel = 0;
+		}
 		system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 
 		// time for the percentage to stabilize
