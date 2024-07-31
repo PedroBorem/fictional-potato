@@ -2432,7 +2432,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
 		counter_reading_panel++;
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "CONTAGEM DE LEITURA MANUEL: %d", counter_reading_panel);
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "CONTAGEM DE LEITURA MANUEL: %" PRIu32, counter_reading_panel);
 		if(counter_reading_panel >= 5)
 		{
 			counter_reading_panel = 0;

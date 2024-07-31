@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <time.h>
 
@@ -28,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.0.0")
+#define CONFIG_FW_VERSION           ("v2.5.2")
 
 /**
  * @brief Maximum number of scheduling values.
