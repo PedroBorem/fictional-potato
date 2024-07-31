@@ -617,7 +617,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 			xTimerStart(system_timer, 1000);
 		}
 
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "VALOR DO PIVO ID: %s", pivot_id);
 		if(strcmp(pivot_id, "system_monitoring") != 0)
 		{
 			counter_reading_panel = 0;
@@ -2436,7 +2435,6 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
 		counter_reading_panel++;
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "CONTAGEM DE LEITURA MANUEL: %" PRIu32, counter_reading_panel);
 		system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 
 		// time for the percentage to stabilize

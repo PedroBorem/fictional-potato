@@ -162,7 +162,6 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
     }
     else if(barrier_type == PHYSICAL_BARRIER)
     {
-        ESP_LOGE(SYSTEM_MONITORING_TAG, "VALOR DA CONTAGEM DE LEITURA DO PAINEL: %" PRIu32, *panel_reading);
         if(system_monitoring_physical_config.automatic_return == true  && *panel_reading < 3)
         {
             vTaskDelay(pdMS_TO_TICKS(15000)); // 15   seconds
