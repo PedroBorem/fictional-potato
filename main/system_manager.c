@@ -88,7 +88,7 @@ static TimerHandle_t system_timer = NULL;
 /**
  * @var gps_flag_send_to_mqtt
  * @brief Variable that will indicate whether or not the next payload received from GPS will go to MQTT
-*/
+ */
 static bool gps_flag_send_to_mqtt = false;
 
 static void system_manager_reboot(void);
@@ -114,6 +114,7 @@ static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -141,10 +142,15 @@ void system_manager_init(void)
 
 	// system monitoring init
 	system_read_time = config.read_time;
-	pivot_return_config return_config = {};
-	data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+	pivot_physical_config physical_config = {};
+	data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
+	actuation_app_leaving_barrier_time(physical_config);
+
+	pivot_virtual_config virtual_config = {};
+	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 	system_monitoring_register_callback(&system_manager_callback);
-	system_monitoring_start(return_config, system_read_time);
+
+	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
 	// communication modules init
 	network_config network = {};
@@ -216,16 +222,18 @@ static void system_manager_reboot(void)
 	LOG_DATA(SYSTEM_MANAGER_TAG, " (timestamp_now - timestamp_nvs): %lld", (timestamp_now - timestamp_nvs));
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-	if(current_reboot.reboot_timeout_sec < 1)
+	if (current_reboot.reboot_timeout_sec < 1)
 	{
 		timeout = SYSTEM_REBOOT_TIMEOUT_SEC;
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid current reboot timeout, default applied...");
-	}else{
+	}
+	else
+	{
 		timeout = current_reboot.reboot_timeout_sec;
 	}
 
-	if ((current_reboot.enable)&&((timestamp_now - timestamp_nvs) < (timeout)))
+	if ((current_reboot.enable) && ((timestamp_now - timestamp_nvs) < (timeout)))
 	{
 		esp_reset_reason_t reset_cause = esp_reset_reason();
 		if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
@@ -251,8 +259,8 @@ static void system_manager_reboot(void)
 		}
 	}
 	else
-	{	
-		if(!current_reboot.enable)
+	{
+		if (!current_reboot.enable)
 		{
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Automatic Reboot Disabled ...");
 		}
@@ -293,7 +301,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 
 	bool payload_ascii_valid = check_valid_characters(str_pkg, strlen(str_pkg));
 
-	if(payload_ascii_valid == true)
+	if (payload_ascii_valid == true)
 	{
 		switch (idp_request)
 		{
@@ -390,6 +398,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_24:
 		{
 			system_manager_idp_24(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_26:
+		{
+			system_manager_idp_26(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -517,7 +530,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 			if (new_actions.power_state == PIVOT_OFF)
 			{
-				if(global_angle != 655 && system_initial_angle != 655)
+				if (global_angle != 655 && system_initial_angle != 655)
 				{
 					system_initial_angle = global_angle;
 					data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
@@ -550,8 +563,11 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 				}
 
+				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
+				{
+					system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
+				}
 				// act on the equipment
-				system_monitoring_barrier(new_actions);
 				actuation_app_set_actions(new_actions, false);
 
 				// time for the percentage to stabilize
@@ -561,8 +577,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_manager_idp_00("#00$", COMM_MQTT);
 
 				// save new history
-				if ((new_actions.power_state != PIVOT_OFF)
-				&& (old_actions.power_state == PIVOT_OFF))
+				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 				{
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = global_angle;
@@ -737,11 +752,11 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT)
 	{
-		if (delimiter_num >= expected_delimiter_num) //quantidade de campos no payload - 1
+		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
-		else if(delimiter_num == 1 || delimiter_num == 0)
+		else if (delimiter_num == 1 || delimiter_num == 0)
 		{
 			mqtt_load_pkg = true;
 		}
@@ -767,13 +782,16 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(idp_parser_validate_idp_03(new_config))
+		if (idp_parser_validate_idp_03(new_config))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_PIVOT_CONFIG, &new_config, sizeof(new_config));
 			if (ret == ESP_OK)
 			{
-				pivot_return_config return_config = {};
-				data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+				pivot_virtual_config virtual_config = {};
+				data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
+
+				pivot_physical_config physical_config = {};
+				data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
 
 				// send ACK
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
@@ -781,23 +799,12 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				system_read_time = new_config.read_time;
 
 				system_monitoring_stop();
-				system_monitoring_start(return_config, system_read_time);
-			}
-			else
-			{
-				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+				system_monitoring_start(physical_config, virtual_config, system_read_time);
 			}
 		}
 		else
 		{
-			if (comm_mode == COMM_HTTP_POST)
-			{
-				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
-			}
-
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "Pivot Config invalid packed data (%s)", buffer);
-			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
-			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 		}
 	}
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
@@ -828,7 +835,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 	else
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
@@ -849,11 +856,11 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT)
 	{
-		if (delimiter_num >= expected_delimiter_num) //quantidade de campos no payload - 1
+		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
-		else if(delimiter_num == 1 || delimiter_num == 0)
+		else if (delimiter_num == 1 || delimiter_num == 0)
 		{
 			mqtt_load_pkg = true;
 		}
@@ -874,7 +881,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if(idp_parser_validate_idp_04(eco_mode))
+		if (idp_parser_validate_idp_04(eco_mode))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode, sizeof(eco_mode));
 
@@ -928,7 +935,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	else
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
@@ -953,7 +960,7 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 		{
 			mqtt_save_pkg = true;
 		}
-		else if(delimiter_num == 1 || delimiter_num == 0)
+		else if (delimiter_num == 1 || delimiter_num == 0)
 		{
 			mqtt_load_pkg = true;
 		}
@@ -981,7 +988,7 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if(idp_parser_validate_idp_05(sector))
+		if (idp_parser_validate_idp_05(sector))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_SECTOR_CONFIG, &sector, sizeof(sector));
 
@@ -1039,7 +1046,7 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 	else
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
@@ -1111,11 +1118,11 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
 		}
 
-		if(gps_flag_send_to_mqtt)
+		if (gps_flag_send_to_mqtt)
 		{
 			gprs_uart_send_event(buffer, strlen(buffer));
 		}
-		
+
 		gps_flag_send_to_mqtt = false;
 	}
 	if (comm_mode == COMM_MQTT)
@@ -1599,9 +1606,8 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(idp_parser_validate_idp_16(scheduling,str_author))
+		if (idp_parser_validate_idp_16(scheduling, str_author))
 		{
-
 
 			pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
@@ -1732,7 +1738,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(idp_parser_validate_idp_17(scheduling_off_angle,str_author))
+		if (idp_parser_validate_idp_17(scheduling_off_angle, str_author))
 		{
 			data_app_gen_scheduling_key(scheduling_off_angle.scheduling_id);
 			data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
@@ -1873,9 +1879,9 @@ static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if(idp_parser_validate_idp_21(timestamp))
+		if (idp_parser_validate_idp_21(timestamp))
 		{
-			rtc_app_set_timestamp(timestamp);		
+			rtc_app_set_timestamp(timestamp);
 		}
 		else
 		{
@@ -1904,7 +1910,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_RETURN_CONFIG_VAR_COUNT + 1);
+	uint8_t expected_delimiter_num = (PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -1912,7 +1918,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		{
 			mqtt_save_pkg = true;
 		}
-		else if(delimiter_num == 1 || delimiter_num == 0)
+		else if (delimiter_num == 1 || delimiter_num == 0)
 		{
 			mqtt_load_pkg = true;
 		}
@@ -1922,29 +1928,32 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
-		pivot_return_config return_config = {};
+		pivot_physical_config physical_config = {};
+		pivot_virtual_config virtual_config = {};
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint16_t", &return_config.start_angle},
-				{"uint16_t", &return_config.end_angle},
-				{"bool", &return_config.automatic_return},
-				{"bool", &return_config.water_return},
+				{"uint16_t", &physical_config.start_angle_physical_barrier},
+				{"uint16_t", &physical_config.end_angle_physical_barrier},
+				{"bool", &physical_config.automatic_return},
+				{"bool", &physical_config.water_return},
+				{"uint8_t", &physical_config.time_leaving_barrier},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(idp_parser_validate_idp_22(return_config))
+		if (idp_parser_validate_idp_22(physical_config))
 		{
-			esp_err_t ret = data_app_save(DATA_TYPE_RETURN_CONFIG, &return_config, sizeof(return_config));
+			esp_err_t ret = data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &physical_config, sizeof(physical_config));
 			if (ret == ESP_OK)
 			{
+				actuation_app_leaving_barrier_time(physical_config);
 				// send ACK
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 				system_monitoring_stop();
-				system_monitoring_start(return_config, system_read_time);
+				system_monitoring_start(physical_config, virtual_config, system_read_time);
 			}
 			else
 			{
@@ -1968,20 +1977,20 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 		char str_out[200] = {};
 
 		uint8_t idp = IDP_22;
-		pivot_return_config return_config = {};
+		pivot_physical_config physical_config = {};
 
-		data_app_load(DATA_TYPE_RETURN_CONFIG, &return_config);
+		data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_config);
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint16_t", &return_config.start_angle},
-				{"uint16_t", &return_config.end_angle},
-				{"bool", &return_config.automatic_return},
-				{"bool", &return_config.water_return},
+				{"uint16_t", &physical_config.start_angle_physical_barrier},
+				{"uint16_t", &physical_config.end_angle_physical_barrier},
+				{"bool", &physical_config.automatic_return},
+				{"bool", &physical_config.water_return},
+				{"uint8_t", &physical_config.time_leaving_barrier},
 				{NULL, NULL}};
-
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -1989,7 +1998,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	else
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
@@ -2014,16 +2023,16 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 		{
 			mqtt_save_pkg = true;
 		}
-		else if(delimiter_num == 1 || delimiter_num == 0)
+		else if (delimiter_num == 1 || delimiter_num == 0)
 		{
 			mqtt_load_pkg = true;
 		}
 	}
 
-	if ( mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
+	if (mqtt_save_pkg || comm_mode == COMM_HTTP_POST)
 	{
 		size_t len_buffer = strlen(buffer);
-		size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+		size_t len_buffer_gps_config = len_buffer + 3; // for 0x01 and 0x00 and  null terminator \0
 		char buffer_gps_config[len_buffer_gps_config];
 
 		prepare_gps_config_message(buffer, buffer_gps_config);
@@ -2038,9 +2047,9 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 		else
 		{
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
-		}	
+		}
 	}
-	else if(comm_mode == COMM_HTTP_GET)
+	else if (comm_mode == COMM_HTTP_GET)
 	{
 		char str_out[200] = {};
 
@@ -2069,10 +2078,10 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	{
 		pivot_actions actions = {};
 		actuation_app_get_actions(&actions, sizeof(actions));
-		if(actions.power_state == PIVOT_ON)
+		if (actions.power_state == PIVOT_ON)
 		{
 			size_t len_buffer = strlen(buffer);
-			size_t len_buffer_gps_config = len_buffer + 3;	   // for 0x01 and 0x00 and  null terminator \0
+			size_t len_buffer_gps_config = len_buffer + 3; // for 0x01 and 0x00 and  null terminator \0
 			char buffer_gps_config[len_buffer_gps_config];
 
 			prepare_gps_config_message(buffer, buffer_gps_config);
@@ -2088,8 +2097,9 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 			{
 				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 			}
-
-		}else{
+		}
+		else
+		{
 			char str_out[200] = {};
 
 			uint8_t idp = IDP_23;
@@ -2111,7 +2121,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 			// send nvs saved config
 			idp_parser_create_package(str_out, arg_pairs);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);		
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
 		}
 	}
 	else if (comm_mode == COMM_RF)
@@ -2133,12 +2143,12 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if(idp_parser_validate_idp_23(gps_config))
+		if (idp_parser_validate_idp_23(gps_config))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
 			if (ret == ESP_OK)
 			{
-				gprs_uart_send_event(buffer,strlen(buffer));
+				gprs_uart_send_event(buffer, strlen(buffer));
 			}
 			else
 			{
@@ -2160,7 +2170,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 	else
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
-		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);	
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
 }
 
@@ -2203,8 +2213,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 				{"string", pivot_id},
 				{"bool", &reboot_config.enable},
 				{"uint32_t", &reboot_config.reboot_timeout_sec},
-				{NULL, NULL}
-			};
+				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2234,14 +2243,116 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 				{"string", system_id},
 				{"bool", &reboot_config.enable},
 				{"uint32_t", &reboot_config.reboot_timeout_sec},
-				{NULL, NULL}
-			};
+				{NULL, NULL}};
 
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
-	else{
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
+}
+
+/**
+ * @brief Handles IDP 26 requests for return configuration modification.
+ *
+ * This function handles the modification of return configuration.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT);
+
+	if (comm_mode == COMM_MQTT)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		uint8_t idp = 0;
+		char pivot_id[50] = {};
+		pivot_virtual_config virtual_config = {};
+		pivot_physical_config physical_config = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
+				{"bool", &virtual_config.automatic_return},
+				{"bool", &virtual_config.water_return},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if (idp_parser_validate_idp_26(virtual_config))
+		{
+			esp_err_t ret = data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config, sizeof(virtual_config));
+			if (ret == ESP_OK)
+			{
+				// send ACK
+				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+				system_monitoring_stop();
+				system_monitoring_start(physical_config, virtual_config, system_read_time);
+			}
+			else
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+			}
+		}
+		else
+		{
+			if (comm_mode == COMM_HTTP_POST)
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			}
+
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Return Config invalid packed data (%s)", buffer);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+
+		uint8_t idp = IDP_26;
+		pivot_virtual_config virtual_config = {};
+
+		data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
+				{"bool", &virtual_config.automatic_return},
+				{"bool", &virtual_config.water_return},
+				{NULL, NULL}};
+		// send
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 	}
@@ -2269,10 +2380,10 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	uint8_t idp = 0;
 
 	arg_pair_t arg_pairs[] = {
-	{"uint8_t", &idp},
-	{"uint16_t", &dwp},
-	{"uint16_t", &new_actions.percentimeter},
-	{NULL, NULL}};
+		{"uint8_t", &idp},
+		{"uint16_t", &dwp},
+		{"uint16_t", &new_actions.percentimeter},
+		{NULL, NULL}};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
 	idp_parser_get_pwd(dwp, &new_actions);
@@ -2281,7 +2392,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	if (new_actions.power_state == PIVOT_OFF)
 	{
-		if(global_angle != 655 && system_initial_angle != 655)
+		if (global_angle != 655 && system_initial_angle != 655)
 		{
 			system_initial_angle = global_angle;
 			data_app_save(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle, sizeof(system_initial_angle));
@@ -2292,7 +2403,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		}
 
 		actuation_app_get_actions(&new_actions, sizeof(new_actions));
-		new_actions.percentimeter = 0;
+		new_actions.percentimeter = old_actions.percentimeter;
 		new_actions.power_state = PIVOT_OFF;
 		new_actions.watering_state = PIVOT_DRY;
 
@@ -2316,6 +2427,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
+		system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 
 		// time for the percentage to stabilize
 		system_rtc_percent = rtc_app_get_timestamp(false);
@@ -2324,8 +2436,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		system_manager_idp_00("#00$", COMM_MQTT);
 
 		// save new history
-		if ((new_actions.power_state != PIVOT_OFF)
-		&& (old_actions.power_state == PIVOT_OFF))
+		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
@@ -2338,7 +2449,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save new state");
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed_to_save_new_state");
 	}
-	
+
 	// start timer percent and pressure
 	if (system_timer != NULL)
 	{

@@ -229,10 +229,10 @@ bool idp_parser_validate_idp_21(const time_t timestamp);
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param return_config data to be validated.
+ * @param virtual_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_22(const pivot_return_config return_config);
+bool idp_parser_validate_idp_22(const pivot_physical_config physical_config);
 
 /**
  * @brief Validate the specified configuration paramters.
@@ -243,5 +243,15 @@ bool idp_parser_validate_idp_22(const pivot_return_config return_config);
  * @return true if the data are valid, false otherwise.
  */
 bool idp_parser_validate_idp_23(const gps_config gps_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param virtual_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_26(const pivot_virtual_config virtual_config);
 
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

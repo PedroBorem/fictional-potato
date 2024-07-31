@@ -123,6 +123,7 @@ typedef enum
     IDP_22,
     IDP_23,
     IDP_24,
+    IDP_26 = 26,
     IDP_30 = 30,
     IDP_90 = 90,
     IDP_91,
@@ -313,18 +314,29 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    uint16_t start_angle;   /*!< Start angle of the configuration */
-    uint16_t end_angle;     /*!< End angle of the configuration */
+    uint16_t start_angle_virtual_barrier;   /*!< Start angle of the configuration of the virtual barrier*/
+    uint16_t end_angle_virtual_barrier;     /*!< End angle of the configuration of the virtual barrier*/
     bool automatic_return;
     bool water_return;
-} pivot_return_config;
+} pivot_virtual_config;
 
 /**
  * @brief Configuration parameters.
  *
- * How many configuration parameters in pivot_return_config struct.
+ * How many configuration parameters in pivot_virtual_config struct.
  */
-#define PIVOT_RETURN_CONFIG_VAR_COUNT   (4)
+#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (5)
+
+typedef struct __attribute__((__packed__))
+{
+    uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
+    uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
+    bool automatic_return;
+    bool water_return;
+    uint8_t time_leaving_barrier;
+} pivot_physical_config;
+
+#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (6)
 
 /**
  * @brief Scheduling date parameters.
@@ -384,6 +396,18 @@ typedef struct __attribute__((__packed__))
 } pivot_history;
 
 /**
+ * @brief Indicates which type the barrier
+ * 
+ * This macro is used to represent which type of barrier is being used
+ * 
+ */
+typedef enum
+{
+    VIRTUAL_BARRIER = 0,
+    PHYSICAL_BARRIER,
+} type_barrier;
+
+/**
  * @brief Indicates that the pivot is outside the barrier.
  *
  * This macro is used to represent the state where the pivot is outside/inside the barrier.
@@ -394,7 +418,10 @@ typedef enum
 {
     PIVOT_OUTSIDE_THE_BARRIER = 0,
     PIVOT_IN_THE_BARRIER,
-    PIVOT_LEAVING_THE_BARRIER
+    PIVOT_LEAVING_THE_BARRIER,
+    PIVOT_LEAVING_THE_VIRTUAL_BARRIER,
+    PIVOT_IN_THE_VIRTUAL_BARRIER,
+    PIVOT_OUTSIDE_THE_VIRTUAL_BARRIER,
 } barrier_status;
 
 /**
