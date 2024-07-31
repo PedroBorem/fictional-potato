@@ -617,7 +617,11 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 			xTimerStart(system_timer, 1000);
 		}
 
-		counter_reading_panel = 0;
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "VALOR DO PIVO ID: %s", pivot_id);
+		if(strcmp(pivot_id, "system_monitoring") != 0)
+		{
+			counter_reading_panel = 0;
+		}
 	}
 }
 
