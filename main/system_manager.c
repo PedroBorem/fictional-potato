@@ -2435,6 +2435,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// act on the equipment
 		actuation_app_set_actions(new_actions, true);
 		counter_reading_panel++;
+
 		system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 
 		// time for the percentage to stabilize
@@ -2446,6 +2447,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
+			counter_reading_panel = 0;
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
 			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
