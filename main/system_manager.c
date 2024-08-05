@@ -568,6 +568,10 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					system_monitoring_barrier(new_actions, PHYSICAL_BARRIER);
 				}
 				// act on the equipment
+				ESP_LOGE(SYSTEM_MANAGER_TAG,"power_state %d", new_actions.power_state);
+				ESP_LOGE(SYSTEM_MANAGER_TAG,"rotation %d", new_actions.rotation);
+				ESP_LOGE(SYSTEM_MANAGER_TAG,"watering_state %d", new_actions.watering_state);
+				ESP_LOGE(SYSTEM_MANAGER_TAG,"percentimeter %d", new_actions.percentimeter);
 				actuation_app_set_actions(new_actions, false);
 
 				// time for the percentage to stabilize
