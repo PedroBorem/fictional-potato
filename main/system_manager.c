@@ -620,6 +620,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		if(strcmp(pivot_id, "system_monitoring") != 0)
 		{
 			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 		}
 	}
 }
@@ -2424,6 +2425,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		}
 
 		counter_reading_panel_off++;
+		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2448,6 +2450,8 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
 			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
+
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
 			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));

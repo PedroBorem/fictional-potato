@@ -48,9 +48,9 @@ static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configur
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
-static uint32_t* panel_reading = &counter_reading_panel_off;
+static uint32_t panel_reading;
 
-static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
+static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
 /* Private methods ----------------------------------- */
 
@@ -162,8 +162,8 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
     }
     else if(barrier_type == PHYSICAL_BARRIER)
     {
-        ESP_LOGE(SYSTEM_MONITORING_TAG, "VALOR DA CONTAGEM DE LEITURA DO PAINEL: %" PRIu32, *panel_reading);
-        if(system_monitoring_physical_config.automatic_return == true  && *panel_reading < READING_LIMIT_FOR_RETURN)
+        data_app_load(DATA_TYPE_MANUAL_COUNTER, &panel_reading);
+        if(system_monitoring_physical_config.automatic_return == true  && panel_reading < READING_LIMIT_FOR_RETURN)
         {
             vTaskDelay(pdMS_TO_TICKS(15000)); // 15   seconds
 
