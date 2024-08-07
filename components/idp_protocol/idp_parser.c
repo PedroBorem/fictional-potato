@@ -441,6 +441,21 @@ bool check_valid_characters(const char *buffer, uint8_t size)
 	return true;
 }
 
+/** 
+ * 
+ * COMENTARIO AQUI
+ */
+void remove_hashtag_cipher(const char *buffer, char* output_buffer)
+{
+    int j = 0;
+    for (int i = 0; buffer[i] != '\0'; i++) {
+        if (buffer[i] != '#' && buffer[i] != '$') {
+            output_buffer[j++] = buffer[i];
+        }
+    }
+    output_buffer[j] = '\0';
+}
+
 /**
  * @brief Prepares GPS configuration message.
  *

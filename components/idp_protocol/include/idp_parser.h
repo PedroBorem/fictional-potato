@@ -52,6 +52,14 @@ bool idp_parser_validate_actions(const pivot_actions actions);
  */
 bool idp_parser_validate_network(const network_config net_config);
 
+/** 
+ * 
+ * COMENTARIO AQUI
+ * 
+ * 
+ */
+void remove_hashtag_cipher(const char *buffer, char* output_buffer);
+
 /**
  * @brief Create an IDP packet with a generated password based on the specified pivot actions.
  *
