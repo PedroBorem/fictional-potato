@@ -115,6 +115,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_27(const char* buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -403,6 +404,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_26:
 		{
 			system_manager_idp_26(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_27:
+		{
+			system_manager_idp_27(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_30:
@@ -2355,6 +2361,59 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
+}
+
+static void system_manager_idp_27(const char* buufer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	{
+		size_t available_space;
+		char buffer_out[500] = {};
+		char str_out[500] = {};
+
+		char scheduling_idp_14[200] = "14-";
+		uint8_t dwp = 0;
+		char dwp_str[3] = "000";
+		
+		uint8_t idp_27 = IDP_27;
+	
+		// uint8_t idp_15 = IDP_15;
+		// uint16_t dwp_15 = 0;
+
+		// uint8_t idp_16 = IDP_16;
+		// uint8_t idp_17 = IDP_17;
+
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+
+		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
+			if(dwp != 0)
+			{
+				snprintf(dwp_str, sizeof(dwp_str), "%u", dwp);
+				ESP_LOGE(SYSTEM_MANAGER_TAG, "%s", dwp_str);
+				strcat(scheduling_idp_14, scheduling_date[position].scheduling_id);
+				strcat(scheduling_idp_14, "-");
+				strcat(scheduling_idp_14, dwp_str);
+			}
+		}
+		
+		strcat(scheduling_idp_14, "-");
+
+		arg_pair_t arg_pairs_idp_27[] = 
+			{
+				{"uint8_t", &idp_27},
+				{"string", system_id},
+				{"string", scheduling_idp_14},
+				{NULL, NULL}};
+		
+
+		idp_parser_create_package(str_out, arg_pairs_idp_27);
+		strcat(buffer_out, "\n");
+		
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
