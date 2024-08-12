@@ -13,6 +13,7 @@
 #include <stdio.h>
 #include <stddef.h>
 #include <stdint.h>
+#include <inttypes.h>
 
 #include <time.h>
 
@@ -28,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.0.0")
+#define CONFIG_FW_VERSION           ("v2.5.2")
 
 /**
  * @brief Maximum number of scheduling values.
@@ -413,7 +414,6 @@ typedef enum
  * This macro is used to represent the state where the pivot is outside/inside the barrier.
  *
  */
-
 typedef enum 
 {
     PIVOT_OUTSIDE_THE_BARRIER = 0,
@@ -423,6 +423,18 @@ typedef enum
     PIVOT_IN_THE_VIRTUAL_BARRIER,
     PIVOT_OUTSIDE_THE_VIRTUAL_BARRIER,
 } barrier_status;
+
+/**
+ * @brief Indicates that the pivot is outside the barrier.
+ *
+ * This macro is used to represent the state how many manual readings were taken
+ *
+ */
+typedef enum
+{
+    NO_MANUAL_READING = 0,
+    READING_LIMIT_FOR_RETURN = 3,
+} manual_off_counter;
 
 /**
  * @brief Application callback function.
@@ -443,6 +455,8 @@ extern uint16_t global_angle;
  *  @brief Local variable for the system ID.
  */
 extern char system_id[50];
+
+extern uint32_t counter_reading_panel_off;
 
 /** @} */ // end of PROJECT_CONFIG group
 
