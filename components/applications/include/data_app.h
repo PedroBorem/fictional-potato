@@ -43,6 +43,7 @@ typedef enum
     DATA_TYPE_VIRTUAL_BARRIER, /**< Virtual Barrier configuration */
     DATA_TYPE_PHYSICAL_BARRIER, /**< Physical Barrier configuration */
     DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
+    DATA_TYPE_MANUAL_COUNTER, /**< Manual counter */
 } data_type_t;
 
 

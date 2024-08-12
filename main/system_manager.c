@@ -91,6 +91,8 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
+uint32_t counter_reading_panel_off = NO_MANUAL_READING;
+
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
@@ -613,6 +615,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		{
 			xTimerStop(system_timer, 1000);
 			xTimerStart(system_timer, 1000);
+		}
+
+		if(strcmp(pivot_id, "system_monitoring") != 0)
+		{
+			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 		}
 	}
 }
@@ -2415,6 +2423,9 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 			old_history.end_angle = global_angle;
 			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 		}
+
+		counter_reading_panel_off++;
+		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2438,6 +2449,9 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
+			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
+
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
 			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));

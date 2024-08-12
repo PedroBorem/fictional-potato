@@ -149,6 +149,12 @@ void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
 		ESP_LOGW(ACTUATION_APP_TAG,"Alert, Manual Configuration !!");
 		ESP_LOGW(ACTUATION_APP_TAG,"%d%d%d-%d", config_in.rotation, config_in.watering_state,
 		config_in.power_state, config_in.percentimeter);
+
+		if(config_in.power_state == PIVOT_OFF)
+		{
+			gpio_actuator_set(config_in);
+		}
+		
 	}
 
 	if (eTaskGetState(xTask_actuation_app) == eSuspended
