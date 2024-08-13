@@ -2503,6 +2503,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 
 				strcat(buffer_out, buffer_scheduling_17);
 				strcat(buffer_out, "&");
+
+				scheduling_counter++;
 			}
 
 		}
@@ -2511,6 +2513,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp_27},
 				{"string", system_id},
+				{"uint8_t", &scheduling_counter},
 				{"string", buffer_out},
 				{NULL, NULL}};
 		
