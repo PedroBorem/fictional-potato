@@ -2389,9 +2389,9 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 		char buffer_scheduling_16[100] = {};
 		char str_out_scheduling_16[100] = {};
 
-		// uint8_t idp_17 = IDP_17;
-		// char buffer_scheduling_17[500] = {};
-		// char str_out_scheduling_17[200] = {};
+		uint8_t idp_17 = IDP_17;
+		char buffer_scheduling_17[500] = {};
+		char str_out_scheduling_17[200] = {};
 
 		uint16_t dwp = 0;
 		
@@ -2474,12 +2474,30 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 					idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
 					remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16);
 
-					strcat(buffer_out, str_out_scheduling_16);
+					strcat(buffer_out, buffer_scheduling_16);
 					strcat(buffer_out, "&");
 				}
 			}
 		}
 
+		pivot_scheduling_off_angle scheduling_off_angle = {};
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
+
+		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			arg_pair_t arg_pairs_scheduling_17[] =
+				{
+					{"uint8_t", &idp_17},
+					{"string", scheduling_off_angle[position].scheduling_id},
+					{"uint16_t", &scheduling_off_angle[position].end_angle},
+					{NULL, NULL}};
+
+			idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
+			remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17);
+
+			strcat(buffer_out, str_out_scheduling_17);
+			strcat(buffer_out, "&");
+		}
 
 		arg_pair_t arg_pairs_idp_27[] = 
 			{
@@ -2491,37 +2509,6 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs_idp_27);
 
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
-		
-		// position = 0;
-
-		// pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		// data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-
-		// while (position < CONFIG_SCHEDULING_MAX_VALUE)
-		// {
-		// 	if (scheduling_off_date[position].end_date != 0)
-		// 	{
-		// 		if (scheduling_off_date[position].end_date != 0)
-		// 		{
-		// 			arg_pair_t arg_pairs_scheduling_16[] =
-		// 				{
-		// 					{"uint8_t", &idp_16},
-		// 					{"string", scheduling_off_date[position].scheduling_id},
-		// 					{"uint32_t", &scheduling_off_date[position].end_date},
-		// 					{NULL, NULL}};
-
-		// 			idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
-		// 			remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16);
-		// 		}
-
-		// 		strcat(buffer_scheduling_16, str_out_scheduling_16);
-		// 		strcat(buffer_scheduling_16, "&");
-
-		// 		strcat(buffer_out, buffer_scheduling_16);
-		// 	}
-
-		// 	position++;
-		// }
 
 		// position = 0;
 
