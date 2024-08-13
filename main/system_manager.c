@@ -2489,7 +2489,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if(scheduling_off_angle[position].end_angle != NULL)
+			if(strcmp(scheduling_off_angle[position].scheduling_id, "") != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_17[] =
 					{
@@ -2506,7 +2506,6 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 
 				scheduling_counter++;
 			}
-
 		}
 
 		arg_pair_t arg_pairs_idp_27[] = 
