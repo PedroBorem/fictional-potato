@@ -2386,8 +2386,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 		char str_out[1500] = {};
 
 		uint8_t idp_14 = IDP_14;
-		char str_out_scheduling_14[100] = {};
 		char buffer_scheduling_14[100] = {};
+		char str_out_scheduling_14[100] = {};
 
 		uint8_t idp_15 = IDP_15;
 		char buffer_scheduling_15[100] = {};
