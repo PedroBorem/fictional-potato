@@ -441,9 +441,15 @@ bool check_valid_characters(const char *buffer, uint8_t size)
 	return true;
 }
 
-/** 
- * 
- * COMENTARIO AQUI
+/**
+ * @brief Removes specific characters ('#' and '$') from the input buffer.
+ *
+ * This function iterates over the input buffer and removes any occurrences 
+ * of the characters '#' and '$', storing the result in the output buffer. 
+ * The output buffer is null-terminated after processing.
+ *
+ * @param buffer Input character array from which '#' and '$' will be removed.
+ * @param output_buffer Output character array to store the result after removal of '#' and '$'.
  */
 void remove_hashtag_cipher(const char *buffer, char* output_buffer)
 {

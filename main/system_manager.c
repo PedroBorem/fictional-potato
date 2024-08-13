@@ -2364,16 +2364,19 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	}
 }
 
+
 /**
- * 
- * COMENTARIO AQUI
- * 
+ * @brief Handles IDP 27 returns all schedules present on the control board
+ *
+ * This function works like a GET all for schedules
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
 	{
-
 		uint16_t dwp = 0;
 
 		uint8_t scheduling_counter = 0;
