@@ -72,6 +72,7 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
     }
     else if (communication == COMM_MQTT)
     {
+        ESP_LOGE(COMM_APP_TAG, "TESTANDO: %s", str_copy);
         gprs_uart_send_event(str_copy, strlen(str_copy));
         rf_uart_send_event(str_copy, strlen(str_copy));
     }
