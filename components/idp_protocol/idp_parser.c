@@ -451,7 +451,7 @@ bool check_valid_characters(const char *buffer, uint8_t size)
  * @param buffer Input character array from which '#' and '$' will be removed.
  * @param output_buffer Output character array to store the result after removal of '#' and '$'.
  */
-void remove_hashtag_cipher(const char *buffer, char* output_buffer)
+void idp_parser_remove_hashtag_cipher(const char *buffer, char* output_buffer)
 {
     int j = 0;
     for (int i = 0; buffer[i] != '\0'; i++) {

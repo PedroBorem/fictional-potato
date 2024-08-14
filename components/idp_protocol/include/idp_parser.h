@@ -52,13 +52,17 @@ bool idp_parser_validate_actions(const pivot_actions actions);
  */
 bool idp_parser_validate_network(const network_config net_config);
 
-/** 
- * 
- * COMENTARIO AQUI
- * 
- * 
+/**
+ * @brief Removes specific characters ('#' and '$') from the input buffer.
+ *
+ * This function iterates over the input buffer and removes any occurrences 
+ * of the characters '#' and '$', storing the result in the output buffer. 
+ * The output buffer is null-terminated after processing.
+ *
+ * @param[in] buffer The input character array from which '#' and '$' will be removed.
+ * @param[out] output_buffer The output character array to store the result after removal of '#' and '$'.
  */
-void remove_hashtag_cipher(const char *buffer, char* output_buffer);
+void idp_parser_remove_hashtag_cipher(const char *buffer, char* output_buffer);
 
 /**
  * @brief Create an IDP packet with a generated password based on the specified pivot actions.
