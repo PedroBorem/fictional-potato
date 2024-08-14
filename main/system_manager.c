@@ -1762,8 +1762,8 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 							{
 								{"uint8_t", &idp},
 								{"string", system_id},
-								{"string", scheduling_off_angle.scheduling_id},
-								{"uint16_t", &scheduling_off_angle.end_angle},
+								{"string", scheduling_off_angle[position].scheduling_id},
+								{"uint16_t", &scheduling.end_angle},
 								{NULL, NULL}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
@@ -1777,7 +1777,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 							{
 								{"uint8_t", &idp},
 								{"string", system_id},
-								{"string", scheduling_off_angle.scheduling_id},
+								{"string", scheduling_off_angle[position].scheduling_id},
 								{NULL, NULL}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
