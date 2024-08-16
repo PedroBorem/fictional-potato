@@ -56,7 +56,7 @@ static pivot_scheduling_angle scheduling_angle_current[CONFIG_SCHEDULING_MAX_VAL
 /**
  * @brief Structure to store the current scheduling off angle.
  */
-static pivot_scheduling_off_angle scheduling_off_angle_current = {};
+static pivot_scheduling_off_angle scheduling_off_angle_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 /**
  * @brief Array to store the status of scheduling dates.
@@ -366,13 +366,16 @@ static void scheduling_task_idp_17(void* arg)
 
     while (1)
     {
-        if (*scheduling_current_angle > (scheduling_off_angle_current.end_angle - angle_off_set)
-            && *scheduling_current_angle < (scheduling_off_angle_current.end_angle + angle_off_set)
-            && strcmp(scheduling_off_angle_current.scheduling_id, "") > 0)
+        for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
         {
-            scheduling_deactivate(scheduling_off_angle_current.scheduling_id, true);
+            if (*scheduling_current_angle > (scheduling_off_angle_current[angle_position].end_angle - angle_off_set)
+                && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set)
+                && strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
+            {
+                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
+            }
         }
-
+ 
         vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
     }
 }
@@ -483,7 +486,17 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_17:
 		{
-			memcpy(&scheduling_off_angle_current, scheduling_data, sizeof(scheduling_off_angle_current));
+			memcpy(scheduling_off_angle_current, scheduling_data, sizeof(scheduling_off_angle_current));
+
+            for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
+			{
+				if(*scheduling_current_angle > scheduling_off_angle_current[angle_position].end_angle
+				&& strcmp(scheduling_off_angle_current[angle_position].scheduling_id,"") > 0)
+				{
+					data_app_delete_scheduling(scheduling_off_angle_current[angle_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle_current);
+				}
+			}
 
 			if(xTask_scheduling_idp_17 == NULL)
 			{
