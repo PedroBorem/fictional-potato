@@ -81,6 +81,16 @@
 #define LONGITUDE_MAX 180
 
 /**
+ * @brief The minimum time value accepted for automatic reboot.
+ */
+#define REBOOT_MIN_SEC 1800
+
+/**
+ * @brief The maximum time value accepted for automatic reboot.
+ */
+#define REBOOT_MAX_SEC 36000
+
+/**
  * @brief The minimum time value accepted for periodically payload from GPS (IDP_7) in seconds.
  */
 #define PAYLOAD_TIME_MIN_SEC 1
@@ -811,13 +821,34 @@ bool idp_parser_validate_idp_23(const gps_config gps_config)
         return ret;
     }
 
-    if(!(gps_config.offset > 0))
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_24(const reboot_config reboot_config)
+{
+    bool ret = false;
+
+    if(!(reboot_config.enable == 0 || reboot_config.enable == 1))
     {
         return ret;
     }
 
+    if(!(reboot_config.reboot_timeout_sec > REBOOT_MIN_SEC && reboot_config.reboot_timeout_sec < REBOOT_MAX_SEC ))
+    {
+        return ret;
+    }    
+    
     return true;
 }
+
 
 /**
  * @brief Validate the specified configuration paramters.

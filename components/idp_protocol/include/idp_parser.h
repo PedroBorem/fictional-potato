@@ -249,6 +249,16 @@ bool idp_parser_validate_idp_23(const gps_config gps_config);
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_24(const reboot_config reboot_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
  * @param virtual_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
