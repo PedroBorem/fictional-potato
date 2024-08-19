@@ -486,11 +486,14 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_17:
 		{
+            uint8_t angle_offset = 5;
+
 			memcpy(scheduling_off_angle_current, scheduling_data, sizeof(scheduling_off_angle_current));
 
             for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-				if(*scheduling_current_angle > scheduling_off_angle_current[angle_position].end_angle
+				if((*scheduling_current_angle + angle_offset > scheduling_off_angle_current[angle_position].end_angle
+                && *scheduling_current_angle - angle_offset < scheduling_off_angle_current[angle_position].end_angle)
 				&& strcmp(scheduling_off_angle_current[angle_position].scheduling_id,"") > 0)
 				{
 					data_app_delete_scheduling(scheduling_off_angle_current[angle_position].scheduling_id);
