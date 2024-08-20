@@ -2432,7 +2432,10 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 						{NULL, NULL}};
 
 				idp_parser_create_package(str_out_scheduling_14, arg_pairs_scheduling_14);
-				idp_parser_remove_hashtag_cipher(str_out_scheduling_14, buffer_scheduling_14);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_14, buffer_scheduling_14, sizeof(buffer_scheduling_14)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
 
 				strcat(buffer_out, buffer_scheduling_14);
 				strcat(buffer_out, "&");
@@ -2460,7 +2463,10 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 						{NULL, NULL}};
 
 				idp_parser_create_package(str_out_scheduling_15, arg_pairs_scheduling_15);
-				idp_parser_remove_hashtag_cipher(str_out_scheduling_15, buffer_scheduling_15);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_15, buffer_scheduling_15, sizeof(buffer_scheduling_15)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
 
 				strcat(buffer_out, buffer_scheduling_15);
 				strcat(buffer_out, "&");
@@ -2481,7 +2487,10 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 						{NULL, NULL}};
 
 				idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
-				idp_parser_remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16, sizeof(buffer_scheduling_16)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
 
 				strcat(buffer_out, buffer_scheduling_16);
 				strcat(buffer_out, "&");
@@ -2502,7 +2511,10 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 						{NULL, NULL}};
 
 				idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
-				idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17, sizeof(buffer_scheduling_17)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
 
 				strcat(buffer_out, buffer_scheduling_17);
 				strcat(buffer_out, "&");
