@@ -2378,28 +2378,27 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
 	{
 		uint16_t dwp = 0;
-
 		uint8_t scheduling_counter = 0;
 
 		uint8_t idp_27 = IDP_27;
-		char buffer_out[1500] = {};
-		char str_out[1500] = {};
+		char buffer_out[1500] = "";
+		char str_out[1500] = "";
 
 		uint8_t idp_14 = IDP_14;
-		char buffer_scheduling_14[100] = {};
-		char str_out_scheduling_14[100] = {};
+		char buffer_scheduling_14[100] = "";
+		char str_out_scheduling_14[100] = "";
 
 		uint8_t idp_15 = IDP_15;
-		char buffer_scheduling_15[100] = {};
-		char str_out_scheduling_15[100] = {};
+		char buffer_scheduling_15[100] = "";
+		char str_out_scheduling_15[100] = "";
 
 		uint8_t idp_16 = IDP_16;	
-		char buffer_scheduling_16[100] = {};
-		char str_out_scheduling_16[100] = {};
+		char buffer_scheduling_16[100] = "";
+		char str_out_scheduling_16[100] = "";
 
 		uint8_t idp_17 = IDP_17;
-		char buffer_scheduling_17[100] = {};
-		char str_out_scheduling_17[100] = {};
+		char buffer_scheduling_17[100] = "";
+		char str_out_scheduling_17[100] = "";
 		
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
@@ -2413,7 +2412,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 
-		strcat(buffer_out, "&");
+		strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -2437,8 +2436,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
 				}
 
-				strcat(buffer_out, buffer_scheduling_14);
-				strcat(buffer_out, "&");
+				strncat(buffer_out, buffer_scheduling_14, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2468,8 +2467,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
 				}
 
-				strcat(buffer_out, buffer_scheduling_15);
-				strcat(buffer_out, "&");
+				strncat(buffer_out, buffer_scheduling_15, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2492,8 +2491,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
 				}
 
-				strcat(buffer_out, buffer_scheduling_16);
-				strcat(buffer_out, "&");
+				strncat(buffer_out, buffer_scheduling_16, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2516,8 +2515,8 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
 				}
 
-				strcat(buffer_out, buffer_scheduling_17);
-				strcat(buffer_out, "&");
+				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
