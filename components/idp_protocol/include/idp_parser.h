@@ -64,7 +64,7 @@ bool idp_parser_validate_network(const network_config net_config);
  * @param output_buffer_sizeOutput Output buffer size to avoid overflow.
  * @return int 0 if the operation was successful, -1 if there was an error.
  */
-bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, size_t output_buffer_size) 
+bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, size_t output_buffer_size);
 
 /**
  * @brief Create an IDP packet with a generated password based on the specified pivot actions.
