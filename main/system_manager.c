@@ -2412,7 +2412,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 
-		strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
+		strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
@@ -2437,7 +2437,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 				}
 
 				strncat(buffer_out, buffer_scheduling_14, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2468,7 +2468,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 				}
 
 				strncat(buffer_out, buffer_scheduling_15, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2492,7 +2492,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 				}
 
 				strncat(buffer_out, buffer_scheduling_16, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
@@ -2516,7 +2516,7 @@ static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
 				}
 
 				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "&", sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
 				scheduling_counter++;
 			}
