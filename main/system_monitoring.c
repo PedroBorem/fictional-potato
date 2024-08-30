@@ -462,6 +462,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
     data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 
     // send IDP 19 (current pressure status)
+    vTaskDelay(pdMS_TO_TICKS(5000));
     system_monitoring_callback("#19$", COMM_MQTT);
 }
 

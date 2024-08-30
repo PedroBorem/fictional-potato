@@ -282,7 +282,6 @@ static void system_manager_reboot(void)
 static void system_manager_timer_callback(TimerHandle_t pxTimer)
 {
 	system_manager_idp_00(NULL, COMM_MQTT);
-	vTaskDelay(pdMS_TO_TICKS(1500));
 	system_manager_idp_19(NULL,COMM_MQTT);
 }
 
