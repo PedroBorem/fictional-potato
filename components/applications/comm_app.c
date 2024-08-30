@@ -73,6 +73,9 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
     else if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
+    }
+    else if(communication == COMM_RF)
+    {
         rf_uart_send_event(str_copy, strlen(str_copy));
     }
 
