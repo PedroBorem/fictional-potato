@@ -1622,7 +1622,6 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_16(scheduling, str_author))
 		{
-
 			pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 
@@ -1739,55 +1738,68 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 		char str_author[30] = {};
 		char pivot_id[50] = {};
 
-		pivot_scheduling_off_angle scheduling_off_angle = {};
+		pivot_scheduling_off_angle scheduling = {};
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint16_t", &scheduling_off_angle.end_angle},
+				{"uint16_t", &scheduling.end_angle},
 				{"string", str_author},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if (idp_parser_validate_idp_17(scheduling_off_angle, str_author))
+		if (idp_parser_validate_idp_17(scheduling, str_author))
 		{
-			data_app_gen_scheduling_key(scheduling_off_angle.scheduling_id);
-			data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
+			pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 
-			scheduling_start(idp, &scheduling_off_angle);
-
-			ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_angle.scheduling_id);
-
-			// send ack
-			if (comm_mode == COMM_HTTP_POST)
+			for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
-				arg_pair_t arg_pairs_2[] =
+				if(strcmp(scheduling_off_angle[position].scheduling_id, "") == 0)
+				{
+					memcpy(&scheduling_off_angle[position], &scheduling, sizeof(scheduling_off_angle[position]));
+
+					data_app_gen_scheduling_key((char *)scheduling_off_angle[position].scheduling_id);
+					data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
+
+					scheduling_start(idp, &scheduling_off_angle);
+
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_off_angle[position].scheduling_id);
+
+					// send ack
+					if (comm_mode == COMM_HTTP_POST)
 					{
-						{"uint8_t", &idp},
-						{"string", system_id},
-						{"string", scheduling_off_angle.scheduling_id},
-						{"uint16_t", &scheduling_off_angle.end_angle},
-						{NULL, NULL}};
+						arg_pair_t arg_pairs_2[] =
+							{
+								{"uint8_t", &idp},
+								{"string", system_id},
+								{"string", scheduling_off_angle[position].scheduling_id},
+								{"uint16_t", &scheduling.end_angle},
+								{NULL, NULL}};
 
-				idp_parser_create_package(str_out, arg_pairs_2);
+						idp_parser_create_package(str_out, arg_pairs_2);
 
-				comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
-			}
-			else if (comm_mode == COMM_MQTT)
-			{
-				arg_pair_t arg_pairs_2[] =
+						comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
+					else if (comm_mode == COMM_MQTT)
 					{
-						{"uint8_t", &idp},
-						{"string", system_id},
-						{"string", scheduling_off_angle.scheduling_id},
-						{NULL, NULL}};
+						arg_pair_t arg_pairs_2[] =
+							{
+								{"uint8_t", &idp},
+								{"string", system_id},
+								{"string", scheduling_off_angle[position].scheduling_id},
+								{NULL, NULL}};
 
-				idp_parser_create_package(str_out, arg_pairs_2);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
+						idp_parser_create_package(str_out, arg_pairs_2);
+						comm_app_send_idp_pack(str_out, COMM_MQTT);
+					}
+
+					break;
+				}
 			}
 		}
 		else

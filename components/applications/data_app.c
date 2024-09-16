@@ -605,18 +605,21 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 		}
 	}
 
-	pivot_scheduling_off_angle scheduling_off_angle = {};
+	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	ret = data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 	if(ret == ESP_OK)
 	{
-		if(strcmp(scheduling_off_angle.scheduling_id, scheduling_id) == 0)
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle.scheduling_id);
+			if(strcmp(scheduling_off_angle[position].scheduling_id, scheduling_id) == 0)
+			{
+				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle[position].scheduling_id);
 
-			pivot_scheduling_off_angle scheduling_delete = {};
-			memcpy(&scheduling_off_angle, &scheduling_delete, sizeof(scheduling_delete));
+				pivot_scheduling_off_angle scheduling_delete = {};
+				memcpy(&scheduling_off_angle[position], &scheduling_delete, sizeof(scheduling_delete));
 
-			return data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
+				return data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
+			}
 		}
 	}
 
