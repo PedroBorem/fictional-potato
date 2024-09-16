@@ -455,7 +455,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
 static void system_monitoring_timer(TimerHandle_t pxTimer)
 {
     // send IDP 0 (current status)
-    system_monitoring_callback("#00$", COMM_MQTT);
+    system_monitoring_callback("#00$", COMM_RF);
 
     // save current Timestamp
     time_t timestamp_now = rtc_app_get_timestamp(false);
