@@ -452,6 +452,43 @@ bool check_valid_characters(const char *buffer, uint8_t size)
 }
 
 /**
+ * @brief Removes specific characters ('#' and '$') from the input buffer.
+ *
+ * This function iterates over the input buffer and removes any occurrences 
+ * of the characters '#' and '$', storing the result in the output buffer. 
+ * The output buffer is null-terminated after processing.
+ *
+ * @param buffer Input character array from which '#' and '$' will be removed.
+ * @param output_buffer Output character array to store the result after removal of '#' and '$'.
+ * @param output_buffer_sizeOutput Output buffer size to avoid overflow.
+ * @return int 0 if the operation was successful, -1 if there was an error.
+ */
+bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, size_t output_buffer_size) 
+{
+    if (buffer == NULL || output_buffer == NULL) 
+    {
+        return false; 
+    }
+
+    int j = 0;
+    for (int i = 0; buffer[i] != '\0'; i++) 
+    {
+        if (buffer[i] != '#' && buffer[i] != '$') 
+        {
+            if (j >= (int)(output_buffer_size - 1)) 
+            {
+                return false;
+            }
+            output_buffer[j++] = buffer[i];
+        }
+    }
+
+    output_buffer[j] = '\0';
+
+    return true;
+}
+
+/**
  * @brief Prepares GPS configuration message.
  *
  * This function prefixes the input buffer with control bytes (0x01 and 0x00),
