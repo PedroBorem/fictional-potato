@@ -91,6 +91,8 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
+uint32_t counter_reading_panel_off = NO_MANUAL_READING;
+
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
@@ -115,6 +117,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_27(const char* buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -405,6 +408,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_26(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_27:
+		{
+			system_manager_idp_27(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_30:
 		{
 			system_manager_idp_30(str_pkg, comm_mode);
@@ -613,6 +621,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		{
 			xTimerStop(system_timer, 1000);
 			xTimerStart(system_timer, 1000);
+		}
+
+		if(strcmp(pivot_id, "system_monitoring") != 0)
+		{
+			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 		}
 	}
 }
@@ -2370,6 +2384,178 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	}
 }
 
+
+/**
+ * @brief Handles IDP 27 returns all schedules present on the control board
+ *
+ * This function works like a GET all for schedules
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
+static void system_manager_idp_27(const char* buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	{
+		uint16_t dwp = 0;
+		uint8_t scheduling_counter = 0;
+
+		uint8_t idp_27 = IDP_27;
+		char buffer_out[1500] = "";
+		char str_out[1500] = "";
+
+		uint8_t idp_14 = IDP_14;
+		char buffer_scheduling_14[100] = "";
+		char str_out_scheduling_14[100] = "";
+
+		uint8_t idp_15 = IDP_15;
+		char buffer_scheduling_15[100] = "";
+		char str_out_scheduling_15[100] = "";
+
+		uint8_t idp_16 = IDP_16;	
+		char buffer_scheduling_16[100] = "";
+		char str_out_scheduling_16[100] = "";
+
+		uint8_t idp_17 = IDP_17;
+		char buffer_scheduling_17[100] = "";
+		char str_out_scheduling_17[100] = "";
+		
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
+
+		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
+
+		strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
+
+		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
+
+			if (dwp != 0)
+			{
+				arg_pair_t arg_pairs_scheduling_14[] =
+					{
+						{"uint8_t", &idp_14},
+						{"string", scheduling_date[position].scheduling_id},
+						{"uint32_t", &scheduling_date[position].start_date},
+						{"uint32_t", &scheduling_date[position].end_date},
+						{"uint16_t", &dwp},
+						{"uint16_t", &scheduling_date[position].actions.percentimeter},
+						{NULL, NULL}};
+
+				idp_parser_create_package(str_out_scheduling_14, arg_pairs_scheduling_14);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_14, buffer_scheduling_14, sizeof(buffer_scheduling_14)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
+
+				strncat(buffer_out, buffer_scheduling_14, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
+
+				scheduling_counter++;
+			}
+		}
+		
+		dwp = 0;
+
+		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
+
+			if (dwp != 0)
+			{
+				arg_pair_t arg_pairs_scheduling_15[] =
+					{
+						{"uint8_t", &idp_15},
+						{"string", scheduling_angle[position].scheduling_id},
+						{"uint32_t", &scheduling_angle[position].start_date},
+						{"uint16_t", &scheduling_angle[position].end_angle},
+						{"uint16_t", &dwp},
+						{"uint16_t", &scheduling_angle[position].actions.percentimeter},
+						{NULL, NULL}};
+
+				idp_parser_create_package(str_out_scheduling_15, arg_pairs_scheduling_15);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_15, buffer_scheduling_15, sizeof(buffer_scheduling_15)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
+
+				strncat(buffer_out, buffer_scheduling_15, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
+
+				scheduling_counter++;
+			}
+		}
+
+		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if (scheduling_off_date[position].end_date != 0)
+			{
+				arg_pair_t arg_pairs_scheduling_16[] =
+					{
+						{"uint8_t", &idp_16},
+						{"string", scheduling_off_date[position].scheduling_id},
+						{"uint32_t", &scheduling_off_date[position].end_date},
+						{NULL, NULL}};
+
+				idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16, sizeof(buffer_scheduling_16)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
+
+				strncat(buffer_out, buffer_scheduling_16, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
+
+				scheduling_counter++;
+			}
+		}
+
+		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+		{
+			if(strcmp(scheduling_off_angle[position].scheduling_id, "") != 0)
+			{
+				arg_pair_t arg_pairs_scheduling_17[] =
+					{
+						{"uint8_t", &idp_17},
+						{"string", scheduling_off_angle[position].scheduling_id},
+						{"uint16_t", &scheduling_off_angle[position].end_angle},
+						{NULL, NULL}};
+
+				idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
+				if(idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17, sizeof(buffer_scheduling_17)) != true)
+				{
+					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+				}
+
+				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
+				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
+
+				scheduling_counter++;
+			}
+		}
+
+		arg_pair_t arg_pairs_idp_27[] = 
+			{
+				{"uint8_t", &idp_27},
+				{"string", system_id},
+				{"uint8_t", &scheduling_counter},
+				{"string", buffer_out},
+				{NULL, NULL}};
+		
+		idp_parser_create_package(str_out, arg_pairs_idp_27);
+
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
+	}
+}
+
 /**
  * @brief Handles IDP 30 requests for system actions.
  *
@@ -2427,6 +2613,9 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 			old_history.end_angle = global_angle;
 			data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 		}
+
+		counter_reading_panel_off++;
+		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2450,6 +2639,9 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
+			counter_reading_panel_off = NO_MANUAL_READING;
+			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
+
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
 			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));

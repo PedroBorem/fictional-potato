@@ -45,11 +45,12 @@ static app_callback system_monitoring_callback = NULL; /**< Callback function fo
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configuration for system monitoring. */
-static pivot_physical_config system_monitoring_physical_config = {};
+static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
+static uint32_t panel_reading;
 
-static uint16_t* system_monitoring_current_angle  = &global_angle; /**< Pointer to the current angle variable. */
+static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
 /* Private methods ----------------------------------- */
 
@@ -161,7 +162,8 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
     }
     else if(barrier_type == PHYSICAL_BARRIER)
     {
-        if(system_monitoring_physical_config.automatic_return == true)
+        data_app_load(DATA_TYPE_MANUAL_COUNTER, &panel_reading);
+        if(system_monitoring_physical_config.automatic_return == true  && panel_reading < READING_LIMIT_FOR_RETURN)
         {
             vTaskDelay(pdMS_TO_TICKS(15000)); // 15   seconds
 
