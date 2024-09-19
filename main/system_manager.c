@@ -60,6 +60,11 @@ uint16_t global_pressure = 0;
  */
 uint16_t global_angle = 655;
 
+/** @var global_angle
+ *  @brief Global variable for the comm main mode of the system.
+ */
+comm_type comm_main_mode = COMM_MQTT;
+
 /** @var system_id
  *  @brief Local variable for the system ID.
  */
@@ -151,6 +156,10 @@ void system_manager_init(void)
 	pivot_virtual_config virtual_config = {};
 	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 	system_monitoring_register_callback(&system_manager_callback);
+
+	pivot_comm_main_mode_config comm_main_mode_config = {};
+	data_app_load(DATA_TYPE_COMM_MAIN_MODE, &comm_main_mode_config);
+	comm_app_set_main_mode_config(comm_main_mode_config);
 
 	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
@@ -280,7 +289,7 @@ static void system_manager_reboot(void)
  */
 static void system_manager_timer_callback(TimerHandle_t pxTimer)
 {
-	system_manager_idp_00(NULL, COMM_MQTT);
+	system_manager_idp_00(NULL, comm_main_mode);
 }
 
 /**
@@ -1238,8 +1247,7 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 			{
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
 			}
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
-			comm_app_send_idp_pack(str_out, COMM_RF);
+			comm_app_send_idp_pack(str_out, comm_main_mode);
 
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
@@ -1339,7 +1347,7 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 							idp_parser_create_package(str_out, arg_pairs_2);
 
 							comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_main_mode);
 						}
 						else
 						{
@@ -1498,7 +1506,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 							idp_parser_create_package(str_out, arg_pairs_2);
 
 							comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_main_mode);
 						}
 						else
 						{
@@ -1647,7 +1655,7 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 						idp_parser_create_package(str_out, arg_pairs_2);
 
 						comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-						comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, comm_main_mode);
 					}
 					else
 					{
@@ -1766,7 +1774,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 				idp_parser_create_package(str_out, arg_pairs_2);
 
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
+				comm_app_send_idp_pack(str_out, comm_main_mode);
 			}
 			else
 			{
@@ -1910,7 +1918,7 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT);
+	uint8_t expected_delimiter_num = (PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
@@ -2269,7 +2277,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT);
+	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
