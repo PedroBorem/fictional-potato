@@ -134,6 +134,12 @@
 #define DATA_MANUAL_COUNTER "manual_counter"
 
 /**
+ * @def DATA_COMM_MAIN_MODE
+ * @brief NVS access space for Communication Principal Mode
+ */
+#define DATA_COMM_MAIN_MODE "comm_main_mode"
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -175,6 +181,10 @@ esp_err_t data_app_init(void)
 			.automatic_return = 0, 
 			.water_return = 0,
 			.time_leaving_barrier = 3,
+	};
+
+	const pivot_comm_main_mode_config default_comm_main_mode = {
+			.comm_main_mode_config = "MQTT",
 	};
 
 	const gps_config gps_config = {};
@@ -266,6 +276,10 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
 		{
 			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_phy_barrier, sizeof(default_phy_barrier));
+		}
+		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
+		{
+			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
