@@ -2536,7 +2536,7 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"string", &comm_config.comm_main_mode_config},
+				{"string", comm_config.comm_main_mode_config},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -2579,7 +2579,7 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"string", &current_comm.comm_main_mode_config},
+				{"string", current_comm.comm_main_mode_config},
 				{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);
