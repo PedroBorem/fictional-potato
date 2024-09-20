@@ -866,10 +866,11 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
 {
 	bool ret = false;
 
-	if(strlen(comm_config.comm_main_mode_config) > 0 )
-	{
-		ret = true;
-	}
+    if(strcmp(comm_config.comm_main_mode_config, "MQTT") != 0){
+        if(strcmp(comm_config.comm_main_mode_config, "RF") != 0){
+            return ret;
+        }
+    }
 
 	return ret;
 }
