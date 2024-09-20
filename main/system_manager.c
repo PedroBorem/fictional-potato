@@ -123,6 +123,7 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -419,6 +420,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_30:
 		{
 			system_manager_idp_30(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_31:
+		{
+			system_manager_idp_31(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_90:
@@ -2495,6 +2501,93 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	comm_app_send_idp_pack(str_out, COMM_MQTT);
 	comm_app_send_idp_pack(str_out, COMM_RF);
 
+}
+
+static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_COMM_MAIN_MODE_CONFIG_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		char pivot_id[50] = {};
+		char str_out[200] = {};
+		pivot_comm_main_mode_config comm_config = {};
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", &comm_config.comm_main_mode_config},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if (idp_parser_validate_idp_31(comm_config))
+		{
+			esp_err_t ret = data_app_save(DATA_TYPE_COMM_MAIN_MODE, &comm_config, sizeof(comm_config));
+
+			if (ret == ESP_OK)
+			{
+				// send ACK
+				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			}
+			else
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+			}
+
+		}
+		else
+		{
+			if (comm_mode == COMM_HTTP_POST)
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			}
+
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Comm Main Mode Config invalid packed data (%s)", buffer);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+		pivot_comm_main_mode_config comm_config = {};
+		uint8_t idp = IDP_31;
+
+		data_app_load(DATA_TYPE_COMM_MAIN_MODE, &comm_config);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", &comm_config.comm_main_mode_config},
+				{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
 }
 
 /**
