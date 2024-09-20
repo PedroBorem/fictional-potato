@@ -217,6 +217,9 @@ static void system_manager_reboot(void)
 	reboot_config current_reboot = {};
 	data_app_load(DATA_TYPE_REBOOT_CONFIG, &current_reboot);
 
+	pivot_comm_main_mode_config current_comm = {};
+	data_app_load(DATA_TYPE_COMM_MAIN_MODE, &current_comm);
+
 	uint16_t timeout = 0;
 
 	pivot_actions current_action = {};
@@ -226,7 +229,8 @@ static void system_manager_reboot(void)
 
 	data_app_load(DATA_TYPE_TIMESTAMP, &timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
-
+	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Main Communication Mode: %s", current_comm.comm_main_mode_config);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timeout Configurado: %lld", current_reboot.reboot_timeout_sec);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_now: %lld", timestamp_now);
@@ -2525,14 +2529,13 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		char pivot_id[50] = {};
-		char str_out[200] = {};
 		pivot_comm_main_mode_config comm_config = {};
 		uint8_t idp = 0;
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
-				{"string", system_id},
+				{"string", pivot_id},
 				{"string", &comm_config.comm_main_mode_config},
 				{NULL, NULL}};
 
@@ -2544,7 +2547,6 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 
 			if (ret == ESP_OK)
 			{
-				// send ACK
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
 			}
 			else
@@ -2568,16 +2570,16 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
-		pivot_comm_main_mode_config comm_config = {};
+		pivot_comm_main_mode_config current_comm = {};
 		uint8_t idp = IDP_31;
 
-		data_app_load(DATA_TYPE_COMM_MAIN_MODE, &comm_config);
+		data_app_load(DATA_TYPE_COMM_MAIN_MODE, &current_comm);
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"string", &comm_config.comm_main_mode_config},
+				{"string", &current_comm.comm_main_mode_config},
 				{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);
