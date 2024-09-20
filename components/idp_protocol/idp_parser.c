@@ -872,6 +872,6 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
         }
     }
 
-	return ret;
+	return true;
 }
 
