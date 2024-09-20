@@ -64,19 +64,22 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
     char* str_copy = strdup(idp_pack);
 
-    LOG_COMM(COMM_APP_TAG, "send %s", str_copy);
-
     if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
     {
         http_server_send_resp(str_copy);
+        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
     }
     else if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
+        LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+
     }
     else if(communication == COMM_RF)
     {
         rf_uart_send_event(str_copy, strlen(str_copy));
+        LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+
     }
 
     free(str_copy);
