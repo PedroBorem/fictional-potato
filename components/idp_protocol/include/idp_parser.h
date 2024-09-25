@@ -53,6 +53,20 @@ bool idp_parser_validate_actions(const pivot_actions actions);
 bool idp_parser_validate_network(const network_config net_config);
 
 /**
+ * @brief Removes specific characters ('#' and '$') from the input buffer.
+ *
+ * This function iterates over the input buffer and removes any occurrences 
+ * of the characters '#' and '$', storing the result in the output buffer. 
+ * The output buffer is null-terminated after processing.
+ *
+ * @param[in] buffer The input character array from which '#' and '$' will be removed.
+ * @param[out] output_buffer The output character array to store the result after removal of '#' and '$'.
+ * @param output_buffer_sizeOutput Output buffer size to avoid overflow.
+ * @return int 0 if the operation was successful, -1 if there was an error.
+ */
+bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, size_t output_buffer_size);
+
+/**
  * @brief Create an IDP packet with a generated password based on the specified pivot actions.
  *
  * This function creates an IDP packet with a generated password based on the specified pivot actions.
@@ -243,6 +257,16 @@ bool idp_parser_validate_idp_22(const pivot_physical_config physical_config);
  * @return true if the data are valid, false otherwise.
  */
 bool idp_parser_validate_idp_23(const gps_config gps_config);
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_24(const reboot_config reboot_config);
 
 /**
  * @brief Validate the specified configuration paramters.
