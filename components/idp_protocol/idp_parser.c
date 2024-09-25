@@ -81,6 +81,16 @@
 #define LONGITUDE_MAX 180
 
 /**
+ * @brief The minimum time value accepted for automatic reboot.
+ */
+#define REBOOT_MIN_SEC 1800
+
+/**
+ * @brief The maximum time value accepted for automatic reboot.
+ */
+#define REBOOT_MAX_SEC 36000
+
+/**
  * @brief The minimum time value accepted for periodically payload from GPS (IDP_7) in seconds.
  */
 #define PAYLOAD_TIME_MIN_SEC 1
@@ -439,6 +449,43 @@ bool check_valid_characters(const char *buffer, uint8_t size)
 	}
 
 	return true;
+}
+
+/**
+ * @brief Removes specific characters ('#' and '$') from the input buffer.
+ *
+ * This function iterates over the input buffer and removes any occurrences 
+ * of the characters '#' and '$', storing the result in the output buffer. 
+ * The output buffer is null-terminated after processing.
+ *
+ * @param buffer Input character array from which '#' and '$' will be removed.
+ * @param output_buffer Output character array to store the result after removal of '#' and '$'.
+ * @param output_buffer_sizeOutput Output buffer size to avoid overflow.
+ * @return int 0 if the operation was successful, -1 if there was an error.
+ */
+bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, size_t output_buffer_size) 
+{
+    if (buffer == NULL || output_buffer == NULL) 
+    {
+        return false; 
+    }
+
+    int j = 0;
+    for (int i = 0; buffer[i] != '\0'; i++) 
+    {
+        if (buffer[i] != '#' && buffer[i] != '$') 
+        {
+            if (j >= (int)(output_buffer_size - 1)) 
+            {
+                return false;
+            }
+            output_buffer[j++] = buffer[i];
+        }
+    }
+
+    output_buffer[j] = '\0';
+
+    return true;
 }
 
 /**
@@ -811,13 +858,34 @@ bool idp_parser_validate_idp_23(const gps_config gps_config)
         return ret;
     }
 
-    if(!(gps_config.offset > 0))
+    return true;
+}
+
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param gps_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_24(const reboot_config reboot_config)
+{
+    bool ret = false;
+
+    if(!(reboot_config.enable == 0 || reboot_config.enable == 1))
     {
         return ret;
     }
 
+    if(!(reboot_config.reboot_timeout_sec > REBOOT_MIN_SEC && reboot_config.reboot_timeout_sec < REBOOT_MAX_SEC ))
+    {
+        return ret;
+    }    
+    
     return true;
 }
+
 
 /**
  * @brief Validate the specified configuration paramters.
