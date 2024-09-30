@@ -601,7 +601,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_rtc_percent = rtc_app_get_timestamp(false);
 
 				// send current status
-				system_manager_idp_00("#00$", COMM_MQTT);
+				system_manager_idp_00("#00$", comm_main_mode);
 
 				// save new history
 				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
@@ -2644,8 +2644,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		system_rtc_percent = rtc_app_get_timestamp(false);
 
 		// send current status
-		system_manager_idp_00("#00$", COMM_MQTT);
-		system_manager_idp_00("#00$", COMM_RF);
+		system_manager_idp_00("#00$", comm_main_mode);
 
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
@@ -2692,8 +2691,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{NULL, NULL}};
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
-	comm_app_send_idp_pack(str_out, COMM_MQTT);
-	comm_app_send_idp_pack(str_out, COMM_RF);
+	comm_app_send_idp_pack(str_out, comm_main_mode);
 
 }
 
