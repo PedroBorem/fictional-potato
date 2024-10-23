@@ -44,6 +44,7 @@ typedef enum
     DATA_TYPE_PHYSICAL_BARRIER, /**< Physical Barrier configuration */
     DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
     DATA_TYPE_MANUAL_COUNTER, /**< Manual counter */
+    DATA_TYPE_REASON_HANG_UP, /**<Reason why the pivot turned off  */
 } data_type_t;
 
 
