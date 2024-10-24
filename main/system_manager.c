@@ -533,6 +533,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{"string", pivot_id},
 				{"uint16_t", &dwp},
 				{"uint16_t", &new_actions.percentimeter},
+				{"string", &new_actions.user},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -568,7 +569,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 				}
 
-				system_manager_idp_28("remoto", COMM_MQTT);
+				system_manager_idp_28(buffer, comm_mode);
 			}
 
 			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2565,9 +2566,7 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
-    esp_err_t ret = ESP_FAIL;
-
-    char str_out[200] = {};
+	char str_out[200] = {};
     char reason_hangs_up[100] = {};
 
     uint8_t idp = IDP_28;
@@ -2580,6 +2579,11 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
         {"string", system_id},
         {"string", &reason_hangs_up},
         {NULL, NULL}};
+
+		/**
+		 * 
+		 * Estruturar payload do idp 28
+		 */
 
 		
 	data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));

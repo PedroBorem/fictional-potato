@@ -181,6 +181,7 @@ typedef struct __attribute__((__packed__))
     uint8_t rotation;        /*!< Rotation mode of the pivot (PIVOT_CW or PIVOT_CCW) */
     uint8_t watering_state;  /*!< Watering state of the pivot (PIVOT_DRY or PIVOT_WET) */
     uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
+    char user[20];
 } pivot_actions;
 
 /**

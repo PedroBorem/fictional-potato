@@ -242,6 +242,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint16_t dwp = 0;
     char str_out[50] = {};
     type_barrier barrier_type = VIRTUAL_BARRIER;  
+    char type_hangs_up[20] = "virtual";
 
     pivot_actions pivot_actions = {};
 
@@ -259,8 +260,13 @@ static void system_monitoring_actuation_virtual_barrier(void)
         { "string", SYSTEM_MONITORING_TAG },
         { "uint16_t", &dwp },
         { "uint16_t", &percent_off },
+        { "string", &type_hangs_up},
         { NULL, NULL }
     };
+
+    /*
+        Desliga da barreira virtual
+    */
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
@@ -350,6 +356,10 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
                 if(*system_monitoring_current_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
                 && *system_monitoring_current_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
                 {
+                    /*
+                        Desliga barreira física (Nesse caso indica apenas que o pivo esta em cima da barreira)
+                    */
+
                     if(current_pivot_actions.rotation == PIVOT_CW)
                     {
                         status_barrier = PIVOT_LEAVING_THE_BARRIER;
@@ -375,6 +385,11 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
                 else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
                 && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
                 {
+
+                    /*
+                    Desliga barreira física (Nesse caso indica apenas que o pivo esta em cima da barreira)
+                    */
+
                     if(current_pivot_actions.rotation == PIVOT_CW)
                     {
                         status_barrier = PIVOT_IN_THE_BARRIER;
