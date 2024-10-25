@@ -2570,9 +2570,14 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
     char reason_hangs_up[100] = {};
 
     uint8_t idp = IDP_28;
+	char idp[5] = {};
 
     strncpy(reason_hangs_up, buffer, sizeof(reason_hangs_up) - 1);
     reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0'; 
+
+	idp_parser_get(&buffer, idp);
+
+	ESP_LOGE(SYSTEM_MANAGER_TAG, idp);
 
     arg_pair_t arg_pairs[] = {
         {"uint8_t", &idp},
