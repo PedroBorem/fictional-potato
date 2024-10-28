@@ -2588,6 +2588,14 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	data_app_load(DATA_TYPE_ACTIONS, &old_actions);
 
+	if(new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
+	{
+		new_actions.power_state = PIVOT_OFF;
+		actuation_app_set_actions(new_actions, true);
+		// send current status
+		system_manager_idp_00("#00$", COMM_MQTT);
+	}
+
 	if (new_actions.power_state == PIVOT_OFF)
 	{
 		if (global_angle != 655 && system_initial_angle != 655)
