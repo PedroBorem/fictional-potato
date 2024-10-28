@@ -2540,7 +2540,7 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 				idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
 				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17, sizeof(buffer_scheduling_17)) != true)
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+			 		ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
 				}
 
 				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
@@ -2570,20 +2570,29 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
     char reason_hangs_up[100] = {};
 
     uint8_t idp = IDP_28;
-	char idp[5] = {};
 
     strncpy(reason_hangs_up, buffer, sizeof(reason_hangs_up) - 1);
     reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0'; 
 
-	idp_parser_get(&buffer, idp);
+	idp_type idp_buffer = idp_parser_get(buffer, idp_buffer);
 
-	ESP_LOGE(SYSTEM_MANAGER_TAG, idp);
+	ESP_LOGE(SYSTEM_MANAGER_TAG, idp_buffer);
 
-    arg_pair_t arg_pairs[] = {
-        {"uint8_t", &idp},
-        {"string", system_id},
-        {"string", &reason_hangs_up},
-        {NULL, NULL}};
+	if(idp_buffer == IDP_1)
+	{	
+		
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"uint16_t", &dwp},
+				{"uint16_t", &new_actions.percentimeter},
+				{"string", &new_actions.user},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(reason_hangs_up, arg_pairs);
+	}
+
 
 		/**
 		 * 
