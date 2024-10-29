@@ -2591,10 +2591,64 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if(strcmp(new_actions.user, "virtual") == 0)
+		if(strcmp(pivot_id, "system_monitoring") == 0)
 		{
-			reason_hangs_up = "virtual_barrier";
-			bool on_barrier = true;
+			if(strcmp(new_actions.user, "virtual") == 0)
+			{
+				reason_hangs_up = "virtual_barrier";
+				bool on_barrier = true;
+
+				arg_pair_t arg_pairs_idp_28[] = 
+				{
+					{"uint8_t", &idp_28},
+					{"string", &pivot_id},
+					{"uint16_t", &reason_hangs_up},
+					{"bool", &idp},
+					{"bool", &on_barrier},
+					{NULL, NULL}};
+
+				idp_parser_create_package(str_out, arg_pairs_idp_28);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+			}
+			else if(strcmp(new_actions.user, "Irrigabras") == 0)
+			{
+				reason_hangs_up = "nimbus_system";
+				bool on_barrier = false;
+
+				arg_pair_t arg_pairs_idp_28[] = 
+				{
+					{"uint8_t", &idp_28},
+					{"string", &pivot_id},
+					{"uint16_t", &reason_hangs_up},
+					{"bool", &idp},
+					{"bool", &on_barrier},
+					{NULL, NULL}};
+
+				idp_parser_create_package(str_out, arg_pairs_idp_28);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+			}
+			else
+			{
+				reason_hangs_up = "soil_system";
+				bool on_barrier = false;
+
+				arg_pair_t arg_pairs_idp_28[] = 
+				{
+					{"uint8_t", &idp_28},
+					{"string", &pivot_id},
+					{"uint16_t", &reason_hangs_up},
+					{"bool", &idp},
+					{"bool", &on_barrier},
+					{NULL, NULL}};
+
+				idp_parser_create_package(str_out, arg_pairs_idp_28);
+				comm_app_send_idp_pack(str_out, COMM_MQTT);
+			}
+		}
+		else if(strcmp(pivot_id, "scheduling") == 0)
+		{
+			reason_hangs_up = "scheduling";
+			bool on_barrier = false;
 
 			arg_pair_t arg_pairs_idp_28[] = 
 			{
@@ -2608,6 +2662,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			idp_parser_create_package(str_out, arg_pairs_idp_28);
 			comm_app_send_idp_pack(str_out, COMM_MQTT);
 		}
+		
 	}
 	else if(idp_buffer == IDP_30)
 	{
