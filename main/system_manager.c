@@ -2567,12 +2567,12 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
 	char str_out[200] = {};
-    char reason_hangs_up[100] = {};
+    char reason_hangs_up[50] = {};
+	char pivot_id[50] = {};
 
-    uint8_t idp = IDP_28;
-
-    strncpy(reason_hangs_up, buffer, sizeof(reason_hangs_up) - 1);
-    reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0'; 
+    uint8_t idp_28 = IDP_28;
+	uint8_t idp = 0;
+	uint16_t dwp = 0;
 
 	idp_type idp_buffer = idp_parser_get(buffer, idp_buffer);
 
@@ -2580,7 +2580,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 
 	if(idp_buffer == IDP_1)
 	{	
-		
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
@@ -2590,7 +2589,29 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{"string", &new_actions.user},
 				{NULL, NULL}};
 
-		idp_parser_get_packet_data(reason_hangs_up, arg_pairs);
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if(strcmp(new_actions.user, "virtual") == 0)
+		{
+			reason_hangs_up = "virtual_barrier";
+			bool on_barrier = true;
+
+			arg_pair_t arg_pairs_idp_28[] = 
+			{
+				{"uint8_t", &idp_28},
+				{"string", &pivot_id},
+				{"uint16_t", &reason_hangs_up},
+				{"bool", &idp},
+				{"bool", &on_barrier},
+				{NULL, NULL}};
+
+			idp_parser_create_package(str_out, arg_pairs_idp_28);
+			comm_app_send_idp_pack(str_out, COMM_MQTT);
+		}
+	}
+	else if(idp_buffer == IDP_30)
+	{
+
 	}
 
 
@@ -2624,6 +2645,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	char str_out[200] = {};
 	char str_date_time[50] = {};
+	char type_hangs_up[20] = "manual";
 
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
@@ -2632,6 +2654,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{"uint8_t", &idp},
 		{"uint16_t", &dwp},
 		{"uint16_t", &new_actions.percentimeter},
+		{"string", &type_hangs_up}
 		{NULL, NULL}};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
@@ -2668,7 +2691,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		counter_reading_panel_off++;
 		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 
-		system_manager_idp_28("manual", COMM_MQTT);
+		system_manager_idp_28(buffer, COMM_MQTT);
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
