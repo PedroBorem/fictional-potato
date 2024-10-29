@@ -2666,7 +2666,20 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	}
 	else if(idp_buffer == IDP_30)
 	{
+		reason_hangs_up = "manual";
+		bool on_barrier = false;
 
+		arg_pair_t arg_pairs_idp_28[] = 
+		{
+			{"uint8_t", &idp_28},
+			{"string", &pivot_id},
+			{"uint16_t", &reason_hangs_up},
+			{"bool", &idp},
+			{"bool", &on_barrier},
+			{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs_idp_28);
+		comm_app_send_idp_pack(str_out, COMM_MQTT);
 	}
 
 
@@ -2676,7 +2689,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		 */
 
 		
-	data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));
+	// data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));
 
     idp_parser_create_package(str_out, arg_pairs);
     comm_app_send_idp_pack(str_out, comm_mode);
