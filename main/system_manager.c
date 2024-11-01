@@ -2570,13 +2570,16 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
 	char str_out[200] = {};
-	char reason_hangs_up[50] = {};
-	char pivot_id[50] = {};
-	char scheduling_id[10] = {};
-
-	char str_idp[5] = {};
 	char str_pkg[100] = {};
 
+	char pivot_id[20] = {};
+	char reason_hangs_up[50] = {};
+	char str_idp[5] = {};
+	char scheduling_id[10] = {"0"};
+	bool on_barrier = false;
+	char user[50] = {};
+	char str_date_time[50] = {};
+	
 	uint8_t idp_28 = IDP_28;
 	uint8_t idp = 0;
 	uint16_t dwp = 0;
@@ -2588,112 +2591,65 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 
 	ESP_LOGE(SYSTEM_MANAGER_TAG, "%i" ,idp_request);
 
-	if (idp_request == IDP_1)
+	arg_pair_t arg_pairs[] =
 	{
-		arg_pair_t arg_pairs[] =
-			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint16_t", &dwp},
-				{"uint16_t", &actions.percentimeter},
-				{"string", &actions.user},
-				{"string", &scheduling_id},
-				{NULL, NULL}};
+		{"uint8_t", &idp},
+		{"string", pivot_id},
+		{"uint16_t", &dwp},
+		{"uint16_t", &actions.percentimeter},
+		{"string", user},
+		{"string", &scheduling_id},
+		{NULL, NULL}};
 
-		idp_parser_get_packet_data(buffer, arg_pairs);
-		// ESP_LOGE(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAAAAAAAAAA");
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s", actions.user);
+	idp_parser_get_packet_data(buffer, arg_pairs);
 
-		if (strcmp(actions.user, "virtual") == 0)
+	if(idp_request == IDP_1)
+	{
+		if(strcmp(pivot_id, "scheduling") == 0)
 		{
-			strncpy(reason_hangs_up, "virtual_barrier", sizeof(reason_hangs_up));
-			bool on_barrier = true;
-
-			arg_pair_t arg_pairs_idp_28[] =
-				{
-					{"uint8_t", &idp_28},
-					{"string", &pivot_id},
-					{"string", &reason_hangs_up},
-					{"uint8_t", &idp},
-					{"bool", &on_barrier},
-					{NULL, NULL}};
-
-			idp_parser_create_package(str_out, arg_pairs_idp_28);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
-		}
-		else if (strcmp(actions.user, "Irrigabras") == 0)
-		{
-			strncpy(reason_hangs_up, "nimbus_system", sizeof(reason_hangs_up) - 1);
+			strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
 			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
 
-			bool on_barrier = false;
-
-			arg_pair_t arg_pairs_idp_28[] =
-				{
-					{"uint8_t", &idp_28},
-					{"string", &pivot_id},
-					{"string", reason_hangs_up},
-					{"uint8_t", &idp},
-					{"bool", &on_barrier},
-					{NULL, NULL}};
-
-			idp_parser_create_package(str_out, arg_pairs_idp_28);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
 		}
-		else if (strcmp(pivot_id, "scheduling") == 0)
+		else if(strcmp(pivot_id, "system_monitoring") == 0)
 		{
-			strncpy(reason_hangs_up, actions.user, sizeof(reason_hangs_up));
-			bool on_barrier = false;
-
-			arg_pair_t arg_pairs_idp_28[] =
-				{
-					{"uint8_t", &idp_28},
-					{"string", system_id},
-					{"string", &pivot_id},
-					{"string", &reason_hangs_up},
-					{"string", &scheduling_id},
-					{"bool", &on_barrier},
-					{NULL, NULL}};
-
-			idp_parser_create_package(str_out, arg_pairs_idp_28);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
+			strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
+			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
 		}
 		else
 		{
-			strncpy(reason_hangs_up, "soil_system", sizeof(reason_hangs_up));
-			bool on_barrier = false;
-
-			arg_pair_t arg_pairs_idp_28[] =
-				{
-					{"uint8_t", &idp_28},
-					{"string", &pivot_id},
-					{"string", &reason_hangs_up},
-					{"uint8_t", &idp},
-					{"bool", &on_barrier},
-					{NULL, NULL}};
-
-			idp_parser_create_package(str_out, arg_pairs_idp_28);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
+			strncpy(reason_hangs_up, "Soil_App", sizeof(reason_hangs_up) - 1);
+			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
 		}
 	}
-	else if (idp_request == IDP_30)
+	else 
 	{
-		strncpy(reason_hangs_up, "manual", sizeof(reason_hangs_up) - 1);
+		strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
 		reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-		bool on_barrier = false;
 
-		arg_pair_t arg_pairs_idp_28[] =
-			{
-				{"uint8_t", &idp_28},
-				{"string", system_id},
-				{"string", &reason_hangs_up},
-				{"uint8_t", &idp_request},
-				{"bool", &on_barrier},
-				{NULL, NULL}};
-
-		idp_parser_create_package(str_out, arg_pairs_idp_28);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);
+		/*
+			Verificacao da barreira 
+			on_barrier = true
+		*/
 	}
+
+	time_t timestamp = rtc_app_get_timestamp(false);
+	rtc_app_get_str_date_time(timestamp, str_date_time);
+
+	arg_pair_t arg_pairs_idp_28[] =
+	{
+		{"uint8_t", &idp_28},
+		{"string", system_id},
+		{"string", reason_hangs_up},
+		{"uint8_t", &idp},
+		{"string", scheduling_id},
+		{"bool", &on_barrier},
+		{"string", user},
+		{"string", str_date_time},
+		{NULL, NULL}};
+
+	idp_parser_create_package(str_out, arg_pairs_idp_28);
+	comm_app_send_idp_pack(str_out, COMM_MQTT);
 
 	/**
 	 *
@@ -2723,13 +2679,15 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	char str_out[200] = {};
 	char str_date_time[50] = {};
-	char type_hangs_up[20] = "manual";
+	char type_hangs_up[20] = {};
+	char pivot_id[20] = {};
 
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
 
 	arg_pair_t arg_pairs[] = {
 		{"uint8_t", &idp},
+		{"string", pivot_id},
 		{"uint16_t", &dwp},
 		{"uint16_t", &new_actions.percentimeter},
 		{"string", &type_hangs_up},
