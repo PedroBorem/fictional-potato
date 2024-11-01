@@ -523,6 +523,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
+		char scheduling_id[10] = {};
+
 		char pivot_id[50] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
@@ -534,6 +536,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &dwp},
 				{"uint16_t", &new_actions.percentimeter},
 				{"string", &new_actions.user},
+				{"string", &scheduling_id},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -2569,6 +2572,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	char str_out[200] = {};
 	char reason_hangs_up[50] = {};
 	char pivot_id[50] = {};
+	char scheduling_id[10] = {};
 
 	char str_idp[5] = {};
 	char str_pkg[100] = {};
@@ -2593,10 +2597,11 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &dwp},
 				{"uint16_t", &actions.percentimeter},
 				{"string", &actions.user},
+				{"string", &scheduling_id},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		ESP_LOGE(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAAAAAAAAAA");
+		// ESP_LOGE(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAAAAAAAAAA");
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s", actions.user);
 
 		if (strcmp(actions.user, "virtual") == 0)
@@ -2608,18 +2613,16 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{
 					{"uint8_t", &idp_28},
 					{"string", &pivot_id},
-					{"uint16_t", &reason_hangs_up},
-					{"bool", &idp},
+					{"string", &reason_hangs_up},
+					{"uint8_t", &idp},
 					{"bool", &on_barrier},
 					{NULL, NULL}};
 
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "BBBBBBBBBBBBBBBBBBBBBBB");
 			idp_parser_create_package(str_out, arg_pairs_idp_28);
 			comm_app_send_idp_pack(str_out, COMM_MQTT);
 		}
 		else if (strcmp(actions.user, "Irrigabras") == 0)
 		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "CCCCCCCCCCCCCCCCCCCCCCCC");
 			strncpy(reason_hangs_up, "nimbus_system", sizeof(reason_hangs_up) - 1);
 			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
 
@@ -2639,15 +2642,16 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		}
 		else if (strcmp(pivot_id, "scheduling") == 0)
 		{
-			strncpy(reason_hangs_up, "scheduling", sizeof(reason_hangs_up));
+			strncpy(reason_hangs_up, actions.user, sizeof(reason_hangs_up));
 			bool on_barrier = false;
 
 			arg_pair_t arg_pairs_idp_28[] =
 				{
 					{"uint8_t", &idp_28},
+					{"string", system_id},
 					{"string", &pivot_id},
-					{"uint16_t", &reason_hangs_up},
-					{"bool", &idp},
+					{"string", &reason_hangs_up},
+					{"string", &scheduling_id},
 					{"bool", &on_barrier},
 					{NULL, NULL}};
 
@@ -2663,8 +2667,8 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{
 					{"uint8_t", &idp_28},
 					{"string", &pivot_id},
-					{"uint16_t", &reason_hangs_up},
-					{"bool", &idp},
+					{"string", &reason_hangs_up},
+					{"uint8_t", &idp},
 					{"bool", &on_barrier},
 					{NULL, NULL}};
 

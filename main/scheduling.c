@@ -216,7 +216,8 @@ static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, bo
         { "string", SCHEDULING_TAG },
         { "uint16_t", &dwp },
         { "uint16_t", &percent },
-        { "string", &scheduling_type},
+        { "string", scheduling_type},
+        { "string", scheduling_id},
         { NULL, NULL }
     };
 
