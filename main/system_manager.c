@@ -2586,6 +2586,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	uint16_t dwp = 0;
 
 	pivot_actions actions = {};
+	pivot_physical_config physical_barrier_config = {};
 
 	idp_type idp_request = idp_parser_get(buffer, str_pkg);
 	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
@@ -2602,6 +2603,29 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		{NULL, NULL}};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
+
+	data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
+
+	if(global_angle != 655)
+	{
+		if((physical_barrier_config.start_angle_physical_barrier > physical_barrier_config.end_angle_physical_barrier))
+		{
+			if(global_angle  > physical_barrier_config.start_angle_physical_barrier
+			|| global_angle < physical_barrier_config.end_angle_physical_barrier)
+			{
+				on_barrier = true;
+			}
+		}
+		else
+		{
+			if(global_angle > physical_barrier_config.start_angle_physical_barrier
+			&& global_angle < physical_barrier_config.end_angle_physical_barrier)
+			{
+				on_barrier = true;
+			}
+
+		}            
+	}
 
 	if(idp_request == IDP_1)
 	{
@@ -2640,11 +2664,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	{
 		strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
 		reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-
-		/*
-			Verificacao da barreira 
-			on_barrier = true
-		*/
 	}
 
 	time_t timestamp = rtc_app_get_timestamp(false);
