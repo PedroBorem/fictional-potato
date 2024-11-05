@@ -353,6 +353,7 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
     pivot_actions actions;          /*!< Pivot actions */
+    char str_author[50];
 } pivot_scheduling_date;
 
 /**
@@ -362,6 +363,7 @@ typedef struct __attribute__((__packed__))
 {
     char scheduling_id[50];         /*!< Scheduling ID */
     time_t end_date;                /*!< End date */
+    char str_author[50];
 } pivot_scheduling_off_date;
 
 
@@ -376,12 +378,14 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     uint16_t end_angle;             /*!< End angle */
     pivot_actions actions;          /*!< Pivot actions */
+    char str_author[50];
 } pivot_scheduling_angle;
 
 typedef struct __attribute__((__packed__))
 {
     char scheduling_id[30];         /*!< Scheduling ID */
     uint16_t end_angle;             /*!< End angle */
+    char str_author[50];
 } pivot_scheduling_off_angle;
 
 /**

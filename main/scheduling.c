@@ -92,7 +92,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param shceduling_type The type of the scheduling (IDP)
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, bool scheduling_notify_server);
+static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, char* str_author, bool scheduling_notify_server);
 
 /**
  * @brief Task for processing scheduling events with IDP 14.
@@ -177,7 +177,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param scheduling_id The ID of the scheduling to be deactivated.
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, bool scheduling_notify_server)
+static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, char* str_author, bool scheduling_notify_server)
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
@@ -218,6 +218,7 @@ static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, bo
         { "uint16_t", &percent },
         { "string", scheduling_type},
         { "string", scheduling_id},
+        { "string", str_author},
         { NULL, NULL }
     };
 
@@ -283,7 +284,7 @@ static void scheduling_task_idp_14(void* arg)
                     Desliga do idp 14
                 */
                 scheduling_date_status[date_position] = false;
-                scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, scheduling_type, false);
+                scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, scheduling_type, scheduling_date_current[date_position].str_author, false);
             }
         }
 
@@ -333,7 +334,7 @@ static void scheduling_task_idp_15(void* arg)
                     Desliga do idp 15
                 */
                     scheduling_angle_status[angle_position] = false;
-                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_type, false);
+                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_angle_current[angle_position].str_author,scheduling_type, false);
                 }
             }
         }
@@ -365,7 +366,7 @@ static void scheduling_task_idp_16(void* arg)
                 /*
                     Desliga do idp 16
                 */
-                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_type, true);
+                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_off_date_current[date_position].str_author,scheduling_type, true);
             }
         }
 
@@ -392,7 +393,7 @@ static void scheduling_task_idp_17(void* arg)
                 /*
                     Desliga do idp 17
                 */
-                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_type, true);
+                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author,scheduling_type, true);
             }
         }
  

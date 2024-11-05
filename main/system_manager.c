@@ -1298,7 +1298,7 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
-		char str_author[30] = {};
+		// char str_author[30] = {};
 
 		pivot_scheduling_date scheduling = {};
 		uint16_t dwp = 0;
@@ -1312,13 +1312,13 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 				{"uint32_t", &scheduling.end_date},
 				{"uint16_t", &dwp},
 				{"uint16_t", &scheduling.actions.percentimeter},
-				{"string", str_author},
+				{"string", &scheduling.str_author},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &scheduling.actions);
 
-		if (idp_parser_validate_idp_14(scheduling, str_author))
+		if (idp_parser_validate_idp_14(scheduling, scheduling.str_author))
 		{
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
@@ -2579,6 +2579,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	bool on_barrier = false;
 	char user[50] = {};
 	char str_date_time[50] = {};
+	char scheduling_author[50] = {};
 	
 	uint8_t idp_28 = IDP_28;
 	uint8_t idp = 0;
@@ -2589,8 +2590,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	idp_type idp_request = idp_parser_get(buffer, str_pkg);
 	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
 
-	ESP_LOGE(SYSTEM_MANAGER_TAG, "%i" ,idp_request);
-
 	arg_pair_t arg_pairs[] =
 	{
 		{"uint8_t", &idp},
@@ -2599,6 +2598,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		{"uint16_t", &actions.percentimeter},
 		{"string", user},
 		{"string", &scheduling_id},
+		{"string", scheduling_author},
 		{NULL, NULL}};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
@@ -2612,6 +2612,9 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			
 			strncpy(str_idp, user, sizeof(str_idp) - 1);
 			str_idp[sizeof(user) - 1] = '\0';
+			
+			strncpy(user, scheduling_author, sizeof(user) - 1);
+			user[sizeof(user) - 1] = '\0';
 
 		}
 		else if(strcmp(pivot_id, "system_monitoring") == 0)
