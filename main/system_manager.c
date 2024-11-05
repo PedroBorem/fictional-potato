@@ -2609,6 +2609,9 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		{
 			strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
 			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
+			
+			strncpy(str_idp, user, sizeof(str_idp) - 1);
+			str_idp[sizeof(user) - 1] = '\0';
 
 		}
 		else if(strcmp(pivot_id, "system_monitoring") == 0)
@@ -2618,8 +2621,16 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		}
 		else
 		{
-			strncpy(reason_hangs_up, "Soil_App", sizeof(reason_hangs_up) - 1);
-			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
+			if(strcmp(user, "Irrigabras") == 0)
+			{
+				strncpy(reason_hangs_up, "Nimbus_App", sizeof(reason_hangs_up) - 1);
+				reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
+			}
+			else
+			{
+				strncpy(reason_hangs_up, "Soil_App", sizeof(reason_hangs_up) - 1);
+				reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
+			}	
 		}
 	}
 	else 
@@ -2641,10 +2652,10 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		{"uint8_t", &idp_28},
 		{"string", system_id},
 		{"string", reason_hangs_up},
-		{"uint8_t", &idp},
+		{"string", str_idp},
 		{"string", scheduling_id},
-		{"bool", &on_barrier},
 		{"string", user},
+		{"bool", &on_barrier},
 		{"string", str_date_time},
 		{NULL, NULL}};
 
