@@ -2700,7 +2700,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		uint8_t idp = IDP_28;
 		reboot_config reboot_config = {};
 
-		data_app_load(DATA_TYPE_REBOOT_CONFIG, &reboot_config);
+		data_app_load(DATA_TYPE_REASON_HANG_UP, &reboot_config);
 
 		arg_pair_t arg_pairs_idp_28[] = {
 			{"uint8_t", &idp},
