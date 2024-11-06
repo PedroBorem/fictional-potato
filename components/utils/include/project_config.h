@@ -403,6 +403,22 @@ typedef struct __attribute__((__packed__))
     time_t end_date;                /*!< End date */
 } pivot_history;
 
+/*
+    COMENTARIO AQUI
+*/
+typedef struct __attribute__((__packed__))
+{
+    char reason_hangs_up[50];  /*!< Start angle of the configuration */
+    char str_idp[10];    /*!< End angle of the configuration */
+    char scheduling_id[20];
+    char user[20];
+    bool on_barrier;
+    char str_date_time[70];
+} pivot_reason_hangs_up;
+
+#define PIVOT_REASON_HANGS_UP_VAR_COUNT   (7)
+
+
 /**
  * @brief Indicates which type the barrier
  * 
