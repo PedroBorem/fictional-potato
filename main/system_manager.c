@@ -2567,132 +2567,99 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 	}
 }
 
+
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
-	char str_out[200] = {};
-	char str_pkg[100] = {};
+    char str_out[200];
+    char str_pkg[100];
+    char pivot_id[20];
+    char reason_hangs_up[50] = "";
+    char str_idp[5];
+    char scheduling_id[10] = "0";
+    bool on_barrier = false;
+    char user[50];
+    char str_date_time[50];
+    char scheduling_author[50];
 
-	char pivot_id[20] = {};
-	char reason_hangs_up[50] = {};
-	char str_idp[5] = {};
-	char scheduling_id[10] = {"0"};
-	bool on_barrier = false;
-	char user[50] = {};
-	char str_date_time[50] = {};
-	char scheduling_author[50] = {};
-	
-	uint8_t idp_28 = IDP_28;
-	uint8_t idp = 0;
-	uint16_t dwp = 0;
+    uint8_t idp_28 = IDP_28;
+    uint8_t idp = 0;
+    uint16_t dwp = 0;
 
-	pivot_actions actions = {};
-	pivot_physical_config physical_barrier_config = {};
+    pivot_actions actions = {};
+    pivot_physical_config physical_barrier_config = {};
 
-	idp_type idp_request = idp_parser_get(buffer, str_pkg);
-	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
+    idp_type idp_request = idp_parser_get(buffer, str_pkg);
+    snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
 
-	arg_pair_t arg_pairs[] =
-	{
-		{"uint8_t", &idp},
-		{"string", pivot_id},
-		{"uint16_t", &dwp},
-		{"uint16_t", &actions.percentimeter},
-		{"string", user},
-		{"string", &scheduling_id},
-		{"string", scheduling_author},
-		{NULL, NULL}};
+    arg_pair_t arg_pairs[] = {
+        {"uint8_t", &idp},
+        {"string", pivot_id},
+        {"uint16_t", &dwp},
+        {"uint16_t", &actions.percentimeter},
+        {"string", user},
+        {"string", &scheduling_id},
+        {"string", scheduling_author},
+        {NULL, NULL}};
 
-	idp_parser_get_packet_data(buffer, arg_pairs);
+    idp_parser_get_packet_data(buffer, arg_pairs);
+    data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
 
-	data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
+    // Condições simplificadas para definir on_barrier
+    if (global_angle != 655)
+    {
+        if ((physical_barrier_config.start_angle_physical_barrier > physical_barrier_config.end_angle_physical_barrier &&
+             (global_angle > physical_barrier_config.start_angle_physical_barrier ||
+              global_angle < physical_barrier_config.end_angle_physical_barrier)) ||
+            (physical_barrier_config.start_angle_physical_barrier <= physical_barrier_config.end_angle_physical_barrier &&
+             global_angle > physical_barrier_config.start_angle_physical_barrier &&
+             global_angle < physical_barrier_config.end_angle_physical_barrier))
+        {
+            on_barrier = true;
+        }
+    }
 
-	if(global_angle != 655)
-	{
-		if((physical_barrier_config.start_angle_physical_barrier > physical_barrier_config.end_angle_physical_barrier))
-		{
-			if(global_angle  > physical_barrier_config.start_angle_physical_barrier
-			|| global_angle < physical_barrier_config.end_angle_physical_barrier)
-			{
-				on_barrier = true;
-			}
-		}
-		else
-		{
-			if(global_angle > physical_barrier_config.start_angle_physical_barrier
-			&& global_angle < physical_barrier_config.end_angle_physical_barrier)
-			{
-				on_barrier = true;
-			}
+    // Definir reason_hangs_up com base no IDP e pivot_id
+    if (idp_request == IDP_1)
+    {
+        if (strcmp(pivot_id, "scheduling") == 0)
+        {
+            strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
+            strncpy(str_idp, user, sizeof(str_idp) - 1);
+            strncpy(user, scheduling_author, sizeof(user) - 1);
+        }
+        else if (strcmp(pivot_id, "system_monitoring") == 0)
+        {
+            strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
+        }
+        else
+        {
+            // Definir com base no user
+            strncpy(reason_hangs_up, (strcmp(user, "Irrigabras") == 0) ? "Nimbus_App" : "Soil_App", sizeof(reason_hangs_up) - 1);
+        }
+    }
+    else
+    {
+        strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
+    }
+    reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0'; // Garantir terminação nula
 
-		}            
-	}
+    time_t timestamp = rtc_app_get_timestamp(false);
+    rtc_app_get_str_date_time(timestamp, str_date_time);
 
-	if(idp_request == IDP_1)
-	{
-		if(strcmp(pivot_id, "scheduling") == 0)
-		{
-			strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
-			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-			
-			strncpy(str_idp, user, sizeof(str_idp) - 1);
-			str_idp[sizeof(user) - 1] = '\0';
-			
-			strncpy(user, scheduling_author, sizeof(user) - 1);
-			user[sizeof(user) - 1] = '\0';
+    // Definição de dados do pacote para IDP_28
+    arg_pair_t arg_pairs_idp_28[] = {
+        {"uint8_t", &idp_28},
+        {"string", system_id},
+        {"string", reason_hangs_up},
+        {"string", str_idp},
+        {"string", scheduling_id},
+        {"string", user},
+        {"bool", &on_barrier},
+        {"string", str_date_time},
+        {NULL, NULL}};
 
-		}
-		else if(strcmp(pivot_id, "system_monitoring") == 0)
-		{
-			strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
-			reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-		}
-		else
-		{
-			if(strcmp(user, "Irrigabras") == 0)
-			{
-				strncpy(reason_hangs_up, "Nimbus_App", sizeof(reason_hangs_up) - 1);
-				reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-			}
-			else
-			{
-				strncpy(reason_hangs_up, "Soil_App", sizeof(reason_hangs_up) - 1);
-				reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-			}	
-		}
-	}
-	else 
-	{
-		strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
-		reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0';
-	}
-
-	time_t timestamp = rtc_app_get_timestamp(false);
-	rtc_app_get_str_date_time(timestamp, str_date_time);
-
-	arg_pair_t arg_pairs_idp_28[] =
-	{
-		{"uint8_t", &idp_28},
-		{"string", system_id},
-		{"string", reason_hangs_up},
-		{"string", str_idp},
-		{"string", scheduling_id},
-		{"string", user},
-		{"bool", &on_barrier},
-		{"string", str_date_time},
-		{NULL, NULL}};
-
-	idp_parser_create_package(str_out, arg_pairs_idp_28);
-	comm_app_send_idp_pack(str_out, COMM_MQTT);
-
-	/**
-	 *
-	 * Estruturar payload do idp 28
-	 */
-
-	// data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));
-
-	// idp_parser_create_package(str_out, arg_pairs);
-	// comm_app_send_idp_pack(str_out, comm_mode);
+    idp_parser_create_package(str_out, arg_pairs_idp_28);
+    comm_app_send_idp_pack(str_out, COMM_MQTT);
 }
 
 /**
