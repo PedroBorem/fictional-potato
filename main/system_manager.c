@@ -572,7 +572,10 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					data_app_save(DATA_TYPE_OLD_HISTORY, &old_history, sizeof(old_history));
 				}
 
-				system_manager_idp_28(buffer, comm_mode);
+				if(old_actions.power_state == PIVOT_ON)
+				{
+					system_manager_idp_28(buffer, COMM_MQTT);
+				}
 			}
 
 			ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2605,18 +2608,20 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
     data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
 
     // Condições simplificadas para definir on_barrier
-    if (global_angle != 655)
-    {
-        if ((physical_barrier_config.start_angle_physical_barrier > physical_barrier_config.end_angle_physical_barrier &&
-             (global_angle > physical_barrier_config.start_angle_physical_barrier ||
-              global_angle < physical_barrier_config.end_angle_physical_barrier)) ||
-            (physical_barrier_config.start_angle_physical_barrier <= physical_barrier_config.end_angle_physical_barrier &&
-             global_angle > physical_barrier_config.start_angle_physical_barrier &&
-             global_angle < physical_barrier_config.end_angle_physical_barrier))
-        {
-            on_barrier = true;
-        }
-    }
+	if (global_angle != 655)
+	{
+		// Adiciona margem de ±3 graus para os ângulos de barreira
+		uint16_t start_margin = (physical_barrier_config.start_angle_physical_barrier + 360 - 3) % 360;
+		uint16_t end_margin = (physical_barrier_config.end_angle_physical_barrier + 3) % 360;
+
+		if ((start_margin > end_margin &&
+			(global_angle >= start_margin || global_angle <= end_margin)) ||
+			(start_margin <= end_margin &&
+			global_angle >= start_margin && global_angle <= end_margin))
+		{
+			on_barrier = true;
+		}
+	}
 
     // Definir reason_hangs_up com base no IDP e pivot_id
     if (idp_request == IDP_1)
@@ -2634,13 +2639,22 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
         else
         {
             // Definir com base no user
-            strncpy(reason_hangs_up, (strcmp(user, "Irrigabras") == 0) ? "Nimbus_App" : "Soil_App", sizeof(reason_hangs_up) - 1);
+            if (strcmp(user, "Irrigabras") == 0) 
+			{
+				strncpy(reason_hangs_up, "Nimbus_App", sizeof(reason_hangs_up) - 1);
+			} 
+			else 
+			{
+				strncpy(reason_hangs_up, "Soil_App", sizeof(reason_hangs_up) - 1);
+			}
+
         }
     }
     else
     {
         strncpy(reason_hangs_up, pivot_id, sizeof(reason_hangs_up) - 1);
     }
+	
     reason_hangs_up[sizeof(reason_hangs_up) - 1] = '\0'; // Garantir terminação nula
 
     time_t timestamp = rtc_app_get_timestamp(false);
@@ -2661,7 +2675,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
     idp_parser_create_package(str_out, arg_pairs_idp_28);
     comm_app_send_idp_pack(str_out, COMM_MQTT);
 
-		data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));
+	data_app_save(DATA_TYPE_REASON_HANG_UP, &str_out, strlen(str_out));
 }
 
 /**
@@ -2729,7 +2743,11 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		counter_reading_panel_off++;
 		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 
-		system_manager_idp_28(buffer, COMM_MQTT);
+		if(old_actions.power_state == PIVOT_ON)
+		{
+			system_manager_idp_28(buffer, COMM_MQTT);
+		}
+		
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
