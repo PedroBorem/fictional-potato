@@ -2650,6 +2650,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			}
 			else if (strcmp(pivot_id, "system_monitoring") == 0)
 			{
+				strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
 				strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 			}
 			else
@@ -2663,12 +2664,14 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{
 					strncpy(pivot_reason_hangs_up.reason_hangs_up, "Soil_App", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 				}
-
+				strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
 			}
 		}
 		else
 		{
 			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+			strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
+
 		}
 		
 		pivot_reason_hangs_up.reason_hangs_up[sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1] = '\0'; // Garantir terminação nula
