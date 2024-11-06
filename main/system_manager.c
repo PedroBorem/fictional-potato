@@ -2660,6 +2660,8 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 
     idp_parser_create_package(str_out, arg_pairs_idp_28);
     comm_app_send_idp_pack(str_out, COMM_MQTT);
+
+		data_app_save(DATA_TYPE_REASON_HANG_UP, &reason_hangs_up, strlen(reason_hangs_up));
 }
 
 /**
