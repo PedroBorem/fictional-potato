@@ -2576,7 +2576,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_REASON_HANGS_UP_VAR_COUNT + 1);
+	uint8_t expected_delimiter_num = (4);
 
 	if (comm_mode == COMM_MQTT)
 	{
@@ -2697,24 +2697,12 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 
-		uint8_t idp = IDP_28;
-		reboot_config reboot_config = {};
+		// uint8_t idp = IDP_28;
+		// reboot_config reboot_config = {};
 
-		data_app_load(DATA_TYPE_REASON_HANG_UP, &reboot_config);
-
-		arg_pair_t arg_pairs_idp_28[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"string", &pivot_reason_hangs_up.reason_hangs_up},
-			{"string", &pivot_reason_hangs_up.str_idp},
-			{"string", &pivot_reason_hangs_up.scheduling_id},
-			{"string", &pivot_reason_hangs_up.user},
-			{"bool", &pivot_reason_hangs_up.on_barrier},
-			{"string", &pivot_reason_hangs_up.str_date_time},
-			{NULL, NULL}};
+		data_app_load(DATA_TYPE_REASON_HANG_UP, &str_out);
 
 		// send
-		idp_parser_create_package(str_out, arg_pairs_idp_28);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
