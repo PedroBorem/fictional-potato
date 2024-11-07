@@ -2638,6 +2638,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 					if (global_angle >= margin_low || global_angle <= margin_high) 
 					{
 						pivot_reason_hangs_up.on_barrier = true;
+						strncpy(pivot_reason_hangs_up.reason_hangs_up, "probably_barrier", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 				} 
 				else 
@@ -2645,6 +2646,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 					if (global_angle >= margin_low && global_angle <= margin_high) 
 					{
 						pivot_reason_hangs_up.on_barrier = true;
+						strncpy(pivot_reason_hangs_up.reason_hangs_up, "probably_barrier", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 				}
 			}
@@ -2669,11 +2671,11 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 				{
 					if (strcmp(pivot_reason_hangs_up.user, "Irrigabras") == 0)
 					{
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "Nimbus_App", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+						strncpy(pivot_reason_hangs_up.reason_hangs_up, "nimbus_app", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 					else
 					{
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "Soil_App", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+						strncpy(pivot_reason_hangs_up.reason_hangs_up, "soil_app", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 					strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
 				}
@@ -2780,10 +2782,10 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		counter_reading_panel_off++;
 		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 
-		if(old_actions.power_state == PIVOT_ON)
-		{
+		// if(old_actions.power_state == PIVOT_ON)
+		// {
 			system_manager_idp_28(buffer, COMM_MQTT);
-		}
+		// }
 		
 	}
 
