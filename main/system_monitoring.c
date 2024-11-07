@@ -242,7 +242,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint16_t dwp = 0;
     char str_out[50] = {};
     type_barrier barrier_type = VIRTUAL_BARRIER;  
-    char type_hangs_up[20] = "virtual";
+    char type_hangs_up[20] = "virtual_barrier";
 
     pivot_actions pivot_actions = {};
 

@@ -2594,6 +2594,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	char pivot_id[20];
 	pivot_reason_hangs_up pivot_reason_hangs_up = {};
 	char scheduling_author[50];
+	uint8_t range_barrier = 3;
 
 	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
@@ -2621,10 +2622,10 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		if (global_angle != 655) 
 		{
 			uint16_t margins[2][2] = {
-				{(physical_barrier_config.start_angle_physical_barrier + 360 - 3) % 360,
-				(physical_barrier_config.start_angle_physical_barrier + 3) % 360},
-				{(physical_barrier_config.end_angle_physical_barrier + 360 - 3) % 360,
-				(physical_barrier_config.end_angle_physical_barrier + 3) % 360}
+				{(physical_barrier_config.start_angle_physical_barrier + 360 - range_barrier) % 360,
+				(physical_barrier_config.start_angle_physical_barrier + range_barrier) % 360},
+				{(physical_barrier_config.end_angle_physical_barrier + 360 - range_barrier) % 360,
+				(physical_barrier_config.end_angle_physical_barrier + range_barrier) % 360}
 			};
 
 			for (int i = 0; i < 2; ++i) 
@@ -2700,6 +2701,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			{"bool", &pivot_reason_hangs_up.on_barrier},
 			{"string", &pivot_reason_hangs_up.str_date_time},
 			{NULL, NULL}};
+
 		idp_parser_create_package(str_save_pkg, arg_pairs_idp_28);
 		comm_app_send_idp_pack(str_save_pkg, COMM_MQTT);
 		data_app_save(DATA_TYPE_REASON_HANG_UP, &str_save_pkg, strlen(str_save_pkg));
