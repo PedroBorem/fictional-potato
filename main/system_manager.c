@@ -2618,29 +2618,37 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
 
-		// Verificação do ângulo de barreira com margem de ±3 graus
-		if (global_angle != 655)
+		if (global_angle != 655) 
 		{
-			uint16_t start_margin = (physical_barrier_config.start_angle_physical_barrier + 360 - 3) % 360;
-			uint16_t end_margin = (physical_barrier_config.end_angle_physical_barrier + 3) % 360;
+			uint16_t margins[2][2] = {
+				{(physical_barrier_config.start_angle_physical_barrier + 360 - 3) % 360,
+				(physical_barrier_config.start_angle_physical_barrier + 3) % 360},
+				{(physical_barrier_config.end_angle_physical_barrier + 360 - 3) % 360,
+				(physical_barrier_config.end_angle_physical_barrier + 3) % 360}
+			};
 
-			if (start_margin > end_margin)
+			for (int i = 0; i < 2; ++i) 
 			{
-				if (global_angle >= start_margin || global_angle <= end_margin)
+				uint16_t margin_low = margins[i][0];
+				uint16_t margin_high = margins[i][1];
+
+				if (margin_low > margin_high) 
 				{
-					pivot_reason_hangs_up.on_barrier = true;
-				}
-			}
-			else
-			{
-				if (global_angle >= start_margin && global_angle <= end_margin)
+					if (global_angle >= margin_low || global_angle <= margin_high) 
+					{
+						pivot_reason_hangs_up.on_barrier = true;
+					}
+				} 
+				else 
 				{
-					pivot_reason_hangs_up.on_barrier = true;
+					if (global_angle >= margin_low && global_angle <= margin_high) 
+					{
+						pivot_reason_hangs_up.on_barrier = true;
+					}
 				}
 			}
 		}
 
-		// Definição de 'reason_hangs_up' e 'scheduling_id' com base nas condições de 'pivot_id' e 'user'
 		if (idp_request == IDP_1)
 		{
 			if (strcmp(pivot_id, "scheduling") == 0)
