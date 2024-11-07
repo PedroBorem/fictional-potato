@@ -182,10 +182,6 @@ esp_err_t data_app_init(void)
 			.time_leaving_barrier = 3,
 	};
 
-	const pivot_reason_hangs_up default_reason_hangs_up = {
-		.scheduling_id = "0",
-	};
-
 	const gps_config gps_config = {};
 	const eco_mode_config default_eco =	{};
 	const sector_config default_sector = {};
@@ -275,10 +271,6 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
 		{
 			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_phy_barrier, sizeof(default_phy_barrier));
-		}
-		if(nvs_data_get_size(DATA_REASON_HANG_UP) == 0)
-		{
-			data_app_save(DATA_TYPE_REASON_HANG_UP, &default_reason_hangs_up, sizeof(default_reason_hangs_up));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
