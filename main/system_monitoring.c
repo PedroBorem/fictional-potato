@@ -142,7 +142,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 memset(str_out, 0x00, sizeof(str_out));
                 idp_parser_create_package(str_out, arg_idp_02);
-                system_monitoring_callback(str_out, COMM_MQTT);
+                system_monitoring_callback(str_out, comm_main_mode);
 
                 return_back_flag = true;
                 data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
@@ -211,7 +211,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 memset(str_out, 0x00, sizeof(str_out));
                 idp_parser_create_package(str_out, arg_idp_02);
-                system_monitoring_callback(str_out, COMM_MQTT);
+                system_monitoring_callback(str_out, comm_main_mode);
 
                 return_back_flag = true;
                 data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
@@ -264,7 +264,7 @@ static void system_monitoring_actuation_virtual_barrier(void)
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
-    system_monitoring_callback(str_out, COMM_MQTT);
+    system_monitoring_callback(str_out, comm_main_mode);
 
     system_monitoring_automatic_return(pivot_actions, barrier_type);
 }
@@ -455,7 +455,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
 static void system_monitoring_timer(TimerHandle_t pxTimer)
 {
     // send IDP 0 (current status)
-    system_monitoring_callback("#00$", COMM_MQTT);
+    system_monitoring_callback("#00$", comm_main_mode);
 
     // save current Timestamp
     time_t timestamp_now = rtc_app_get_timestamp(false);

@@ -278,4 +278,14 @@ bool idp_parser_validate_idp_24(const reboot_config reboot_config);
  */
 bool idp_parser_validate_idp_26(const pivot_virtual_config virtual_config);
 
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param comm_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config);
+
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

@@ -53,4 +53,14 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
  */
 void comm_app_wifi_reloader(void);
 
+/**
+ * @brief Configures the Main Mode of Communication settings.
+ * *
+ * @param config - [in]: Comm Main Mode configuration.
+ * @return
+ *   - ESP_OK: Configuration applied successfully
+ *   - ESP_FAIL: Configuration failed
+ */
+esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config);
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_COMM_APP_H_ */
