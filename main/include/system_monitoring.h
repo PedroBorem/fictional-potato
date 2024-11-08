@@ -52,4 +52,6 @@ void system_monitoring_register_callback(const app_callback callback);
  */
 void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type_barrier barrier_type);
 
+bool system_monitoring_range_barrier(uint8_t range_barrier);
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

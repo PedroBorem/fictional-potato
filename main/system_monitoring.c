@@ -333,6 +333,45 @@ static void system_monitoring_task(void* arg)
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
 }
+
+bool system_monitoring_range_barrier(uint8_t range_barrier)
+{
+    pivot_physical_config physical_barrier_config = {};
+    data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
+
+    if (*system_monitoring_current_angle != 655) 
+    {
+        uint16_t margins[2][2] = {
+            {(physical_barrier_config.start_angle_physical_barrier + 360 - range_barrier) % 360,
+            (physical_barrier_config.start_angle_physical_barrier + range_barrier) % 360},
+            {(physical_barrier_config.end_angle_physical_barrier + 360 - range_barrier) % 360,
+            (physical_barrier_config.end_angle_physical_barrier + range_barrier) % 360}
+        };
+
+        for (int i = 0; i < 2; ++i) 
+        {
+            uint16_t margin_low = margins[i][0];
+            uint16_t margin_high = margins[i][1];
+
+            if (margin_low > margin_high) 
+            {
+                if (*system_monitoring_current_angle >= margin_low || *system_monitoring_current_angle <= margin_high) 
+                {
+                    return true;
+                }
+            } 
+            else 
+            {
+                if (*system_monitoring_current_angle >= margin_low && *system_monitoring_current_angle <= margin_high) 
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
 /**
  * @brief Determines and triggers actuation based on the barrier status.
  *

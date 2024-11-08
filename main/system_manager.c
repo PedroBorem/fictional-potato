@@ -30,6 +30,21 @@
 #include "system_monitoring.h"
 #include "sectorization.h"
 
+/** @def SYSTEM_MONITORING_TAG_COMMAND
+ *  @brief Tag used to determine where the command came from
+ */
+#define SYSTEM_MONITORING_TAG_COMMAND "system_monitoring"
+
+/** @def SYSTEM_SCHEDULING_TAG_COMMAND
+ *  @brief Tag used to determine where the command came from
+ */
+#define SYSTEM_SCHEDULING_TAG_COMMAND "scheduling"
+
+/** @def SYSTEM_ACTUATION_TAG_COMMAND
+ *  @brief Tag used to determine where the command came from
+ */
+#define SYSTEM_ACTUATION_TAG_COMMAND "actuation_app"
+
 /** @def SYSTEM_MANAGER_TAG
  *  @brief Log tag for the system manager module.
  */
@@ -523,8 +538,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
 
-		char scheduling_id[10] = {};
-
 		char pivot_id[50] = {};
 		uint16_t dwp = 0;
 		uint8_t idp = 0;
@@ -536,7 +549,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &dwp},
 				{"uint16_t", &new_actions.percentimeter},
 				{"string", &new_actions.user},
-				{"string", &scheduling_id},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -638,7 +650,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 			xTimerStart(system_timer, 1000);
 		}
 
-		if (strcmp(pivot_id, "system_monitoring") != 0)
+		if (strcmp(pivot_id, SYSTEM_MONITORING_TAG_COMMAND) != 0)
 		{
 			counter_reading_panel_off = NO_MANUAL_READING;
 			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
@@ -2596,13 +2608,18 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	char scheduling_author[50];
 	uint8_t range_barrier = 3;
 
+	char scheduling_default_id[5] = "0";
+	char local_wifi_tag[15] = "nimbus_app";
+	char remote_tag[15] = "soil_app";
+	char local_user[15] = "Irrigabras";
+
 	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
 		uint8_t idp_28 = IDP_28;
 		uint8_t idp = 0;
 		uint16_t dwp = 0;
 		pivot_actions actions = {};
-		pivot_physical_config physical_barrier_config = {};
+
 		idp_type idp_request = idp_parser_get(buffer, str_pkg);
 
 		snprintf(pivot_reason_hangs_up.str_idp, sizeof(pivot_reason_hangs_up.str_idp), "%d", idp_request);
@@ -2617,72 +2634,40 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			{"string", scheduling_author},
 			{NULL, NULL}};
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
 
-		if (global_angle != 655) 
+
+		pivot_reason_hangs_up.on_barrier = system_monitoring_range_barrier(range_barrier);
+
+		if (strcmp(pivot_id, SYSTEM_SCHEDULING_TAG_COMMAND) == 0)
 		{
-			uint16_t margins[2][2] = {
-				{(physical_barrier_config.start_angle_physical_barrier + 360 - range_barrier) % 360,
-				(physical_barrier_config.start_angle_physical_barrier + range_barrier) % 360},
-				{(physical_barrier_config.end_angle_physical_barrier + 360 - range_barrier) % 360,
-				(physical_barrier_config.end_angle_physical_barrier + range_barrier) % 360}
-			};
-
-			for (int i = 0; i < 2; ++i) 
-			{
-				uint16_t margin_low = margins[i][0];
-				uint16_t margin_high = margins[i][1];
-
-				if (margin_low > margin_high) 
-				{
-					if (global_angle >= margin_low || global_angle <= margin_high) 
-					{
-						pivot_reason_hangs_up.on_barrier = true;
-					}
-				} 
-				else 
-				{
-					if (global_angle >= margin_low && global_angle <= margin_high) 
-					{
-						pivot_reason_hangs_up.on_barrier = true;
-					}
-				}
-			}
+			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+			strncpy(pivot_reason_hangs_up.str_idp, pivot_reason_hangs_up.user, sizeof(pivot_reason_hangs_up.str_idp) - 1);
+			strncpy(pivot_reason_hangs_up.user, scheduling_author, sizeof(pivot_reason_hangs_up.user) - 1);
 		}
 
-		if (idp_request == IDP_1)
+		if (strcmp(pivot_id, SYSTEM_MONITORING_TAG_COMMAND) == 0)
 		{
-			if (strcmp(pivot_id, "scheduling") == 0)
+			strncpy(pivot_reason_hangs_up.scheduling_id, scheduling_default_id, sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
+			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+		}
+
+		if(strcmp(pivot_id, SYSTEM_ACTUATION_TAG_COMMAND) == 0)
+		{
+			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+			strncpy(pivot_reason_hangs_up.scheduling_id, scheduling_default_id, sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
+		}
+
+		if(strcmp(pivot_id, system_id) == 0)
+		{
+			if (strcmp(pivot_reason_hangs_up.user, local_user) == 0)
 			{
-				strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
-				strncpy(pivot_reason_hangs_up.str_idp, pivot_reason_hangs_up.user, sizeof(pivot_reason_hangs_up.str_idp) - 1);
-				strncpy(pivot_reason_hangs_up.user, scheduling_author, sizeof(pivot_reason_hangs_up.user) - 1);
+				strncpy(pivot_reason_hangs_up.reason_hangs_up, local_wifi_tag, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 			}
 			else
 			{
-				if (strcmp(pivot_id, "system_monitoring") == 0)
-				{
-					strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
-					strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
-				}
-				else
-				{
-					if (strcmp(pivot_reason_hangs_up.user, "Irrigabras") == 0)
-					{
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "nimbus_app", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
-					}
-					else
-					{
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "soil_app", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
-					}
-					strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
-				}
+				strncpy(pivot_reason_hangs_up.reason_hangs_up, remote_tag, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 			}
-		}
-		else
-		{
-			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
-			strncpy(pivot_reason_hangs_up.scheduling_id, "0", sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
+			strncpy(pivot_reason_hangs_up.scheduling_id, scheduling_default_id, sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
 		}
 
 		pivot_reason_hangs_up.reason_hangs_up[sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1] = '\0';
@@ -2754,6 +2739,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	if(new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
 	{
 		new_actions.power_state = PIVOT_OFF;
+		strncpy(type_hangs_up, "pivot_without_water", sizeof(type_hangs_up) - 1);
 	}
 
 	if (new_actions.power_state == PIVOT_OFF)
