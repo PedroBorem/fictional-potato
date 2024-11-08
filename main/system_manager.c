@@ -60,6 +60,11 @@ uint16_t global_pressure = 0;
  */
 uint16_t global_angle = 655;
 
+/** @var global_angle
+ *  @brief Global variable for the comm main mode of the system.
+ */
+comm_type comm_main_mode = COMM_MQTT;
+
 /** @var system_id
  *  @brief Local variable for the system ID.
  */
@@ -119,6 +124,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_27(const char* buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -152,6 +158,10 @@ void system_manager_init(void)
 	pivot_virtual_config virtual_config = {};
 	data_app_load(DATA_TYPE_VIRTUAL_BARRIER, &virtual_config);
 	system_monitoring_register_callback(&system_manager_callback);
+
+	pivot_comm_main_mode_config comm_main_mode_config = {};
+	data_app_load(DATA_TYPE_COMM_MAIN_MODE, &comm_main_mode_config);
+	comm_app_set_main_mode_config(comm_main_mode_config);
 
 	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
@@ -208,6 +218,9 @@ static void system_manager_reboot(void)
 	reboot_config current_reboot = {};
 	data_app_load(DATA_TYPE_REBOOT_CONFIG, &current_reboot);
 
+	pivot_comm_main_mode_config current_comm = {};
+	data_app_load(DATA_TYPE_COMM_MAIN_MODE, &current_comm);
+
 	uint16_t timeout = 0;
 
 	pivot_actions current_action = {};
@@ -217,7 +230,8 @@ static void system_manager_reboot(void)
 
 	data_app_load(DATA_TYPE_TIMESTAMP, &timestamp_nvs);
 	timestamp_now = rtc_app_get_timestamp(false);
-
+	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+	LOG_DATA(SYSTEM_MANAGER_TAG, " Main Communication Mode: %s", current_comm.comm_main_mode_config);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timeout Configurado: %lld", current_reboot.reboot_timeout_sec);
 	LOG_DATA(SYSTEM_MANAGER_TAG, " Timestamp_now: %lld", timestamp_now);
@@ -281,7 +295,7 @@ static void system_manager_reboot(void)
  */
 static void system_manager_timer_callback(TimerHandle_t pxTimer)
 {
-	system_manager_idp_00(NULL, COMM_MQTT);
+	system_manager_idp_00(NULL, comm_main_mode);
 }
 
 /**
@@ -418,6 +432,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_30(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_31:
+		{
+			system_manager_idp_31(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_90:
 		{
 			system_manager_idp_90(str_pkg, comm_mode);
@@ -464,7 +483,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
  */
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		pivot_actions actions = {};
 		char str_out[200] = {};
@@ -510,7 +529,7 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		esp_err_t ret = ESP_FAIL;
 		pivot_actions old_actions = {};
@@ -582,7 +601,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				system_rtc_percent = rtc_app_get_timestamp(false);
 
 				// send current status
-				system_manager_idp_00("#00$", COMM_MQTT);
+				system_manager_idp_00("#00$", comm_main_mode);
 
 				// save new history
 				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
@@ -646,7 +665,7 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (NETWORK_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -764,7 +783,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (PIVOT_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
@@ -868,7 +887,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (ECO_MODE_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
 		{
@@ -968,7 +987,7 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (SECTOR_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -1074,7 +1093,7 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		network_config net_config = {};
@@ -1205,7 +1224,7 @@ static void system_manager_idp_12(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		// init scheduling
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -1240,15 +1259,11 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 					{NULL, NULL}};
 			idp_parser_create_package(str_out, arg_pairs_2);
 
-			if (comm_mode == COMM_MQTT)
-			{
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
-			}
-			else
+			if (comm_mode == COMM_HTTP_POST)
 			{
 				comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-				comm_app_send_idp_pack(str_out, COMM_MQTT);
 			}
+			comm_app_send_idp_pack(str_out, comm_main_mode);
 
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
@@ -1282,7 +1297,7 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1348,9 +1363,9 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 							idp_parser_create_package(str_out, arg_pairs_2);
 
 							comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_main_mode);
 						}
-						else if (comm_mode == COMM_MQTT)
+						else
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
@@ -1360,7 +1375,7 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 									{NULL, NULL}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_mode);
 						}
 
 						ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule date id : %s", scheduling_date[position].scheduling_id);
@@ -1442,7 +1457,7 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1507,9 +1522,9 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 							idp_parser_create_package(str_out, arg_pairs_2);
 
 							comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_main_mode);
 						}
-						else if (comm_mode == COMM_MQTT)
+						else
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
@@ -1519,7 +1534,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 									{NULL, NULL}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
-							comm_app_send_idp_pack(str_out, COMM_MQTT);
+							comm_app_send_idp_pack(str_out, comm_mode);
 						}
 
 						ESP_LOGI(SYSTEM_MANAGER_TAG, "Save schedule angle id : %s", scheduling_angle[position].scheduling_id);
@@ -1601,7 +1616,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		char str_author[30] = {};
@@ -1655,9 +1670,9 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 						idp_parser_create_package(str_out, arg_pairs_2);
 
 						comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-						comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, comm_main_mode);
 					}
-					else if (comm_mode == COMM_MQTT)
+					else
 					{
 						arg_pair_t arg_pairs_2[] =
 							{
@@ -1667,7 +1682,7 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 								{NULL, NULL}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
-						comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, comm_mode);
 					}
 
 					break;
@@ -1732,7 +1747,7 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		char str_author[30] = {};
@@ -1783,7 +1798,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 						idp_parser_create_package(str_out, arg_pairs_2);
 
 						comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-						comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, comm_main_mode);
 					}
 					else if (comm_mode == COMM_MQTT)
 					{
@@ -1795,7 +1810,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 								{NULL, NULL}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
-						comm_app_send_idp_pack(str_out, COMM_MQTT);
+						comm_app_send_idp_pack(str_out, comm_mode);
 					}
 
 					break;
@@ -1852,7 +1867,7 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1876,7 +1891,7 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
 			{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_send);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
@@ -1890,7 +1905,7 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		uint8_t idp = 0;
 		time_t timestamp;
@@ -1911,11 +1926,6 @@ static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
 		}
 		else
 		{
-			if (comm_mode == COMM_HTTP_POST)
-			{
-				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
-			}
-
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Scheduling invalid packed data (%s)", buffer);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
@@ -1936,9 +1946,9 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT);
+	uint8_t expected_delimiter_num = (PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -2215,7 +2225,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (REBOOT_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode ==  COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -2295,9 +2305,9 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT);
+	uint8_t expected_delimiter_num = (PIVOT_VIRTUAL_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -2634,7 +2644,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		system_rtc_percent = rtc_app_get_timestamp(false);
 
 		// send current status
-		system_manager_idp_00("#00$", COMM_MQTT);
+		system_manager_idp_00("#00$", comm_main_mode);
 
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
@@ -2681,7 +2691,93 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{NULL, NULL}};
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
-	comm_app_send_idp_pack(str_out, COMM_MQTT);
+	comm_app_send_idp_pack(str_out, comm_main_mode);
+
+}
+
+static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
+{
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_COMM_MAIN_MODE_CONFIG_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	{
+		char pivot_id[50] = {};
+		pivot_comm_main_mode_config comm_config = {};
+		uint8_t idp = 0;
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"string", comm_config.comm_main_mode_config},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if (idp_parser_validate_idp_31(comm_config))
+		{
+			esp_err_t ret = data_app_save(DATA_TYPE_COMM_MAIN_MODE, &comm_config, sizeof(comm_config));
+
+			if (ret == ESP_OK)
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
+			}
+			else
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
+			}
+
+		}
+		else
+		{
+			if (comm_mode == COMM_HTTP_POST)
+			{
+				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+			}
+
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Comm Main Mode Config invalid packed data (%s)", buffer);
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
+			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+		}
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		char str_out[200] = {};
+		pivot_comm_main_mode_config current_comm = {};
+		uint8_t idp = IDP_31;
+
+		data_app_load(DATA_TYPE_COMM_MAIN_MODE, &current_comm);
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", current_comm.comm_main_mode_config},
+				{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
 }
 
 /**
@@ -2694,7 +2790,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		uint8_t idp = IDP_90;
 		if (comm_mode == COMM_HTTP_GET)
@@ -2711,7 +2807,7 @@ static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
+			comm_app_send_idp_pack(str_out, comm_mode);
 		}
 	}
 }
@@ -2726,7 +2822,7 @@ static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		uint8_t idp = IDP_91;
 		if (comm_mode == COMM_HTTP_POST)
@@ -2742,7 +2838,7 @@ static void system_manager_idp_91(const char *buffer, comm_type comm_mode)
 				{NULL, NULL}};
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
-			comm_app_send_idp_pack(str_out, COMM_MQTT);
+			comm_app_send_idp_pack(str_out, comm_mode);
 		}
 
 		vTaskDelay(pdMS_TO_TICKS(2000)); // 2 seconds
@@ -2763,7 +2859,7 @@ static void system_manager_idp_92(const char *buffer, comm_type comm_mode)
 {
 	char str_out[200] = {};
 
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		uint8_t idp = IDP_92;
 		if (comm_mode == COMM_HTTP_POST)
@@ -2777,6 +2873,6 @@ static void system_manager_idp_92(const char *buffer, comm_type comm_mode)
 			{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs_ack);
-		comm_app_send_idp_pack(str_out, COMM_MQTT);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
