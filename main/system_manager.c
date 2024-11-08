@@ -2638,7 +2638,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 					if (global_angle >= margin_low || global_angle <= margin_high) 
 					{
 						pivot_reason_hangs_up.on_barrier = true;
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "probably_barrier", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 				} 
 				else 
@@ -2646,7 +2645,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 					if (global_angle >= margin_low && global_angle <= margin_high) 
 					{
 						pivot_reason_hangs_up.on_barrier = true;
-						strncpy(pivot_reason_hangs_up.reason_hangs_up, "probably_barrier", sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 					}
 				}
 			}
