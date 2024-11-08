@@ -1128,7 +1128,7 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 	{
 		uint8_t idp = 0;
 		time_t timestamp;
-		char utc[10] = {};
+		// char utc[30] = {};
 
 		// get angle
 		arg_pair_t arg_pairs[] =
@@ -1137,7 +1137,7 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &global_angle},
 				{"uint16_t", &global_pressure},
 				{"time_t", &timestamp},
-				{"string", utc},
+				// {"string", utc},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
