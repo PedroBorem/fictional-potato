@@ -274,16 +274,6 @@ void actuation_app_task(void* arg)
 				actuation_app_manual_call(current_action);
 			}
 		}
-		else if(current_action.percentimeter > (actuation_config.percentimeter + 10) // 10% change in percent
-			|| (current_action.percentimeter + 10) < actuation_config.percentimeter )
-		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_PERCENTIMETER_TIME)
-			{
-				LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter change");
-				last_tick = xTaskGetTickCount();
-				actuation_app_manual_call(current_action);
-			}
-		}
 		else
 		{
 			last_tick = xTaskGetTickCount();
