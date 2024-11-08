@@ -2719,6 +2719,8 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	char str_date_time[50] = {};
 	char type_hangs_up[20] = {};
 	char pivot_id[20] = {};
+	char buffer_copy[200] = {};  // Copia do buffer para permitir modificações, se necessário
+	bool buffer_modified = false;  // Flag para verificar se buffer_copy foi modificado
 
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
@@ -2729,17 +2731,35 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{"uint16_t", &dwp},
 		{"uint16_t", &new_actions.percentimeter},
 		{"string", &type_hangs_up},
-		 {NULL, NULL}};
+		{NULL, NULL}
+	};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
 	idp_parser_get_pwd(dwp, &new_actions);
-
 	data_app_load(DATA_TYPE_ACTIONS, &old_actions);
 
 	if(new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
 	{
 		new_actions.power_state = PIVOT_OFF;
-		strncpy(type_hangs_up, "pivot_without_water", sizeof(type_hangs_up) - 1);
+		const char *new_type_hangs_up = "pivot_without_water";
+
+		strncpy(buffer_copy, buffer, sizeof(buffer_copy) - 1);
+		buffer_modified = true; 
+
+		char *pos = strstr(buffer_copy, "manual");
+		if (pos != NULL) {
+			size_t len_to_replace = strlen(new_type_hangs_up);
+			strncpy(pos, new_type_hangs_up, len_to_replace);
+		}
+
+		size_t len = strlen(buffer_copy);
+		if (len < sizeof(buffer_copy) - 1) {
+			buffer_copy[len] = '$';
+			buffer_copy[len + 1] = '\0'; 
+		} else {
+			buffer_copy[sizeof(buffer_copy) - 2] = '$';
+			buffer_copy[sizeof(buffer_copy) - 1] = '\0';
+		}
 	}
 
 	if (new_actions.power_state == PIVOT_OFF)
@@ -2771,11 +2791,18 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		counter_reading_panel_off++;
 		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 
-		// if(old_actions.power_state == PIVOT_ON)
-		// {
-			system_manager_idp_28(buffer, COMM_MQTT);
-		// }
-		
+		// Enviar buffer modificado se necessário, senão o buffer original
+		if(old_actions.power_state == PIVOT_ON)
+		{
+			if (buffer_modified) 
+			{
+				system_manager_idp_28(buffer_copy, COMM_MQTT);
+			} 
+			else 
+			{
+				system_manager_idp_28(buffer, COMM_MQTT);
+			}
+		}
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
