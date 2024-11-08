@@ -334,7 +334,7 @@ static void scheduling_task_idp_15(void* arg)
                     Desliga do idp 15
                 */
                     scheduling_angle_status[angle_position] = false;
-                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_angle_current[angle_position].str_author,scheduling_type, false);
+                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_type, scheduling_angle_current[angle_position].str_author, false);
                 }
             }
         }
@@ -366,7 +366,7 @@ static void scheduling_task_idp_16(void* arg)
                 /*
                     Desliga do idp 16
                 */
-                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_off_date_current[date_position].str_author,scheduling_type, true);
+                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_type, scheduling_off_date_current[date_position].str_author, true);
             }
         }
 
@@ -393,7 +393,7 @@ static void scheduling_task_idp_17(void* arg)
                 /*
                     Desliga do idp 17
                 */
-                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author,scheduling_type, true);
+                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_type,scheduling_off_angle_current[angle_position].str_author, true);
             }
         }
  
