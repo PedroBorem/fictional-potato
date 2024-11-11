@@ -334,6 +334,18 @@ static void system_monitoring_task(void* arg)
     }
 }
 
+/**
+ * @brief Checks if the current angle is within the specified range barrier.
+ *
+ * This function evaluates the pivot's current angle and determines if it falls
+ * within the defined range around the physical barrier's start and end angles.
+ * It returns true if the angle is within the range, allowing for boundary
+ * transitions, and false otherwise.
+ *
+ * @param[in] range_barrier The tolerance range (in degrees) around the barrier's start and end angles.
+ * 
+ * @return bool True if the current angle is within the specified range, false otherwise.
+ */
 bool system_monitoring_range_barrier(uint8_t range_barrier)
 {
     pivot_physical_config physical_barrier_config = {};

@@ -2582,6 +2582,17 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 	}
 }
 
+/**
+ * @brief Handles IDP 28 requests for pivot hang-up reasons.
+ *
+ * This function processes requests to retrieve or save pivot hang-up reasons, using the provided
+ * communication mode. It allows the system to handle hang-up actions and store relevant information.
+ * If the request is a POST, it will process the buffer data and update the system with the hang-up reason.
+ * If the request is a GET, it retrieves the last saved hang-up data.
+ *
+ * @param buffer The input buffer containing request data.
+ * @param comm_mode The communication mode (HTTP or MQTT).
+ */
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
 	bool mqtt_load_pkg = false;
