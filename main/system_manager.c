@@ -2598,7 +2598,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = 4;
+	uint8_t expected_delimiter_num = PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT;
 
 	if (comm_mode == COMM_MQTT)
 	{

@@ -403,20 +403,23 @@ typedef struct __attribute__((__packed__))
     time_t end_date;                /*!< End date */
 } pivot_history;
 
-/*
-    COMENTARIO AQUI
-*/
+/**
+ * @brief Reason for pivot hangs up.
+ *
+ * Structure defining the reason for which the pivot hangs up. This includes details
+ * like the reason, scheduling ID, user responsible, and the barrier status.
+ */
 typedef struct __attribute__((__packed__))
 {
-    char reason_hangs_up[50];  /*!< Start angle of the configuration */
-    char str_idp[10];    /*!< End angle of the configuration */
-    char scheduling_id[20];
-    char user[20];
-    bool on_barrier;
-    char str_date_time[70];
+    char reason_hangs_up[50];  /*!< Reason for the pivot hang-up */
+    char str_idp[10];          /*!< IDP string identifier */
+    char scheduling_id[20];     /*!< Scheduling ID associated with the hang-up */
+    char user[20];              /*!< User responsible for the action */
+    bool on_barrier;            /*!< Indicates if the pivot is on the barrier */
+    char str_date_time[70];     /*!< Date and time string for the hang-up event */
 } pivot_reason_hangs_up;
 
-#define PIVOT_REASON_HANGS_UP_VAR_COUNT   (7)
+#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (4)
 
 
 /**
