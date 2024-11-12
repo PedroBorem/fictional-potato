@@ -280,9 +280,7 @@ static void scheduling_task_idp_14(void* arg)
             }
             else if (scheduling_date_status[date_position] == true)
             {
-                /*
-                    Desliga do idp 14
-                */
+
                 scheduling_date_status[date_position] = false;
                 scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, scheduling_type, scheduling_date_current[date_position].str_author, false);
             }
@@ -330,9 +328,6 @@ static void scheduling_task_idp_15(void* arg)
                 else if (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
                          && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
                 {
-                 /*
-                    Desliga do idp 15
-                */
                     scheduling_angle_status[angle_position] = false;
                     scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_type, scheduling_angle_current[angle_position].str_author, false);
                 }
@@ -363,9 +358,6 @@ static void scheduling_task_idp_16(void* arg)
                 && scheduling_off_date_current[date_position].end_date != 0
                 && strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
             {
-                /*
-                    Desliga do idp 16
-                */
                 scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_type, scheduling_off_date_current[date_position].str_author, true);
             }
         }
@@ -390,9 +382,6 @@ static void scheduling_task_idp_17(void* arg)
                 && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set)
                 && strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
             {
-                /*
-                    Desliga do idp 17
-                */
                 scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_type,scheduling_off_angle_current[angle_position].str_author, true);
             }
         }
