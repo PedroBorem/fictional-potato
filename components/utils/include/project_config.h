@@ -128,6 +128,7 @@ typedef enum
     IDP_27,
     IDP_28,
     IDP_30 = 30,
+    IDP_31,
     IDP_90 = 90,
     IDP_91,
     IDP_92,
@@ -314,7 +315,7 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
- * Structure defining the Return Configuration parameters.
+ * Structure defining the Virtual Barrier parameters.
  */
 typedef struct __attribute__((__packed__))
 {
@@ -329,8 +330,14 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in pivot_virtual_config struct.
  */
-#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (5)
+#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (4)
 
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the Physical Barrier parameters.
+ */
 typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
@@ -340,7 +347,29 @@ typedef struct __attribute__((__packed__))
     uint8_t time_leaving_barrier;
 } pivot_physical_config;
 
-#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (6)
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_physical_config struct.
+ */
+#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (5)
+
+/**
+ * @brief Configuration parameters.
+ * 
+ * Defines the principal communication mode of the system for periodic comm.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char comm_main_mode_config[50];
+}pivot_comm_main_mode_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_comm_main_mode_config struct.
+ */
+#define PIVOT_COMM_MAIN_MODE_CONFIG_VAR_COUNT   (1)
 
 /**
  * @brief Scheduling date parameters.
@@ -483,6 +512,11 @@ extern uint16_t global_angle;
 extern char system_id[50];
 
 extern uint32_t counter_reading_panel_off;
+
+/**
+ * @brief Global comm_main_mode variable.
+ */
+extern comm_type comm_main_mode;
 
 /** @} */ // end of PROJECT_CONFIG group
 
