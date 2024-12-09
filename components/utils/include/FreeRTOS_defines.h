@@ -216,6 +216,21 @@
  */
 #define ECO_MODE_TASK_PRIORITY			(tskIDLE_PRIORITY + 2)
 
+/**
+ * @brief Name of the Pluviometer UART task.
+ */
+#define PLUV_UART_TASK_NAME              	"Pluviometer_UART_Task"
+
+/**
+ * @brief Stack size of the Pluviometer UART task.
+ */
+#define PLUV_UART_STACK_SIZE             	(configMINIMAL_STACK_SIZE * 8) // 2048 bytes
+
+/**
+ * @brief Priority of the Pluviometer UART task.
+ */
+#define PLUV_UART_TASK_PRIORITY          	(tskIDLE_PRIORITY + 5)
+
 /** @} */ // end of FREERTOS_DEFINES group
 
 #endif /* COMPONENTS_UTILS_INCLUDE_FREERTOS_DEFINES_H_ */

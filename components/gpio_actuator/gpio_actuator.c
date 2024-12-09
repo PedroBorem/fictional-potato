@@ -73,7 +73,7 @@ static bool pressurizing = false;
  * @brief Configure the GPIO for the rain gauge.
  * @return esp_err_t Indicates whether the configuration was successful.
  */
-static esp_err_t gpio_actuator_rain_sensor_init(void);
+static esp_err_t gpio_rain_sensor_init(void);
 
 /**
  * @brief Rain sensor ISR for pulse counting.
