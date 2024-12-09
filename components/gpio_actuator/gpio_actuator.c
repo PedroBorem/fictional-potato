@@ -27,6 +27,11 @@
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
 
 /* Global variables ---------------------------------------------- */
+// Rain sensor variables
+static volatile int rain_pulse_count = 0;     // Rain sensor pulse count
+static float rain_total = 0.0;                // Accumulated rainfall
+static const float RAIN_PER_PULSE = 0.2;      // Rainfall per pulse (mm)
+
 // Callback variables
 static app_callback gpio_actuator_callback = NULL;
 
@@ -63,6 +68,23 @@ static bool gpio_act_pressure_type = 0;
 static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
+
+/**
+ * @brief Configure the GPIO for the rain gauge.
+ * @return esp_err_t Indicates whether the configuration was successful.
+ */
+static esp_err_t gpio_actuator_rain_sensor_init(void);
+
+/**
+ * @brief Rain sensor ISR for pulse counting.
+ * @param arg ISR argument (not used).
+ */
+static void IRAM_ATTR gpio_rain_sensor_isr_handler(void *arg);
+
+/**
+ * @brief Calculates and records precipitation based on sensor pulses.
+ */
+static void gpio_rain_sensor_calculate_rainfall(void);
 
 /**
  * @brief Callback function for the expiration of the Perc On timer.
@@ -207,8 +229,18 @@ esp_err_t gpio_actuator_init(const app_callback callback)
     	ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
     }
 
+    // Rain sensor initialization
+    err = gpio_rain_sensor_init();
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to initialize rain sensor", __func__);
+        return err;
+    }
+
 	return err;
 }
+
+
 
 /**
  * @brief Set the delay time for the GPIO actuator when leaving the barrier.
@@ -779,3 +811,67 @@ void actuator_read_percent(void* arg)
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
 }
+
+
+/**
+ * @brief Configures the GPIO for the rain sensor.
+ * Configures the input pin and attaches the ISR.
+ * 
+ * @return esp_err_t ESP_OK on success, ESP_FAIL otherwise.
+ */
+static esp_err_t gpio_rain_sensor_init(void)
+{
+    ESP_LOGI(GPIO_ACT_TAG, "%s: Initializing rain sensor...", __func__);
+
+    gpio_config_t rain_sensor_conf = {
+        .intr_type = GPIO_INTR_NEGEDGE, 
+        .mode = GPIO_MODE_INPUT,
+        .pin_bit_mask = (1ULL << GPIO_ACT_RAIN_SENSOR_PIN),
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+    };
+
+    esp_err_t err = gpio_config(&rain_sensor_conf);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s: GPIO configuration failed", __func__);
+        return err;
+    }
+
+    // Attach the ISR handler
+    err = gpio_isr_handler_add(GPIO_ACT_RAIN_SENSOR_PIN, gpio_rain_sensor_isr_handler, NULL);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to add ISR handler", __func__);
+        return err;
+    }
+
+    ESP_LOGI(GPIO_ACT_TAG, "%s: Rain sensor initialized successfully", __func__);
+    return ESP_OK;
+}
+
+/**
+ * @brief ISR for the rain sensor to count pulses.
+ * Increments the pulse count each time a pulse is detected.
+ */
+static void IRAM_ATTR gpio_rain_sensor_isr_handler(void *arg)
+{
+    rain_pulse_count++;
+}
+
+/**
+ * @brief Calculates and logs the rainfall based on the sensor pulses.
+ * Resets the pulse count after calculation.
+ */
+static void gpio_rain_sensor_calculate_rainfall(void)
+{
+    float interval_rain = rain_pulse_count * RAIN_PER_PULSE;
+    rain_total += interval_rain;
+
+    ESP_LOGI(GPIO_ACT_TAG, "%s: Rainfall in interval: %.2f mm", __func__, interval_rain);
+    ESP_LOGI(GPIO_ACT_TAG, "%s: Total accumulated rainfall: %.2f mm", __func__, rain_total);
+
+    // Reset the pulse count for the next interval
+    rain_pulse_count = 0;
+}
+
