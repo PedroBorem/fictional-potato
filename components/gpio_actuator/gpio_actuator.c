@@ -30,7 +30,7 @@
 // Rain sensor variables
 static volatile int rain_pulse_count = 0;     // Rain sensor pulse count
 static float rain_total = 0.0;                // Accumulated rainfall
-static const float RAIN_PER_PULSE = 0.2;      // Rainfall per pulse (mm)
+static const float RAIN_PER_PULSE = 0.1;      // Rainfall per pulse (mm)
 
 // Callback variables
 static app_callback gpio_actuator_callback = NULL;
@@ -905,7 +905,7 @@ void rainfall_task(void *arg)
     while (1)
     {
         gpio_rain_sensor_calculate_rainfall();
-        vTaskDelay(pdMS_TO_TICKS(10000));
+        vTaskDelay(pdMS_TO_TICKS(500));
     }
 }
 
