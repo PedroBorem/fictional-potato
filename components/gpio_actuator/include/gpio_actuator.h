@@ -106,7 +106,7 @@
 /**
  * @brief GPIO pin number for rain sensor input.
  */
-#define GPIO_ACT_RAIN_SENSOR_PIN      GPIO_NUM_48 /*!< Rain Sensor Input */
+#define GPIO_ACT_RAIN_SENSOR_PIN      GPIO_NUM_46 /*!< Rain Sensor Input */
 
 /* Output Pins Group */
 /**

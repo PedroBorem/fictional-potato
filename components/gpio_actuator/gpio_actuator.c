@@ -75,16 +75,12 @@ static bool pressurizing = false;
  */
 static esp_err_t gpio_rain_sensor_init(void);
 
-/**
- * @brief Rain sensor ISR for pulse counting.
- * @param arg ISR argument (not used).
- */
-static void IRAM_ATTR gpio_rain_sensor_isr_handler(void *arg);
+void rainfall_task(void *arg);
 
 /**
  * @brief Calculates and records precipitation based on sensor pulses.
  */
-static void gpio_rain_sensor_calculate_rainfall(void);
+void gpio_rain_sensor_calculate_rainfall(void);
 
 /**
  * @brief Callback function for the expiration of the Perc On timer.
@@ -127,14 +123,30 @@ void actuator_read_percent(void* arg);
  */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-	if(xTask_readpercent != NULL)
+	uint32_t gpio_num = (uint32_t)arg;
+
+    if (gpio_num == GPIO_ACT_RAIN_SENSOR_PIN) 
 	{
-		if (eTaskGetState(xTask_readpercent) == eSuspended
-		|| eTaskGetState(xTask_readpercent) == eBlocked)
+        static uint32_t last_interrupt_time = 0;
+        uint32_t interrupt_time = xTaskGetTickCountFromISR();
+
+        if (interrupt_time - last_interrupt_time > 100 / portTICK_PERIOD_MS) 
 		{
-			vTaskResume(xTask_readpercent);
-		}
-	}
+            rain_pulse_count++;  
+            last_interrupt_time = interrupt_time;
+        }
+    }
+    else if (gpio_num == GPIO_ACT_PIN_PERC_IN) 
+	{
+        if (xTask_readpercent != NULL) 
+		{
+            if (eTaskGetState(xTask_readpercent) == eSuspended ||
+                eTaskGetState(xTask_readpercent) == eBlocked) 
+			{
+                vTaskResume(xTask_readpercent);
+            }
+        }
+    }
 }
 
 /**
@@ -148,7 +160,7 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 {
 	esp_err_t err = ESP_FAIL;
 
-	if(callback != NULL)
+	if (callback != NULL)
 	{
 		gpio_actuator_callback = callback;
 	}
@@ -160,16 +172,16 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	perc_pct_on = 0;
 	perc_sec_on = 0;
 
-	//output actions
+	// Configuração de pinos de saída
 	gpio_config_t io_conf_out = {};
 	io_conf_out.intr_type = GPIO_INTR_DISABLE;
 	io_conf_out.mode = GPIO_MODE_OUTPUT_OD;
 	io_conf_out.pin_bit_mask = GPIO_OUTPUT_PIN_GROUP;
 	io_conf_out.pull_down_en = GPIO_PULLDOWN_DISABLE;
 	io_conf_out.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&io_conf_out);
+	gpio_config(&io_conf_out);
 
-    gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
@@ -179,34 +191,34 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
 	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-    //input configuration
+	// Configuração de pinos de entrada
 	gpio_config_t io_conf_in = {};
 	io_conf_in.intr_type = GPIO_INTR_DISABLE;
 	io_conf_in.mode = GPIO_MODE_INPUT;
 	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
 	io_conf_in.pull_down_en = GPIO_PULLDOWN_ENABLE;
 	io_conf_in.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&io_conf_in);
+	gpio_config(&io_conf_in);
 
-    //percent reader interrupt setup
+	// Configuração de interrupção para o percentímetro
 	gpio_config_t io_conf_int = {};
-    io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
-    io_conf_int.pin_bit_mask = GPIO_INT_PERC;
-    io_conf_int.mode = GPIO_MODE_INPUT;
-    io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
-    io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
-    gpio_config(&io_conf_int);
+	io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
+	io_conf_int.pin_bit_mask = GPIO_INT_PERC;
+	io_conf_int.mode = GPIO_MODE_INPUT;
+	io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
+	io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
+	gpio_config(&io_conf_int);
 
-    if(xTask_readpercent == NULL)
+	if (xTask_readpercent == NULL)
 	{
 		BaseType_t xReturn = xTaskCreate(&actuator_read_percent,
-								ACTUATOR_PERCENT_TASK_NAME,
-								ACTUATOR_PERCENT_STACK_SIZE,
-								NULL,
-								ACTUATOR_PERCENT_TASK_PRIORITY,
-								&xTask_readpercent);
+										 ACTUATOR_PERCENT_TASK_NAME,
+										 ACTUATOR_PERCENT_STACK_SIZE,
+										 NULL,
+										 ACTUATOR_PERCENT_TASK_PRIORITY,
+										 &xTask_readpercent);
 
-		if(xReturn != pdPASS || xTask_readpercent == NULL)
+		if (xReturn != pdPASS || xTask_readpercent == NULL)
 		{
 			ESP_LOGE(GPIO_ACT_TAG, "%s, Failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
 			return ESP_FAIL;
@@ -217,30 +229,47 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 		vTaskResume(xTask_readpercent);
 	}
 
-    err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
-    if(err != ESP_OK)
-    {
-    	ESP_LOGE(GPIO_ACT_TAG, "%s, Install ISR failed with error: %d", __func__, err);
-    }
+	// Configuração do serviço de interrupção
+	err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(GPIO_ACT_TAG, "%s, Install ISR failed with error: %d", __func__, err);
+	}
 
-    err = gpio_isr_handler_add(GPIO_ACT_PIN_PERC_IN, gpio_isr_handler, (void*) GPIO_ACT_PIN_PERC_IN);
-    if(err != ESP_OK)
-    {
-    	ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
-    }
+	// Adiciona o handler de interrupção para o percentímetro
+	err = gpio_isr_handler_add(GPIO_ACT_PIN_PERC_IN, gpio_isr_handler, (void *)GPIO_ACT_PIN_PERC_IN);
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
+	}
 
-    // Rain sensor initialization
-    err = gpio_rain_sensor_init();
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to initialize rain sensor", __func__);
-        return err;
-    }
+	// Inicialização do sensor de chuva
+	err = gpio_rain_sensor_init();
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to initialize rain sensor", __func__);
+		return err;
+	}
 
-	return err;
+	BaseType_t rainfall_task_created;
+	rainfall_task_created = xTaskCreate(rainfall_task,      
+										"Rainfall Task",   
+										2048,             
+										NULL,             
+										5,                
+										NULL);           
+
+	if (rainfall_task_created != pdPASS)
+	{
+		ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to create rainfall task", __func__);
+	}
+	else
+	{
+		ESP_LOGI(GPIO_ACT_TAG, "%s: Rainfall task created successfully", __func__);
+	}
+
+	return ESP_OK;
 }
-
-
 
 /**
  * @brief Set the delay time for the GPIO actuator when leaving the barrier.
@@ -832,16 +861,13 @@ static esp_err_t gpio_rain_sensor_init(void)
     };
 
     esp_err_t err = gpio_config(&rain_sensor_conf);
-    if (err != ESP_OK)
-    {
+    if (err != ESP_OK) {
         ESP_LOGE(GPIO_ACT_TAG, "%s: GPIO configuration failed", __func__);
         return err;
     }
 
-    // Attach the ISR handler
-    err = gpio_isr_handler_add(GPIO_ACT_RAIN_SENSOR_PIN, gpio_rain_sensor_isr_handler, NULL);
-    if (err != ESP_OK)
-    {
+    err = gpio_isr_handler_add(GPIO_ACT_RAIN_SENSOR_PIN, gpio_isr_handler, (void *)GPIO_ACT_RAIN_SENSOR_PIN);
+    if (err != ESP_OK) {
         ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to add ISR handler", __func__);
         return err;
     }
@@ -863,7 +889,7 @@ static void IRAM_ATTR gpio_rain_sensor_isr_handler(void *arg)
  * @brief Calculates and logs the rainfall based on the sensor pulses.
  * Resets the pulse count after calculation.
  */
-static void gpio_rain_sensor_calculate_rainfall(void)
+void gpio_rain_sensor_calculate_rainfall(void)
 {
     float interval_rain = rain_pulse_count * RAIN_PER_PULSE;
     rain_total += interval_rain;
@@ -871,7 +897,16 @@ static void gpio_rain_sensor_calculate_rainfall(void)
     ESP_LOGI(GPIO_ACT_TAG, "%s: Rainfall in interval: %.2f mm", __func__, interval_rain);
     ESP_LOGI(GPIO_ACT_TAG, "%s: Total accumulated rainfall: %.2f mm", __func__, rain_total);
 
-    // Reset the pulse count for the next interval
     rain_pulse_count = 0;
 }
+
+void rainfall_task(void *arg)
+{
+    while (1)
+    {
+        gpio_rain_sensor_calculate_rainfall();
+        vTaskDelay(pdMS_TO_TICKS(10000));
+    }
+}
+
 
