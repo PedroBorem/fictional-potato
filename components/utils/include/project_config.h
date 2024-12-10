@@ -150,6 +150,7 @@ typedef enum
     COMM_HTTP_GET,
     COMM_MQTT,
     COMM_RF,
+    COMM_PLUV,
 } comm_type;
 
 /**

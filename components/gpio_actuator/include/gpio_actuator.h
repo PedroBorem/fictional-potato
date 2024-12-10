@@ -103,6 +103,11 @@
  */
 #define GPIO_ACT_PIN_PRESS       	GPIO_NUM_4 /*!< Water pressure reading*/
 
+/**
+ * @brief GPIO pin number for rain sensor input.
+ */
+#define GPIO_ACT_RAIN_SENSOR_PIN      GPIO_NUM_15 /*!< Rain Sensor Input */
+
 /* Output Pins Group */
 /**
  * @brief GPIO pin bitmask for all output pins.
@@ -121,15 +126,21 @@
 /**
  * @brief GPIO pin bitmask for all input pins.
  */
-#define GPIO_INPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_CW_IN)		\
-								| (1ULL<<GPIO_ACT_PIN_CCW_IN)	\
-								| (1ULL<<GPIO_ACT_PIN_PRESS))	\
+#define GPIO_INPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_CW_IN)			\
+								| (1ULL<<GPIO_ACT_PIN_CCW_IN)		\
+								| (1ULL<<GPIO_ACT_PIN_PRESS)		\
+								| (1ULL<<GPIO_ACT_RAIN_SENSOR_PIN)) \
 
 /* Interrupt Pins Group */
 /**
  * @brief GPIO pin bitmask for the percentimeter interrupt pin.
  */
 #define GPIO_INT_PERC     (1ULL<<GPIO_ACT_PIN_PERC_IN)	//Percentimeter Read Input
+
+/**
+ * @brief GPIO pin bitmask for rain sensor interrupt pin.
+ */
+#define GPIO_INT_RAIN_SENSOR  (1ULL<<GPIO_ACT_RAIN_SENSOR_PIN)
 
 /* Public function prototypes ------------------------------------------- */
 /**
@@ -228,5 +239,16 @@ void gpio_actuator_pressure_on(void);
 void gpio_actuator_pressure_off(void);
 
 void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
+
+/**
+ * @brief Initializes the rain sensor.
+ *
+ * This function sets up the GPIO pin and interrupt for the rain sensor.
+ *
+ * @return
+ *     - ESP_OK: Success
+ *     - ESP_FAIL: Failed to initialize
+ */
+esp_err_t gpio_actuator_rain_sensor_init(void);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */
