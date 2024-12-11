@@ -1889,39 +1889,46 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
 /**
  * @brief Handle IDP package type 19.
  *
- * This function handles IDP package type 19, extracting Pressure data and sending the response.
+ * This function handles IDP package type 19, extracting Pressure and Rain Total data, and sending the response.
  *
  * @param buffer The input buffer containing the request.
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
  */
 static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
 {
-	if(comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
-	{
-		pivot_actions actions = {};
-		char str_out[200] = {};
-		char str_date_time[50] = {};
-		uint16_t dwp = 0;
-		uint8_t idp = 19;
+    if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+    {
+        pivot_actions actions = {};
+        char str_out[200] = {};
+        char str_date_time[50] = {};
+        uint16_t dwp = 0;
+        uint8_t idp = 19;
+        float rain_total = 0.0f; 
 
-		actuation_app_get_actions(&actions, sizeof(actions));
-		dwp = idp_parser_create_pwd(actions);
+        actuation_app_get_actions(&actions, sizeof(actions));
+        dwp = idp_parser_create_pwd(actions);
 
-		time_t timestamp = rtc_app_get_timestamp(false);
-		rtc_app_get_str_date_time(timestamp, str_date_time);
+        time_t timestamp = rtc_app_get_timestamp(false);
+        rtc_app_get_str_date_time(timestamp, str_date_time);
 
-		arg_pair_t arg_pairs[] = {
-			{ "uint8_t", &idp },
-			{ "string", system_id },
-			{ "uint16_t", &dwp },
-			{ "uint16_t", &global_pressure},
-			{ "string", str_date_time },
-			{ NULL, NULL }
-		};
+        if (data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total) != ESP_OK)
+        {
+            rain_total = 0.0f;
+        }
 
-		idp_parser_create_package(str_out,arg_pairs);
-		comm_app_send_idp_pack(str_out, comm_mode);
-	}
+        arg_pair_t arg_pairs[] = {
+            { "uint8_t", &idp },
+            { "string", system_id },
+            { "uint16_t", &dwp },
+            { "uint16_t", &global_pressure },
+            { "float", &rain_total }, 
+            { "string", str_date_time },
+            { NULL, NULL }
+        };
+
+        idp_parser_create_package(str_out, arg_pairs);
+        comm_app_send_idp_pack(str_out, comm_mode);
+    }
 }
 
 /**
