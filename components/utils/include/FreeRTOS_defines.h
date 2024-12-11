@@ -219,17 +219,17 @@
 /**
  * @brief Name of the Pluviometer UART task.
  */
-#define PLUV_UART_TASK_NAME              	"Pluviometer_UART_Task"
+#define PLUV_TASK_NAME              	"Rainfall_Task"
 
 /**
  * @brief Stack size of the Pluviometer UART task.
  */
-#define PLUV_UART_STACK_SIZE             	(configMINIMAL_STACK_SIZE * 10) // 2048 bytes
+#define PLUV_STACK_SIZE             	(configMINIMAL_STACK_SIZE * 10) // 2048 bytes
 
 /**
  * @brief Priority of the Pluviometer UART task.
  */
-#define PLUV_UART_TASK_PRIORITY          	(tskIDLE_PRIORITY + 5)
+#define PLUV_TASK_PRIORITY          	(tskIDLE_PRIORITY + 5)
 
 /** @} */ // end of FREERTOS_DEFINES group
 

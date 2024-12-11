@@ -13,6 +13,8 @@
 
 #include "project_config.h"
 
+extern float rain_total; /**< Total accumulated rainfall (shared with other modules). */
+
 /**
  * @brief Starts the system monitoring with the specified configuration.
  *
@@ -51,5 +53,14 @@ void system_monitoring_register_callback(const app_callback callback);
  * @param[in] current_pivot_actions The current actions and configuration of the pivot.
  */
 void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type_barrier barrier_type);
+
+/**
+ * @brief Task function for monitoring rainfall.
+ *
+ * This function continuously monitors rainfall and updates the total accumulated rainfall.
+ *
+ * @param arg Task argument (default NULL).
+ */
+void rainfall_task(void *arg);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

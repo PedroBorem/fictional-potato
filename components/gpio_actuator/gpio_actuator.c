@@ -13,7 +13,6 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
-#include "data_app.h"
 
 /* Private definitions ------------------------------------------- */
 
@@ -30,7 +29,7 @@
 /* Global variables ---------------------------------------------- */
 // Rain sensor variables
 static volatile int rain_pulse_count = 0;     // Rain sensor pulse count
-static float rain_total = 0.0;                // Accumulated rainfall
+float rain_total = 0.0;                // Accumulated rainfall
 static const float RAIN_PER_PULSE = 0.1;      // Rainfall per pulse (mm)
 
 // Callback variables
@@ -69,14 +68,6 @@ static bool gpio_act_pressure_type = 0;
 static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
-
-/**
- * @brief Configure the GPIO for the rain gauge.
- * @return esp_err_t Indicates whether the configuration was successful.
- */
-static esp_err_t gpio_rain_sensor_init(void);
-
-void rainfall_task(void *arg);
 
 /**
  * @brief Calculates and records precipitation based on sensor pulses.
@@ -159,117 +150,82 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
  */
 esp_err_t gpio_actuator_init(const app_callback callback)
 {
-	esp_err_t err = ESP_FAIL;
+    esp_err_t err = ESP_FAIL;
 
-	if (callback != NULL)
-	{
-		gpio_actuator_callback = callback;
-	}
-	else
-	{
-		return err;
-	}
+    if (callback != NULL)
+    {
+        gpio_actuator_callback = callback;
+    }
+    else
+    {
+        return err;
+    }
 
-	perc_pct_on = 0;
-	perc_sec_on = 0;
+    perc_pct_on = 0;
+    perc_sec_on = 0;
 
-	// Configuração de pinos de saída
-	gpio_config_t io_conf_out = {};
-	io_conf_out.intr_type = GPIO_INTR_DISABLE;
-	io_conf_out.mode = GPIO_MODE_OUTPUT_OD;
-	io_conf_out.pin_bit_mask = GPIO_OUTPUT_PIN_GROUP;
-	io_conf_out.pull_down_en = GPIO_PULLDOWN_DISABLE;
-	io_conf_out.pull_up_en = GPIO_PULLUP_DISABLE;
-	gpio_config(&io_conf_out);
+    // Configure output pins
+    gpio_config_t io_conf_out = {};
+    io_conf_out.intr_type = GPIO_INTR_DISABLE;
+    io_conf_out.mode = GPIO_MODE_OUTPUT_OD;
+    io_conf_out.pin_bit_mask = GPIO_OUTPUT_PIN_GROUP;
+    io_conf_out.pull_down_en = GPIO_PULLDOWN_DISABLE;
+    io_conf_out.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf_out);
 
-	gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
-	gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_OFF, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_ON, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_AUX, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_CW, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_CCW, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_PERC_AUX, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_PERC_OUT, GPIO_ACT_SYS_DISABLE);
+    gpio_set_level(GPIO_ACT_PIN_PUMP, GPIO_ACT_SYS_DISABLE);
 
-	// Configuração de pinos de entrada
-	gpio_config_t io_conf_in = {};
-	io_conf_in.intr_type = GPIO_INTR_DISABLE;
-	io_conf_in.mode = GPIO_MODE_INPUT;
-	io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
-	io_conf_in.pull_down_en = GPIO_PULLDOWN_ENABLE;
-	io_conf_in.pull_up_en = GPIO_PULLUP_DISABLE;
-	gpio_config(&io_conf_in);
+    // Configure input pins
+    gpio_config_t io_conf_in = {};
+    io_conf_in.intr_type = GPIO_INTR_DISABLE;
+    io_conf_in.mode = GPIO_MODE_INPUT;
+    io_conf_in.pin_bit_mask = GPIO_INPUT_PIN_GROUP;
+    io_conf_in.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    io_conf_in.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf_in);
 
-	// Configuração de interrupção para o percentímetro
-	gpio_config_t io_conf_int = {};
-	io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
-	io_conf_int.pin_bit_mask = GPIO_INT_PERC;
-	io_conf_int.mode = GPIO_MODE_INPUT;
-	io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
-	io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
-	gpio_config(&io_conf_int);
+    // Configure interrupt for percentimeter and rain sensor
+    gpio_config_t io_conf_int = {};
+    io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
+    io_conf_int.pin_bit_mask = (GPIO_INT_PERC | GPIO_INT_RAIN_SENSOR);
+    io_conf_int.mode = GPIO_MODE_INPUT;
+    io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
+    io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
+    gpio_config(&io_conf_int);
 
-	if (xTask_readpercent == NULL)
-	{
-		BaseType_t xReturn = xTaskCreate(&actuator_read_percent,
-										 ACTUATOR_PERCENT_TASK_NAME,
-										 ACTUATOR_PERCENT_STACK_SIZE,
-										 NULL,
-										 ACTUATOR_PERCENT_TASK_PRIORITY,
-										 &xTask_readpercent);
+    // Install ISR service
+    err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s, Install ISR failed with error: %d", __func__, err);
+        return err;
+    }
 
-		if (xReturn != pdPASS || xTask_readpercent == NULL)
-		{
-			ESP_LOGE(GPIO_ACT_TAG, "%s, Failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
-			return ESP_FAIL;
-		}
-	}
-	else
-	{
-		vTaskResume(xTask_readpercent);
-	}
+    // Add ISR handlers for percentimeter and rain sensor
+    err = gpio_isr_handler_add(GPIO_ACT_PIN_PERC_IN, gpio_isr_handler, (void *)GPIO_ACT_PIN_PERC_IN);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
+        return err;
+    }
 
-	// Configuração do serviço de interrupção
-	err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(GPIO_ACT_TAG, "%s, Install ISR failed with error: %d", __func__, err);
-	}
+    err = gpio_isr_handler_add(GPIO_ACT_RAIN_SENSOR_PIN, gpio_isr_handler, (void *)GPIO_ACT_RAIN_SENSOR_PIN);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
+        return err;
+    }
 
-	// Adiciona o handler de interrupção para o percentímetro
-	err = gpio_isr_handler_add(GPIO_ACT_PIN_PERC_IN, gpio_isr_handler, (void *)GPIO_ACT_PIN_PERC_IN);
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(GPIO_ACT_TAG, "%s, ISR handler add failed with error: %d", __func__, err);
-	}
-
-	// Inicialização do sensor de chuva
-	err = gpio_rain_sensor_init();
-	if (err != ESP_OK)
-	{
-		ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to initialize rain sensor", __func__);
-		return err;
-	}
-
-	BaseType_t rainfall_task_created;
-	rainfall_task_created = xTaskCreate(rainfall_task,      
-										"Rainfall Task",   
-										PLUV_UART_STACK_SIZE,             
-										NULL,             
-										5,                
-										NULL);           
-
-	if (rainfall_task_created != pdPASS)
-	{
-		ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to create rainfall task", __func__);
-	}
-	else
-	{
-		ESP_LOGI(GPIO_ACT_TAG, "%s: Rainfall task created successfully", __func__);
-	}
-
-	return ESP_OK;
+    ESP_LOGI(GPIO_ACT_TAG, "%s: GPIO actuator initialized successfully", __func__);
+    return ESP_OK;
 }
 
 /**
@@ -842,50 +798,6 @@ void actuator_read_percent(void* arg)
 	}
 }
 
-
-/**
- * @brief Configures the GPIO for the rain sensor.
- * Configures the input pin and attaches the ISR.
- * 
- * @return esp_err_t ESP_OK on success, ESP_FAIL otherwise.
- */
-static esp_err_t gpio_rain_sensor_init(void)
-{
-    ESP_LOGI(GPIO_ACT_TAG, "%s: Initializing rain sensor...", __func__);
-
-    gpio_config_t rain_sensor_conf = {
-        .intr_type = GPIO_INTR_NEGEDGE, 
-        .mode = GPIO_MODE_INPUT,
-        .pin_bit_mask = (1ULL << GPIO_ACT_RAIN_SENSOR_PIN),
-        .pull_down_en = GPIO_PULLDOWN_DISABLE,
-        .pull_up_en = GPIO_PULLUP_ENABLE,
-    };
-
-    esp_err_t err = gpio_config(&rain_sensor_conf);
-    if (err != ESP_OK) {
-        ESP_LOGE(GPIO_ACT_TAG, "%s: GPIO configuration failed", __func__);
-        return err;
-    }
-
-    err = gpio_isr_handler_add(GPIO_ACT_RAIN_SENSOR_PIN, gpio_isr_handler, (void *)GPIO_ACT_RAIN_SENSOR_PIN);
-    if (err != ESP_OK) {
-        ESP_LOGE(GPIO_ACT_TAG, "%s: Failed to add ISR handler", __func__);
-        return err;
-    }
-
-    ESP_LOGI(GPIO_ACT_TAG, "%s: Rain sensor initialized successfully", __func__);
-    return ESP_OK;
-}
-
-/**
- * @brief ISR for the rain sensor to count pulses.
- * Increments the pulse count each time a pulse is detected.
- */
-static void IRAM_ATTR gpio_rain_sensor_isr_handler(void *arg)
-{
-    rain_pulse_count++;
-}
-
 /**
  * @brief Calculates and logs the rainfall based on the sensor pulses.
  * Resets the pulse count after calculation.
@@ -899,42 +811,6 @@ void gpio_rain_sensor_calculate_rainfall(void)
     ESP_LOGI(GPIO_ACT_TAG, "%s: Total accumulated rainfall: %.2f mm", __func__, rain_total);
 
     rain_pulse_count = 0;
-}
-
-/**
- * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
- *
- * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
- * It saves the accumulated rainfall data in persistent memory every 10 minutes.
- *
- * @param arg Task argument (default NULL).
- */
-void rainfall_task(void *arg)
-{
-    TickType_t last_wake_time = xTaskGetTickCount();
-    const TickType_t delay_1_second = pdMS_TO_TICKS(1000);
-    const TickType_t save_interval = pdMS_TO_TICKS(300000);   
-    TickType_t last_save_time = last_wake_time;
-
-    while (1)
-    {
-        gpio_rain_sensor_calculate_rainfall();
-
-        if ((xTaskGetTickCount() - last_save_time) >= save_interval)
-        {
-            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total, sizeof(rain_total)) != ESP_OK)
-            {
-                ESP_LOGE(GPIO_ACT_TAG, "Failed to save accumulated rainfall.");
-            }
-            else
-            {
-                ESP_LOGI(GPIO_ACT_TAG, "Accumulated rainfall saved successfully: %.2f mm", rain_total);
-            }
-            last_save_time = xTaskGetTickCount();
-        }
-
-        vTaskDelayUntil(&last_wake_time, delay_1_second);
-    }
 }
 
 

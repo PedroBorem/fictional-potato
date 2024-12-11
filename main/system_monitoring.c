@@ -55,6 +55,13 @@ static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer t
 /* Private methods ----------------------------------- */
 
 /**
+ * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
+ *
+ * @param arg Task argument (default NULL).
+ */
+void rainfall_task(void *arg);
+
+/**
  * @brief Executes the actuation process based on the system configuration.
  *
  * This function performs the actuation process based on the current system configuration.
@@ -327,6 +334,42 @@ static void system_monitoring_task(void* arg)
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
     }
 }
+
+/**
+ * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
+ *
+ * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
+ * It saves the accumulated rainfall data in persistent memory every 10 minutes.
+ *
+ * @param arg Task argument (default NULL).
+ */
+void rainfall_task(void *arg) 
+{
+    TickType_t last_wake_time = xTaskGetTickCount();
+    const TickType_t delay_1_second = pdMS_TO_TICKS(1000);
+    const TickType_t save_interval = pdMS_TO_TICKS(60000); // 10 minutes
+    TickType_t last_save_time = last_wake_time;
+
+    while (1) 
+    {
+        gpio_rain_sensor_calculate_rainfall();
+
+        if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
+        {
+            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total, sizeof(rain_total)) != ESP_OK) 
+            {
+                ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save accumulated rainfall.");
+            } else 
+            {
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Accumulated rainfall saved successfully: %.2f mm", rain_total);
+            }
+            last_save_time = xTaskGetTickCount();
+        }
+
+        vTaskDelayUntil(&last_wake_time, delay_1_second);
+    }
+}
+
 /**
  * @brief Determines and triggers actuation based on the barrier status.
  *
@@ -478,35 +521,52 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
 {
     system_monitoring_stop();
 
-    if(monitoring_time > 0)
+    if (monitoring_time > 0)
     {
         system_monitoring_delay = monitoring_time;
 
         system_monitoring_timer_handle = xTimerCreate(
-                              "system_timer", /* name */
-                              pdMS_TO_TICKS(system_monitoring_delay * 60000), /* period/time */
-                              pdTRUE, /* auto reload */
-                              (void*)0, /* timer ID */
-                              system_monitoring_timer); /* callback */
+            "system_timer", /* name */
+            pdMS_TO_TICKS(system_monitoring_delay * 60000), /* period/time */
+            pdTRUE, /* auto reload */
+            (void *)0, /* timer ID */
+            system_monitoring_timer); /* callback */
 
         xTimerStart(system_monitoring_timer_handle, 1000);
     }
 
-    if((physical_config.start_angle_physical_barrier == 0 && physical_config.end_angle_physical_barrier == 0)
-    && (virtual_config.start_angle_virtual_barrier == 0 && virtual_config.end_angle_virtual_barrier == 0))
+    if ((physical_config.start_angle_physical_barrier == 0 && physical_config.end_angle_physical_barrier == 0) &&
+        (virtual_config.start_angle_virtual_barrier == 0 && virtual_config.end_angle_virtual_barrier == 0))
     {
         ESP_LOGI(SYSTEM_MONITORING_TAG, "Pivot configured from 0° to 360°, without barrier");
     }
     else
     {
+
         memcpy(&system_monitoring_virtual_config, &virtual_config, sizeof(system_monitoring_virtual_config));
         memcpy(&system_monitoring_physical_config, &physical_config, sizeof(system_monitoring_physical_config));
+
         xTaskCreate(&system_monitoring_task,
                     SYSTEM_MONITORING_TASK_NAME,
                     SYSTEM_MONITORING_TASK_SIZE,
                     NULL,
                     SYSTEM_MONITORING_TASK_PRIORITY,
                     &xTask_system_monitoring);
+    }
+
+    BaseType_t rainfall_task_created = xTaskCreate(rainfall_task, 
+                                       PLUV_TASK_NAME, 
+                                       PLUV_STACK_SIZE, 
+                                       NULL, 
+                                       PLUV_TASK_PRIORITY, 
+                                       NULL);
+    if (rainfall_task_created != pdPASS)
+    {
+        ESP_LOGE(SYSTEM_MONITORING_TAG, "%s: Failed to create rainfall task", __func__);
+    }
+    else
+    {
+        ESP_LOGI(SYSTEM_MONITORING_TAG, "%s: Rainfall monitoring initialized successfully", __func__);
     }
 }
 

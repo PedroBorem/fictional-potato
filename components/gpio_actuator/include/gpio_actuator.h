@@ -251,4 +251,12 @@ void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
  */
 esp_err_t gpio_actuator_rain_sensor_init(void);
 
+/**
+ * @brief Calculates and logs rainfall based on the sensor pulses.
+ *
+ * Computes the rainfall based on pulses detected by the rain sensor
+ * and updates the total accumulated rainfall.
+ */
+void gpio_rain_sensor_calculate_rainfall(void);
+
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */
