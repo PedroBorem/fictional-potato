@@ -224,7 +224,7 @@
 /**
  * @brief Stack size of the Pluviometer UART task.
  */
-#define PLUV_UART_STACK_SIZE             	(configMINIMAL_STACK_SIZE * 8) // 2048 bytes
+#define PLUV_UART_STACK_SIZE             	(configMINIMAL_STACK_SIZE * 10) // 2048 bytes
 
 /**
  * @brief Priority of the Pluviometer UART task.

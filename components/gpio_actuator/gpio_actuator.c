@@ -13,6 +13,7 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
+#include "data_app.h"
 
 /* Private definitions ------------------------------------------- */
 
@@ -254,7 +255,7 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	BaseType_t rainfall_task_created;
 	rainfall_task_created = xTaskCreate(rainfall_task,      
 										"Rainfall Task",   
-										2048,             
+										PLUV_UART_STACK_SIZE,             
 										NULL,             
 										5,                
 										NULL);           
@@ -900,12 +901,39 @@ void gpio_rain_sensor_calculate_rainfall(void)
     rain_pulse_count = 0;
 }
 
+/**
+ * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
+ *
+ * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
+ * It saves the accumulated rainfall data in persistent memory every 10 minutes.
+ *
+ * @param arg Task argument (default NULL).
+ */
 void rainfall_task(void *arg)
 {
+    TickType_t last_wake_time = xTaskGetTickCount();
+    const TickType_t delay_1_second = pdMS_TO_TICKS(1000);
+    const TickType_t save_interval = pdMS_TO_TICKS(300000);   
+    TickType_t last_save_time = last_wake_time;
+
     while (1)
     {
         gpio_rain_sensor_calculate_rainfall();
-        vTaskDelay(pdMS_TO_TICKS(500));
+
+        if ((xTaskGetTickCount() - last_save_time) >= save_interval)
+        {
+            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total, sizeof(rain_total)) != ESP_OK)
+            {
+                ESP_LOGE(GPIO_ACT_TAG, "Failed to save accumulated rainfall.");
+            }
+            else
+            {
+                ESP_LOGI(GPIO_ACT_TAG, "Accumulated rainfall saved successfully: %.2f mm", rain_total);
+            }
+            last_save_time = xTaskGetTickCount();
+        }
+
+        vTaskDelayUntil(&last_wake_time, delay_1_second);
     }
 }
 
