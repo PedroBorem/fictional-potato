@@ -122,7 +122,7 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
         static uint32_t last_interrupt_time = 0;
         uint32_t interrupt_time = xTaskGetTickCountFromISR();
 
-        if (interrupt_time - last_interrupt_time > 100 / portTICK_PERIOD_MS) 
+        if (interrupt_time - last_interrupt_time > 75 / portTICK_PERIOD_MS) 
 		{
             rain_pulse_count++;  
             last_interrupt_time = interrupt_time;

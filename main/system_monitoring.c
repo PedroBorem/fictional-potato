@@ -346,7 +346,7 @@ static void system_monitoring_task(void* arg)
 void rainfall_task(void *arg) 
 {
     TickType_t last_wake_time = xTaskGetTickCount();
-    const TickType_t save_interval = pdMS_TO_TICKS(600000); // 10 minutes
+    const TickType_t save_interval = pdMS_TO_TICKS(3600000); // 1 hour
     TickType_t last_save_time = last_wake_time;
 
     while (1) 

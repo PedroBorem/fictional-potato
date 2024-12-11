@@ -1901,6 +1901,7 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         pivot_actions actions = {};
         char str_out[200] = {};
         char str_date_time[50] = {};
+        char rain_total_str[20] = {};
         uint16_t dwp = 0;
         uint8_t idp = 19;
         float rain_total = 0.0f; 
@@ -1913,15 +1914,17 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
 
         if (data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total) != ESP_OK)
         {
-            rain_total = 0.0f;
+            rain_total = 655;
         }
+
+        snprintf(rain_total_str, sizeof(rain_total_str), "%.2f", rain_total);
 
         arg_pair_t arg_pairs[] = {
             { "uint8_t", &idp },
             { "string", system_id },
             { "uint16_t", &dwp },
             { "uint16_t", &global_pressure },
-            { "float", &rain_total }, 
+            { "string", rain_total_str },
             { "string", str_date_time },
             { NULL, NULL }
         };
