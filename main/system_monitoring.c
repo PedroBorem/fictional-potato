@@ -346,8 +346,7 @@ static void system_monitoring_task(void* arg)
 void rainfall_task(void *arg) 
 {
     TickType_t last_wake_time = xTaskGetTickCount();
-    const TickType_t delay_1_second = pdMS_TO_TICKS(1000);
-    const TickType_t save_interval = pdMS_TO_TICKS(60000); // 10 minutes
+    const TickType_t save_interval = pdMS_TO_TICKS(600000); // 10 minutes
     TickType_t last_save_time = last_wake_time;
 
     while (1) 
@@ -362,11 +361,12 @@ void rainfall_task(void *arg)
             } else 
             {
                 ESP_LOGI(SYSTEM_MONITORING_TAG, "Accumulated rainfall saved successfully: %.2f mm", rain_total);
+                rain_total = 0.0;
             }
             last_save_time = xTaskGetTickCount();
         }
 
-        vTaskDelayUntil(&last_wake_time, delay_1_second);
+        vTaskDelayUntil(&last_wake_time,  pdMS_TO_TICKS(500));
     }
 }
 

@@ -807,9 +807,6 @@ void gpio_rain_sensor_calculate_rainfall(void)
     float interval_rain = rain_pulse_count * RAIN_PER_PULSE;
     rain_total += interval_rain;
 
-    ESP_LOGI(GPIO_ACT_TAG, "%s: Rainfall in interval: %.2f mm", __func__, interval_rain);
-    ESP_LOGI(GPIO_ACT_TAG, "%s: Total accumulated rainfall: %.2f mm", __func__, rain_total);
-
     rain_pulse_count = 0;
 }
 
