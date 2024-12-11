@@ -53,7 +53,7 @@
 /**
  * @brief The minimum time value accepted for periodically read status (IDP_0) in minutes.
  */
-#define READ_TIME_MIN_MINUTES 5
+#define READ_TIME_MIN_MINUTES 1
 
 /**
  * @brief The maximum time value accepted for periodically read status (IDP_0) in minutes.
