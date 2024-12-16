@@ -112,14 +112,15 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
-static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_19(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_27(const char* buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_32(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -424,6 +425,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_30:
 		{
 			system_manager_idp_30(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_32:
+		{
+			system_manager_idp_32(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_90:
@@ -1904,18 +1910,16 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         char str_out[200] = {};
         char str_date_time[50] = {};
         char rain_total_str[30] = {};
-        uint16_t dwp = 0;
         uint8_t idp = 19;
         float rain_total = 0.0f;
 
         actuation_app_get_actions(&actions, sizeof(actions));
-        dwp = idp_parser_create_pwd(actions);
 
         time_t timestamp = rtc_app_get_timestamp(false);
         rtc_app_get_str_date_time(timestamp, str_date_time);
 
-        uint8_t last_valid_index = -1;
-        for (uint8_t i = MAX_RAINFALL_ENTRIES - 1; i >= 0; i--)
+        int last_valid_index = -1;
+        for (int i = MAX_RAINFALL_ENTRIES - 1; i >= 0; i--)
         {
             if (strlen(pluviometro[i]) > 0)
             {
@@ -1944,8 +1948,6 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         arg_pair_t arg_pairs[] = {
             { "uint8_t", &idp },
             { "string", system_id },
-            { "uint16_t", &dwp },
-            { "uint16_t", &global_pressure },
             { "string", rain_total_str },
             { "string", str_date_time },
             { NULL, NULL }
@@ -2758,6 +2760,45 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
 	comm_app_send_idp_pack(str_out, COMM_MQTT);
+}
+
+/**
+ * @brief Handle IDP package type 32.
+ *
+ * This function handles IDP package type 32, listing all saved rainfall data with timestamps,
+ * formatted as #32-system_id-@rain_total-date@rain_total-date@...$
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
+static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
+{
+    if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+    {
+        char str_out[500] = {};
+        char rain_total_data[400] = {}; 
+        char entry[50] = {}; 
+        uint8_t idp = 32;
+
+        for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
+        {
+            if (strlen(pluviometro[i]) > 0) 
+            {
+                snprintf(entry, sizeof(entry), "@%s", pluviometro[i]);
+                strncat(rain_total_data, entry, sizeof(rain_total_data) - strlen(rain_total_data) - 1);
+            }
+        }
+
+        arg_pair_t arg_pairs[] = {
+            { "uint8_t", &idp },
+            { "string", system_id },
+            { "string", rain_total_data },
+            { NULL, NULL }
+        };
+
+        idp_parser_create_package(str_out, arg_pairs);
+        comm_app_send_idp_pack(str_out, comm_mode);
+    }
 }
 
 /**

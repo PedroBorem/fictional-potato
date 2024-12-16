@@ -348,7 +348,6 @@ void init_rainfall_data(void)
     esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro);
     if (err == ESP_OK) 
     {
-        ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data loaded successfully.");
         current_index = 0; 
     } 
     else 
@@ -371,7 +370,7 @@ void rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(30000);
+    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
 
     char str_date_time[20] = {};    
 
