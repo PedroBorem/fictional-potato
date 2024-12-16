@@ -1906,7 +1906,7 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         char rain_total_str[20] = {};
         uint16_t dwp = 0;
         uint8_t idp = 19;
-        float rain_total = 0.0f; 
+        float rain_total = 0.0f;
 
         actuation_app_get_actions(&actions, sizeof(actions));
         dwp = idp_parser_create_pwd(actions);
@@ -1914,7 +1914,8 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         time_t timestamp = rtc_app_get_timestamp(false);
         rtc_app_get_str_date_time(timestamp, str_date_time);
 
-        if (data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total) != ESP_OK)
+        rain_total = pluviometro[0];
+        if (rain_total == 0.0f)
         {
             rain_total = 655;
         }
@@ -1935,7 +1936,6 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         comm_app_send_idp_pack(str_out, comm_mode);
     }
 }
-
 /**
  * @brief Handles IDP 21 requests for timestamp update.
  *

@@ -26,8 +26,6 @@
 
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
 
-#define MAX_RAINFALL_ENTRIES 240
-
 /**
  * @brief Enumeration representing the possible states of the system monitoring.
  */
@@ -54,7 +52,7 @@ static uint32_t panel_reading;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
-static float pluviometro[MAX_RAINFALL_ENTRIES] = {};
+float pluviometro[MAX_RAINFALL_ENTRIES] = {};
 
 /* Private methods ----------------------------------- */
 
@@ -384,7 +382,9 @@ void rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+    const TickType_t save_interval = pdMS_TO_TICKS(60000);
+
+    char str_date_time[50] = {};    
 
     init_rainfall_data();
 
@@ -402,7 +402,11 @@ void rainfall_task(void *arg)
             }
             else 
             {
+                time_t timestamp = rtc_app_get_timestamp(false);
+                rtc_app_get_str_date_time(timestamp, str_date_time);
+
                 ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %.2f mm", rain_total);
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Data: %s mm", str_date_time);
                 rain_total = 0.0f;
             }
             last_save_time = xTaskGetTickCount();

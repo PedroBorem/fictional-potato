@@ -13,7 +13,11 @@
 
 #include "project_config.h"
 
+#define MAX_RAINFALL_ENTRIES 240
+
 extern float rain_total; /**< Total accumulated rainfall (shared with other modules). */
+
+extern float pluviometro[MAX_RAINFALL_ENTRIES];
 
 /**
  * @brief Starts the system monitoring with the specified configuration.
