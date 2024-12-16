@@ -26,6 +26,8 @@
 
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
 
+#define MAX_RAINFALL_ENTRIES 240
+
 /**
  * @brief Enumeration representing the possible states of the system monitoring.
  */
@@ -51,6 +53,8 @@ static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current s
 static uint32_t panel_reading;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
+
+static float pluviometro[MAX_RAINFALL_ENTRIES] = {};
 
 /* Private methods ----------------------------------- */
 
@@ -85,6 +89,22 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
+
+/**
+ * @brief Shifts the vector values one position to the right and inserts a new float value at the beginning.
+ * @param array Pointer to the vector.
+ * @param size Size of the vector.
+ * @param new_value The new rainfall value (float) to insert at the beginning.
+ */
+void move_to_right(float *array, size_t size, float new_value) 
+{
+    for (int i = size - 1; i > 0; i--) 
+    {
+        array[i] = array[i - 1];
+    }
+
+    array[0] = new_value; // Insere o novo valor na primeira posição
+}
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -336,18 +356,37 @@ static void system_monitoring_task(void* arg)
 }
 
 /**
- * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
+ * @brief Initializes the rain gauge vector with NVS data.
+ */
+void init_rainfall_data(void) 
+{
+    esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro);
+    if (err == ESP_OK) 
+    {
+        ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data loaded successfully.");
+    } 
+    else 
+    {
+        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to 0.");
+        memset(pluviometro, 0, sizeof(pluviometro));
+    }
+}
+
+/**
+ * @brief Task to calculate rainfall every second and save accumulated data every hour.
  *
  * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
- * It saves the accumulated rainfall data in persistent memory every 10 minutes.
+ * It saves the accumulated rainfall data in persistent memory every hour.
  *
  * @param arg Task argument (default NULL).
  */
 void rainfall_task(void *arg) 
 {
     TickType_t last_wake_time = xTaskGetTickCount();
-    const TickType_t save_interval = pdMS_TO_TICKS(3600000); // 1 hour
     TickType_t last_save_time = last_wake_time;
+    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+
+    init_rainfall_data();
 
     while (1) 
     {
@@ -355,18 +394,21 @@ void rainfall_task(void *arg)
 
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
-            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, &rain_total, sizeof(rain_total)) != ESP_OK) 
+            move_to_right(pluviometro, MAX_RAINFALL_ENTRIES, rain_total);
+
+            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro, sizeof(pluviometro)) != ESP_OK) 
             {
-                ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save accumulated rainfall.");
-            } else 
+                ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
+            }
+            else 
             {
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Accumulated rainfall saved successfully: %.2f mm", rain_total);
-                rain_total = 0.0;
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %.2f mm", rain_total);
+                rain_total = 0.0f;
             }
             last_save_time = xTaskGetTickCount();
         }
 
-        vTaskDelayUntil(&last_wake_time,  pdMS_TO_TICKS(500));
+        vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
 }
 

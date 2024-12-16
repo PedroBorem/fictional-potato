@@ -63,4 +63,9 @@ void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type
  */
 void rainfall_task(void *arg);
 
+/**
+ * @brief Initializes the rain gauge vector with NVS data.
+ */
+void init_rainfall_data(void);
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

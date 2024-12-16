@@ -189,6 +189,8 @@ void system_manager_init(void)
 	scheduling_start(IDP_16, scheduling_off_date);
 	scheduling_start(IDP_17, scheduling_off_angle);
 
+	init_rainfall_data();
+
 	system_timer = xTimerCreate(
 		"system_timer",					/* name */
 		pdMS_TO_TICKS(90000),			/* period/time */
