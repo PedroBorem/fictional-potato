@@ -52,7 +52,10 @@ static uint32_t panel_reading;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
-float pluviometro[MAX_RAINFALL_ENTRIES] = {};
+char pluviometro[MAX_RAINFALL_ENTRIES][30] = {};
+
+static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
+
 
 /* Private methods ----------------------------------- */
 
@@ -87,22 +90,6 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
-
-/**
- * @brief Shifts the vector values one position to the right and inserts a new float value at the beginning.
- * @param array Pointer to the vector.
- * @param size Size of the vector.
- * @param new_value The new rainfall value (float) to insert at the beginning.
- */
-void move_to_right(float *array, size_t size, float new_value) 
-{
-    for (int i = size - 1; i > 0; i--) 
-    {
-        array[i] = array[i - 1];
-    }
-
-    array[0] = new_value; // Insere o novo valor na primeira posição
-}
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -362,13 +349,16 @@ void init_rainfall_data(void)
     if (err == ESP_OK) 
     {
         ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data loaded successfully.");
+        current_index = 0; 
     } 
     else 
     {
-        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to 0.");
+        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
         memset(pluviometro, 0, sizeof(pluviometro));
+        current_index = 0;
     }
 }
+
 
 /**
  * @brief Task to calculate rainfall every second and save accumulated data every hour.
@@ -382,9 +372,9 @@ void rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(60000);
+    const TickType_t save_interval = pdMS_TO_TICKS(30000);
 
-    char str_date_time[50] = {};    
+    char str_date_time[20] = {};    
 
     init_rainfall_data();
 
@@ -394,21 +384,33 @@ void rainfall_task(void *arg)
 
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
-            move_to_right(pluviometro, MAX_RAINFALL_ENTRIES, rain_total);
-
-            if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro, sizeof(pluviometro)) != ESP_OK) 
-            {
-                ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
-            }
-            else 
+            if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
                 rtc_app_get_str_date_time(timestamp, str_date_time);
 
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %.2f mm", rain_total);
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Data: %s mm", str_date_time);
+                snprintf(pluviometro[current_index], sizeof(pluviometro[current_index]), "%.2f-%s", rain_total, str_date_time);
+
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %s", pluviometro[current_index]);
+
+                current_index = (current_index + 1) % 10;
+
+                if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro, sizeof(pluviometro)) != ESP_OK) 
+                {
+                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
+                }
+                else 
+                {
+                    ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data saved successfully.");
+                }
+
                 rain_total = 0.0f;
             }
+            else
+            {
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall is 0.0, skipping save.");
+            }
+
             last_save_time = xTaskGetTickCount();
         }
 

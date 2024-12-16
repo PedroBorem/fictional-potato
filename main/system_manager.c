@@ -1914,13 +1914,11 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         time_t timestamp = rtc_app_get_timestamp(false);
         rtc_app_get_str_date_time(timestamp, str_date_time);
 
-        rain_total = pluviometro[0];
-        if (rain_total == 0.0f)
-        {
-            rain_total = 655;
-        }
-
-        snprintf(rain_total_str, sizeof(rain_total_str), "%.2f", rain_total);
+		if (sscanf(pluviometro[0], "%f-", &rain_total) != 1) 
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to parse rain_total from pluviometro[0]");
+			rain_total = 0.0f;
+		}
 
         arg_pair_t arg_pairs[] = {
             { "uint8_t", &idp },
