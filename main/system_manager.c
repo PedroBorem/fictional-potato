@@ -1903,7 +1903,7 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         pivot_actions actions = {};
         char str_out[200] = {};
         char str_date_time[50] = {};
-        char rain_total_str[20] = {};
+        char rain_total_str[30] = {};
         uint16_t dwp = 0;
         uint8_t idp = 19;
         float rain_total = 0.0f;
@@ -1914,11 +1914,32 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         time_t timestamp = rtc_app_get_timestamp(false);
         rtc_app_get_str_date_time(timestamp, str_date_time);
 
-		if (sscanf(pluviometro[0], "%f-", &rain_total) != 1) 
-		{
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to parse rain_total from pluviometro[0]");
-			rain_total = 0.0f;
-		}
+        uint8_t last_valid_index = -1;
+        for (uint8_t i = MAX_RAINFALL_ENTRIES - 1; i >= 0; i--)
+        {
+            if (strlen(pluviometro[i]) > 0)
+            {
+                last_valid_index = i;
+                break;
+            }
+        }
+
+        if (last_valid_index >= 0)
+        {
+            if (sscanf(pluviometro[last_valid_index], "%f-", &rain_total) == 1)
+            {
+                snprintf(rain_total_str, sizeof(rain_total_str), "%.2f", rain_total);
+            }
+            else
+            {
+                snprintf(rain_total_str, sizeof(rain_total_str), "0.0");
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Failed to parse rain_total from pluviometro[%d]", last_valid_index);
+            }
+        }
+        else
+        {
+            snprintf(rain_total_str, sizeof(rain_total_str), "0.0");
+        }
 
         arg_pair_t arg_pairs[] = {
             { "uint8_t", &idp },
@@ -1934,6 +1955,7 @@ static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
         comm_app_send_idp_pack(str_out, comm_mode);
     }
 }
+
 /**
  * @brief Handles IDP 21 requests for timestamp update.
  *

@@ -359,7 +359,6 @@ void init_rainfall_data(void)
     }
 }
 
-
 /**
  * @brief Task to calculate rainfall every second and save accumulated data every hour.
  *
@@ -405,10 +404,6 @@ void rainfall_task(void *arg)
                 }
 
                 rain_total = 0.0f;
-            }
-            else
-            {
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall is 0.0, skipping save.");
             }
 
             last_save_time = xTaskGetTickCount();

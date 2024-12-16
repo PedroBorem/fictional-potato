@@ -13,7 +13,7 @@
 
 #include "project_config.h"
 
-#define MAX_RAINFALL_ENTRIES 65
+#define MAX_RAINFALL_ENTRIES 36
 
 extern float rain_total; /**< Total accumulated rainfall (shared with other modules). */
 
