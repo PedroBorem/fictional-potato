@@ -64,7 +64,7 @@ static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
  *
  * @param arg Task argument (default NULL).
  */
-void rainfall_task(void *arg);
+void system_monitoring_rainfall_task(void *arg);
 
 /**
  * @brief Executes the actuation process based on the system configuration.
@@ -343,7 +343,7 @@ static void system_monitoring_task(void* arg)
 /**
  * @brief Initializes the rain gauge vector with NVS data.
  */
-void init_rainfall_data(void) 
+void system_monitoring_init_rainfall_data(void) 
 {
     esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro);
     if (err == ESP_OK) 
@@ -366,7 +366,7 @@ void init_rainfall_data(void)
  *
  * @param arg Task argument (default NULL).
  */
-void rainfall_task(void *arg) 
+void system_monitoring_rainfall_task(void *arg) 
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
@@ -596,7 +596,7 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
                     &xTask_system_monitoring);
     }
 
-    BaseType_t rainfall_task_created = xTaskCreate(rainfall_task, 
+    BaseType_t rainfall_task_created = xTaskCreate(system_monitoring_rainfall_task, 
                                        PLUV_TASK_NAME, 
                                        PLUV_STACK_SIZE, 
                                        NULL, 
