@@ -129,6 +129,7 @@ typedef enum
     IDP_27,
     IDP_30 = 30,
     IDP_32 = 32,
+    IDP_34 = 34,
     IDP_90 = 90,
     IDP_91,
     IDP_92,

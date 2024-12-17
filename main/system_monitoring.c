@@ -54,6 +54,7 @@ static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer t
 
 char pluviometro[MAX_RAINFALL_ENTRIES][30] = {};
 float rain_per_pulse = 0.1; // Rainfall per pulse (mm)
+bool rain_per_pulse_flag = false;
 
 static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
 
@@ -385,12 +386,29 @@ void system_monitoring_rainfall_task(void *arg)
     const TickType_t save_interval = pdMS_TO_TICKS(3600000);
 
     char str_date_time[20] = {};    
+    float last_rain_per_pulse = -1.0;
 
-    system_monitoring_init_rainfall_data();
+    system_monitoring_init_rainfall_data(); //   Acho que nao precisa dessa funcao
 
     while (1) 
     {
-        gpio_rain_sensor_calculate_rainfall();
+        if (rain_per_pulse_flag)
+        {
+            float nvs_rain_per_pulse = 0.1; // Valor padrão
+            esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
+            if (ret == ESP_OK && nvs_rain_per_pulse > 0.0 && nvs_rain_per_pulse <= 10.0)
+            {
+                rain_per_pulse = nvs_rain_per_pulse;
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "RAIN_PER_PULSE updated to %.2f", rain_per_pulse);
+            }
+            else
+            {
+                ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
+            }
+            rain_per_pulse_flag = false; // Reseta a flag
+        }
+
+        gpio_rain_sensor_calculate_rainfall(); 
 
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
@@ -423,6 +441,7 @@ void system_monitoring_rainfall_task(void *arg)
         vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
 }
+
 
 /**
  * @brief Determines and triggers actuation based on the barrier status.

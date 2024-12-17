@@ -91,6 +91,7 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
+
 uint32_t counter_reading_panel_off = NO_MANUAL_READING;
 
 static void system_manager_reboot(void);
@@ -121,6 +122,7 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_27(const char* buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_32(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_34(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -430,6 +432,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_32:
 		{
 			system_manager_idp_32(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_34:
+		{
+			system_manager_idp_34(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_90:
@@ -2774,6 +2781,110 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         comm_app_send_idp_pack(str_out, comm_mode);
     }
 }
+
+/**
+ * @brief Handle IDP package type 34.
+ *
+ * This function handles IDP package type 34, extracting or saving rain_per_pulse data via MQTT.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (COMM_MQTT).
+ */
+static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
+{
+    if (comm_mode == COMM_MQTT)
+    {
+        bool mqtt_load_pkg = false;
+        bool mqtt_save_pkg = false;
+
+        uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+        uint8_t expected_delimiter_num = 2;
+
+		ESP_LOGI(SYSTEM_MANAGER_TAG, "Delimiter count: %d", delimiter_num);
+
+        if (delimiter_num >= expected_delimiter_num)
+        {
+            mqtt_save_pkg = true;
+        }
+        else if (delimiter_num == 1 || delimiter_num == 0)
+        {
+            mqtt_load_pkg = true;
+        }
+
+        if (mqtt_save_pkg)
+        {
+			ESP_LOGI(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAAAAAAAA");
+            uint8_t idp = 0;
+            char pivot_id[50] = {};
+            float new_rain_per_pulse = 0.0;
+
+            arg_pair_t arg_pairs[] = {
+                {"uint8_t", &idp},
+                {"string", pivot_id},
+                {"float", &new_rain_per_pulse},
+                {NULL, NULL}};
+
+            idp_parser_get_packet_data(buffer, arg_pairs);
+
+			if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
+			{
+				union {
+					float value;
+					uint8_t bytes[sizeof(float)];
+				} rain_pulse_data;
+
+				rain_pulse_data.value = new_rain_per_pulse;
+
+				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, rain_pulse_data.bytes, sizeof(rain_pulse_data.bytes));
+				if (ret == ESP_OK)
+				{
+					rain_per_pulse_flag = true;
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
+				}
+				else
+				{
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
+				}
+			}
+
+        }
+        else if (mqtt_load_pkg)
+        {
+            char str_out[200] = {};
+            char rain_per_pulse_str[20] = {};
+            uint8_t idp = IDP_34;
+            float rain_per_pulse = 0.1;
+
+			union {
+				float value;
+				uint8_t bytes[sizeof(float)];
+			} rain_pulse_data;
+
+			esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, rain_pulse_data.bytes);
+			if (ret == ESP_OK && rain_pulse_data.value > 0.0 && rain_pulse_data.value <= 10.0)
+			{
+				rain_per_pulse = rain_pulse_data.value;
+			}
+			else
+			{
+				rain_per_pulse = 0.1; 
+			}
+
+            snprintf(rain_per_pulse_str, sizeof(rain_per_pulse_str), "%.2f", rain_per_pulse);
+
+            arg_pair_t arg_pairs[] = {
+                {"uint8_t", &idp},
+                {"string", system_id},
+                {"string", rain_per_pulse_str},
+                {NULL, NULL}};
+
+            idp_parser_create_package(str_out, arg_pairs);
+            comm_app_send_idp_pack(str_out, comm_mode);
+        }
+    }
+}
+
+
 
 /**
  * @brief Handles IDP 90 requests for firmware version retrieval.

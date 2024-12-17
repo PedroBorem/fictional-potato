@@ -19,6 +19,8 @@ extern float rain_total; /**< Total accumulated rainfall (shared with other modu
 
 extern char pluviometro[MAX_RAINFALL_ENTRIES][30];
 
+extern bool rain_per_pulse_flag;
+
 /**
  * @brief Starts the system monitoring with the specified configuration.
  *
