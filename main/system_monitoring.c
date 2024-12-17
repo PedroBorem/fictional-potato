@@ -53,6 +53,7 @@ static uint32_t panel_reading;
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
 char pluviometro[MAX_RAINFALL_ENTRIES][30] = {};
+float rain_per_pulse = 0.1; // Rainfall per pulse (mm)
 
 static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
 
@@ -355,6 +356,17 @@ void system_monitoring_init_rainfall_data(void)
         ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
         memset(pluviometro, 0, sizeof(pluviometro));
         current_index = 0;
+    }
+
+    err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
+    if (err != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0) 
+    {
+        rain_per_pulse = 0.1;
+        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
+    }
+    else
+    {
+        ESP_LOGI(SYSTEM_MONITORING_TAG, "Loaded RAIN_PER_PULSE from NVS: %.2f", rain_per_pulse);
     }
 }
 

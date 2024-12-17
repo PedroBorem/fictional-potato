@@ -45,6 +45,7 @@ typedef enum
     DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
     DATA_TYPE_MANUAL_COUNTER, /**< Manual counter */
     DATA_TYPE_RAINFALL_ACCUMULATED, /**< Rainfall accumulated data type. */
+    DATA_TYPE_RAIN_PER_PULSE, /**< Rain per pulse configuration. */
 } data_type_t;
 
 
