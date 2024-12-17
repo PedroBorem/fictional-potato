@@ -374,7 +374,7 @@ void system_monitoring_rainfall_task(void *arg)
 
     char str_date_time[20] = {};    
 
-    init_rainfall_data();
+    system_monitoring_init_rainfall_data();
 
     while (1) 
     {
