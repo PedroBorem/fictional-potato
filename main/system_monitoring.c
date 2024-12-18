@@ -383,7 +383,7 @@ void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(30000);
+    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
 
     char str_date_time[20] = {};    
 
