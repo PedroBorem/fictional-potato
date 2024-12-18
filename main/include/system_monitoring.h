@@ -13,11 +13,11 @@
 
 #include "project_config.h"
 
-#define MAX_RAINFALL_ENTRIES 36
+#define MAX_RAINFALL_ENTRIES 48
 
 extern float rain_total; /**< Total accumulated rainfall (shared with other modules). */
 
-extern char pluviometro[MAX_RAINFALL_ENTRIES][30];
+extern rain_data pluviometro[MAX_RAINFALL_ENTRIES];
 
 extern bool rain_per_pulse_flag;
 

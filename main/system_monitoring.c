@@ -52,7 +52,7 @@ static uint32_t panel_reading;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
-char pluviometro[MAX_RAINFALL_ENTRIES][30] = {};
+rain_data pluviometro[MAX_RAINFALL_ENTRIES] = {0};
 float rain_per_pulse = 0.1; // Rainfall per pulse (mm)
 bool rain_per_pulse_flag = false;
 
@@ -381,8 +381,6 @@ void system_monitoring_rainfall_task(void *arg)
     TickType_t last_save_time = last_wake_time;
     const TickType_t save_interval = pdMS_TO_TICKS(3600000);
 
-    char str_date_time[20] = {};    
-
     system_monitoring_init_rainfall_data();
 
     while (1) 
@@ -409,13 +407,13 @@ void system_monitoring_rainfall_task(void *arg)
             if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
-                rtc_app_get_str_date_time(timestamp, str_date_time);
+                rtc_app_get_str_date_time(timestamp, pluviometro[current_index].str_date_time);
 
-                snprintf(pluviometro[current_index], sizeof(pluviometro[current_index]), "%.2f-%s", rain_total, str_date_time);
+                pluviometro[current_index].rain_total = rain_total;
 
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %s", pluviometro[current_index]);
+                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %.2f-%s", pluviometro[current_index].rain_total, pluviometro[current_index].str_date_time);
 
-                current_index = (current_index + 1) % 10;
+                current_index = (current_index + 1) % MAX_RAINFALL_ENTRIES;
 
                 if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro, sizeof(pluviometro)) != ESP_OK) 
                 {
@@ -435,7 +433,6 @@ void system_monitoring_rainfall_task(void *arg)
         vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
 }
-
 
 /**
  * @brief Determines and triggers actuation based on the barrier status.

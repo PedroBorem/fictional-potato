@@ -2757,13 +2757,13 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         char str_out[500] = {};
         char rain_total_data[400] = {}; 
         char entry[50] = {}; 
-        uint8_t idp = 32;
+        uint8_t idp = IDP_32;
 
         for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
         {
-            if (strlen(pluviometro[i]) > 0) 
+            if (pluviometro[i].rain_total > 0.0f) 
             {
-                snprintf(entry, sizeof(entry), "@%s", pluviometro[i]);
+                snprintf(entry, sizeof(entry), "@%.2f-%s", pluviometro[i].rain_total, pluviometro[i].str_date_time);
                 strncat(rain_total_data, entry, sizeof(rain_total_data) - strlen(rain_total_data) - 1);
             }
         }
