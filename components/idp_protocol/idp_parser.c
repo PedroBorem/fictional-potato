@@ -297,56 +297,62 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
         }
 
         if (strcmp(arg_pairs[i].type, "uint8_t") == 0) {
-            uint8_t uint8_arg = * (uint8_t *) arg_pairs[i].value;
+            uint8_t uint8_arg = *(uint8_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRIu8, uint8_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "uint16_t") == 0) {
-            uint16_t uint16_arg = * (uint16_t *) arg_pairs[i].value;
+            uint16_t uint16_arg = *(uint16_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRIu16, uint16_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "uint32_t") == 0) {
-            uint32_t uint32_arg = * (uint32_t *) arg_pairs[i].value;
+            uint32_t uint32_arg = *(uint32_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%04" PRIu32, uint32_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int8_t") == 0) {
-            int8_t int8_arg = * (int8_t *) arg_pairs[i].value;
+            int8_t int8_arg = *(int8_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%02" PRId8, int8_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int16_t") == 0) {
-            int16_t int16_arg = * (int16_t *) arg_pairs[i].value;
+            int16_t int16_arg = *(int16_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%04" PRId16, int16_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int32_t") == 0) {
-            int32_t int32_arg = * (int32_t *) arg_pairs[i].value;
+            int32_t int32_arg = *(int32_t *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%08" PRId32, int32_arg);
             strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "int") == 0) {
-            int int_arg = * (int *) arg_pairs[i].value;
+            int int_arg = *(int *) arg_pairs[i].value;
             char arg_buffer[IDP_MAX_PKG_SIZE];
             snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%08d", int_arg);
             strcat(str_out, arg_buffer);
+        } else if (strcmp(arg_pairs[i].type, "float") == 0) {
+            float float_arg = *(float *) arg_pairs[i].value;
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%.2f", float_arg); 
+            strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "string") == 0) {
-            const char* str_arg = (const char*)arg_pairs[i].value;
+            const char* str_arg = (const char*) arg_pairs[i].value;
             strcat(str_out, str_arg);
         } else if (strcmp(arg_pairs[i].type, "time_t") == 0) {
-						time_t time_arg = * (time_t *) arg_pairs[i].value;
-						char arg_buffer[IDP_MAX_PKG_SIZE];
-						snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%ld", (long)time_arg);
-						strcat(str_out, arg_buffer);
+            time_t time_arg = *(time_t *) arg_pairs[i].value;
+            char arg_buffer[IDP_MAX_PKG_SIZE];
+            snprintf(arg_buffer, IDP_MAX_PKG_SIZE, "%ld", (long)time_arg);
+            strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "bool") == 0) {
-            bool bool_arg = * (bool *) arg_pairs[i].value;
+            bool bool_arg = *(bool *) arg_pairs[i].value;
             strcat(str_out, bool_arg ? "1" : "0");
         }
     }
 
     strcat(str_out, "$"); // Adicionar '$' no final do buffer
 }
+
 
 /**
  * @brief Get the data from an IDP package string.
@@ -393,6 +399,8 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
             * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
         } else if (strcmp(type, "time_t") == 0) {
         	* (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
+        } else if (strcmp(type, "float") == 0) {
+            * (float *) arg_pairs[index].value = strtof(token, NULL);
         }
 
         token = strtok(NULL, "-$");
@@ -401,6 +409,7 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
 
     free(str_copy);
 }
+
 
 /**
  * @brief Returns the number of delimiters '-' present in the buffer.

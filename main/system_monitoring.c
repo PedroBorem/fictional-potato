@@ -383,29 +383,27 @@ void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+    const TickType_t save_interval = pdMS_TO_TICKS(30000);
 
     char str_date_time[20] = {};    
-    float last_rain_per_pulse = -1.0;
 
-    system_monitoring_init_rainfall_data(); //   Acho que nao precisa dessa funcao
+    system_monitoring_init_rainfall_data();
 
     while (1) 
     {
         if (rain_per_pulse_flag)
         {
-            float nvs_rain_per_pulse = 0.1; // Valor padrão
+            float nvs_rain_per_pulse = 0.1;
             esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
             if (ret == ESP_OK && nvs_rain_per_pulse > 0.0 && nvs_rain_per_pulse <= 10.0)
             {
                 rain_per_pulse = nvs_rain_per_pulse;
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "RAIN_PER_PULSE updated to %.2f", rain_per_pulse);
             }
             else
             {
                 ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
             }
-            rain_per_pulse_flag = false; // Reseta a flag
+            rain_per_pulse_flag = false;
         }
 
         gpio_rain_sensor_calculate_rainfall(); 

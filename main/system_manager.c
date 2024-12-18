@@ -192,8 +192,6 @@ void system_manager_init(void)
 	scheduling_start(IDP_16, scheduling_off_date);
 	scheduling_start(IDP_17, scheduling_off_angle);
 
-	system_monitoring_init_rainfall_data();
-
 	system_timer = xTimerCreate(
 		"system_timer",					/* name */
 		pdMS_TO_TICKS(90000),			/* period/time */
@@ -2800,8 +2798,6 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
         uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
         uint8_t expected_delimiter_num = 2;
 
-		ESP_LOGI(SYSTEM_MANAGER_TAG, "Delimiter count: %d", delimiter_num);
-
         if (delimiter_num >= expected_delimiter_num)
         {
             mqtt_save_pkg = true;
@@ -2813,7 +2809,6 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 
         if (mqtt_save_pkg)
         {
-			ESP_LOGI(SYSTEM_MANAGER_TAG, "AAAAAAAAAAAAAAAAAAAAAAA");
             uint8_t idp = 0;
             char pivot_id[50] = {};
             float new_rain_per_pulse = 0.0;
@@ -2826,56 +2821,40 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 
             idp_parser_get_packet_data(buffer, arg_pairs);
 
-			if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
-			{
-				union {
-					float value;
-					uint8_t bytes[sizeof(float)];
-				} rain_pulse_data;
-
-				rain_pulse_data.value = new_rain_per_pulse;
-
-				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, rain_pulse_data.bytes, sizeof(rain_pulse_data.bytes));
-				if (ret == ESP_OK)
-				{
-					rain_per_pulse_flag = true;
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
-				}
-				else
-				{
-					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
-				}
-			}
-
+            if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
+            {
+                esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &new_rain_per_pulse, sizeof(new_rain_per_pulse));
+                if (ret == ESP_OK)
+                {
+                    rain_per_pulse_flag = true;
+                    ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
+                }
+                else
+                {
+                    ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
+                }
+            }
+            else
+            {
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", new_rain_per_pulse);
+            }
         }
         else if (mqtt_load_pkg)
         {
             char str_out[200] = {};
-            char rain_per_pulse_str[20] = {};
             uint8_t idp = IDP_34;
             float rain_per_pulse = 0.1;
 
-			union {
-				float value;
-				uint8_t bytes[sizeof(float)];
-			} rain_pulse_data;
-
-			esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, rain_pulse_data.bytes);
-			if (ret == ESP_OK && rain_pulse_data.value > 0.0 && rain_pulse_data.value <= 10.0)
-			{
-				rain_per_pulse = rain_pulse_data.value;
-			}
-			else
-			{
-				rain_per_pulse = 0.1; 
-			}
-
-            snprintf(rain_per_pulse_str, sizeof(rain_per_pulse_str), "%.2f", rain_per_pulse);
+            esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
+            if (ret != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
+            {
+                rain_per_pulse = 0.1; 
+            }
 
             arg_pair_t arg_pairs[] = {
                 {"uint8_t", &idp},
                 {"string", system_id},
-                {"string", rain_per_pulse_str},
+                {"float", &rain_per_pulse},
                 {NULL, NULL}};
 
             idp_parser_create_package(str_out, arg_pairs);
@@ -2883,8 +2862,6 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
         }
     }
 }
-
-
 
 /**
  * @brief Handles IDP 90 requests for firmware version retrieval.
