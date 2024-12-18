@@ -365,10 +365,6 @@ void system_monitoring_init_rainfall_data(void)
         rain_per_pulse = 0.1;
         ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
     }
-    else
-    {
-        ESP_LOGI(SYSTEM_MONITORING_TAG, "Loaded RAIN_PER_PULSE from NVS: %.2f", rain_per_pulse);
-    }
 }
 
 /**
@@ -568,6 +564,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer)
 {
+    vTaskDelay(pdMS_TO_TICKS(5000));
     // send IDP 0 (current status)
     system_monitoring_callback("#00$", COMM_MQTT);
 
@@ -578,6 +575,9 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
     // send IDP 19 (current pressure status)
     vTaskDelay(pdMS_TO_TICKS(5000));
     system_monitoring_callback("#19$", COMM_MQTT);
+
+    vTaskDelay(pdMS_TO_TICKS(5000));
+    system_monitoring_callback("#32$", COMM_MQTT);
 }
 
 /**
@@ -634,10 +634,6 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
     if (rainfall_task_created != pdPASS)
     {
         ESP_LOGE(SYSTEM_MONITORING_TAG, "%s: Failed to create rainfall task", __func__);
-    }
-    else
-    {
-        ESP_LOGI(SYSTEM_MONITORING_TAG, "%s: Rainfall monitoring initialized successfully", __func__);
     }
 }
 
