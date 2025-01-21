@@ -34,12 +34,12 @@ static void sectorization_task(void* arg)
 		if(sectorization_config.sector_number > 0)
 		{
 			for(uint8_t angles = 0; angles < CONFIG_SECTORS_MAX_VALUE; angles++)
-			{
-				if(*sectorization_current_angle  >= sectorization_config.sectors[angles].start_angle
-				&& *sectorization_current_angle  <= sectorization_config.sectors[angles].end_angle)
+			{	
+				if(sectorization_config.sectors[angles].start_angle > sectorization_config.sectors[angles].end_angle
+				|| sectorization_config.sectors[angles].start_angle < sectorization_config.sectors[angles].end_angle)
 				{
-					if(sectorization_config.sectors[angles].start_angle != 0
-					&& sectorization_config.sectors[angles].end_angle != 0)
+					if(*sectorization_current_angle  >= sectorization_config.sectors[angles].start_angle
+					&& *sectorization_current_angle  <= sectorization_config.sectors[angles].end_angle)
 					{
 						if(pump_is_on == false)
 						{
@@ -48,11 +48,11 @@ static void sectorization_task(void* arg)
 							pump_is_on = true;
 						}
 					}
-				}
-				else
-				{
-					pump_flag++;
-				}
+					else
+					{
+						pump_flag++;
+					}
+				}	
 			}
 
 			if(pump_flag == CONFIG_SECTORS_MAX_VALUE && pump_is_on == true)
