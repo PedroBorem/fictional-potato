@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.5.2")
+#define CONFIG_FW_VERSION           ("v2.8.0")
 
 /**
  * @brief Maximum number of scheduling values.
@@ -69,6 +69,48 @@
  * @brief HTTP OK response code.
  */
 #define CONFIG_HTTP_OK                  ("200")
+
+/**
+ * @brief Manual hang-up type.
+ *
+ * This define represents the hang-up type when the pivot is manually stopped.
+ */
+#define TYPE_HANGS_UP_MANUAL            ("manual")
+
+/**
+ * @brief Virtual barrier hang-up type.
+ *
+ * This define represents the hang-up type when the pivot stops due to a virtual barrier.
+ */
+#define TYPE_HANGS_UP_VIRTUAL_BARRIER   ("virtual_barrier")
+
+/**
+ * @brief Pivot hang-up due to lack of water.
+ *
+ * This define represents the hang-up type when the pivot stops due to a lack of water supply.
+ */
+#define TYPE_HANGS_UP_PIVOT_WITHOUT_WATER ("pivot_without_water")
+
+/**
+ * @brief Local tag identifier.
+ *
+ * This define represents the local tag identifier used in logging and debugging.
+ */
+#define LOCAL_TAG                  ("nimbus_app")
+
+/**
+ * @brief Remote tag identifier.
+ *
+ * This define represents the remote tag identifier used in logging and debugging.
+ */
+#define REMOTE_TAG                  ("soil_app")
+
+/**
+ * @brief Local user identifier.
+ *
+ * This define represents the local user identifier associated with the system.
+ */
+#define LOCAL_USER_TAG                  ("Irrigabras")
 
 /**
  * @enum idp_type
@@ -182,7 +224,7 @@ typedef struct __attribute__((__packed__))
     uint8_t rotation;        /*!< Rotation mode of the pivot (PIVOT_CW or PIVOT_CCW) */
     uint8_t watering_state;  /*!< Watering state of the pivot (PIVOT_DRY or PIVOT_WET) */
     uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
-    char user[20];
+    char user[50];
 } pivot_actions;
 
 /**
@@ -443,7 +485,7 @@ typedef struct __attribute__((__packed__))
     char reason_hangs_up[50];  /*!< Reason for the pivot hang-up */
     char str_idp[10];          /*!< IDP string identifier */
     char scheduling_id[20];     /*!< Scheduling ID associated with the hang-up */
-    char user[20];              /*!< User responsible for the action */
+    char user[50];              /*!< User responsible for the action */
     bool on_barrier;            /*!< Indicates if the pivot is on the barrier */
     char str_date_time[70];     /*!< Date and time string for the hang-up event */
 } pivot_reason_hangs_up;

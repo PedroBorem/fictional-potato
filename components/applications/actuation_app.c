@@ -299,7 +299,7 @@ void actuation_app_manual_call(pivot_actions current_action)
 	char str_out[200] = {};
 	uint16_t dwp = 0;
 	uint8_t idp = IDP_30;
-	char type_hangs_up[20] = "manual";
+	char type_hangs_up[20] = TYPE_HANGS_UP_MANUAL;
 
 	memcpy(&actuation_config, &current_action, sizeof(actuation_config));
 	dwp = idp_parser_create_pwd(current_action);
