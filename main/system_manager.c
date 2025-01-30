@@ -2630,9 +2630,9 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	uint8_t range_barrier = 3;
 
 	char scheduling_default_id[5] = "0";
-	char local_wifi_tag[15] = "nimbus_app";
-	char remote_tag[15] = "soil_app";
-	char local_user[15] = "Irrigabras";
+	char local_wifi_tag[15] = LOCAL_TAG;
+	char remote_tag[15] = REMOTE_TAG;
+	char local_user[15] = LOCAL_USER_TAG;
 
 	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
 	{
@@ -2762,12 +2762,12 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	if(new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
 	{
 		new_actions.power_state = PIVOT_OFF;
-		const char *new_type_hangs_up = "pivot_without_water";
+		const char *new_type_hangs_up = TYPE_HANGS_UP_PIVOT_WITHOUT_WATER;
 
 		strncpy(buffer_copy, buffer, sizeof(buffer_copy) - 1);
 		buffer_modified = true; 
 
-		char *pos = strstr(buffer_copy, "manual");
+		char *pos = strstr(buffer_copy, TYPE_HANGS_UP_MANUAL);
 		if (pos != NULL) {
 			size_t len_to_replace = strlen(new_type_hangs_up);
 			strncpy(pos, new_type_hangs_up, len_to_replace);
