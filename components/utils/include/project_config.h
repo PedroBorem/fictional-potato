@@ -486,11 +486,12 @@ typedef struct __attribute__((__packed__))
     char str_idp[10];          /*!< IDP string identifier */
     char scheduling_id[20];     /*!< Scheduling ID associated with the hang-up */
     char user[50];              /*!< User responsible for the action */
+    uint16_t angle;             /*!< Angle of the pivot */
     bool on_barrier;            /*!< Indicates if the pivot is on the barrier */
     char str_date_time[70];     /*!< Date and time string for the hang-up event */
 } pivot_reason_hangs_up;
 
-#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (4)
+#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (5)
 
 
 /**
