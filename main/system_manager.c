@@ -2610,7 +2610,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT;
 
-	if (comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -2622,7 +2622,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		}
 	}
 
-	char str_save_pkg[200];
+	char str_save_pkg[300];
 	char str_pkg[100];
 	char pivot_id[20];
 	pivot_reason_hangs_up pivot_reason_hangs_up = {};
@@ -2692,6 +2692,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		}
 
 		pivot_reason_hangs_up.reason_hangs_up[sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1] = '\0';
+		// pivot_reason_hangs_up.angle = *global_angle;
 
 		time_t timestamp = rtc_app_get_timestamp(false);
 		rtc_app_get_str_date_time(timestamp, pivot_reason_hangs_up.str_date_time);
@@ -2705,8 +2706,11 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			{"string", &pivot_reason_hangs_up.scheduling_id},
 			{"string", &pivot_reason_hangs_up.user},
 			{"bool", &pivot_reason_hangs_up.on_barrier},
+			{"uint16_t", global_angle},
 			{"string", &pivot_reason_hangs_up.str_date_time},
 			{NULL, NULL}};
+
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "GLOBAL ANGLE: %i", global_angle);
 
 		idp_parser_create_package(str_save_pkg, arg_pairs_idp_28);
 		comm_app_send_idp_pack(str_save_pkg, COMM_MQTT);
@@ -2714,8 +2718,9 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 	}
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
-		char str_out[200] = {};
-
+		char str_out[300] = {};
+		
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "GLOBAL ANGLE: %i", global_angle);
 		data_app_load(DATA_TYPE_REASON_HANG_UP, str_out);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
