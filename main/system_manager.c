@@ -605,7 +605,8 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 				if(old_actions.power_state == PIVOT_ON)
 				{
-					system_manager_idp_28(buffer, COMM_MQTT);
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "BBBBBBBBBBBBBBBBBB: %s", buffer);
+					system_manager_idp_28(buffer, COMM_RF);
 				}
 			}
 
@@ -2706,7 +2707,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 			{"string", &pivot_reason_hangs_up.scheduling_id},
 			{"string", &pivot_reason_hangs_up.user},
 			{"bool", &pivot_reason_hangs_up.on_barrier},
-			{"uint16_t", global_angle},
+			{"uint16_t", &global_angle},
 			{"string", &pivot_reason_hangs_up.str_date_time},
 			{NULL, NULL}};
 
@@ -2822,11 +2823,11 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{
 			if (buffer_modified) 
 			{
-				system_manager_idp_28(buffer_copy, COMM_MQTT);
+				system_manager_idp_28(buffer_copy, comm_mode);
 			} 
 			else 
 			{
-				system_manager_idp_28(buffer, COMM_MQTT);
+				system_manager_idp_28(buffer, comm_mode);
 			}
 		}
 	}
