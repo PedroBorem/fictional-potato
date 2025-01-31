@@ -240,7 +240,6 @@ static void system_manager_reboot(void)
 	uint16_t timeout = 0;
 
 	pivot_actions current_action = {};
-	uint8_t idp = IDP_28;
 	uint8_t reboot_config_idp = IDP_24;
 	char str_out[200] = {};
 
@@ -288,11 +287,9 @@ static void system_manager_reboot(void)
 			{
 				arg_pair_t arg_pair_idp_28[] = 
 				{
-					{ "uint8_t", &idp },
-					{ "string", system_id },
-					{ "string", TYPE_HANGS_UP_REBOOT },
 					{ "uint8_t", &reboot_config_idp },
-					{ "uint16_t", SYSTEM_MANAGER_TAG },
+					{ "string", SYSTEM_MANAGER_TAG },
+					{ "string", TYPE_HANGS_UP_REBOOT },
 					{ NULL, NULL }
 				};
 				
@@ -2697,6 +2694,12 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 		{
 			strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id, sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
 			strncpy(pivot_reason_hangs_up.scheduling_id, scheduling_default_id, sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
+		}
+
+		if(strcmp(pivot_id, SYSTEM_MANAGER_TAG) == 0)
+		{
+    		strncpy(pivot_reason_hangs_up.reason_hangs_up, pivot_id,sizeof(pivot_reason_hangs_up.reason_hangs_up) - 1);
+    		strncpy(pivot_reason_hangs_up.scheduling_id,scheduling_default_id,sizeof(pivot_reason_hangs_up.scheduling_id) - 1);
 		}
 
 		if(strcmp(pivot_id, system_id) == 0)
