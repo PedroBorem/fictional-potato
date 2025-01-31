@@ -91,6 +91,7 @@
  */
 #define TYPE_HANGS_UP_PIVOT_WITHOUT_WATER ("pivot_without_water")
 
+#define TYPE_HANGS_UP_REBOOT            ("reboot")
 /**
  * @brief Local tag identifier.
  *
