@@ -491,7 +491,7 @@ typedef struct __attribute__((__packed__))
     char str_date_time[70];     /*!< Date and time string for the hang-up event */
 } pivot_reason_hangs_up;
 
-#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (5)
+#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (4)
 
 
 /**
