@@ -240,6 +240,9 @@ static void system_manager_reboot(void)
 	uint16_t timeout = 0;
 
 	pivot_actions current_action = {};
+	uint8_t idp = IDP_28;
+	uint8_t reboot_config_idp = IDP_24;
+	char str_out[200] = {};
 
 	time_t timestamp_nvs = 0;
 	time_t timestamp_now = 0;
@@ -280,6 +283,23 @@ static void system_manager_reboot(void)
 			LOG_DATA(SYSTEM_MANAGER_TAG, " Watering state: %d", current_action.watering_state);
 			LOG_DATA(SYSTEM_MANAGER_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
 			LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
+
+			if(reset_cause == ESP_RST_BROWNOUT)
+			{
+				arg_pair_t arg_pair_idp_28[] = 
+				{
+					{ "uint8_t", &idp },
+					{ "string", system_id },
+					{ "string", TYPE_HANGS_UP_REBOOT },
+					{ "uint8_t", &reboot_config_idp },
+					{ "uint16_t", SYSTEM_MANAGER_TAG },
+					{ NULL, NULL }
+				};
+				
+				idp_parser_create_package(str_out, arg_pair_idp_28);
+				ESP_LOGE(SYSTEM_MANAGER_TAG, "TESTANDOOOOO: %s", str_out);
+				system_manager_idp_28(str_out, comm_main_mode);
+			}
 
 			vTaskDelay(pdMS_TO_TICKS(500));
 
