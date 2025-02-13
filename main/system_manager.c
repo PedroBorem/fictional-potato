@@ -163,7 +163,8 @@ void system_manager_init(void)
 	pivot_config config = {};
 	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 	actuation_app_set_config(config);
-	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
+	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));	
+	actuation_app_hangs_up_callback(&system_monitoring_pivot_shutdown);
 
 	// system monitoring init
 	system_read_time = config.read_time;
@@ -289,7 +290,6 @@ static void system_manager_reboot(void)
 				{
 					{ "uint8_t", &reboot_config_idp },
 					{ "string", SYSTEM_MANAGER_TAG },
-					{ "string", TYPE_HANGS_UP_REBOOT },
 					{ NULL, NULL }
 				};
 				

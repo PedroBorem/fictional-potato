@@ -50,6 +50,7 @@
 
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
 static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
+static hangs_up_callback actuation_app_hang_up_call = NULL; /**< Callback function for actuation hang-up events. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
 static bool actuation_new_action = false;
 
@@ -299,20 +300,37 @@ void actuation_app_manual_call(pivot_actions current_action)
 	char str_out[200] = {};
 	uint16_t dwp = 0;
 	uint8_t idp = IDP_30;
-	char type_hangs_up[20] = TYPE_HANGS_UP_MANUAL;
 
 	memcpy(&actuation_config, &current_action, sizeof(actuation_config));
 	dwp = idp_parser_create_pwd(current_action);
 
 	arg_pair_t arg_pairs[] = {
 		{ "uint8_t", &idp },
-		{"string", ACTUATION_APP_TAG},
 		{ "uint16_t", &dwp },
 		{ "uint8_t", &current_action.percentimeter },
-		{"string", &type_hangs_up},
 		{ NULL, NULL }
 	};
 
 	idp_parser_create_package(str_out,arg_pairs);
 	actuation_app_call(str_out, COMM_MQTT);
+
+	idp_parser_get_pwd(dwp, &current_action);
+	
+	if(current_action.power_state == PIVOT_OFF)
+	{
+		actuation_app_hang_up_call(TYPE_HANGS_UP_MANUAL, idp, "0", ACTUATION_APP_TAG);
+	}
+}
+
+/*
+	MOTIVO DO DESLIGA ACTUATION
+*/
+
+/**
+ * @brief Set the callback function for actuation hang-up events.
+ * @param callback [in]: Callback function for actuation hang-up events.
+ */
+void actuation_app_hangs_up_callback(const hangs_up_callback callback)
+{
+	actuation_app_hang_up_call = callback;
 }
