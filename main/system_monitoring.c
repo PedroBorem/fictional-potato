@@ -42,6 +42,7 @@ bool return_back_flag = false;
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
 static app_callback system_monitoring_callback = NULL; /**< Callback function for system monitoring events. */
+static hangs_up_callback system_monitoring_hang_up_callback = NULL; /**< Callback function for system monitoring hang-up events. */
 
 static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configuration for system monitoring. */
@@ -78,6 +79,9 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
+
+
+void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason);
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -580,6 +584,11 @@ void system_monitoring_stop(void)
 		system_monitoring_timer_handle = NULL;
 	}
 }
+
+void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason, idp_type idp, const char *scheduling_id, const char *author)
+{
+    
+}  
 
 /**
  * @brief Registers a callback function for system monitoring.
