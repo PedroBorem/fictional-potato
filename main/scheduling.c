@@ -183,7 +183,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param scheduling_id The ID of the scheduling to be deactivated.
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server)
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
@@ -283,9 +283,9 @@ static void scheduling_task_idp_14(void* arg)
             }
             else if (scheduling_date_status[date_position] == true)
             {
-
                 scheduling_date_status[date_position] = false;
-                scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, scheduling_type, scheduling_date_current[date_position].str_author, false);
+                scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14, scheduling_date_current[date_position].scheduling_id, scheduling_date_current[date_position].str_author);
             }
         }
 
@@ -332,7 +332,8 @@ static void scheduling_task_idp_15(void* arg)
                          && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
                 {
                     scheduling_angle_status[angle_position] = false;
-                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, scheduling_type, scheduling_angle_current[angle_position].str_author, false);
+                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15, scheduling_angle_current[angle_position].scheduling_id, scheduling_angle_current[angle_position].str_author);
                 }
             }
         }
@@ -361,7 +362,8 @@ static void scheduling_task_idp_16(void* arg)
                 && scheduling_off_date_current[date_position].end_date != 0
                 && strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
             {
-                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, scheduling_type, scheduling_off_date_current[date_position].str_author, true);
+                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16, scheduling_off_date_current[date_position].scheduling_id, scheduling_off_date_current[date_position].str_author);
             }
         }
 
@@ -385,7 +387,8 @@ static void scheduling_task_idp_17(void* arg)
                 && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set)
                 && strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
             {
-                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, scheduling_type,scheduling_off_angle_current[angle_position].str_author, true);
+                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
             }
         }
  
