@@ -70,48 +70,6 @@
  */
 #define CONFIG_HTTP_OK                  ("200")
 
-/**
- * @brief Manual hang-up type.
- *
- * This define represents the hang-up type when the pivot is manually stopped.
- */
-#define TYPE_HANGS_UP_MANUAL            ("manual")
-
-/**
- * @brief Virtual barrier hang-up type.
- *
- * This define represents the hang-up type when the pivot stops due to a virtual barrier.
- */
-#define TYPE_HANGS_UP_VIRTUAL_BARRIER   ("virtual_barrier")
-
-/**
- * @brief Pivot hang-up due to lack of water.
- *
- * This define represents the hang-up type when the pivot stops due to a lack of water supply.
- */
-#define TYPE_HANGS_UP_PIVOT_WITHOUT_WATER ("pivot_without_water")
-
-#define TYPE_HANGS_UP_REBOOT            ("reboot")
-/**
- * @brief Local tag identifier.
- *
- * This define represents the local tag identifier used in logging and debugging.
- */
-#define LOCAL_TAG                  ("nimbus_app")
-
-/**
- * @brief Remote tag identifier.
- *
- * This define represents the remote tag identifier used in logging and debugging.
- */
-#define REMOTE_TAG                  ("soil_app")
-
-/**
- * @brief Local user identifier.
- *
- * This define represents the local user identifier associated with the system.
- */
-#define LOCAL_USER_TAG                  ("Irrigabras")
 
 /**
  * @enum idp_type
@@ -536,6 +494,24 @@ typedef enum
 } manual_off_counter;
 
 /**
+ * @brief Indicates the type of hangs up status.
+ *
+ * This macro is used to represent the type of hangs up status.
+ *
+ */
+typedef enum
+{
+    TYPE_HANGS_UP_MANUAL = 0,
+    TYPE_HANGS_UP_VIRTUAL_BARRIER,
+    TYPE_HANGS_UP_PIVOT_WITHOUT_WATER,
+    TYPE_HANGS_UP_REBOOT,
+    TYPE_HANGS_UP_SCHEDULE_14,
+    TYPE_HANGS_UP_SCHEDULE_15,
+    TYPE_HANGS_UP_SCHEDULE_16,
+    TYPE_HANGS_UP_SCHEDULE_17,
+} hangs_up_status;
+
+/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.
@@ -544,6 +520,9 @@ typedef enum
  * @param communication The type of communication (HTTP POST, HTTP GET, MQTT).
  */
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
+
+
+typedef void (*hangs_up_callback)(hangs_up_status stats, idp_type idp, const char *scheduling_id, const char *author);
 
 /**
  * @brief Global angle variable.
