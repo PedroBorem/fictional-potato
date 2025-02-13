@@ -286,16 +286,10 @@ static void system_manager_reboot(void)
 
 			if(reset_cause == ESP_RST_BROWNOUT)
 			{
-				arg_pair_t arg_pair_idp_28[] = 
+				if(current_action.power_state == PIVOT_OFF)
 				{
-					{ "uint8_t", &reboot_config_idp },
-					{ "string", SYSTEM_MANAGER_TAG },
-					{ NULL, NULL }
-				};
-				
-				idp_parser_create_package(str_out, arg_pair_idp_28);
-				ESP_LOGE(SYSTEM_MANAGER_TAG, "TESTANDOOOOO: %s", str_out);
-				system_manager_idp_28(str_out, comm_main_mode);
+					system_monitoring_pivot_shutdown(TYPE_HANGS_UP_BROWNOUT, reboot_config_idp, "0", SYSTEM_MANAGER_TAG);
+				}
 			}
 
 			vTaskDelay(pdMS_TO_TICKS(500));
