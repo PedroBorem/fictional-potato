@@ -81,7 +81,7 @@ static void system_monitoring_task(void* arg);
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
 
-void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason);
+static void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -246,7 +246,6 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint16_t dwp = 0;
     char str_out[50] = {};
     type_barrier barrier_type = VIRTUAL_BARRIER;  
-    char type_hangs_up[25] = TYPE_HANGS_UP_VIRTUAL_BARRIER;
 
     pivot_actions pivot_actions = {};
 
@@ -264,13 +263,13 @@ static void system_monitoring_actuation_virtual_barrier(void)
         { "string", SYSTEM_MONITORING_TAG },
         { "uint16_t", &dwp },
         { "uint16_t", &percent_off },
-        { "string", &type_hangs_up},
         { NULL, NULL }
     };
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
     system_monitoring_callback(str_out, comm_main_mode);
+    system_monitoring_pivot_shutdown(TYPE_HANGS_UP_VIRTUAL_BARRIER, idp, "0", SYSTEM_MONITORING_TAG);
 
     system_monitoring_automatic_return(pivot_actions, barrier_type);
 }
@@ -528,7 +527,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
  * @param virtual_config Configuration for system monitoring.
  * @param monitoring_time Time interval for system monitoring (in minutes).
  */
-void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time)
+static void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time)
 {
     system_monitoring_stop();
 
@@ -585,9 +584,9 @@ void system_monitoring_stop(void)
 	}
 }
 
-void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason, idp_type idp, const char *scheduling_id, const char *author)
+static void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason, idp_type idp, const char *scheduling_id, const char *author)
 {
-    
+    ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason {%d, %d, %s, %s}", shutdown_reason, idp, scheduling_id, author);
 }  
 
 /**
@@ -598,7 +597,7 @@ void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason, idp_typ
  *
  * @param[in] callback A function pointer to the callback function.
  */
-void system_monitoring_register_callback(const app_callback callback)
+static void system_monitoring_register_callback(const app_callback callback)
 {
 	system_monitoring_callback = callback;
 }
