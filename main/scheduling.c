@@ -79,6 +79,12 @@ static uint16_t* scheduling_current_angle = &global_angle;
 static app_callback scheduling_callback = NULL;
 
 /**
+ * @brief Initializes the scheduling module.
+ * @param callback The callback function for scheduling events.
+ */
+static hangs_up_callback scheduling_hang_up_call = NULL;
+
+/**
  * @brief Activates the scheduling at the specified position.
  * @param position The position of the scheduling date or angle in the array.
  * @param scheduling_id The ID of the scheduling.
@@ -92,7 +98,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param shceduling_type The type of the scheduling (IDP)
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, char* str_author, bool scheduling_notify_server);
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
 
 /**
  * @brief Task for processing scheduling events with IDP 14.
@@ -177,7 +183,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param scheduling_id The ID of the scheduling to be deactivated.
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, char* str_author, bool scheduling_notify_server)
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server)
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
@@ -216,15 +222,12 @@ static void scheduling_deactivate(char* scheduling_id, char* scheduling_type, ch
         { "string", SCHEDULING_TAG },
         { "uint16_t", &dwp },
         { "uint16_t", &percent },
-        { "string", scheduling_type},
-        { "string", scheduling_id},
-        { "string", str_author},
         { NULL, NULL }
     };
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
-    scheduling_callback(str_out, COMM_MQTT);
+    scheduling_callback(str_out, COMM_MQTT)
 
     // delete SCHEDULING - send IDP 13
     idp = IDP_13;
@@ -548,4 +551,12 @@ void scheduling_register_callback(const app_callback callback)
 	{
 		scheduling_callback = callback;
 	}
+}
+
+void scheduling_hangs_up_callback(const app_callback callback)
+{
+    if(callback != NULL)
+    {
+        scheduling_hang_up_call = callback;
+    }
 }
