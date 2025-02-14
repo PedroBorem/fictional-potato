@@ -39,7 +39,7 @@ void system_monitoring_stop(void);
  *
  * @param[in] callback A function pointer to the callback function.
  */
-static void system_monitoring_register_callback(const app_callback callback);
+void system_monitoring_register_callback(const app_callback callback);
 
 /**
  * @brief Determines and triggers actuation based on the barrier status.
@@ -69,6 +69,6 @@ bool system_monitoring_range_barrier(uint8_t range_barrier);
 /**
  * 
  */
-static void system_monitoring_pivot_shutdown(hangs_up_callback shutdown_reason, idp_type idp, const char *scheduling_id, const char *author);
+void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */
