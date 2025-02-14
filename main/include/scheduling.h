@@ -35,4 +35,6 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
  */
 void scheduling_register_callback(const app_callback callback);
 
+void scheduling_hangs_up_callback(const hangs_up_callback callback);
+
 #endif /* MAIN_INCLUDE_SCHEDULING_H_ */
