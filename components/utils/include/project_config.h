@@ -504,11 +504,13 @@ typedef enum
     TYPE_HANGS_UP_MANUAL = 0,
     TYPE_HANGS_UP_VIRTUAL_BARRIER,
     TYPE_HANGS_UP_PIVOT_WITHOUT_WATER,
-    TYPE_HANGS_UP_REBOOT,
+    TYPE_HANGS_UP_BROWNOUT,
     TYPE_HANGS_UP_SCHEDULE_14,
     TYPE_HANGS_UP_SCHEDULE_15,
     TYPE_HANGS_UP_SCHEDULE_16,
     TYPE_HANGS_UP_SCHEDULE_17,
+    TYPE_HANGS_UP_SOIL_APP,
+    TYPE_HANGS_UP_IRRIGABRAS_APP,
 } hangs_up_status;
 
 /**
@@ -522,7 +524,7 @@ typedef enum
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
 
-typedef void (*hangs_up_callback)(hangs_up_status stats, idp_type idp, const char *scheduling_id, const char *author);
+typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author);
 
 /**
  * @brief Global angle variable.
