@@ -183,7 +183,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
  * @param scheduling_id The ID of the scheduling to be deactivated.
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
-static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
+static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server)
 {
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
@@ -227,7 +227,7 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
-    scheduling_callback(str_out, COMM_MQTT)
+    scheduling_callback(str_out, COMM_MQTT);
 
     // delete SCHEDULING - send IDP 13
     idp = IDP_13;
@@ -257,7 +257,6 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 static void scheduling_task_idp_14(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
-    char scheduling_type[5] = "14";
     memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 
     while(1)
@@ -300,7 +299,6 @@ static void scheduling_task_idp_15(void* arg)
 {
     const uint16_t angle_off_set = 3;
     time_t scheduling_timestamp_now = 0;
-    char scheduling_type[5] = "15";
 
     memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 
@@ -348,7 +346,6 @@ static void scheduling_task_idp_15(void* arg)
 static void scheduling_task_idp_16(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
-    char scheduling_type[5] = "16";
 
     while (1)
     {
@@ -377,7 +374,6 @@ static void scheduling_task_idp_16(void* arg)
 static void scheduling_task_idp_17(void* arg)
 {
     const uint8_t angle_off_set = 5;
-    char scheduling_type[5] = "17";
 
     while (1)
     {
@@ -556,7 +552,7 @@ void scheduling_register_callback(const app_callback callback)
 	}
 }
 
-void scheduling_hangs_up_callback(const app_callback callback)
+void scheduling_hangs_up_callback(const hangs_up_callback callback)
 {
     if(callback != NULL)
     {
