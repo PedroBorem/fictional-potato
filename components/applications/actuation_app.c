@@ -332,5 +332,8 @@ void actuation_app_manual_call(pivot_actions current_action)
  */
 void actuation_app_hangs_up_callback(const hangs_up_callback callback)
 {
-	actuation_app_hang_up_call = callback;
+	if(callback != NULL)
+	{
+		actuation_app_hang_up_call = callback;
+	}
 }
