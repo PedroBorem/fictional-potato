@@ -585,7 +585,107 @@ void system_monitoring_stop(void)
 
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author)
 {
+    char str_out[200] = {};
+    network_config net_config = {};
+    pivot_actions actions = {};
+    uint8_t idp_28 = IDP_28;
+    time_t timestamp = 0;
+    char str_date_time[70] = {};
+
+    bool pivot_is_on_barrier = false;
+    uint8_t range_barrier = 5;
+
+    uint16_t dwp = 0;
     ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason {}");
+
+    actuation_app_get_actions(&actions, sizeof(actions));
+    idp_parser_get_pwd(dwp, &actions);
+    pivot_is_on_barrier = system_monitoring_range_barrier(range_barrier);
+
+    timestamp = rtc_app_get_timestamp(false);
+    rtc_app_get_str_date_time(timestamp, str_date_time);
+
+    switch (shutdown_reason)
+    {
+        case TYPE_HANGS_UP_VIRTUAL_BARRIER:
+        {
+            const char virtual_barrier[] = "virtual_barrier";
+            arg_pair_t arg_pair_vb[] =
+            {
+                { "uint8_t", &idp_28 },
+                { "string", system_id},
+                { "uint16_t", &dwp },
+                { "string", author },
+                { "uint8_t", &idp},
+                { "string", scheduling_id },
+                { "string", virtual_barrier},
+                { "bool", &pivot_is_on_barrier },
+                { "uint16_t", &global_angle},
+                { "string", str_date_time },
+                { NULL, NULL }
+            };
+            idp_parser_create_package(str_out, arg_pair_vb);
+            ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason: %s", str_out);
+            break;
+        }
+        case TYPE_HANGS_UP_MANUAL:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_14:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_15:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_16:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_17:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_BROWNOUT:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_PIVOT_WITHOUT_WATER:
+        {
+            break;
+        }
+        case TYPE_HANGS_UP_SOIL_APP:
+        {
+            const char soil_app[] = "soil_app";
+            arg_pair_t arg_pair_vb[] =
+            {
+                { "uint8_t", &idp_28 },
+                { "string", system_id},
+                { "uint16_t", &dwp },
+                { "string",  soil_app},
+                { "uint8_t", &idp},
+                { "string", scheduling_id },
+                { "string", author},
+                { "bool", &pivot_is_on_barrier },
+                { "uint16_t", &global_angle},
+                { "string", str_date_time },
+                { NULL, NULL }
+            };
+            idp_parser_create_package(str_out, arg_pair_vb);
+            ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason: %s", str_out);
+            break;
+        }
+        case TYPE_HANGS_UP_IRRIGABRAS_APP:
+        {
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }       
 }  
 
 /**
