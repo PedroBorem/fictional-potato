@@ -583,110 +583,108 @@ void system_monitoring_stop(void)
 	}
 }
 
-void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author)
+void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin)
 {
     char str_out[200] = {};
-    network_config net_config = {};
-    pivot_actions actions = {};
+
     uint8_t idp_28 = IDP_28;
     time_t timestamp = 0;
     char str_date_time[70] = {};
 
     bool pivot_is_on_barrier = false;
-    uint8_t range_barrier = 5;
-
-    uint16_t dwp = 0;
-    ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason {}");
-
-    actuation_app_get_actions(&actions, sizeof(actions));
-    idp_parser_get_pwd(dwp, &actions);
-    pivot_is_on_barrier = system_monitoring_range_barrier(range_barrier);
 
     timestamp = rtc_app_get_timestamp(false);
     rtc_app_get_str_date_time(timestamp, str_date_time);
+
+    char *reason_str = NULL;
+    bool is_external_agent = false;
 
     switch (shutdown_reason)
     {
         case TYPE_HANGS_UP_VIRTUAL_BARRIER:
         {
-            const char virtual_barrier[] = "virtual_barrier";
-            arg_pair_t arg_pair_vb[] =
-            {
-                { "uint8_t", &idp_28 },
-                { "string", system_id},
-                { "uint16_t", &dwp },
-                { "string", author },
-                { "uint8_t", &idp},
-                { "string", scheduling_id },
-                { "string", virtual_barrier},
-                { "bool", &pivot_is_on_barrier },
-                { "uint16_t", &global_angle},
-                { "string", str_date_time },
-                { NULL, NULL }
-            };
-            idp_parser_create_package(str_out, arg_pair_vb);
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason: %s", str_out);
+            reason_str = "virtual_barrier";
             break;
         }
         case TYPE_HANGS_UP_MANUAL:
         {
+            reason_str = "manual";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_14:
         {
+            reason_str = "scheduling_14";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_15:
         {
+            reason_str = "scheduling_15";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_16:
         {
+            reason_str = "scheduling_16";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_17:
         {
+            reason_str = "scheduling_17";
             break;
         }
         case TYPE_HANGS_UP_BROWNOUT:
         {
+            reason_str = "brownout";
             break;
         }
         case TYPE_HANGS_UP_PIVOT_WITHOUT_WATER:
         {
+            reason_str = "pivot_without_water";
             break;
         }
         case TYPE_HANGS_UP_SOIL_APP:
         {
-            const char soil_app[] = "soil_app";
-            arg_pair_t arg_pair_vb[] =
-            {
-                { "uint8_t", &idp_28 },
-                { "string", system_id},
-                { "uint16_t", &dwp },
-                { "string",  soil_app},
-                { "uint8_t", &idp},
-                { "string", scheduling_id },
-                { "string", author},
-                { "bool", &pivot_is_on_barrier },
-                { "uint16_t", &global_angle},
-                { "string", str_date_time },
-                { NULL, NULL }
-            };
-            idp_parser_create_package(str_out, arg_pair_vb);
-            ESP_LOGE(SYSTEM_MONITORING_TAG, "Pivot shutdown >> reason: %s", str_out);
+            reason_str = "soil_app";
+            is_external_agent = true;
             break;
         }
         case TYPE_HANGS_UP_IRRIGABRAS_APP:
         {
+            reason_str = "nimbus_app";
+            is_external_agent = true;
             break;
         }
         default:
         {
             break;
         }
-    }       
-}  
+    }
+
+    if (reason_str != NULL)
+    {
+        arg_pair_t arg_pair[10]; 
+        idp_parser_build_arg_pairs_pivot_shutdown(
+            arg_pair,
+            reason_str,
+            &idp_28,
+            system_id,
+            origin,
+            &idp,
+            scheduling_id,
+            &pivot_is_on_barrier,
+            &global_angle,
+            str_date_time,
+            is_external_agent
+        );
+
+        idp_parser_create_package(str_out, arg_pair);   
+
+        data_app_save(DATA_TYPE_REASON_HANG_UP, &str_out, strlen(str_out));
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        system_monitoring_callback("#28$", COMM_MQTT);
+    }
+}
+
 
 /**
  * @brief Registers a callback function for system monitoring.
