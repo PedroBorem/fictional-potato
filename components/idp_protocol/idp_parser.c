@@ -943,3 +943,55 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
 	return true;
 }
 
+/**
+ * @brief Build the IDP package for the specified IDP type.
+ *
+ * This function builds the IDP package for the specified IDP type.
+ *
+ * @param idp The IDP type.
+ * @param arg_pairs The array of argument pairs.
+ * @param str_out The created IDP package string.
+ */
+void idp_parser_build_arg_pairs_pivot_shutdown(
+    arg_pair_t *arg_pair,
+    char *reason_str,
+    uint8_t *idp_28,
+    char *system_id,
+    char *origin,
+    idp_type *idp,
+    char *scheduling_id,
+    bool *pivot_is_on_barrier,
+    uint16_t *global_angle,
+    char *str_date_time,
+    bool is_external_agent
+) 
+{
+    int i = 0;
+    arg_pair[i++] = (arg_pair_t){ "uint8_t", idp_28 };
+    arg_pair[i++] = (arg_pair_t){ "string", system_id };
+
+    if (is_external_agent) 
+    {
+        arg_pair[i++] = (arg_pair_t){ "string", reason_str };
+    } else 
+    {
+        arg_pair[i++] = (arg_pair_t){ "string", origin };
+    }
+    
+    arg_pair[i++] = (arg_pair_t){ "uint8_t", idp };
+    arg_pair[i++] = (arg_pair_t){ "string", scheduling_id };
+
+    if (is_external_agent) 
+    {
+        arg_pair[i++] = (arg_pair_t){ "string", origin };
+    } 
+    else 
+    {
+        arg_pair[i++] = (arg_pair_t){ "string", reason_str };
+    }
+    
+    arg_pair[i++] = (arg_pair_t){ "bool", pivot_is_on_barrier };
+    arg_pair[i++] = (arg_pair_t){ "uint16_t", global_angle };
+    arg_pair[i++] = (arg_pair_t){ "string", str_date_time };
+    arg_pair[i++] = (arg_pair_t){ NULL, NULL }; 
+}
