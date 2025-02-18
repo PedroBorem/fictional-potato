@@ -69,6 +69,6 @@ bool system_monitoring_range_barrier(uint8_t range_barrier);
 /**
  * 
  */
-void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author);
+void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

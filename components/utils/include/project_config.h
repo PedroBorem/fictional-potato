@@ -433,25 +433,6 @@ typedef struct __attribute__((__packed__))
     time_t end_date;                /*!< End date */
 } pivot_history;
 
-/**
- * @brief Reason for pivot hangs up.
- *
- * Structure defining the reason for which the pivot hangs up. This includes details
- * like the reason, scheduling ID, user responsible, and the barrier status.
- */
-typedef struct __attribute__((__packed__))
-{
-    char reason_hangs_up[50];  /*!< Reason for the pivot hang-up */
-    char str_idp[10];          /*!< IDP string identifier */
-    char scheduling_id[20];     /*!< Scheduling ID associated with the hang-up */
-    char user[50];              /*!< User responsible for the action */
-    uint16_t angle;             /*!< Angle of the pivot */
-    bool on_barrier;            /*!< Indicates if the pivot is on the barrier */
-    char str_date_time[70];     /*!< Date and time string for the hang-up event */
-} pivot_reason_hangs_up;
-
-#define PIVOT_BUFFER_REASON_HANGS_UP_VAR_COUNT   (4)
-
 
 /**
  * @brief Indicates which type the barrier
@@ -524,7 +505,7 @@ typedef enum
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
 
-typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, const char *scheduling_id, const char *author);
+typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *author);
 
 /**
  * @brief Global angle variable.
