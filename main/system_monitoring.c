@@ -43,7 +43,7 @@ static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the sys
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
 static app_callback system_monitoring_callback = NULL; /**< Callback function for system monitoring events. */
 
-static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
+static uint8_t system_monitoring_delay = 5; /**< Time interval for system monitoring (in minutes). */
 static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configuration for system monitoring. */
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
@@ -92,6 +92,42 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
+
+/**
+ * @brief Handles the system monitoring based on the pivot actions and system configuration.
+ *
+ * This function handles the system monitoring based on the pivot actions and system configuration.
+ *
+ * @param pivot_actions Structure containing the pivot actions to be performed.
+ */
+static uint16_t system_monitoring_find_oldest_timestamp(rain_data *array, size_t size)
+{
+    time_t oldest_ts   = (time_t)LONG_MAX;
+    uint16_t oldest_idx = 0;
+
+    for (uint16_t i = 0; i < size; i++)
+    {
+        if ((array[i].rain_total == 0.0f) && (strlen(array[i].str_date_time) == 0))
+        {
+            return i;
+        }
+
+        time_t current_ts = rtc_app_parse_str_date_time(array[i].str_date_time);
+
+        if (current_ts == 0)
+        {
+            return i;
+        }
+
+        if (current_ts < oldest_ts)
+        {
+            oldest_ts  = current_ts;
+            oldest_idx = i;
+        }
+    }
+
+    return oldest_idx;
+}
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -379,7 +415,8 @@ void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+    // Para teste, 1 minuto
+    const TickType_t save_interval = pdMS_TO_TICKS(30000);
 
     system_monitoring_init_rainfall_data();
 
@@ -395,7 +432,9 @@ void system_monitoring_rainfall_task(void *arg)
             }
             else
             {
-                ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
+                ESP_LOGW(SYSTEM_MONITORING_TAG,
+                         "Failed to load RAIN_PER_PULSE. Using default: %.2f", 
+                         rain_per_pulse);
             }
             rain_per_pulse_flag = false;
         }
@@ -407,15 +446,27 @@ void system_monitoring_rainfall_task(void *arg)
             if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
-                rtc_app_get_str_date_time(timestamp, pluviometro[current_index].str_date_time);
 
-                pluviometro[current_index].rain_total = rain_total;
+                char tmp_date_str[30];
+                rtc_app_get_str_date_time(timestamp, tmp_date_str);
 
-                ESP_LOGI(SYSTEM_MONITORING_TAG, "Saved rainfall data: %.2f-%s", pluviometro[current_index].rain_total, pluviometro[current_index].str_date_time);
+                int oldest_index = system_monitoring_find_oldest_timestamp(
+                                       pluviometro, 
+                                       MAX_RAINFALL_ENTRIES
+                                   );
 
-                current_index = (current_index + 1) % MAX_RAINFALL_ENTRIES;
+                pluviometro[oldest_index].rain_total = rain_total;
+                strcpy(pluviometro[oldest_index].str_date_time, tmp_date_str);
 
-                if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro, sizeof(pluviometro)) != ESP_OK) 
+                ESP_LOGI(SYSTEM_MONITORING_TAG, 
+                         "Saved rainfall data (%.2f) at index %d - %s", 
+                         pluviometro[oldest_index].rain_total, 
+                         oldest_index,
+                         pluviometro[oldest_index].str_date_time);
+
+                if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, 
+                                  pluviometro, 
+                                  sizeof(pluviometro)) != ESP_OK) 
                 {
                     ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
                 }
@@ -433,6 +484,7 @@ void system_monitoring_rainfall_task(void *arg)
         vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
 }
+
 
 /**
  * @brief Determines and triggers actuation based on the barrier status.
@@ -561,7 +613,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer)
 {
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     // send IDP 0 (current status)
     system_monitoring_callback("#00$", COMM_MQTT);
 
@@ -570,10 +622,10 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
     data_app_save(DATA_TYPE_TIMESTAMP, &timestamp_now, sizeof(timestamp_now));
 
     // send IDP 19 (current pressure status)
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     system_monitoring_callback("#19$", COMM_MQTT);
 
-    vTaskDelay(pdMS_TO_TICKS(5000));
+    vTaskDelay(pdMS_TO_TICKS(2000));
     system_monitoring_callback("#32$", COMM_MQTT);
 }
 
