@@ -43,7 +43,7 @@ static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the sys
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
 static app_callback system_monitoring_callback = NULL; /**< Callback function for system monitoring events. */
 
-static uint8_t system_monitoring_delay = 5; /**< Time interval for system monitoring (in minutes). */
+static uint8_t system_monitoring_delay = 10; /**< Time interval for system monitoring (in minutes). */
 static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configuration for system monitoring. */
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
@@ -415,9 +415,12 @@ void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    // Para teste, 1 minuto
-    const TickType_t save_interval = pdMS_TO_TICKS(30000);
-
+    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+    /*
+        * 3600000 ms = 1 hour
+        * 3600000 ms / 1000 ms/s = 3600 s
+        * 3600 s / 60 s/min = 60 min
+    */
     system_monitoring_init_rainfall_data();
 
     while (1) 
