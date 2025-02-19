@@ -2754,8 +2754,8 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
 {
     if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
     {
-        char str_out[500] = {};
-        char rain_total_data[400] = {}; 
+        char str_out[1000] = {};
+        char rain_total_data[1000] = {}; 
         char entry[50] = {}; 
         uint8_t idp = IDP_32;
 
