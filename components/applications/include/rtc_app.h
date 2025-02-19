@@ -77,4 +77,14 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z);
  */
 void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out);
 
+/**
+ * @brief Parses the date and time string.
+ *
+ * This function parses the date and time string and converts it to a timestamp value.
+ *
+ * @param dt_str The date and time string.
+ * @return time_t The timestamp value.
+ */
+time_t rtc_app_parse_str_date_time(const char *dt_str);
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */

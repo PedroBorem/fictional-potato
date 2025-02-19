@@ -12,6 +12,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <limits.h>
 
 /**
  * @def RTC_APP_TAG
@@ -212,3 +213,36 @@ void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out)
 	strftime(buff, sizeof(buff), "%d/%m/%Y_%H:%M:%S", localtime(&now));
 	strcpy(str_out, buff);
 }
+
+/**
+ * @brief Parses the date and time string.
+ *
+ * This function parses the date and time string and converts it to a timestamp value.
+ *
+ * @param dt_str The date and time string.
+ * @return time_t The timestamp value.
+ */
+time_t rtc_app_parse_str_date_time(const char *dt_str)
+{
+    if (!dt_str || strlen(dt_str) == 0)
+    {
+        return 0;
+    }
+
+    struct tm tm_info = {0};
+
+    char *ret = strptime(dt_str, "%d/%m/%Y_%H:%M:%S", &tm_info);
+    if (!ret)
+    {
+        return 0;
+    }
+
+    time_t t = mktime(&tm_info);
+    if (t == (time_t)(-1))
+    {
+        return 0;
+    }
+
+    return t;
+}
+
