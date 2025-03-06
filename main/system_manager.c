@@ -2674,6 +2674,8 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		new_actions.power_state = PIVOT_OFF;
 		new_actions.watering_state = PIVOT_DRY;
 
+		system_monitoring_pivot_shutdown(TYPE_HANGS_UP_MANUAL, IDP_30, "0", SYSTEM_MANAGER_TAG);
+
 		// Save old History
 		if (old_actions.power_state != PIVOT_OFF)
 		{

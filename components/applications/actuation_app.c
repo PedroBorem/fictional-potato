@@ -315,14 +315,6 @@ void actuation_app_manual_call(pivot_actions current_action)
 	actuation_app_call(str_out, COMM_MQTT);
 
 	idp_parser_get_pwd(dwp, &current_action);
-	
-	if(current_action.power_state == PIVOT_OFF)
-	{
-		if(actuation_app_hang_up_call != NULL)
-		{
-			actuation_app_hang_up_call(TYPE_HANGS_UP_MANUAL, idp, "0", ACTUATION_APP_TAG);
-		}
-	}
 }
 
 /*
