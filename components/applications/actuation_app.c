@@ -318,7 +318,10 @@ void actuation_app_manual_call(pivot_actions current_action)
 	
 	if(current_action.power_state == PIVOT_OFF)
 	{
-		actuation_app_hang_up_call(TYPE_HANGS_UP_MANUAL, idp, "0", ACTUATION_APP_TAG);
+		if(actuation_app_hang_up_call != NULL)
+		{
+			actuation_app_hang_up_call(TYPE_HANGS_UP_MANUAL, idp, "0", ACTUATION_APP_TAG);
+		}
 	}
 }
 
@@ -334,6 +337,9 @@ void actuation_app_hangs_up_callback(const hangs_up_callback callback)
 {
 	if(callback != NULL)
 	{
-		actuation_app_hang_up_call = callback;
+		if(actuation_app_hang_up_call != NULL)
+		{
+			actuation_app_hang_up_call = callback;
+		}
 	}
 }
