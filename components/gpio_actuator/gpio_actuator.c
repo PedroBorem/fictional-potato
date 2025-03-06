@@ -678,6 +678,7 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
+			vTaskDelay(pdMS_TO_TICKS(3000)); 
 			//system on
 			gpio_actuator_start();
 			pressurizing = false;
