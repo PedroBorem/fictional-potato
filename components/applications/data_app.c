@@ -140,6 +140,11 @@
 #define DATA_COMM_MAIN_MODE "comm_main_mode"
 
 /**
+ * @def DATA_REASON_HANG_UP
+ * @brief NVS access space for reason why the pivot turned off  
+ */
+#define DATA_REASON_HANG_UP "reason_hangup"
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -436,6 +441,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_MANUAL_COUNTER, data, data_size);
 			break;
 		}
+		case DATA_TYPE_REASON_HANG_UP:
+		{
+			ret = nvs_data_set(DATA_REASON_HANG_UP, data, data_size);
+			break; 
+		}
 		case DATA_TYPE_COMM_MAIN_MODE:
 		{
 			ret = nvs_data_set(DATA_COMM_MAIN_MODE, data, data_size);
@@ -550,6 +560,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_MANUAL_COUNTER:
 		{
 			ret = nvs_data_get_blob(DATA_MANUAL_COUNTER, data);
+			break;
+		}
+		case DATA_TYPE_REASON_HANG_UP:
+		{
+			ret = nvs_data_get_blob(DATA_REASON_HANG_UP, data);
 			break;
 		}
 		case DATA_TYPE_COMM_MAIN_MODE:

@@ -943,3 +943,94 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
 	return true;
 }
 
+/**
+ * @brief Builds argument pairs for an IDP pivot shutdown package.
+ *
+ * This function populates an array of argument pairs used to create an IDP package for a pivot shutdown event.
+ * Depending on the is_external_agent flag, it uses either reason_str or origin in specific positions.
+ *
+ * Parameter order in the argument pair array:
+ *   1. idp_28 (uint8_t)
+ *   2. system_id (string)
+ *   3. (if is_external_agent is true, reason_str; otherwise, origin) (string)
+ *   4. idp (uint8_t)
+ *   5. scheduling_id (string)
+ *   6. (if is_external_agent is true, origin; otherwise, reason_str) (string)
+ *   7. pivot_is_on_barrier (bool)
+ *   8. global_angle (uint16_t)
+ *   9. str_date_time (string)
+ *  10. A terminating pair with NULL values.
+ *
+ * @param arg_pair Array to be filled with argument pairs (must hold at least 10 pairs).
+ * @param reason_str String indicating the shutdown reason (e.g., "manual", "brownout").
+ * @param idp_28 Pointer to a uint8_t representing the IDP_28 constant.
+ * @param system_id System identifier string.
+ * @param origin Origin string for the shutdown command.
+ * @param idp Pointer to the IDP type.
+ * @param scheduling_id Scheduling identifier string.
+ * @param pivot_is_on_barrier Pointer to a boolean that indicates pivot barrier status.
+ * @param global_angle Pointer to a uint16_t representing the global pivot angle.
+ * @param str_date_time Formatted date and time string.
+ * @param is_external_agent Flag to determine which string (reason_str or origin) to use.
+ */
+void idp_parser_build_arg_pairs_pivot_shutdown(
+    arg_pair_t *arg_pair,
+    char *reason_str,
+    uint8_t *idp_28,
+    char *system_id,
+    char *origin,
+    idp_type *idp,
+    char *scheduling_id,
+    bool *pivot_is_on_barrier,
+    uint16_t *global_angle,
+    char *str_date_time,
+    bool is_external_agent
+) 
+{
+    if (arg_pair != NULL && idp_28 != NULL && system_id != NULL && 
+        idp != NULL && scheduling_id != NULL && pivot_is_on_barrier != NULL &&
+        global_angle != NULL && str_date_time != NULL) 
+    {
+        int i = 0;
+        arg_pair[i++] = (arg_pair_t){ "uint8_t", idp_28 };
+        arg_pair[i++] = (arg_pair_t){ "string", system_id };
+
+        if (is_external_agent) 
+        {
+            if (reason_str != NULL) 
+            {
+                arg_pair[i++] = (arg_pair_t){ "string", reason_str };
+            }
+        } 
+        else 
+        {
+            if (origin != NULL) 
+            {
+                arg_pair[i++] = (arg_pair_t){ "string", origin };
+            }
+        }
+        
+        arg_pair[i++] = (arg_pair_t){ "uint8_t", idp };
+        arg_pair[i++] = (arg_pair_t){ "string", scheduling_id };
+
+        if (is_external_agent) 
+        {
+            if (origin != NULL) 
+            {
+                arg_pair[i++] = (arg_pair_t){ "string", origin };
+            }
+        } 
+        else 
+        {
+            if (reason_str != NULL) 
+            {
+                arg_pair[i++] = (arg_pair_t){ "string", reason_str };
+            }
+        }
+        
+        arg_pair[i++] = (arg_pair_t){ "bool", pivot_is_on_barrier };
+        arg_pair[i++] = (arg_pair_t){ "uint16_t", global_angle };
+        arg_pair[i++] = (arg_pair_t){ "string", str_date_time };
+        arg_pair[i++] = (arg_pair_t){ NULL, NULL }; 
+    }
+}

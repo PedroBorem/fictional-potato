@@ -50,6 +50,7 @@
 
 static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
 static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
+static hangs_up_callback actuation_app_hang_up_call = NULL; /**< Callback function for actuation hang-up events. */
 static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
 static bool actuation_new_action = false;
 
@@ -312,4 +313,25 @@ void actuation_app_manual_call(pivot_actions current_action)
 
 	idp_parser_create_package(str_out,arg_pairs);
 	actuation_app_call(str_out, COMM_MQTT);
+
+	idp_parser_get_pwd(dwp, &current_action);
+}
+
+/*
+	MOTIVO DO DESLIGA ACTUATION
+*/
+
+/**
+ * @brief Set the callback function for actuation hang-up events.
+ * @param callback [in]: Callback function for actuation hang-up events.
+ */
+void actuation_app_hangs_up_callback(const hangs_up_callback callback)
+{
+	if(callback != NULL)
+	{
+		if(actuation_app_hang_up_call != NULL)
+		{
+			actuation_app_hang_up_call = callback;
+		}
+	}
 }

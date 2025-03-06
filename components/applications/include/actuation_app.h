@@ -80,6 +80,8 @@ void actuation_app_set_pump(bool pump_state);
  */
 void actuation_app_shutdown(void);
 
+void actuation_app_hangs_up_callback(const hangs_up_callback callback);
+
 void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_ */
