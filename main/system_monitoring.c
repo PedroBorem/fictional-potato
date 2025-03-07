@@ -681,7 +681,7 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
         data_app_save(DATA_TYPE_REASON_HANG_UP, &str_out, strlen(str_out));
         
         vTaskDelay(pdMS_TO_TICKS(1000));
-        system_monitoring_callback("#28$", COMM_MQTT);
+        system_monitoring_callback("#28$", comm_main_mode);
     }
 }
 
