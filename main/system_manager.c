@@ -2616,7 +2616,7 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
 	char str_pkg_out[200] = {};
 	data_app_load(DATA_TYPE_REASON_HANG_UP, &str_pkg_out);
-	comm_app_send_idp_pack(str_pkg_out, COMM_MQTT);
+	comm_app_send_idp_pack(str_pkg_out, comm_mode);
 }
 
 /**
