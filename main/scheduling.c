@@ -268,7 +268,9 @@ static void scheduling_task_idp_14(void* arg)
         // date analysis
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if (scheduling_timestamp_now > scheduling_date_current[date_position].start_date
+            if ((scheduling_timestamp_now - scheduling_date_current[date_position].start_date) < CONFIG_MAX_TIME_ACTIVATE_SCHEDULING
+                && (scheduling_timestamp_now - scheduling_date_current[date_position].end_date) < CONFIG_MAX_TIME_ACTIVATE_SCHEDULING
+                && scheduling_timestamp_now > scheduling_date_current[date_position].start_date
                 && scheduling_timestamp_now < scheduling_date_current[date_position].end_date
                 && strcmp(scheduling_date_current[date_position].scheduling_id, "") > 0)
             {
@@ -355,7 +357,8 @@ static void scheduling_task_idp_16(void* arg)
         // angle analysis
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if (scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
+            if ((scheduling_timestamp_now - scheduling_off_date_current[date_position].end_date) < CONFIG_MAX_TIME_ACTIVATE_SCHEDULING 
+                && scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
                 && scheduling_off_date_current[date_position].end_date != 0
                 && strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
             {
