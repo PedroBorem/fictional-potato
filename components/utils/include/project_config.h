@@ -32,6 +32,13 @@
 #define CONFIG_FW_VERSION           ("v2.8.2")
 
 /**
+ * @brief Maximum hours to activate scheduling.
+ * 
+ * This define specifies the maximum number of hours allowed to activate scheduling.
+ */
+#define CONFIG_MAX_TIME_ACTIVATE_SCHEDULING (86400)
+
+/**
  * @brief Maximum number of scheduling values.
  *
  * This define specifies the maximum number of scheduling values allowed in the project.
