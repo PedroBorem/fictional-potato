@@ -224,7 +224,7 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    float rain_total;               /*!< Total rainfall */
+    float rain_per_hour;               /*!< Total rainfall in a hour*/
     char str_date_time[30];         /*!< Date and time as string */
 } rain_data;
 

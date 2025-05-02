@@ -145,6 +145,19 @@ extern float rain_per_pulse;
 #define GPIO_INT_RAIN_SENSOR  (1ULL<<GPIO_ACT_RAIN_SENSOR_PIN)
 
 /* Public function prototypes ------------------------------------------- */
+
+/**
+ * @brief Get the total accumulated rainfall.
+ * @return float Total rainfall value (e.g., in mm).
+ */
+float get_rain_total();
+
+/**
+ * @brief Set the total accumulated rainfall value.
+ * @param value The rainfall amount to set (e.g., in mm).
+ */
+void set_rain_total(float value);
+
 /**
  * @brief Initializes the GPIO actuator module.
  *

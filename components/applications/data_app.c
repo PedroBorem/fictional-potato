@@ -133,8 +133,16 @@
  */
 #define DATA_MANUAL_COUNTER "manual_counter"
 
+/**
+ * @def DATA_RAINFALL_ACCUMULATED
+ * @brief NVS access space for rainfall accuracy
+ */
 #define DATA_RAINFALL_ACCUMULATED "rainfall_acc"
 
+/**
+ * @def DATA_RAIN_PER_PULSE
+ * @brief NVS access space for raindrop pulse
+ */
 #define DATA_RAIN_PER_PULSE	"rain_pulse"
 
 /**

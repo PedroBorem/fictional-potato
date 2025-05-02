@@ -2758,12 +2758,13 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         char rain_total_data[1000] = {}; 
         char entry[50] = {}; 
         uint8_t idp = IDP_32;
+		rain_data* pluviometer = get_rain_data_array();
 
         for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
         {
-            if (pluviometro[i].rain_total > 0.0f) 
+            if (pluviometer[i].rain_per_hour > 0.0f) 
             {
-                snprintf(entry, sizeof(entry), "@%.2f-%s", pluviometro[i].rain_total, pluviometro[i].str_date_time);
+                snprintf(entry, sizeof(entry), "@%.2f-%s", pluviometer[i].rain_per_hour, pluviometer[i].str_date_time);
                 strncat(rain_total_data, entry, sizeof(rain_total_data) - strlen(rain_total_data) - 1);
             }
         }
@@ -2826,7 +2827,7 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
                 esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &new_rain_per_pulse, sizeof(new_rain_per_pulse));
                 if (ret == ESP_OK)
                 {
-                    rain_per_pulse_flag = true;
+					set_rain_per_pulse_flag(true);
                     ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
                 }
                 else

@@ -29,7 +29,7 @@
 /* Global variables ---------------------------------------------- */
 // Rain sensor variables
 static volatile int rain_pulse_count = 0;     // Rain sensor pulse count
-float rain_total = 0.0;                // Accumulated rainfall
+float rain_total = 0.0f;                // Accumulated rainfall
 
 // Callback variables
 static app_callback gpio_actuator_callback = NULL;
@@ -109,34 +109,56 @@ void actuator_read_percent(void* arg);
 /* Public methods ------------------------------------------------ */
 
 /**
+ * @brief Returns the total accumulated rainfall.
+ * @return Total rainfall value (e.g., in mm).
+ */
+float get_rain_total()
+{
+	return rain_total;
+}
+
+/**
+ * @brief Sets the total accumulated rainfall value.
+ * @param value The rainfall amount to set (e.g., in mm).
+ */
+void set_rain_total(float value)
+{
+    rain_total = value;
+}
+
+/**
  * @brief GPIO ISR handler for percentimeter interrupt.
  * @param arg ISR handler argument.
  */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-	uint32_t gpio_num = (uint32_t)arg;
+    uint32_t gpio_num = (uint32_t)arg;
 
     if (gpio_num == GPIO_ACT_RAIN_SENSOR_PIN) 
-	{
+    {
         static uint32_t last_interrupt_time = 0;
         uint32_t interrupt_time = xTaskGetTickCountFromISR();
 
-        if (interrupt_time - last_interrupt_time > 75 / portTICK_PERIOD_MS) 
-		{
+        if ((interrupt_time - last_interrupt_time > 75) / portTICK_PERIOD_MS) 
+        {
             rain_pulse_count++;  
             last_interrupt_time = interrupt_time;
         }
     }
     else if (gpio_num == GPIO_ACT_PIN_PERC_IN) 
-	{
+    {
         if (xTask_readpercent != NULL) 
-		{
+        {
             if (eTaskGetState(xTask_readpercent) == eSuspended ||
                 eTaskGetState(xTask_readpercent) == eBlocked) 
-			{
+            {
                 vTaskResume(xTask_readpercent);
             }
         }
+    }
+    else
+    {
+        ESP_LOGE(GPIO_ACT_TAG, "Unhandled GPIO interrupt on pin %lu", gpio_num);
     }
 }
 

@@ -52,8 +52,8 @@ static uint32_t panel_reading;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
-rain_data pluviometro[MAX_RAINFALL_ENTRIES] = {0};
-float rain_per_pulse = 0.1; // Rainfall per pulse (mm)
+static rain_data pluviometer[MAX_RAINFALL_ENTRIES] = {0};
+float rain_per_pulse = 0.1f; // Rainfall per pulse (mm)
 bool rain_per_pulse_flag = false;
 
 static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
@@ -107,7 +107,7 @@ static uint16_t system_monitoring_find_oldest_timestamp(rain_data *array, size_t
 
     for (uint16_t i = 0; i < size; i++)
     {
-        if ((array[i].rain_total == 0.0f) && (strlen(array[i].str_date_time) == 0))
+        if ((array[i].rain_per_hour == 0.0f) && (strlen(array[i].str_date_time) == 0))
         {
             return i;
         }
@@ -379,11 +379,57 @@ static void system_monitoring_task(void* arg)
 }
 
 /**
+ * @brief Returns the flag accumulated rainfall.
+ *
+ * @return Total rainfall value (e.g., in mm).
+ */
+bool get_rain_per_pulse_flag()
+{
+    return rain_per_pulse_flag;
+}
+
+/**
+ * @brief Sets the rain-per-pulse flag status.
+ *
+ * @param flag true to enable rain-per-pulse mode, false to disable.
+ */
+void set_rain_per_pulse_flag(bool flag)
+{
+    rain_per_pulse_flag = flag;
+}
+
+/**
+ * @brief Returns a pointer to the rain data array.
+ *
+ * Allows read-only or mutable access to the internal rainfall data.
+ *
+ * @return Pointer to the pluviometer array.
+ */
+rain_data* get_rain_data_array()
+{
+    return pluviometer;
+}
+
+/**
+ * @brief Sets a rain_data entry at the specified index.
+ *
+ * @param index Position in the pluviometer array.
+ * @param data The rain_data value to set.
+ */
+void set_rain_data_entry(int index, rain_data data)
+{
+    if (index >= 0 && index < MAX_RAINFALL_ENTRIES)
+    {
+        pluviometer[index] = data;
+    }
+}
+
+/**
  * @brief Initializes the rain gauge vector with NVS data.
  */
 void system_monitoring_init_rainfall_data(void) 
 {
-    esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometro);
+    esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
     if (err == ESP_OK) 
     {
         current_index = 0; 
@@ -391,7 +437,7 @@ void system_monitoring_init_rainfall_data(void)
     else 
     {
         ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
-        memset(pluviometro, 0, sizeof(pluviometro));
+        memset(pluviometer, 0, sizeof(pluviometer));
         current_index = 0;
     }
 
@@ -446,6 +492,7 @@ void system_monitoring_rainfall_task(void *arg)
 
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
+            float rain_total = get_rain_total();
             if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
@@ -454,22 +501,22 @@ void system_monitoring_rainfall_task(void *arg)
                 rtc_app_get_str_date_time(timestamp, tmp_date_str);
 
                 int oldest_index = system_monitoring_find_oldest_timestamp(
-                                       pluviometro, 
+                                       pluviometer, 
                                        MAX_RAINFALL_ENTRIES
                                    );
 
-                pluviometro[oldest_index].rain_total = rain_total;
-                strcpy(pluviometro[oldest_index].str_date_time, tmp_date_str);
+                pluviometer[oldest_index].rain_per_hour = rain_total;
+                strcpy(pluviometer[oldest_index].str_date_time, tmp_date_str);
 
                 ESP_LOGI(SYSTEM_MONITORING_TAG, 
                          "Saved rainfall data (%.2f) at index %d - %s", 
-                         pluviometro[oldest_index].rain_total, 
+                         pluviometer[oldest_index].rain_per_hour, 
                          oldest_index,
-                         pluviometro[oldest_index].str_date_time);
+                         pluviometer[oldest_index].str_date_time);
 
                 if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, 
-                                  pluviometro, 
-                                  sizeof(pluviometro)) != ESP_OK) 
+                                  pluviometer, 
+                                  sizeof(pluviometer)) != ESP_OK) 
                 {
                     ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
                 }
@@ -478,7 +525,7 @@ void system_monitoring_rainfall_task(void *arg)
                     ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data saved successfully.");
                 }
 
-                rain_total = 0.0f;
+                set_rain_total(0.0f);
             }
 
             last_save_time = xTaskGetTickCount();

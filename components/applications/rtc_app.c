@@ -218,31 +218,34 @@ void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out)
  * @brief Parses the date and time string.
  *
  * This function parses the date and time string and converts it to a timestamp value.
+ * Returns -1 in case of error (e.g., null or invalid format), indicating failure to parse.
  *
  * @param dt_str The date and time string.
- * @return time_t The timestamp value.
+ * @return time_t The timestamp value, or -1 if parsing fails.
  */
 time_t rtc_app_parse_str_date_time(const char *dt_str)
 {
-    if (!dt_str || strlen(dt_str) == 0)
-    {
-        return 0;
-    }
+	if (!dt_str)
+	{
+		return (time_t)(-1);
+	}
 
-    struct tm tm_info = {0};
+	struct tm tm_info = {0};
 
-    char *ret = strptime(dt_str, "%d/%m/%Y_%H:%M:%S", &tm_info);
-    if (!ret)
-    {
-        return 0;
-    }
+	char *ret = strptime(dt_str, "%d/%m/%Y_%H:%M:%S", &tm_info);
+	if (!ret || *ret != '\0') 
+	{
+		return (time_t)(-1);
+	}
 
-    time_t t = mktime(&tm_info);
-    if (t == (time_t)(-1))
-    {
-        return 0;
-    }
+	if (tm_info.tm_year < 70 || tm_info.tm_mon < 0 || tm_info.tm_mon > 11 ||
+		tm_info.tm_mday < 1 || tm_info.tm_mday > 31 || tm_info.tm_hour < 0 ||
+		tm_info.tm_hour > 23 || tm_info.tm_min < 0 || tm_info.tm_min > 59 ||
+		tm_info.tm_sec < 0 || tm_info.tm_sec > 60)
+	{
+		return (time_t)(-1);
+	}
 
-    return t;
+	time_t t = mktime(&tm_info);
+	return (t == (time_t)(-1)) ? (time_t)(-1) : t;
 }
-

@@ -15,11 +15,31 @@
 
 #define MAX_RAINFALL_ENTRIES 36
 
-extern float rain_total; /**< Total accumulated rainfall (shared with other modules). */
+/**
+ * @brief Get the status of the rain-per-pulse flag.
+ * @return true if the flag is active, false otherwise.
+ */
+bool get_rain_per_pulse_flag();
 
-extern rain_data pluviometro[MAX_RAINFALL_ENTRIES];
+/**
+ * @brief Set the rain-per-pulse flag status.
+ * @param flag true to enable rain-per-pulse mode, false to disable.
+ */
+void set_rain_per_pulse_flag(bool flag);
 
-extern bool rain_per_pulse_flag;
+/**
+ * @brief Get a pointer to the rain data array.
+ * @return Pointer to the pluviometer array.
+ */
+rain_data* get_rain_data_array();
+
+/**
+ * @brief Set a rain_data entry at the specified index.
+ *
+ * @param index Position in the pluviometer array.
+ * @param data The rain_data value to set.
+ */
+void set_rain_data_entry(int index, rain_data data);
 
 /**
  * @brief Starts the system monitoring with the specified configuration.
