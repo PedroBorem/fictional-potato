@@ -26,6 +26,8 @@
 
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
 
+#define RAINFALL_SAVE_INTERVAL_MS (3600000)
+
 /**
  * @brief Enumeration representing the possible states of the system monitoring.
  */
@@ -430,21 +432,18 @@ void set_rain_data_entry(int index, rain_data data)
 void system_monitoring_init_rainfall_data(void) 
 {
     esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
-    if (err == ESP_OK) 
+    if (err != ESP_OK)
     {
-        current_index = 0; 
-    } 
-    else 
-    {
-        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
-        memset(pluviometer, 0, sizeof(pluviometer));
-        current_index = 0;
+        ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
+        memset(pluviometro, 0, sizeof(pluviometer));
     }
+    
+    current_index = 0;
 
     err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
     if (err != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0) 
     {
-        rain_per_pulse = 0.1;
+        rain_per_pulse = 0.1f;
         ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
     }
 }
@@ -461,7 +460,7 @@ void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(3600000);
+    const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
     /*
         * 3600000 ms = 1 hour
         * 3600000 ms / 1000 ms/s = 3600 s
@@ -475,7 +474,7 @@ void system_monitoring_rainfall_task(void *arg)
         {
             float nvs_rain_per_pulse = 0.1;
             esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
-            if (ret == ESP_OK && nvs_rain_per_pulse > 0.0 && nvs_rain_per_pulse <= 10.0)
+            if (ret == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
             {
                 rain_per_pulse = nvs_rain_per_pulse;
             }
@@ -506,7 +505,7 @@ void system_monitoring_rainfall_task(void *arg)
                                    );
 
                 pluviometer[oldest_index].rain_per_hour = rain_total;
-                strcpy(pluviometer[oldest_index].str_date_time, tmp_date_str);
+                strncpy(pluviometro[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometro[oldest_index].str_date_time) - 1);
 
                 ESP_LOGI(SYSTEM_MONITORING_TAG, 
                          "Saved rainfall data (%.2f) at index %d - %s", 
