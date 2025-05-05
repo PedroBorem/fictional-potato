@@ -60,6 +60,7 @@ bool rain_per_pulse_flag = false;
 
 static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
 
+void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
 
 /* Private methods ----------------------------------- */
 
@@ -94,9 +95,6 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
-
-
-void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
 
 /**
  * @brief Handles the system monitoring based on the pivot actions and system configuration.
@@ -298,8 +296,6 @@ static void system_monitoring_actuation_virtual_barrier(void)
     char str_out[50] = {};
     type_barrier barrier_type = VIRTUAL_BARRIER;  
 
-    pivot_actions pivot_actions = {};
-
     // act on the equipment (pivo_off) - send IDP 01
     actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
     pivot_actions.power_state = PIVOT_OFF;
@@ -465,6 +461,7 @@ void system_monitoring_rainfall_task(void *arg)
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
     const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
+    pivot_actions actions = {};
     /*
         * 3600000 ms = 1 hour
         * 3600000 ms / 1000 ms/s = 3600 s
@@ -496,6 +493,18 @@ void system_monitoring_rainfall_task(void *arg)
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
             float rain_total = get_rain_total();
+            float rain_shutdown_value = 5.0f;
+
+            data_app_load(DATA_TYPE_ACTIONS, &actions);
+
+            if(rain_total >= rain_shutdown_value)
+            {
+                if(actions.power_state == PIVOT_ON)
+                {
+                    gpio_actuator_shutdown();
+                }    
+            }
+
             if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
