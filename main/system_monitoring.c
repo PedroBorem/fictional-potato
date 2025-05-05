@@ -439,7 +439,7 @@ void system_monitoring_init_rainfall_data(void)
     if (err != ESP_OK)
     {
         ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
-        memset(pluviometro, 0, sizeof(pluviometer));
+        memset(pluviometer, 0, sizeof(pluviometer));
     }
     
     current_index = 0;
@@ -509,7 +509,7 @@ void system_monitoring_rainfall_task(void *arg)
                                    );
 
                 pluviometer[oldest_index].rain_per_hour = rain_total;
-                strncpy(pluviometro[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometro[oldest_index].str_date_time) - 1);
+                strncpy(pluviometer[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometer[oldest_index].str_date_time) - 1);
 
                 ESP_LOGI(SYSTEM_MONITORING_TAG, 
                          "Saved rainfall data (%.2f) at index %d - %s", 

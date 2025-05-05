@@ -142,12 +142,9 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_27(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
-<<<<<<< HEAD
 static void system_manager_idp_32(const char* buffer, comm_type comm_mode);
 static void system_manager_idp_34(const char* buffer, comm_type comm_mode);
-=======
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
->>>>>>> master
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -470,7 +467,6 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_30(str_pkg, comm_mode);
 			break;
 		}
-<<<<<<< HEAD
 		case IDP_32:
 		{
 			system_manager_idp_32(str_pkg, comm_mode);
@@ -479,11 +475,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_34:
 		{
 			system_manager_idp_34(str_pkg, comm_mode);
-=======
+			break;
+		}
 		case IDP_31:
 		{
 			system_manager_idp_31(str_pkg, comm_mode);
->>>>>>> master
 			break;
 		}
 		case IDP_90:

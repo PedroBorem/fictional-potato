@@ -130,12 +130,9 @@ typedef enum
     IDP_27,
     IDP_28,
     IDP_30 = 30,
-<<<<<<< HEAD
     IDP_32 = 32,
     IDP_34 = 34,
-=======
     IDP_31,
->>>>>>> master
     IDP_90 = 90,
     IDP_91,
     IDP_92,
