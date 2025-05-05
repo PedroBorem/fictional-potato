@@ -95,6 +95,9 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
+
+void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
+
 /**
  * @brief Handles the system monitoring based on the pivot actions and system configuration.
  *
@@ -194,7 +197,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 memset(str_out, 0x00, sizeof(str_out));
                 idp_parser_create_package(str_out, arg_idp_02);
-                system_monitoring_callback(str_out, COMM_MQTT);
+                system_monitoring_callback(str_out, comm_main_mode);
 
                 return_back_flag = true;
                 data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
@@ -263,7 +266,7 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 memset(str_out, 0x00, sizeof(str_out));
                 idp_parser_create_package(str_out, arg_idp_02);
-                system_monitoring_callback(str_out, COMM_MQTT);
+                system_monitoring_callback(str_out, comm_main_mode);
 
                 return_back_flag = true;
                 data_app_save(DATA_TYPE_BARRIER_STATUS, &return_back_flag, sizeof(return_back_flag));
@@ -316,7 +319,8 @@ static void system_monitoring_actuation_virtual_barrier(void)
 
     memset(str_out, 0x00, sizeof(str_out));
     idp_parser_create_package(str_out, arg_idp_01);
-    system_monitoring_callback(str_out, COMM_MQTT);
+    system_monitoring_callback(str_out, comm_main_mode);
+    system_monitoring_pivot_shutdown(TYPE_HANGS_UP_VIRTUAL_BARRIER, idp, "0", SYSTEM_MONITORING_TAG);
 
     system_monitoring_automatic_return(pivot_actions, barrier_type);
 }
@@ -534,7 +538,56 @@ void system_monitoring_rainfall_task(void *arg)
     }
 }
 
+/**
+ * @brief Checks if the current angle is within the specified range barrier.
+ *
+ * This function evaluates the pivot's current angle and determines if it falls
+ * within the defined range around the physical barrier's start and end angles.
+ * It returns true if the angle is within the range, allowing for boundary
+ * transitions, and false otherwise.
+ *
+ * @param[in] range_barrier The tolerance range (in degrees) around the barrier's start and end angles.
+ * 
+ * @return bool True if the current angle is within the specified range, false otherwise.
+ */
+bool system_monitoring_range_barrier(uint8_t range_barrier)
+{
+    pivot_physical_config physical_barrier_config = {};
+    data_app_load(DATA_TYPE_PHYSICAL_BARRIER, &physical_barrier_config);
 
+    if (*system_monitoring_current_angle != 655) 
+    {
+        uint16_t margins[2][2] = {
+            {(physical_barrier_config.start_angle_physical_barrier + 360 - range_barrier) % 360,
+            (physical_barrier_config.start_angle_physical_barrier + range_barrier) % 360},
+            {(physical_barrier_config.end_angle_physical_barrier + 360 - range_barrier) % 360,
+            (physical_barrier_config.end_angle_physical_barrier + range_barrier) % 360}
+        };
+
+        for (int i = 0; i < 2; ++i) 
+        {
+            uint16_t margin_low = margins[i][0];
+            uint16_t margin_high = margins[i][1];
+
+            if (margin_low > margin_high) 
+            {
+                if (*system_monitoring_current_angle >= margin_low || *system_monitoring_current_angle <= margin_high) 
+                {
+                    return true;
+                }
+            } 
+            else 
+            {
+                if (*system_monitoring_current_angle >= margin_low && *system_monitoring_current_angle <= margin_high) 
+                {
+                    return true;
+                }
+            }
+        }
+    }
+
+    return false;
+}
 /**
  * @brief Determines and triggers actuation based on the barrier status.
  *
@@ -583,6 +636,7 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
                 else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
                 && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
                 {
+
                     if(current_pivot_actions.rotation == PIVOT_CW)
                     {
                         status_barrier = PIVOT_IN_THE_BARRIER;
@@ -664,7 +718,7 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
 {
     vTaskDelay(pdMS_TO_TICKS(2000));
     // send IDP 0 (current status)
-    system_monitoring_callback("#00$", COMM_MQTT);
+    system_monitoring_callback("#00$", comm_main_mode);
 
     // save current Timestamp
     time_t timestamp_now = rtc_app_get_timestamp(false);
@@ -755,6 +809,109 @@ void system_monitoring_stop(void)
 		system_monitoring_timer_handle = NULL;
 	}
 }
+
+void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin)
+{
+    char str_out[200] = {};
+
+    uint8_t idp_28 = IDP_28;
+    time_t timestamp = 0;
+    char str_date_time[70] = {};
+
+    bool pivot_is_on_barrier = false;
+
+    timestamp = rtc_app_get_timestamp(false);
+    rtc_app_get_str_date_time(timestamp, str_date_time);
+
+    char *reason_str = NULL;
+    bool is_external_agent = false;
+
+    switch (shutdown_reason)
+    {
+        case TYPE_HANGS_UP_VIRTUAL_BARRIER:
+        {
+            reason_str = "virtual_barrier";
+            break;
+        }
+        case TYPE_HANGS_UP_MANUAL:
+        {
+            reason_str = "manual";
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_14:
+        {
+            reason_str = "scheduling_14";
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_15:
+        {
+            reason_str = "scheduling_15";
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_16:
+        {
+            reason_str = "scheduling_16";
+            break;
+        }
+        case TYPE_HANGS_UP_SCHEDULE_17:
+        {
+            reason_str = "scheduling_17";
+            break;
+        }
+        case TYPE_HANGS_UP_BROWNOUT:
+        {
+            reason_str = "brownout";
+            break;
+        }
+        case TYPE_HANGS_UP_PIVOT_WITHOUT_WATER:
+        {
+            reason_str = "pivot_without_water";
+            break;
+        }
+        case TYPE_HANGS_UP_SOIL_APP:
+        {
+            reason_str = "soil_app";
+            is_external_agent = true;
+            break;
+        }
+        case TYPE_HANGS_UP_IRRIGABRAS_APP:
+        {
+            reason_str = "nimbus_app";
+            is_external_agent = true;
+            break;
+        }
+        default:
+        {
+            break;
+        }
+    }
+
+    if (reason_str != NULL)
+    {
+        arg_pair_t arg_pair[10]; 
+        idp_parser_build_arg_pairs_pivot_shutdown(
+            arg_pair,
+            reason_str,
+            &idp_28,
+            system_id,
+            origin,
+            &idp,
+            scheduling_id,
+            &pivot_is_on_barrier,
+            &global_angle,
+            str_date_time,
+            is_external_agent
+        );
+
+        idp_parser_create_package(str_out, arg_pair);   
+
+        data_app_save(DATA_TYPE_REASON_HANG_UP, &str_out, strlen(str_out));
+        
+        vTaskDelay(pdMS_TO_TICKS(1000));
+        system_monitoring_callback("#28$", comm_main_mode);
+    }
+}
+
 
 /**
  * @brief Registers a callback function for system monitoring.

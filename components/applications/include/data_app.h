@@ -46,6 +46,8 @@ typedef enum
     DATA_TYPE_MANUAL_COUNTER, /**< Manual counter */
     DATA_TYPE_RAINFALL_ACCUMULATED, /**< Rainfall accumulated data type. */
     DATA_TYPE_RAIN_PER_PULSE, /**< Rain per pulse configuration. */
+    DATA_TYPE_REASON_HANG_UP, /**<Reason why the pivot turned off  */
+    DATA_TYPE_COMM_MAIN_MODE, /**< Communication Principal Mode data type. */
 } data_type_t;
 
 

@@ -59,7 +59,7 @@
 /**
  * @brief Stack size of the main scheduling task.
  */
-#define SCHEDULING_TASK_SIZE				(configMINIMAL_STACK_SIZE * 6)
+#define SCHEDULING_TASK_SIZE				(configMINIMAL_STACK_SIZE * 10)
 
 /**
  * @brief Priority of the main scheduling task.

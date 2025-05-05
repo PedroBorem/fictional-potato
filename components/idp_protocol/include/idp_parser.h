@@ -278,4 +278,45 @@ bool idp_parser_validate_idp_24(const reboot_config reboot_config);
  */
 bool idp_parser_validate_idp_26(const pivot_virtual_config virtual_config);
 
+/**
+ * @brief Validate the specified configuration paramters.
+ *
+ * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
+ *
+ * @param comm_config data to be validated.
+ * @return true if the data are valid, false otherwise.
+ */
+bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config);
+
+/**
+ * @brief Build argument pairs for IDP 28 packet.
+ *
+ * This function builds argument pairs for the IDP 28 packet based on the specified parameters.
+ *
+ * @param arg_pair The argument pair to be built.
+ * @param reason_str The reason string to be included in the packet.
+ * @param idp_28 The IDP 28 packet to be built.
+ * @param system_id The system ID to be included in the packet.
+ * @param origin The origin to be included in the packet.
+ * @param idp The IDP type to be included in the packet.
+ * @param scheduling_id The scheduling ID to be included in the packet.
+ * @param pivot_is_on_barrier The pivot barrier status to be included in the packet.
+ * @param global_angle The global angle to be included in the packet.
+ * @param str_date_time The date and time to be included in the packet.
+ * @param is_external_agent The external agent status to be included in the packet.
+ */
+void idp_parser_build_arg_pairs_pivot_shutdown(
+    arg_pair_t *arg_pair,
+    char *reason_str,
+    uint8_t *idp_28,
+    char *system_id,
+    char *origin,
+    idp_type *idp,
+    char *scheduling_id,
+    bool *pivot_is_on_barrier,
+    uint16_t *global_angle,
+    char *str_date_time,
+    bool is_external_agent
+);
+
 #endif /* COMPONENTS_IDP_PROTOCOL__INCLUDE_IDP_PARSER_H_ */

@@ -94,4 +94,23 @@ void system_monitoring_rainfall_task(void *arg);
  */
 void system_monitoring_init_rainfall_data(void);
 
+/**
+ * @brief Checks if the current angle is within the specified range barrier.
+ *
+ * This function evaluates the pivot's current angle and determines if it falls
+ * within the defined range around the physical barrier's start and end angles.
+ * It returns true if the angle is within the range, allowing for boundary
+ * transitions, and false otherwise.
+ *
+ * @param[in] range_barrier The tolerance range (in degrees) around the barrier's start and end angles.
+ * 
+ * @return bool True if the current angle is within the specified range, false otherwise.
+ */
+bool system_monitoring_range_barrier(uint8_t range_barrier);
+
+/**
+ * 
+ */
+void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin);
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

@@ -146,6 +146,17 @@
 #define DATA_RAIN_PER_PULSE	"rain_pulse"
 
 /**
+ * @def DATA_COMM_MAIN_MODE
+ * @brief NVS access space for Communication Principal Mode
+ */
+#define DATA_COMM_MAIN_MODE "comm_main_mode"
+
+/**
+ * @def DATA_REASON_HANG_UP
+ * @brief NVS access space for reason why the pivot turned off  
+ */
+#define DATA_REASON_HANG_UP "reason_hangup"
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -187,6 +198,10 @@ esp_err_t data_app_init(void)
 			.automatic_return = 0, 
 			.water_return = 0,
 			.time_leaving_barrier = 3,
+	};
+
+	const pivot_comm_main_mode_config default_comm_main_mode = {
+			.comm_main_mode_config = "MQTT",
 	};
 
 	const gps_config gps_config = {};
@@ -278,6 +293,10 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
 		{
 			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_phy_barrier, sizeof(default_phy_barrier));
+		}
+		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
+		{
+			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -445,6 +464,16 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			break;
 		}
 
+		case DATA_TYPE_REASON_HANG_UP:
+		{
+			ret = nvs_data_set(DATA_REASON_HANG_UP, data, data_size);
+			break; 
+		}
+		case DATA_TYPE_COMM_MAIN_MODE:
+		{
+			ret = nvs_data_set(DATA_COMM_MAIN_MODE, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -567,6 +596,16 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			break;
 		}
 
+		case DATA_TYPE_REASON_HANG_UP:
+		{
+			ret = nvs_data_get_blob(DATA_REASON_HANG_UP, data);
+			break;
+		}
+		case DATA_TYPE_COMM_MAIN_MODE:
+		{
+			ret = nvs_data_get_blob(DATA_COMM_MAIN_MODE, data);
+			break;
+		}
 		default:
 		{
 			break;
