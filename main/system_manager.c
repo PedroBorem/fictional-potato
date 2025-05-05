@@ -2942,7 +2942,7 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
 /**
  * @brief Handle IDP package type 34.
  *
- * This function handles IDP package type 34, extracting or saving rain_per_pulse data via MQTT.
+ * This function handles IDP package type 34, extracting or saving rain_per_pulse and rain_shutdown_value data via MQTT.
  *
  * @param buffer The input buffer containing the request.
  * @param comm_mode The communication mode (COMM_MQTT).
@@ -2970,12 +2970,14 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
         {
             uint8_t idp = 0;
             char pivot_id[50] = {};
-            float new_rain_per_pulse = 0.0;
+            float new_rain_per_pulse = 0.0f;
+			float new_rain_shutdown_value = 0.0f;
 
             arg_pair_t arg_pairs[] = {
                 {"uint8_t", &idp},
                 {"string", pivot_id},
                 {"float", &new_rain_per_pulse},
+				{"float", &new_rain_shutdown_value},
                 {NULL, NULL}};
 
             idp_parser_get_packet_data(buffer, arg_pairs);
@@ -2997,23 +2999,48 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
             {
                 ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", new_rain_per_pulse);
             }
+
+			if(new_rain_shutdown_value >= 0.0f && new_rain_shutdown_value < 200.0f)
+			{
+				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &new_rain_shutdown_value, sizeof(new_rain_shutdown_value));
+				if(ret == ESP_OK)
+				{
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_SHUTDOWN_VALUE updated to %.2f", new_rain_shutdown_value);
+				}
+				else
+				{
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_SHUTDOWN_VALUE to NVS.");
+				}
+			}
+			else
+            {
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_SHUTDOWN_VALUE value: %.2f", new_rain_shutdown_value);
+            }
         }
         else if (mqtt_load_pkg)
         {
             char str_out[200] = {};
             uint8_t idp = IDP_34;
-            float rain_per_pulse = 0.1;
+            float rain_per_pulse = 0.1f;
+			float rain_shutdown_value = 5.0f;
 
-            esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
-            if (ret != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
+            esp_err_t ret_pulse = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
+            if (ret_pulse != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
             {
-                rain_per_pulse = 0.1; 
+                rain_per_pulse = 0.1f; 
+            }
+
+			esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_shutdown_value);
+            if (ret_pulse != ESP_OK || rain_shutdown_value <= 0.0 || rain_shutdown_value > 10.0)
+            {
+                rain_shutdown_value = 5.0f; 
             }
 
             arg_pair_t arg_pairs[] = {
                 {"uint8_t", &idp},
                 {"string", system_id},
                 {"float", &rain_per_pulse},
+				{"float", &rain_shutdown_value},
                 {NULL, NULL}};
 
             idp_parser_create_package(str_out, arg_pairs);
