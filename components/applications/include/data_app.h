@@ -48,6 +48,7 @@ typedef enum
     DATA_TYPE_RAIN_PER_PULSE, /**< Rain per pulse configuration. */
     DATA_TYPE_REASON_HANG_UP, /**<Reason why the pivot turned off  */
     DATA_TYPE_COMM_MAIN_MODE, /**< Communication Principal Mode data type. */
+    DATA_TYPE_RAIN_SHUTDOWN_VALUE, /**< Rain needed to turn off the pivot */
 } data_type_t;
 
 

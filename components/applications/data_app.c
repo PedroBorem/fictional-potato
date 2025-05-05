@@ -156,6 +156,13 @@
  * @brief NVS access space for reason why the pivot turned off  
  */
 #define DATA_REASON_HANG_UP "reason_hangup"
+
+/**
+ * @def DATA_RAIN_SHUTDOWN_VALUE
+ * @brief NVS access space for rain threshold to stop the pivot
+ */
+#define DATA_RAIN_SHUTDOWN_VALUE "rain_stop"
+
 /**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
@@ -214,6 +221,7 @@ esp_err_t data_app_init(void)
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 	const bool default_barrier = false;
+	const float default_rain_shutdown_value = 5.0f;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -297,6 +305,10 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
 		{
 			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
+		}
+		if(nvs_data_get_size(DATA_RAIN_SHUTDOWN_VALUE) == 0)
+		{
+			data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &default_rain_shutdown_value, sizeof(default_rain_shutdown_value));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -474,6 +486,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_COMM_MAIN_MODE, data, data_size);
 			break;
 		}
+		case DATA_TYPE_RAIN_SHUTDOWN_VALUE:
+		{
+			ret = nvs_data_set(DATA_RAIN_SHUTDOWN_VALUE, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -604,6 +621,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_COMM_MAIN_MODE:
 		{
 			ret = nvs_data_get_blob(DATA_COMM_MAIN_MODE, data);
+			break;
+		}
+		case DATA_TYPE_RAIN_SHUTDOWN_VALUE:
+		{
+			ret = nvs_data_get_blob(DATA_RAIN_SHUTDOWN_VALUE, data);
 			break;
 		}
 		default:
