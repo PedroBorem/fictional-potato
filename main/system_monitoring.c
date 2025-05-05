@@ -294,7 +294,9 @@ static void system_monitoring_actuation_virtual_barrier(void)
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
-    type_barrier barrier_type = VIRTUAL_BARRIER;  
+    type_barrier barrier_type = VIRTUAL_BARRIER; 
+    
+    pivot_actions pivot_actions = {}; 
 
     // act on the equipment (pivo_off) - send IDP 01
     actuation_app_get_actions(&pivot_actions, sizeof(pivot_actions));
@@ -493,13 +495,14 @@ void system_monitoring_rainfall_task(void *arg)
         if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
         {
             float rain_total = get_rain_total();
-            float rain_shutdown_value = 5.0f;
-
+            float rain_shutdown_value;
+            
+            data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
             data_app_load(DATA_TYPE_ACTIONS, &actions);
-
-            if(rain_total >= rain_shutdown_value)
+            
+            if(actions.power_state == PIVOT_ON && actions.watering_state == PIVOT_WET)
             {
-                if(actions.power_state == PIVOT_ON)
+                if(rain_total >= rain_shutdown_value)
                 {
                     gpio_actuator_shutdown();
                 }    
