@@ -84,4 +84,11 @@ void actuation_app_hangs_up_callback(const hangs_up_callback callback);
 
 void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config);
 
+/**
+ * @brief Gets the current rain accumulation (in mm) in real time.
+ *
+ * @return float Rainfall amount since the last save.
+ */
+float get_current_rain_value();
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_ */

@@ -77,6 +77,20 @@ void actuation_app_manual_call(pivot_actions current_action);
 
 
 /* Public methods ------------------------------------------------ */
+
+/**
+ * @brief Gets the current rainfall total accumulated since the last reset.
+ *
+ * This function returns the current rain accumulation (in mm)
+ * as computed by the rainfall sensor, without waiting for the hourly persistence.
+ *
+ * @return float The current rainfall value in mm.
+ */
+float get_current_rain_value()
+{
+    return get_rain_total();
+}
+
 /**
  * @brief Initialize the actuation control class.
  * @param callback [in]: Callback function for actuation events.
