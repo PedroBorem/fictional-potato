@@ -2917,6 +2917,7 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         char entry[50] = {}; 
         uint8_t idp = IDP_32;
 		rain_data* pluviometer = get_rain_data_array();
+		float current_rain_value = get_rain_total(); 
 
         for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
         {
@@ -2930,6 +2931,7 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         arg_pair_t arg_pairs[] = {
             { "uint8_t", &idp },
             { "string", system_id },
+			{"float", &current_rain_value},
             { "string", rain_total_data },
             { NULL, NULL }
         };
