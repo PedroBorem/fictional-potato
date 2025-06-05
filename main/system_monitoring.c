@@ -394,16 +394,18 @@ bool system_monitoring_range_barrier(uint8_t range_barrier)
 void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_barrier barrier_type)
 {
     pivot_actions pivot_actions = {};
+    uint16_t initial_angle = 655;
 
     if(barrier_type == PHYSICAL_BARRIER)
     {
-        if(*system_monitoring_current_angle != 655)
+        data_app_load(DATA_TYPE_INITIAL_ANGLE, &initial_angle);
+        if(initial_angle != 655)
         {
             if((system_monitoring_physical_config.start_angle_physical_barrier < system_monitoring_physical_config.end_angle_physical_barrier
             || system_monitoring_physical_config.start_angle_physical_barrier > system_monitoring_physical_config.end_angle_physical_barrier))
             {
-                if(*system_monitoring_current_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
-                && *system_monitoring_current_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
+                if(initial_angle >= system_monitoring_physical_config.start_angle_physical_barrier - 5
+                && initial_angle <= system_monitoring_physical_config.start_angle_physical_barrier + 5)
                 {
                     if(current_pivot_actions.rotation == PIVOT_CW)
                     {
@@ -427,8 +429,8 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
                         system_monitoring_automatic_return(pivot_actions, barrier_type);
                     }
                 }
-                else if (*system_monitoring_current_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
-                && *system_monitoring_current_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
+                else if (initial_angle >= system_monitoring_physical_config.end_angle_physical_barrier - 5
+                && initial_angle <= system_monitoring_physical_config.end_angle_physical_barrier + 5)
                 {
 
                     if(current_pivot_actions.rotation == PIVOT_CW)
