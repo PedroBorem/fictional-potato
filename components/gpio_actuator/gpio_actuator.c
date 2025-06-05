@@ -482,48 +482,63 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
  */
 pivot_actions gpio_actuator_get(void)
 {
-	if(gpio_get_level(GPIO_ACT_PIN_CW_IN) == gpio_act_contactor_type)
-	{
-		pivot_actions_read.rotation = PIVOT_CW;
-		pivot_actions_read.power_state = PIVOT_ON;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_CCW_IN) == gpio_act_contactor_type)
-	{
-		pivot_actions_read.rotation = PIVOT_CCW;
-		pivot_actions_read.power_state = PIVOT_ON;
-	}
-	else
-	{
-		pivot_actions_read.power_state = PIVOT_OFF;
-		pivot_actions_read.rotation = PIVOT_UNKNOWN;
-	}
+    // Leitura filtrada de um pino GPIO (verifica presença de LOW em 100ms)
+    auto bool read_gpio_filtered(gpio_num_t gpio, int expected_level)
+    {
+        int match_count = 0;
+        for (int i = 0; i < 50; i++) {
+            if (gpio_get_level(gpio) == expected_level) match_count++;
+            vTaskDelay(pdMS_TO_TICKS(2));  // 50 × 2ms = 100ms
+        }
+        return (match_count > 5);  // Considera ativo se detectado mais de 5 vezes
+    }
 
-	if(pressurizing == true)
-	{
-		pivot_actions_read.watering_state = PIVOT_PRESSURIZING;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
-	{
-		pivot_actions_read.watering_state = PIVOT_WET;
-	}
-	else if(gpio_get_level(GPIO_ACT_PIN_PRESS) == !gpio_act_pressure_type)
-	{
-		pivot_actions_read.watering_state = PIVOT_DRY;
-	}
+    // Leitura filtrada para CW
+    if (read_gpio_filtered(GPIO_ACT_PIN_CW_IN, gpio_act_contactor_type))
+    {
+        pivot_actions_read.rotation = PIVOT_CW;
+        pivot_actions_read.power_state = PIVOT_ON;
+    }
+    // Leitura filtrada para CCW
+    else if (read_gpio_filtered(GPIO_ACT_PIN_CCW_IN, gpio_act_contactor_type))
+    {
+        pivot_actions_read.rotation = PIVOT_CCW;
+        pivot_actions_read.power_state = PIVOT_ON;
+    }
+    else
+    {
+        pivot_actions_read.power_state = PIVOT_OFF;
+        pivot_actions_read.rotation = PIVOT_UNKNOWN;
+    }
 
-	if(((clock() - percent_watchdog)/CLOCKS_PER_SEC) > 70)
-	{
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == gpio_act_contactor_type)
-		{
-			pivot_actions_read.percentimeter = 100;
-		}
-		else if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == !gpio_act_contactor_type)
-		{
-			pivot_actions_read.percentimeter = 0;
-		}
-	}
+    // Leitura filtrada para PRESS
+    if (pressurizing == true)
+    {
+        pivot_actions_read.watering_state = PIVOT_PRESSURIZING;
+    }
+    else if (read_gpio_filtered(GPIO_ACT_PIN_PRESS, gpio_act_pressure_type))
+    {
+        pivot_actions_read.watering_state = PIVOT_WET;
+    }
+    else
+    {
+        pivot_actions_read.watering_state = PIVOT_DRY;
+    }
 
-	return pivot_actions_read;
+    // Leitura filtrada para PERCENTIMETER (aplicada após watchdog)
+    if (((clock() - percent_watchdog)/CLOCKS_PER_SEC) > 70)
+    {
+        if (read_gpio_filtered(GPIO_ACT_PIN_PERC_IN, gpio_act_contactor_type))
+        {
+            pivot_actions_read.percentimeter = 100;
+        }
+        else
+        {
+            pivot_actions_read.percentimeter = 0;
+        }
+    }
+
+    return pivot_actions_read;
 }
 
 /**
