@@ -108,7 +108,7 @@ extern float rain_per_pulse;
 /**
  * @brief GPIO pin number for rain sensor input.
  */
-#define GPIO_ACT_RAIN_SENSOR_PIN      GPIO_NUM_45 /*!< Rain Sensor Input */
+#define GPIO_ACT_RAIN_SENSOR_PIN      GPIO_NUM_15 /*!< Rain Sensor Input */
 
 /* Output Pins Group */
 /**

@@ -63,6 +63,9 @@ static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
+// Rain sensor mutex
+static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
+
 // Pressurizing flag
 static bool pressurizing = false;
 
@@ -134,18 +137,23 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
     uint32_t gpio_num = (uint32_t)arg;
 
+    // Handler do sensor de chuva
     if (gpio_num == GPIO_ACT_RAIN_SENSOR_PIN) 
     {
         static uint32_t last_interrupt_time = 0;
         uint32_t interrupt_time = xTaskGetTickCountFromISR();
 
-        if ((interrupt_time - last_interrupt_time > 75) / portTICK_PERIOD_MS) 
+        if ((interrupt_time - last_interrupt_time) > pdMS_TO_TICKS(51)) 
         {
-            rain_pulse_count++;  
-            last_interrupt_time = interrupt_time;
+			if (gpio_get_level(GPIO_ACT_RAIN_SENSOR_PIN) == 1)
+			{
+				rain_pulse_count++;
+				last_interrupt_time = interrupt_time;
+			}
         }
     }
-    else if (gpio_num == GPIO_ACT_PIN_PERC_IN) 
+
+    if (gpio_num == GPIO_ACT_PIN_PERC_IN) 
     {
         if (xTask_readpercent != NULL) 
         {
@@ -155,10 +163,6 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
                 vTaskResume(xTask_readpercent);
             }
         }
-    }
-    else
-    {
-        ESP_LOGE(GPIO_ACT_TAG, "Unhandled GPIO interrupt on pin %lu", gpio_num);
     }
 }
 
@@ -216,11 +220,24 @@ esp_err_t gpio_actuator_init(const app_callback callback)
     // Configure interrupt for percentimeter and rain sensor
     gpio_config_t io_conf_int = {};
     io_conf_int.intr_type = GPIO_INTR_ANYEDGE;
-    io_conf_int.pin_bit_mask = (GPIO_INT_PERC | GPIO_INT_RAIN_SENSOR);
+    io_conf_int.pin_bit_mask = (GPIO_INT_PERC );
     io_conf_int.mode = GPIO_MODE_INPUT;
     io_conf_int.pull_down_en = GPIO_PULLDOWN_ENABLE;
     io_conf_int.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf_int);
+
+	// Configure rain sensor pin
+	gpio_config_t io_conf_rain_sensor = {};
+	io_conf_rain_sensor.intr_type = GPIO_INTR_POSEDGE; 
+	io_conf_rain_sensor.mode = GPIO_MODE_INPUT;
+	io_conf_rain_sensor.pin_bit_mask = GPIO_INT_RAIN_SENSOR;
+	io_conf_rain_sensor.pull_down_en = GPIO_PULLDOWN_ENABLE;
+	io_conf_rain_sensor.pull_up_en = GPIO_PULLUP_DISABLE;
+	gpio_config(&io_conf_rain_sensor);
+
+	
+	// Set rain sensor pin as input
+	err = gpio_config(&io_conf_rain_sensor);
 
     // Install ISR service
     err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
@@ -825,10 +842,14 @@ void actuator_read_percent(void* arg)
  */
 void gpio_rain_sensor_calculate_rainfall(void)
 {
-    float interval_rain = rain_pulse_count * rain_per_pulse;
-    rain_total += interval_rain;
+    taskENTER_CRITICAL(&rain_sensor_mux);
 
+    float interval_rain = rain_pulse_count * rain_per_pulse;
     rain_pulse_count = 0;
+
+    taskEXIT_CRITICAL(&rain_sensor_mux);
+
+    rain_total += interval_rain;
 }
 
 
