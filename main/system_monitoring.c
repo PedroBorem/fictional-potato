@@ -464,6 +464,7 @@ void system_monitoring_rainfall_task(void *arg)
     TickType_t last_save_time = last_wake_time;
     const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
     pivot_actions actions = {};
+    float rain_shutdown_value;
     /*
     * - 1 minuto   = 60000 ms
     * - 2 minutos  = 120000 ms
@@ -499,24 +500,20 @@ void system_monitoring_rainfall_task(void *arg)
         float rain_total = get_rain_total();
         if (rain_total > 0.0f) 
         {
-            ESP_LOGI(SYSTEM_MONITORING_TAG, "Current rain total: %.2f mm", rain_total);
-        }
-
-        if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
-        {
-            float rain_shutdown_value;
-            
             data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
             data_app_load(DATA_TYPE_ACTIONS, &actions);
-            
-            if(actions.power_state == PIVOT_ON && actions.watering_state == PIVOT_WET)
+
+            if(actions.power_state == PIVOT_ON && actions.watering_state == PIVOT_WET && rain_shutdown_value != 0.0f)
             {
                 if(rain_total >= rain_shutdown_value)
                 {
                     gpio_actuator_shutdown();
                 }    
             }
+        }
 
+        if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
+        {
             if (rain_total > 0.0f)
             {
                 time_t timestamp = rtc_app_get_timestamp(false);
