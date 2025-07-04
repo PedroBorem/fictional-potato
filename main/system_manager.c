@@ -29,6 +29,7 @@
 #include "scheduling.h"
 #include "system_monitoring.h"
 #include "sectorization.h"
+#include "ota_update.h"
 
 /** @def SYSTEM_MONITORING_TAG_COMMAND
  *  @brief Tag used to determine where the command came from
@@ -144,6 +145,7 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_100(const char *buffer, comm_type comm_mode);
 
 /**
  * @brief Initializes the system manager module.
@@ -222,6 +224,9 @@ void system_manager_init(void)
 		pdFALSE,						/* auto reload */
 		(void *)0,						/* timer ID */
 		system_manager_timer_callback); /* callback */
+
+	// system_manager_idp_100(NULL, comm_main_mode);
+	print_all_tasks();
 }
 
 /**
@@ -316,6 +321,7 @@ static void system_manager_reboot(void)
  */
 static void system_manager_timer_callback(TimerHandle_t pxTimer)
 {
+	ESP_LOGE(SYSTEM_MANAGER_TAG, "System Manager Timer Callback Triggered");
 	system_manager_idp_00(NULL, comm_main_mode);
 }
 
@@ -2936,4 +2942,21 @@ static void system_manager_idp_92(const char *buffer, comm_type comm_mode)
 		idp_parser_create_package(str_out, arg_pairs_ack);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
+}
+
+/**
+ * @brief Handle IDP package type 100.
+ *
+ * This function handles IDP package type 100, suspending all tasks except the main task.
+ *
+ * @param buffer The input buffer containing the request (not used in this function).
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
+static void system_manager_idp_100(const char *buffer, comm_type comm_mode)
+{
+    // Call the function to suspend all tasks except the main task
+    suspend_all_tasks_except_main();
+
+    // Log the action for debugging purposes
+    ESP_LOGI(SYSTEM_MANAGER_TAG, "All tasks except main have been suspended.");
 }
