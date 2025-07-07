@@ -14,6 +14,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <inttypes.h>
+#include <string.h>
 
 #include <time.h>
 
