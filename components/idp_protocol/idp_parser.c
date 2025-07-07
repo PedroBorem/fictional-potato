@@ -230,8 +230,7 @@ bool idp_parser_validate_network(const network_config net_config)
 {
 	bool ret = false;
 
-	if(strlen(net_config.gprs_id) > 0 && strlen(net_config.modem_apn) > 0
-			&& strlen(net_config.wifi_ssid) > 0 && strlen(net_config.wifi_pass) > 0)
+	if(strlen(net_config.gprs_id) > 0 && strlen(net_config.modem_apn) > 0)
 	{
 		ret = true;
 	}
@@ -522,8 +521,7 @@ bool idp_parser_validate_idp_02(const network_config net_config)
 {
 	bool ret = false;
 
-	if(strlen(net_config.gprs_id) > 0 && strlen(net_config.modem_apn) > 0
-			&& strlen(net_config.wifi_ssid) > 0 && strlen(net_config.wifi_pass) > 0)
+	if(strlen(net_config.gprs_id) > 0 && strlen(net_config.modem_apn) > 0)
 	{
 		ret = true;
 	}

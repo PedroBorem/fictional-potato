@@ -40,20 +40,6 @@ esp_err_t comm_app_init(const app_callback callback);
 void comm_app_send_idp_pack(const char* idp_pack, comm_type communication);
 
 /**
- * @brief Configures the Wi-Fi settings.
- * @param wifi_ssid [in]: Wi-Fi SSID.
- * @param wifi_pass [in]: Wi-Fi password.
- * 
- * This function configures the Wi-Fi settings for the communication module.
- */
-void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass);
-
-/**
- * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
- */
-void comm_app_wifi_reloader(void);
-
-/**
  * @brief Configures the Main Mode of Communication settings.
  * *
  * @param config - [in]: Comm Main Mode configuration.

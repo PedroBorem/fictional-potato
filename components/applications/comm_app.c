@@ -10,9 +10,6 @@
 #include "gprs_uart.h"
 #include "rf_uart.h"
 
-#include "wifi_app.h"
-#include "http_api.h"
-
 #include "log.h"
 
 /* Private definitions ------------------------------------------- */
@@ -44,11 +41,6 @@ esp_err_t comm_app_init(const app_callback callback)
     err &= rf_uart_init(callback);
     err &= gprs_uart_init(callback);
 
-    err &= http_server_register_callback(callback);
-
-    err &= wifi_app_init();
-    err &= http_server_init();
-
     return err;
 }
 
@@ -64,12 +56,7 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
     char* str_copy = strdup(idp_pack);
 
-    if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
-    {
-        http_server_send_resp(str_copy);
-        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
-    }
-    else if (communication == COMM_MQTT)
+    if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
         LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
@@ -83,26 +70,6 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
     }
 
     free(str_copy);
-}
-
-/**
- * @brief Configures the Wi-Fi settings.
- * @param wifi_ssid [in]: Wi-Fi SSID.
- * @param wifi_pass [in]: Wi-Fi password.
- * 
- * This function configures the Wi-Fi settings for the communication module.
- */
-void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
-{
-    wifi_app_set_config(wifi_ssid, wifi_pass);
-}
-
-/**
- * @brief Reload the Wi-Fi configuration and restart the Wi-Fi application.
- */
-void comm_app_wifi_reloader(void)
-{
-	wifi_reloader();
 }
 
 esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)

@@ -149,9 +149,9 @@ typedef enum
  */
 typedef enum
 {
-    COMM_HTTP_POST = 0,
-    COMM_HTTP_GET,
-    COMM_MQTT,
+    COMM_HTTP_POST = 2,
+    COMM_HTTP_GET = 2,
+    COMM_MQTT = 2,
     COMM_RF,
 } comm_type;
 
@@ -244,8 +244,6 @@ typedef struct __attribute__((__packed__))
 {
     char gprs_id[50];           /*!< GPRS ID */
     char modem_apn[50];
-    char wifi_ssid[50];
-    char wifi_pass[50];
 } network_config;
 
 /**
@@ -253,7 +251,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in network_config struct.
  */
-#define NETWORK_CONFIG_VAR_COUNT    (4)
+#define NETWORK_CONFIG_VAR_COUNT    (2)
 
 /**
  * @brief Configuration parameters.

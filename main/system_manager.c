@@ -187,7 +187,6 @@ void system_manager_init(void)
 	data_app_load(DATA_TYPE_NETWORK_CONFIG, &network);
 	strcpy(system_id, network.gprs_id);
 
-	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
 
 	// automatic boot
@@ -729,8 +728,6 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 				{"string", pivot_id},
 				{"string", net_config.gprs_id},
 				{"string", net_config.modem_apn},
-				{"string", net_config.wifi_ssid},
-				{"string", net_config.wifi_pass},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -743,12 +740,6 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 
 			// save new configuration
 			data_app_save(DATA_TYPE_NETWORK_CONFIG, &net_config, sizeof(net_config));
-
-			if ((strcmp(net_config.wifi_ssid, net_nvs_config.wifi_ssid) != 0) || strcmp(net_config.wifi_pass, net_nvs_config.wifi_pass) != 0)
-			{
-				comm_app_wifi_config(net_config.wifi_ssid, net_config.wifi_pass);
-				comm_app_wifi_reloader();
-			}
 
 			// send ACK
 			comm_app_send_idp_pack(CONFIG_HTTP_OK, comm_mode);
@@ -793,8 +784,6 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 				{"string", system_id},
 				{"string", net_config.gprs_id},
 				{"string", net_config.modem_apn},
-				{"string", net_config.wifi_ssid},
-				{"string", net_config.wifi_pass},
 				{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);

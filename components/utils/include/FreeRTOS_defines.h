@@ -172,21 +172,6 @@
 #define RF_UART_TASK_PRIORITY           	(tskIDLE_PRIORITY + 12)
 
 /**
- * @brief Name of the Wi-Fi app task.
- */
-#define WIFI_APP_TASK_NAME				"wifi app task"
-
-/**
- * @brief Stack size of the Wi-Fi app task.
- */
-#define WIFI_APP_STACK_SIZE				(configMINIMAL_STACK_SIZE * 4)
-
-/**
- * @brief Priority of the Wi-Fi app task.
- */
-#define WIFI_APP_TASK_PRIORITY			(tskIDLE_PRIORITY + 8)
-
-/**
  * @brief Name of the system monitoring task.
  */
 #define SYSTEM_MONITORING_TASK_NAME		"monitoring task"

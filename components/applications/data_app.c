@@ -170,9 +170,7 @@ esp_err_t data_app_init(void)
 
 	const network_config default_network = {
 			.gprs_id = "soilteste_1",
-			.modem_apn = "virtueyes.com.br",
-			.wifi_ssid = "soil2023",
-			.wifi_pass = "soiltech",
+			.modem_apn = "virtueyes.com.br"
 	};
 
 	const reboot_config default_reboot = {
