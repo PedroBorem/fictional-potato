@@ -44,6 +44,8 @@ esp_err_t comm_app_init(const app_callback callback)
     err &= rf_uart_init(callback);
     err &= gprs_uart_init(callback);
 
+    err &= spi_init(callback);
+
     err &= http_server_register_callback(callback);
 
     err &= wifi_app_init();
