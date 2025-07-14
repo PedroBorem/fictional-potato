@@ -84,6 +84,8 @@ static app_callback spi_callback = NULL;
  */
 static void spi_read_task(void* arg);
 
+static uint16_t read_register(uint8_t reg_addr, uint8_t* tx_data, uint8_t* rx_data);
+
 /* Public methods ------------------------------------------------ */
 /**
  * @brief Initialize the SPI module.
@@ -130,7 +132,7 @@ esp_err_t spi_init(const app_callback callback)
                     NULL, 
                     SPI_TASK_PRIORITY, 
                     NULL);
-                    
+
             if (callback != NULL && xReturn == pdPASS)
             {
                 spi_callback = callback;
@@ -154,38 +156,52 @@ esp_err_t spi_init(const app_callback callback)
     return ret;
 }
 
+static uint16_t read_register(uint8_t reg_addr, uint8_t* tx_data, uint8_t* rx_data)
+{
+    tx_data[0] = 0x80 | (reg_addr & 0x7F);
+    tx_data[1] = 0x00;
+    tx_data[2] = 0x00;
+
+    spi_transaction_t trans = {
+        .length = 24,
+        .tx_buffer = tx_data,
+        .rx_buffer = rx_data,
+    };
+
+    if (spi_device_transmit(spi, &trans) == ESP_OK)
+    {
+        return (rx_data[1] << 8) | rx_data[2];
+    }
+    else
+    {
+        ESP_LOGE(TAG, "Erro ao ler registrador 0x%02X", reg_addr);
+        return 0xFFFF;
+    }
+}
+
+
 /* Private methods ----------------------------------------------- */
-/**
- * @brief SPI read task
- * @param arg[in] : task argument (default NULL)
- */
 static void spi_read_task(void* arg)
 {
-    uint8_t tx_data[4] = {0xAA, 0xBB, 0x00, 0x00}; 
-    uint8_t rx_data[4] = {0};
+    const uint8_t REG_URMS = 0x49;
+    const uint8_t REG_IRMS = 0x48;
+    const uint8_t REG_PMEAN = 0x4A;
+
+    uint8_t tx_data[3];
+    uint8_t rx_data[3];
 
     while (1)
     {
-        spi_transaction_t trans = {
-            .length = 8 * sizeof(tx_data),
-            .tx_buffer = tx_data,
-            .rx_buffer = rx_data,
-        };
+        uint16_t urms = read_register(REG_URMS, tx_data, rx_data);
+        ESP_LOGI(TAG, "Urms = %.2f V", urms / 100.0f);
 
-        esp_err_t ret = spi_device_transmit(spi, &trans);
-        if (ret == ESP_OK)
-        {
-            ESP_LOGI(TAG, "SPI Response:");
-            for (int i = 0; i < sizeof(rx_data); i++)
-            {
-                ESP_LOGI(TAG, "Byte %d: 0x%02X", i, rx_data[i]);
-            }
-        }
-        else
-        {
-            ESP_LOGE(TAG, "SPI transaction error");
-        }
+        uint16_t irms = read_register(REG_IRMS, tx_data, rx_data);
+        ESP_LOGI(TAG, "Irms = %.3f A", irms / 1000.0f);
 
-        vTaskDelay(pdMS_TO_TICKS(1000)); // 1-second delay
+        uint16_t pmean = read_register(REG_PMEAN, tx_data, rx_data);
+        float watts = (int16_t)pmean / 1000.0f;
+        ESP_LOGI(TAG, "Pmean = %.3f kW", watts);
+
+        vTaskDelay(pdMS_TO_TICKS(1000));
     }
 }

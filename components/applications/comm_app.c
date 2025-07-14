@@ -9,6 +9,7 @@
 
 #include "gprs_uart.h"
 #include "rf_uart.h"
+#include "v9881d_spi.h"
 
 #include "wifi_app.h"
 #include "http_api.h"
