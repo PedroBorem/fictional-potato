@@ -70,6 +70,11 @@
  */
 #define CONFIG_HTTP_OK                  ("200")
 
+/** 
+ * @brief Offset for scheduling timestamps.
+ */
+#define TIMESTAMP_OFFSET_SCHEDULING (600) // 10 minutes tolerance for start and end dates
+
 
 /**
  * @enum idp_type
