@@ -301,6 +301,7 @@ static void scheduling_task_idp_14(void* arg)
 static void scheduling_task_idp_15(void* arg)
 {
     const uint16_t angle_off_set = 3;
+    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     time_t scheduling_timestamp_now = 0;
 
     memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
