@@ -270,7 +270,7 @@ static void scheduling_task_idp_14(void* arg)
             {
                 if (!scheduling_date_status[date_position] &&
                     (scheduling_timestamp_now >= scheduling_date_current[date_position].start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_date_current[date_position].start_date)))
+                    (scheduling_timestamp_now <= (scheduling_date_current[date_position].start_date) + date_offset))
                 {
                     scheduling_date_status[date_position] = true;
                     scheduling_active(date_position,
@@ -315,7 +315,7 @@ static void scheduling_task_idp_15(void* arg)
             {
                 if (!scheduling_angle_status[angle_position] &&
                     (scheduling_timestamp_now >= scheduling_angle_current[angle_position].start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_angle_current[angle_position].start_date)))
+                    (scheduling_timestamp_now <= (scheduling_angle_current[angle_position].start_date) + date_offset))
                 {
                     scheduling_angle_status[angle_position] = true;
                     scheduling_active(angle_position,
