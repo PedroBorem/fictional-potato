@@ -257,40 +257,43 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 static void scheduling_task_idp_14(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
+    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 
-    while(1)
+    while (1)
     {
-        // get timestamp
         scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
-
-        // date analysis
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if (scheduling_timestamp_now > scheduling_date_current[date_position].start_date
-                && scheduling_timestamp_now < scheduling_date_current[date_position].end_date
-                && strcmp(scheduling_date_current[date_position].scheduling_id, "") > 0)
+            if (strcmp(scheduling_date_current[date_position].scheduling_id, "") > 0)
             {
-                if (scheduling_date_status[date_position] == false)
+                if (!scheduling_date_status[date_position] &&
+                    (scheduling_timestamp_now >= scheduling_date_current[date_position].start_date) &&
+                    (scheduling_timestamp_now <= (scheduling_date_current[date_position].start_date) + date_offset))
                 {
                     scheduling_date_status[date_position] = true;
                     scheduling_active(date_position,
                                       scheduling_date_current[date_position].scheduling_id,
                                       scheduling_date_current[date_position].actions);
                 }
-            }
-            else if (scheduling_date_status[date_position] == true)
-            {
-                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14, scheduling_date_current[date_position].scheduling_id, scheduling_date_current[date_position].str_author);
-                scheduling_date_status[date_position] = false;
-                scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
+                else if (scheduling_date_status[date_position] &&
+                         (scheduling_timestamp_now >= scheduling_date_current[date_position].end_date) &&
+                         (scheduling_timestamp_now <= (scheduling_date_current[date_position].end_date + date_offset)))
+                {
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14,
+                                            scheduling_date_current[date_position].scheduling_id,
+                                            scheduling_date_current[date_position].str_author);
+                    scheduling_date_status[date_position] = false;
+                    scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
+                }
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 segundos
     }
 }
+
 
 /**
  * @brief Task for processing scheduling events with IDP 15.
@@ -298,22 +301,22 @@ static void scheduling_task_idp_14(void* arg)
 static void scheduling_task_idp_15(void* arg)
 {
     const uint16_t angle_off_set = 3;
+    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     time_t scheduling_timestamp_now = 0;
 
     memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 
     while (1)
     {
-        // get timestamp
         scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
-        // angle analysis
         for (uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
         {
-            if (scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date
-                && strcmp(scheduling_angle_current[angle_position].scheduling_id, "") > 0)
+            if (strcmp(scheduling_angle_current[angle_position].scheduling_id, "") > 0)
             {
-                if (scheduling_angle_status[angle_position] == false)
+                if (!scheduling_angle_status[angle_position] &&
+                    (scheduling_timestamp_now >= scheduling_angle_current[angle_position].start_date) &&
+                    (scheduling_timestamp_now <= (scheduling_angle_current[angle_position].start_date) + date_offset))
                 {
                     scheduling_angle_status[angle_position] = true;
                     scheduling_active(angle_position,
@@ -323,20 +326,24 @@ static void scheduling_task_idp_15(void* arg)
                     if (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
                         && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
                     {
-                        vTaskDelay(pdMS_TO_TICKS(300000)); // 5 minutes
+                        vTaskDelay(pdMS_TO_TICKS(300000));
                     }
                 }
-                else if (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
-                         && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
+
+                else if (scheduling_angle_status[angle_position] &&
+                         (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set) &&
+                         (*scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set))
                 {
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15, scheduling_angle_current[angle_position].scheduling_id, scheduling_angle_current[angle_position].str_author);
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
+                                            scheduling_angle_current[angle_position].scheduling_id,
+                                            scheduling_angle_current[angle_position].str_author);
                     scheduling_angle_status[angle_position] = false;
                     scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
                 }
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
@@ -346,25 +353,31 @@ static void scheduling_task_idp_15(void* arg)
 static void scheduling_task_idp_16(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
+    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
 
     while (1)
     {
-        // get timestamp
         scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
-        // angle analysis
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if (scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
-                && scheduling_off_date_current[date_position].end_date != 0
-                && strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
+            if(strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
             {
-                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16, scheduling_off_date_current[date_position].scheduling_id, scheduling_off_date_current[date_position].str_author);
-                scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
+                if (scheduling_off_date_current[date_position].end_date != 0)
+                {
+                    if ((scheduling_timestamp_now >= scheduling_off_date_current[date_position].end_date) &&
+                        (scheduling_timestamp_now <= (scheduling_off_date_current[date_position].end_date + date_offset)))
+                    {
+                        scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16,
+                                                scheduling_off_date_current[date_position].scheduling_id,
+                                                scheduling_off_date_current[date_position].str_author);
+                        scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
+                    }
+                }
             }
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
+        vTaskDelay(pdMS_TO_TICKS(5000));
     }
 }
 
@@ -379,12 +392,14 @@ static void scheduling_task_idp_17(void* arg)
     {
         for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
         {
-            if (*scheduling_current_angle > (scheduling_off_angle_current[angle_position].end_angle - angle_off_set)
-                && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set)
-                && strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
+            if(strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
             {
-                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
-                scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
+                if (*scheduling_current_angle > (scheduling_off_angle_current[angle_position].end_angle - angle_off_set)
+                    && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set))
+                {
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
+                    scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
+                }
             }
         }
  
