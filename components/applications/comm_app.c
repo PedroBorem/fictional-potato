@@ -64,16 +64,22 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
     char* str_copy = strdup(idp_pack);
 
-    LOG_COMM(COMM_APP_TAG, "send %s", str_copy);
-
     if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
     {
         http_server_send_resp(str_copy);
+        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
     }
     else if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
+        LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+
+    }
+    else if(communication == COMM_RF)
+    {
         rf_uart_send_event(str_copy, strlen(str_copy));
+        LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+
     }
 
     free(str_copy);
@@ -97,4 +103,23 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
 void comm_app_wifi_reloader(void)
 {
 	wifi_reloader();
+}
+
+esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
+{
+    esp_err_t err = ESP_FAIL;
+    /* configuration variables */
+	if(strcmp(config.comm_main_mode_config, "RF") == 0)
+	{
+		comm_main_mode = COMM_RF;
+        err = ESP_OK;
+        return err;
+	}
+	else
+	{
+        comm_main_mode = COMM_MQTT;
+		ESP_LOGE(COMM_APP_TAG,"Invalid Comm Mode type configuration");
+		LOG_DBG_ERROR(COMM_APP_TAG, "Invalid_comm_mode_type");
+		return err;
+	}
 }

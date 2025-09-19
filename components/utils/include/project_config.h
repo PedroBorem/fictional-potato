@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.5.2")
+#define CONFIG_FW_VERSION           ("v2.8.4")
 
 /**
  * @brief Maximum number of scheduling values.
@@ -69,6 +69,7 @@
  * @brief HTTP OK response code.
  */
 #define CONFIG_HTTP_OK                  ("200")
+
 
 /**
  * @enum idp_type
@@ -127,7 +128,9 @@ typedef enum
     IDP_24,
     IDP_26 = 26,
     IDP_27,
+    IDP_28,
     IDP_30 = 30,
+    IDP_31,
     IDP_90 = 90,
     IDP_91,
     IDP_92,
@@ -181,6 +184,7 @@ typedef struct __attribute__((__packed__))
     uint8_t rotation;        /*!< Rotation mode of the pivot (PIVOT_CW or PIVOT_CCW) */
     uint8_t watering_state;  /*!< Watering state of the pivot (PIVOT_DRY or PIVOT_WET) */
     uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
+    char user[50];
 } pivot_actions;
 
 /**
@@ -313,7 +317,7 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
- * Structure defining the Return Configuration parameters.
+ * Structure defining the Virtual Barrier parameters.
  */
 typedef struct __attribute__((__packed__))
 {
@@ -328,8 +332,14 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in pivot_virtual_config struct.
  */
-#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (5)
+#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (4)
 
+
+/**
+ * @brief Configuration parameters.
+ *
+ * Structure defining the Physical Barrier parameters.
+ */
 typedef struct __attribute__((__packed__))
 {
     uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
@@ -339,7 +349,29 @@ typedef struct __attribute__((__packed__))
     uint8_t time_leaving_barrier;
 } pivot_physical_config;
 
-#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (6)
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_physical_config struct.
+ */
+#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (5)
+
+/**
+ * @brief Configuration parameters.
+ * 
+ * Defines the principal communication mode of the system for periodic comm.
+ */
+typedef struct __attribute__((__packed__))
+{
+    char comm_main_mode_config[50];
+}pivot_comm_main_mode_config;
+
+/**
+ * @brief Configuration parameters.
+ *
+ * How many configuration parameters in pivot_comm_main_mode_config struct.
+ */
+#define PIVOT_COMM_MAIN_MODE_CONFIG_VAR_COUNT   (1)
 
 /**
  * @brief Scheduling date parameters.
@@ -352,6 +384,7 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
     pivot_actions actions;          /*!< Pivot actions */
+    char str_author[50];
 } pivot_scheduling_date;
 
 /**
@@ -361,6 +394,7 @@ typedef struct __attribute__((__packed__))
 {
     char scheduling_id[50];         /*!< Scheduling ID */
     time_t end_date;                /*!< End date */
+    char str_author[50];
 } pivot_scheduling_off_date;
 
 
@@ -375,12 +409,14 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     uint16_t end_angle;             /*!< End angle */
     pivot_actions actions;          /*!< Pivot actions */
+    char str_author[50];
 } pivot_scheduling_angle;
 
 typedef struct __attribute__((__packed__))
 {
     char scheduling_id[30];         /*!< Scheduling ID */
     uint16_t end_angle;             /*!< End angle */
+    char str_author[50];
 } pivot_scheduling_off_angle;
 
 /**
@@ -397,6 +433,7 @@ typedef struct __attribute__((__packed__))
     time_t start_date;              /*!< Start date */
     time_t end_date;                /*!< End date */
 } pivot_history;
+
 
 /**
  * @brief Indicates which type the barrier
@@ -439,6 +476,26 @@ typedef enum
 } manual_off_counter;
 
 /**
+ * @brief Indicates the type of hangs up status.
+ *
+ * This macro is used to represent the type of hangs up status.
+ *
+ */
+typedef enum
+{
+    TYPE_HANGS_UP_MANUAL = 0,
+    TYPE_HANGS_UP_VIRTUAL_BARRIER,
+    TYPE_HANGS_UP_PIVOT_WITHOUT_WATER,
+    TYPE_HANGS_UP_BROWNOUT,
+    TYPE_HANGS_UP_SCHEDULE_14,
+    TYPE_HANGS_UP_SCHEDULE_15,
+    TYPE_HANGS_UP_SCHEDULE_16,
+    TYPE_HANGS_UP_SCHEDULE_17,
+    TYPE_HANGS_UP_SOIL_APP,
+    TYPE_HANGS_UP_IRRIGABRAS_APP,
+} hangs_up_status;
+
+/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.
@@ -447,6 +504,9 @@ typedef enum
  * @param communication The type of communication (HTTP POST, HTTP GET, MQTT).
  */
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
+
+
+typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *author);
 
 /**
  * @brief Global angle variable.
@@ -459,6 +519,11 @@ extern uint16_t global_angle;
 extern char system_id[50];
 
 extern uint32_t counter_reading_panel_off;
+
+/**
+ * @brief Global comm_main_mode variable.
+ */
+extern comm_type comm_main_mode;
 
 /** @} */ // end of PROJECT_CONFIG group
 

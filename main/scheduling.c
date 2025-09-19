@@ -79,6 +79,12 @@ static uint16_t* scheduling_current_angle = &global_angle;
 static app_callback scheduling_callback = NULL;
 
 /**
+ * @brief Initializes the scheduling module.
+ * @param callback The callback function for scheduling events.
+ */
+static hangs_up_callback scheduling_hang_up_call = NULL;
+
+/**
  * @brief Activates the scheduling at the specified position.
  * @param position The position of the scheduling date or angle in the array.
  * @param scheduling_id The ID of the scheduling.
@@ -89,6 +95,7 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
 /**
  * @brief Deactivates the scheduling with the specified ID.
  * @param scheduling_id The ID of the scheduling to be deactivated.
+ * @param shceduling_type The type of the scheduling (IDP)
  * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
  */
 static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
@@ -257,6 +264,7 @@ static void scheduling_task_idp_14(void* arg)
         // get timestamp
         scheduling_timestamp_now = rtc_app_get_timestamp(false);
 
+
         // date analysis
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
@@ -274,6 +282,7 @@ static void scheduling_task_idp_14(void* arg)
             }
             else if (scheduling_date_status[date_position] == true)
             {
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14, scheduling_date_current[date_position].scheduling_id, scheduling_date_current[date_position].str_author);
                 scheduling_date_status[date_position] = false;
                 scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
             }
@@ -320,6 +329,7 @@ static void scheduling_task_idp_15(void* arg)
                 else if (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
                          && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
                 {
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15, scheduling_angle_current[angle_position].scheduling_id, scheduling_angle_current[angle_position].str_author);
                     scheduling_angle_status[angle_position] = false;
                     scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
                 }
@@ -349,6 +359,7 @@ static void scheduling_task_idp_16(void* arg)
                 && scheduling_off_date_current[date_position].end_date != 0
                 && strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
             {
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16, scheduling_off_date_current[date_position].scheduling_id, scheduling_off_date_current[date_position].str_author);
                 scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
             }
         }
@@ -372,6 +383,7 @@ static void scheduling_task_idp_17(void* arg)
                 && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set)
                 && strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
             {
+                scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
                 scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
             }
         }
@@ -538,4 +550,22 @@ void scheduling_register_callback(const app_callback callback)
 	{
 		scheduling_callback = callback;
 	}
+}
+
+/**
+ * @brief Registers a callback function for scheduling hang up events.
+ *
+ * This function allows the registration of a callback that will be invoked when scheduling hang up events occur.
+ * The callback is used to notify other modules or external systems about these events.
+ *
+ * @param callback The hang up callback function to be registered.
+ *
+ * @note The function checks that the callback parameter is not NULL.
+ */
+void scheduling_hangs_up_callback(const hangs_up_callback callback)
+{
+    if(callback != NULL)
+    {
+        scheduling_hang_up_call = callback;
+    }
 }

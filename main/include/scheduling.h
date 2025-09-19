@@ -35,4 +35,16 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
  */
 void scheduling_register_callback(const app_callback callback);
 
+/**
+ * @brief Registers a callback function for scheduling hang up events.
+ *
+ * This function registers a callback that will be invoked when scheduling hang up events occur.
+ * The callback is used to notify other modules or external systems about these events.
+ *
+ * @param callback The hang up callback function to be registered.
+ *
+ * @note The function checks if the callback parameter is not NULL.
+ */
+void scheduling_hangs_up_callback(const hangs_up_callback callback);
+
 #endif /* MAIN_INCLUDE_SCHEDULING_H_ */
