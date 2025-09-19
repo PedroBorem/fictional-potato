@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.8.4")
+#define CONFIG_FW_VERSION           ("v2.8.5")
 
 /**
  * @brief Maximum number of scheduling values.
@@ -69,6 +69,11 @@
  * @brief HTTP OK response code.
  */
 #define CONFIG_HTTP_OK                  ("200")
+
+/** 
+ * @brief Offset for scheduling timestamps.
+ */
+#define TIMESTAMP_OFFSET_SCHEDULING (18000) // 30 minutes tolerance for start and end dates
 
 
 /**
