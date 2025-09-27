@@ -678,12 +678,22 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			vTaskDelay(pdMS_TO_TICKS(3000)); 
+
+			// Log before starting the 2 min timer
+			ESP_LOGI(GPIO_ACT_TAG, "%s, Pressure detected, starting 2-minute timer", __func__);
+
+			// Additional 2 minutes wait
+			vTaskDelay(pdMS_TO_TICKS(120000));  // 2 minutes = 120,000 ms
+
+			// Log after finishing the 2 min timer
+			ESP_LOGI(GPIO_ACT_TAG, "%s, 2-minute timer finished, starting actuator", __func__);
+
 			//system on
 			gpio_actuator_start();
 			pressurizing = false;
 
 			// send current action
-			gpio_actuator_callback("#00$", COMM_MQTT);
+			gpio_actuator_callback("#00$", comm_main_mode);
 
 			//suspend own task
 			vTaskSuspend(NULL);
