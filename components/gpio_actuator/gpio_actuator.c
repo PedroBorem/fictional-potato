@@ -686,11 +686,13 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
-			vTaskDelay(pdMS_TO_TICKS(3000));
+			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pressure detected", __func__);
+			vTaskDelay(pdMS_TO_TICKS(5000));
 
 			if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 			{
-				//stable pressure for 3 seconds
+				//stable pressure for 5 seconds
+				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Stable pressure confirmed", __func__);
 				//start rotation and percent control
 				uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
 				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
