@@ -410,8 +410,8 @@ void water_pump_relay_control(pivot_actions actions)
     }
     else if (actions.watering_state == PIVOT_WET)
     {
-        gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-        gpio_actuator_pressure_on();
+		gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+		gpio_actuator_pressure_on();
     }
 }
 
@@ -459,9 +459,18 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	
 	if(actions.power_state == PIVOT_ON)
 	{
-		rotation_relay_control(actions);
-		percent_relay_control(actions, perc_sec);
+		if(actions.watering_state == PIVOT_DRY)
+		{
+			// if dry mode, start rotation and percent control
+			rotation_relay_control(actions);
+			percent_relay_control(actions, perc_sec);
+			
+		}
+		
+		//otherwise, wait for pressure to stabilize to start rotation and percent control
+		// this will be done in the pressure task
 		water_pump_relay_control(actions);
+
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
@@ -678,12 +687,28 @@ void actuator_wait_pressure(void* arg)
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
 			vTaskDelay(pdMS_TO_TICKS(3000)); 
+
+			// Log before starting the 2 min timer
+			ESP_LOGI(GPIO_ACT_TAG, "%s, Pressure detected, starting 2-minute timer", __func__);
+
+			// Additional 2 minutes wait
+			vTaskDelay(pdMS_TO_TICKS(120000));  // 2 minutes = 120,000 ms
+
+			// Log after finishing the 2 min timer
+			ESP_LOGI(GPIO_ACT_TAG, "%s, 2-minute timer finished, starting actuator", __func__);
+
+			uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
+			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
+
+            rotation_relay_control(task_actions_set);
+            percent_relay_control(task_actions_set, perc_sec);
+
 			//system on
 			gpio_actuator_start();
 			pressurizing = false;
 
 			// send current action
-			gpio_actuator_callback("#00$", COMM_MQTT);
+			gpio_actuator_callback("#00$", comm_main_mode);
 
 			//suspend own task
 			vTaskSuspend(NULL);
