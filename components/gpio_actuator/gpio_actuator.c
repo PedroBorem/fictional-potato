@@ -686,36 +686,32 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
-			vTaskDelay(pdMS_TO_TICKS(3000)); 
+			vTaskDelay(pdMS_TO_TICKS(3000));
 
-			// Log before starting the 2 min timer
-			ESP_LOGI(GPIO_ACT_TAG, "%s, Pressure detected, starting 2-minute timer", __func__);
+			if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
+			{
+				//stable pressure for 3 seconds
+				//start rotation and percent control
+				uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
+				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 
-			// Additional 2 minutes wait
-			vTaskDelay(pdMS_TO_TICKS(120000));  // 2 minutes = 120,000 ms
+				rotation_relay_control(task_actions_set);
+				percent_relay_control(task_actions_set, perc_sec);
 
-			// Log after finishing the 2 min timer
-			ESP_LOGI(GPIO_ACT_TAG, "%s, 2-minute timer finished, starting actuator", __func__);
+				//system on
+				gpio_actuator_start();
+				pressurizing = false;
 
-			uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
-			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
+				// send current action
+				gpio_actuator_callback("#00$", comm_main_mode);
 
-            rotation_relay_control(task_actions_set);
-            percent_relay_control(task_actions_set, perc_sec);
+				//suspend own task
+				vTaskSuspend(NULL);
 
-			//system on
-			gpio_actuator_start();
-			pressurizing = false;
-
-			// send current action
-			gpio_actuator_callback("#00$", comm_main_mode);
-
-			//suspend own task
-			vTaskSuspend(NULL);
-
-			//task resume
-			pressurizing = true;
-			check_start = xTaskGetTickCount();
+				//task resume
+				pressurizing = true;
+				check_start = xTaskGetTickCount();
+			}
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > gpio_act_pressure_timeout)
 		{
