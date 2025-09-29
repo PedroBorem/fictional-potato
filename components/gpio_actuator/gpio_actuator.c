@@ -459,7 +459,7 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	
 	if(actions.power_state == PIVOT_ON)
 	{
-		if(action.watering_state == PIVOT_DRY)
+		if(actions.watering_state == PIVOT_DRY)
 		{
 			// if dry mode, start rotation and percent control
 			rotation_relay_control(actions);
