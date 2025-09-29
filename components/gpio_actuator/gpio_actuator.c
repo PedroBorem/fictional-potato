@@ -459,9 +459,18 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	
 	if(actions.power_state == PIVOT_ON)
 	{
+		if(action.watering_state == PIVOT_DRY)
+		{
+			// if dry mode, start rotation and percent control
+			rotation_relay_control(actions);
+			percent_relay_control(actions, perc_sec);
+			
+		}
+		
+		//otherwise, wait for pressure to stabilize to start rotation and percent control
+		// this will be done in the pressure task
 		water_pump_relay_control(actions);
-		rotation_relay_control(actions);
-		percent_relay_control(actions, perc_sec);
+
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
@@ -687,6 +696,12 @@ void actuator_wait_pressure(void* arg)
 
 			// Log after finishing the 2 min timer
 			ESP_LOGI(GPIO_ACT_TAG, "%s, 2-minute timer finished, starting actuator", __func__);
+
+			uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
+			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
+
+            rotation_relay_control(task_actions_set);
+            percent_relay_control(task_actions_set, perc_sec);
 
 			//system on
 			gpio_actuator_start();
