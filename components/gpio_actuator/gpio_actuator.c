@@ -410,8 +410,8 @@ void water_pump_relay_control(pivot_actions actions)
     }
     else if (actions.watering_state == PIVOT_WET)
     {
-        gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-        gpio_actuator_pressure_on();
+		gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+		gpio_actuator_pressure_on();
     }
 }
 
@@ -459,9 +459,9 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	
 	if(actions.power_state == PIVOT_ON)
 	{
+		water_pump_relay_control(actions);
 		rotation_relay_control(actions);
 		percent_relay_control(actions, perc_sec);
-		water_pump_relay_control(actions);
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
