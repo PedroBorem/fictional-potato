@@ -215,6 +215,7 @@ typedef struct __attribute__((__packed__))
     uint8_t on_time;                /*!< On time */
     uint8_t off_time;               /*!< Off time */
     uint8_t read_time;              /*!< Read time */
+    uint16_t after_pressurization_time_to_start;     /*!< Time to wait after pressurization to start pivot */
 } pivot_config;
 
 /**
