@@ -165,7 +165,8 @@ esp_err_t data_app_init(void)
 			.pressurization_time = 30,
 			.on_time = 1,
 			.off_time = 1,
-			.read_time = 10
+			.read_time = 10,
+			.after_pressurization_time_to_start = 3,
 	};
 
 	const network_config default_network = {
