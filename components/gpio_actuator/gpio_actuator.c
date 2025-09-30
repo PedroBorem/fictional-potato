@@ -58,7 +58,7 @@ static uint32_t gpio_act_off_delay = 0;
 static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
-
+static uint32_t gpio_act_after_pressurization_time_to_start = 0;
 // Pressurizing flag
 static bool pressurizing = false;
 
@@ -296,6 +296,7 @@ esp_err_t gpio_actuator_config(pivot_config config)
 
 	// convert sec to mili;
 	gpio_act_pressure_timeout = (config.pressurization_time * 1000);
+	gpio_act_after_pressurization_time_to_start = (config.after_pressurization_time_to_start * 1000);
 	gpio_act_on_delay = (config.on_time * 1000);
 	gpio_act_off_delay = (config.off_time * 1000);
 
@@ -701,7 +702,7 @@ void actuator_wait_pressure(void* arg)
 				percent_relay_control(task_actions_set, perc_sec);
 
 				//wait additional 3 seconds before turning on the system
-				vTaskDelay(pdMS_TO_TICKS(3000));
+				vTaskDelay(pdMS_TO_TICKS(gpio_act_after_pressurization_time_to_start));
 				
 				//system on
 				gpio_actuator_start();
