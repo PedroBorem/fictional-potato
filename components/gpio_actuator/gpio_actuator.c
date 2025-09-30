@@ -700,6 +700,9 @@ void actuator_wait_pressure(void* arg)
 				rotation_relay_control(task_actions_set);
 				percent_relay_control(task_actions_set, perc_sec);
 
+				//wait additional 3 seconds before turning on the system
+				vTaskDelay(pdMS_TO_TICKS(3000));
+				
 				//system on
 				gpio_actuator_start();
 				pressurizing = false;
