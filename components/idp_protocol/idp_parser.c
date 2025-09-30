@@ -41,6 +41,16 @@
 #define PRESSURE_TIME_MAX_SEC 1800
 
 /**
+ * @brief The minimum time value accepted for pressurization in seconds.
+ */
+#define AFTER_PRESSURE_TIME_TO_START_MIN_SEC 3
+
+/**
+ * @brief The maximum time value accepted for pressurization in seconds.
+ */
+#define AFTER_PRESSURE_TIME_TO_START_MAX_SEC 300
+
+/**
  * @brief The minimum time value accepted for On_Off_relay activation in seconds.
  */
 #define RELAY_TIME_MIN_SEC 1
@@ -568,6 +578,10 @@ bool idp_parser_validate_idp_03(const pivot_config pivot_config)
     }
 
     if(!(pivot_config.read_time >= READ_TIME_MIN_MINUTES && pivot_config.read_time <= READ_TIME_MAX_MINUTES)){
+        return ret;
+    }
+
+    if(!(pivot_config.after_pressurization_time_to_start >= AFTER_PRESSURE_TIME_TO_START_MIN_SEC && pivot_config.after_pressurization_time_to_start <= AFTER_PRESSURE_TIME_TO_START_MAX_SEC)){
         return ret;
     }
 
