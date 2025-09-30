@@ -850,6 +850,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				{"uint8_t", &new_config.on_time},
 				{"uint8_t", &new_config.off_time},
 				{"uint8_t", &new_config.read_time},
+				{"uint16_t", &new_config.after_pressurization_time_to_start},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -898,6 +899,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 				{"uint8_t", &config.on_time},
 				{"uint8_t", &config.off_time},
 				{"uint8_t", &config.read_time},
+				{"uint16_t", &config.after_pressurization_time_to_start},
 				{NULL, NULL}};
 
 		// send
