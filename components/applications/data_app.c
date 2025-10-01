@@ -183,7 +183,7 @@ esp_err_t data_app_init(void)
 			.pressure = "NA",
 			.pressurization_time = 300,
 			.on_time = 1,
-			.off_time = 1,
+			.off_time = 2,
 			.read_time = 10
 	};
 
@@ -195,8 +195,8 @@ esp_err_t data_app_init(void)
 	};
 
 	const reboot_config default_reboot = {
-			.enable = true,
-			.reboot_timeout_sec = 14400, 	//4 hours in sec
+			.enable = false,
+			.reboot_timeout_sec = 3600, 	//1 hours in sec
 	};
 
 	const pivot_physical_config default_phy_barrier = {
