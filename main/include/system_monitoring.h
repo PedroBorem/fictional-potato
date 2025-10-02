@@ -13,14 +13,6 @@
 
 #include "project_config.h"
 
-#define MAX_RAINFALL_ENTRIES 36
-
-/**
- * @brief Get the status of the rain-per-pulse flag.
- * @return true if the flag is active, false otherwise.
- */
-bool get_rain_per_pulse_flag();
-
 /**
  * @brief Set the rain-per-pulse flag status.
  * @param flag true to enable rain-per-pulse mode, false to disable.

@@ -87,4 +87,17 @@ void rtc_app_get_str_date_time(time_t timestamp_now, char* str_out);
  */
 time_t rtc_app_parse_str_date_time(const char *dt_str);
 
+/**
+ * @brief Finds the index of the oldest timestamp in the rain data array.
+ * 
+ * This function iterates through the provided array of rain_data structures
+ * to identify the index of the oldest timestamp. If an entry with zero rainfall
+ * or an empty date string is found, its index is returned immediately.
+ * 
+ * @param array Pointer to the array of rain_data structures.
+ * @param size The size of the array.
+ * @return uint16_t The index of the oldest timestamp.
+ */
+static uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size);
+
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */

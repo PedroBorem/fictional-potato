@@ -25,6 +25,7 @@
 #include "comm_app.h"
 #include "data_app.h"
 #include "rf_uart.h"
+#include "pluviometer_app.h"
 
 #include "scheduling.h"
 #include "system_monitoring.h"

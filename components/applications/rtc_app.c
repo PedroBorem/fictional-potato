@@ -249,3 +249,39 @@ time_t rtc_app_parse_str_date_time(const char *dt_str)
 	time_t t = mktime(&tm_info);
 	return (t == (time_t)(-1)) ? (time_t)(-1) : t;
 }
+
+/**
+ * @brief Handles the system monitoring based on the pivot actions and system configuration.
+ *
+ * This function handles the system monitoring based on the pivot actions and system configuration.
+ *
+ * @param pivot_actions Structure containing the pivot actions to be performed.
+ */
+static uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size)
+{
+    time_t oldest_ts   = (time_t)LONG_MAX;
+    uint16_t oldest_idx = 0;
+
+    for (uint16_t i = 0; i < size; i++)
+    {
+        if ((array[i].rain_per_hour == 0.0f) && (strlen(array[i].str_date_time) == 0))
+        {
+            return i;
+        }
+
+        time_t current_ts = rtc_app_parse_str_date_time(array[i].str_date_time);
+
+        if (current_ts == 0)
+        {
+            return i;
+        }
+
+        if (current_ts < oldest_ts)
+        {
+            oldest_ts  = current_ts;
+            oldest_idx = i;
+        }
+    }
+
+    return oldest_idx;
+}

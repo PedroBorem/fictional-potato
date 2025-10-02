@@ -17,6 +17,7 @@
 #include "idp_parser.h"
 #include "gpio_actuator.h"
 #include "project_config.h"
+#include "pluviometer_app.h"
 
 #include <string.h>
 
@@ -25,8 +26,6 @@
 #define SYSTEM_MONITORING_TAG	"system_monitoring"
 
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
-
-#define RAINFALL_SAVE_INTERVAL_MS (3600000)
 
 /**
  * @brief Enumeration representing the possible states of the system monitoring.
@@ -50,13 +49,9 @@ static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configur
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
-static uint32_t panel_reading;
+static uint32_t panel_reading; /**< Counter for manual readings taken. */
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
-
-static rain_data pluviometer[MAX_RAINFALL_ENTRIES] = {0};
-float rain_per_pulse = 0.1f; // Rainfall per pulse (mm)
-bool rain_per_pulse_flag = false;
 
 static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
 
@@ -95,42 +90,6 @@ static void system_monitoring_task(void* arg);
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
-
-/**
- * @brief Handles the system monitoring based on the pivot actions and system configuration.
- *
- * This function handles the system monitoring based on the pivot actions and system configuration.
- *
- * @param pivot_actions Structure containing the pivot actions to be performed.
- */
-static uint16_t system_monitoring_find_oldest_timestamp(rain_data *array, size_t size)
-{
-    time_t oldest_ts   = (time_t)LONG_MAX;
-    uint16_t oldest_idx = 0;
-
-    for (uint16_t i = 0; i < size; i++)
-    {
-        if ((array[i].rain_per_hour == 0.0f) && (strlen(array[i].str_date_time) == 0))
-        {
-            return i;
-        }
-
-        time_t current_ts = rtc_app_parse_str_date_time(array[i].str_date_time);
-
-        if (current_ts == 0)
-        {
-            return i;
-        }
-
-        if (current_ts < oldest_ts)
-        {
-            oldest_ts  = current_ts;
-            oldest_idx = i;
-        }
-    }
-
-    return oldest_idx;
-}
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -379,180 +338,6 @@ static void system_monitoring_task(void* arg)
         }        
 
         vTaskDelay(pdMS_TO_TICKS(SYSTEM_DELAY_ANALYSIS_ANGLE_MS));
-    }
-}
-
-/**
- * @brief Returns the flag accumulated rainfall.
- *
- * @return Total rainfall value (e.g., in mm).
- */
-bool get_rain_per_pulse_flag()
-{
-    return rain_per_pulse_flag;
-}
-
-/**
- * @brief Sets the rain-per-pulse flag status.
- *
- * @param flag true to enable rain-per-pulse mode, false to disable.
- */
-void set_rain_per_pulse_flag(bool flag)
-{
-    rain_per_pulse_flag = flag;
-}
-
-/**
- * @brief Returns a pointer to the rain data array.
- *
- * Allows read-only or mutable access to the internal rainfall data.
- *
- * @return Pointer to the pluviometer array.
- */
-rain_data* get_rain_data_array()
-{
-    return pluviometer;
-}
-
-/**
- * @brief Sets a rain_data entry at the specified index.
- *
- * @param index Position in the pluviometer array.
- * @param data The rain_data value to set.
- */
-void set_rain_data_entry(int index, rain_data data)
-{
-    if (index >= 0 && index < MAX_RAINFALL_ENTRIES)
-    {
-        pluviometer[index] = data;
-    }
-}
-
-/**
- * @brief Initializes the rain gauge vector with NVS data.
- */
-void system_monitoring_init_rainfall_data(void) 
-{
-    esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
-    if (err != ESP_OK)
-    {
-        ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
-        memset(pluviometer, 0, sizeof(pluviometer));
-    }
-    
-    current_index = 0;
-
-    err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
-    if (err != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0) 
-    {
-        rain_per_pulse = 0.1f;
-        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
-    }
-}
-
-/**
- * @brief Task to calculate rainfall every second and save accumulated data every hour.
- *
- * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
- * It saves the accumulated rainfall data in persistent memory every hour.
- *
- * @param arg Task argument (default NULL).
- */
-void system_monitoring_rainfall_task(void *arg) 
-{
-    TickType_t last_wake_time = xTaskGetTickCount();
-    TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
-    pivot_actions actions = {};
-    float rain_shutdown_value;
-    /*
-    * - 1 minuto   = 60000 ms
-    * - 2 minutos  = 120000 ms
-    * - 3 minutos  = 180000 ms
-    * - 5 minutos  = 300000 ms
-    * - 10 minutos = 600000 ms
-    * - 30 minutos = 1800000 ms
-    * - 60 minutos = 3600000 ms
-    *
-    */
-    system_monitoring_init_rainfall_data();
-
-    while (1) 
-    {
-        if (rain_per_pulse_flag)
-        {
-            float nvs_rain_per_pulse = 0.1;
-            esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
-            if (ret == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
-            {
-                rain_per_pulse = nvs_rain_per_pulse;
-            }
-            else
-            {
-                ESP_LOGW(SYSTEM_MONITORING_TAG,
-                         "Failed to load RAIN_PER_PULSE. Using default: %.2f", 
-                         rain_per_pulse);
-            }
-            rain_per_pulse_flag = false;
-        }
-
-        gpio_rain_sensor_calculate_rainfall(); 
-        float rain_total = get_rain_total();
-        if (rain_total > 0.0f) 
-        {
-            data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
-            data_app_load(DATA_TYPE_ACTIONS, &actions);
-
-            if(actions.power_state == PIVOT_ON && actions.watering_state == PIVOT_WET && rain_shutdown_value != 0.0f)
-            {
-                if(rain_total >= rain_shutdown_value)
-                {
-                    gpio_actuator_shutdown();
-                }    
-            }
-        }
-
-        if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
-        {
-            if (rain_total > 0.0f)
-            {
-                time_t timestamp = rtc_app_get_timestamp(false);
-
-                char tmp_date_str[30];
-                rtc_app_get_str_date_time(timestamp, tmp_date_str);
-
-                int oldest_index = system_monitoring_find_oldest_timestamp(
-                                       pluviometer, 
-                                       MAX_RAINFALL_ENTRIES
-                                   );
-
-                pluviometer[oldest_index].rain_per_hour = rain_total;
-                strncpy(pluviometer[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometer[oldest_index].str_date_time) - 1);
-
-                ESP_LOGI(SYSTEM_MONITORING_TAG, 
-                         "Saved rainfall data (%.2f) at index %d - %s", 
-                         pluviometer[oldest_index].rain_per_hour, 
-                         oldest_index,
-                         pluviometer[oldest_index].str_date_time);
-
-                if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, 
-                                  pluviometer, 
-                                  sizeof(pluviometer)) != ESP_OK) 
-                {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
-                }
-                else 
-                {
-                    ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data saved successfully.");
-                }
-
-                set_rain_total(0.0f);
-            }
-
-            last_save_time = xTaskGetTickCount();
-        }
-
-        vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
 }
 

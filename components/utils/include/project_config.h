@@ -229,15 +229,6 @@ typedef struct __attribute__((__packed__))
 #define PIVOT_CONFIG_VAR_COUNT  (6)
 
 /**
- * @brief Structure defining the rainfall data.
- */
-typedef struct __attribute__((__packed__))
-{
-    float rain_per_hour;               /*!< Total rainfall in a hour*/
-    char str_date_time[30];         /*!< Date and time as string */
-} rain_data;
-
-/**
  * Structure defining the reboot configuration parameters.
  */
 typedef struct __attribute__((__packed__))
