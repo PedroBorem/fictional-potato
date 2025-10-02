@@ -6,8 +6,18 @@
  /* Self include */
 #include "pluviometer_app.h"
 #include "data_app.h"
+#include "rtc_app.h"
+
+#include "gpio_actuator.h"
+
+#include "FreeRTOS_defines.h"
+#include "log.h"
+
+#include <string.h>
 
 #define PLUVIOMETER_TAG "pluviometer_app"
+
+static uint8_t current_index = 0;
 
 static rain_data pluviometer[MAX_RAINFALL_ENTRIES] = {0};
 float rain_per_pulse = 0.1f; // Rainfall per pulse (mm)
@@ -57,7 +67,7 @@ void system_monitoring_init_rainfall_data(void)
     esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
     if (err != ESP_OK)
     {
-        ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to load rainfall data. Initializing to empty.");
+        ESP_LOGE(PLUVIOMETER_TAG, "Failed to load rainfall data. Initializing to empty.");
         memset(pluviometer, 0, sizeof(pluviometer));
     }
 
@@ -67,7 +77,7 @@ void system_monitoring_init_rainfall_data(void)
     if (err != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
     {
         rain_per_pulse = 0.1f;
-        ESP_LOGW(SYSTEM_MONITORING_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
+        ESP_LOGW(PLUVIOMETER_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
     }
 }
 
@@ -109,7 +119,7 @@ void system_monitoring_rainfall_task(void *arg)
             }
             else
             {
-                ESP_LOGW(SYSTEM_MONITORING_TAG,
+                ESP_LOGW(PLUVIOMETER_TAG,
                          "Failed to load RAIN_PER_PULSE. Using default: %.2f", 
                          rain_per_pulse);
             }
@@ -149,7 +159,7 @@ void system_monitoring_rainfall_task(void *arg)
                 pluviometer[oldest_index].rain_per_hour = rain_total;
                 strncpy(pluviometer[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometer[oldest_index].str_date_time) - 1);
 
-                ESP_LOGI(SYSTEM_MONITORING_TAG, 
+                ESP_LOGI(PLUVIOMETER_TAG, 
                          "Saved rainfall data (%.2f) at index %d - %s", 
                          pluviometer[oldest_index].rain_per_hour, 
                          oldest_index,
@@ -159,11 +169,11 @@ void system_monitoring_rainfall_task(void *arg)
                                   pluviometer, 
                                   sizeof(pluviometer)) != ESP_OK) 
                 {
-                    ESP_LOGE(SYSTEM_MONITORING_TAG, "Failed to save rainfall data.");
+                    ESP_LOGE(PLUVIOMETER_TAG, "Failed to save rainfall data.");
                 }
                 else 
                 {
-                    ESP_LOGI(SYSTEM_MONITORING_TAG, "Rainfall data saved successfully.");
+                    ESP_LOGI(PLUVIOMETER_TAG, "Rainfall data saved successfully.");
                 }
 
                 set_rain_total(0.0f);

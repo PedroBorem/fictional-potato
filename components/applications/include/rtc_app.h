@@ -8,6 +8,8 @@
 #ifndef COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
 #define COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
 
+#include "pluviometer_app.h"
+
 #include <time.h>
 #include <stdbool.h>
 
@@ -98,6 +100,6 @@ time_t rtc_app_parse_str_date_time(const char *dt_str);
  * @param size The size of the array.
  * @return uint16_t The index of the oldest timestamp.
  */
-static uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size);
+uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_ */

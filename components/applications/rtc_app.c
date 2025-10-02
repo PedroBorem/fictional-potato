@@ -6,6 +6,7 @@
  */
 
 #include "rtc_app.h"
+
 #include "rtc_ds3231.h"
 #include "esp_log.h"
 #include "log.h"
@@ -257,7 +258,7 @@ time_t rtc_app_parse_str_date_time(const char *dt_str)
  *
  * @param pivot_actions Structure containing the pivot actions to be performed.
  */
-static uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size)
+uint16_t rtc_app_find_oldest_timestamp(rain_data *array, size_t size)
 {
     time_t oldest_ts   = (time_t)LONG_MAX;
     uint16_t oldest_idx = 0;

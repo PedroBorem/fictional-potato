@@ -14,26 +14,6 @@
 #include "project_config.h"
 
 /**
- * @brief Set the rain-per-pulse flag status.
- * @param flag true to enable rain-per-pulse mode, false to disable.
- */
-void set_rain_per_pulse_flag(bool flag);
-
-/**
- * @brief Get a pointer to the rain data array.
- * @return Pointer to the pluviometer array.
- */
-rain_data* get_rain_data_array();
-
-/**
- * @brief Set a rain_data entry at the specified index.
- *
- * @param index Position in the pluviometer array.
- * @param data The rain_data value to set.
- */
-void set_rain_data_entry(int index, rain_data data);
-
-/**
  * @brief Starts the system monitoring with the specified configuration.
  *
  * This function initiates the system monitoring module with the provided configuration.

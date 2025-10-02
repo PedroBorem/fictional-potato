@@ -53,8 +53,6 @@ static uint32_t panel_reading; /**< Counter for manual readings taken. */
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
-static uint8_t current_index = 0; // Índice para o próximo elemento no buffer
-
 void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
 
 /* Private methods ----------------------------------- */
