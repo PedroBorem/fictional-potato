@@ -235,9 +235,25 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	io_conf_rain_sensor.pull_up_en = GPIO_PULLUP_DISABLE;
 	gpio_config(&io_conf_rain_sensor);
 
-	
-	// Set rain sensor pin as input
-	err = gpio_config(&io_conf_rain_sensor);
+	if(xTask_readpercent == NULL)
+	{
+		BaseType_t xReturn = xTaskCreate(&actuator_read_percent,
+								ACTUATOR_PERCENT_TASK_NAME,
+								ACTUATOR_PERCENT_STACK_SIZE,
+								NULL,
+								ACTUATOR_PERCENT_TASK_PRIORITY,
+								&xTask_readpercent);
+
+		if(xReturn != pdPASS || xTask_readpercent == NULL)
+		{
+			ESP_LOGE(GPIO_ACT_TAG, "%s, Failed to create task: %s", __func__, ACTUATOR_PERCENT_TASK_NAME);
+			return ESP_FAIL;
+		}
+	}
+	else
+	{
+		vTaskResume(xTask_readpercent);
+	}
 
     // Install ISR service
     err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
