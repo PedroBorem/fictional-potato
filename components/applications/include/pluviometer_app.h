@@ -10,17 +10,21 @@
 #include "project_config.h"
 
 /**
- * @brief Structure defining the rainfall data.
+ * @brief Daily rainfall with 24 hourly bins.
+ * @note Values are in tenths of a millimeter (0.1 mm).
  */
 typedef struct __attribute__((__packed__))
 {
-    float rain_per_hour;               /*!< Total rainfall in a hour*/
-    char str_date_time[30];         /*!< Date and time as string */
-} rain_data;
+    char date_day[50];   /**< Local date in "YYYYMMDD". */
+    float rain_hour[24];  /**< Hourly rainfall (index 0..23 = 00–01 ... 23–00), 0.1 mm. */
+    float daily_total;      /**< Daily total (sum of 24 hours), 0.1 mm. */
+} rain_per_day_data;
 
 #define MAX_RAINFALL_ENTRIES 24 /**< Maximum number of rainfall entries */
 
 #define RAINFALL_SAVE_INTERVAL_MS (3600000) /**< Interval for saving rainfall data in milliseconds (1 hour) */
+
+void pluviometer_counter_rain_pulse();
 
 /**
  * @brief Set the rain-per-pulse flag status.

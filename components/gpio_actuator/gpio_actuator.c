@@ -27,10 +27,6 @@
 #define GPIO_ACT_INTR_FLAG_DEFAULT 	0
 
 /* Global variables ---------------------------------------------- */
-// Rain sensor variables
-static volatile int rain_pulse_count = 0;     // Rain sensor pulse count
-float rain_total = 0.0f;                // Accumulated rainfall
-
 // Callback variables
 static app_callback gpio_actuator_callback = NULL;
 
@@ -63,8 +59,8 @@ static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
-// Rain sensor mutex
-static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
+// Rain sensor pulse count
+static volatile uint32_t rain_pulse_count = 0;     
 
 // Pressurizing flag
 static bool pressurizing = false;
@@ -115,18 +111,18 @@ void actuator_read_percent(void* arg);
  * @brief Returns the total accumulated rainfall.
  * @return Total rainfall value (e.g., in mm).
  */
-float get_rain_total()
+uint32_t get_rain_pulse()
 {
-	return rain_total;
+	return rain_pulse_count;
 }
 
 /**
  * @brief Sets the total accumulated rainfall value.
  * @param value The rainfall amount to set (e.g., in mm).
  */
-void set_rain_total(float value)
+void set_rain_pulse(uint32_t value)
 {
-    rain_total = value;
+    rain_pulse_count = value;
 }
 
 /**
@@ -228,7 +224,7 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 
 	// Configure rain sensor pin
 	gpio_config_t io_conf_rain_sensor = {};
-	io_conf_rain_sensor.intr_type = GPIO_INTR_POSEDGE; 
+	io_conf_rain_sensor.intr_type = GPIO_INTR_ANYEDGE; 
 	io_conf_rain_sensor.mode = GPIO_MODE_INPUT;
 	io_conf_rain_sensor.pin_bit_mask = GPIO_INT_RAIN_SENSOR;
 	io_conf_rain_sensor.pull_down_en = GPIO_PULLDOWN_ENABLE;
@@ -876,22 +872,6 @@ void actuator_read_percent(void* arg)
 		percent_watchdog = clock();
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
-}
-
-/**
- * @brief Calculates and logs the rainfall based on the sensor pulses.
- * Resets the pulse count after calculation.
- */
-void gpio_rain_sensor_calculate_rainfall(void)
-{
-    taskENTER_CRITICAL(&rain_sensor_mux);
-
-    float interval_rain = rain_pulse_count * rain_per_pulse;
-    rain_pulse_count = 0;
-
-    taskEXIT_CRITICAL(&rain_sensor_mux);
-
-    rain_total += interval_rain;
 }
 
 

@@ -147,16 +147,16 @@ extern float rain_per_pulse;
 /* Public function prototypes ------------------------------------------- */
 
 /**
- * @brief Get the total accumulated rainfall.
- * @return float Total rainfall value (e.g., in mm).
+ * @brief Returns the total accumulated rainfall.
+ * @return Total rainfall value (e.g., in mm).
  */
-float get_rain_total();
+uint32_t get_rain_pulse();
 
 /**
- * @brief Set the total accumulated rainfall value.
+ * @brief Sets the total accumulated rainfall value.
  * @param value The rainfall amount to set (e.g., in mm).
  */
-void set_rain_total(float value);
+void set_rain_pulse(uint32_t value);
 
 /**
  * @brief Initializes the GPIO actuator module.

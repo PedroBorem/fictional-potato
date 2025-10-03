@@ -8,6 +8,8 @@
 #include "data_app.h"
 #include "nvs_data.h"
 
+#include "pluviometer_app.h"
+
 /* Project include */
 #include "log.h"
 #include "esp_log.h"
@@ -163,6 +165,8 @@
  */
 #define DATA_RAIN_SHUTDOWN_VALUE "rain_stop"
 
+#define DATA_RAINFALL_DAILY "rainfall_daily"
+
 /**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
@@ -170,6 +174,12 @@
 esp_err_t data_app_init(void)
 {
 	esp_err_t err = ESP_FAIL;
+
+	const rain_per_day_data default_rainfall = {
+			.date_day = "DD/MM/YYYY",
+			.rain_hour = {0},
+			.daily_total = 0,
+	};
 
 	const pivot_actions default_action = {
 			.power_state = PIVOT_OFF,
@@ -309,6 +319,10 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_RAIN_SHUTDOWN_VALUE) == 0)
 		{
 			data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &default_rain_shutdown_value, sizeof(default_rain_shutdown_value));
+		}
+		if(nvs_data_get_size(DATA_TYPE_RAINFALL_DAILY) == 0)
+		{
+			data_app_save(DATA_RAINFALL_DAILY, &default_rainfall, sizeof(default_rainfall));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -491,6 +505,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_RAIN_SHUTDOWN_VALUE, data, data_size);
 			break;
 		}
+		case DATA_TYPE_RAINFALL_DAILY:
+		{
+			ret = nvs_data_set(DATA_RAINFALL_DAILY, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -626,6 +645,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_RAIN_SHUTDOWN_VALUE:
 		{
 			ret = nvs_data_get_blob(DATA_RAIN_SHUTDOWN_VALUE, data);
+			break;
+		}
+		case DATA_TYPE_RAINFALL_DAILY:
+		{
+			ret = nvs_data_get_blob(DATA_RAINFALL_DAILY, data);
 			break;
 		}
 		default:

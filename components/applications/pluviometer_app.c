@@ -17,11 +17,26 @@
 
 #define PLUVIOMETER_TAG "pluviometer_app"
 
+static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
+
 static uint8_t current_index = 0;
 
-static rain_data pluviometer[MAX_RAINFALL_ENTRIES] = {0};
+static const rain_per_day_data data_rain = {};
 float rain_per_pulse = 0.1f; // Rainfall per pulse (mm)
 bool rain_per_pulse_flag = false;
+
+// Rain sensor variables
+float rain_total_per_hour = 0.0f;                // Accumulated rainfall
+
+static esp_err_t save_rain_daily(const rain_per_day_data* data) 
+{
+    return data_app_save(DATA_TYPE_RAINFALL_DAILY, data, sizeof(*data));
+}
+
+static esp_err_t load_rain_daily(rain_per_day_data* data) 
+{
+    return data_app_load(DATA_TYPE_RAINFALL_DAILY, data);
+}
 
 /**
  * @brief Sets the rain-per-pulse flag status.
@@ -64,6 +79,7 @@ void set_rain_data_entry(int index, rain_data data)
  */
 void system_monitoring_init_rainfall_data(void)
 {
+    const rain_per_day_data rain_data = {};
     esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
     if (err != ESP_OK)
     {
@@ -184,4 +200,20 @@ void system_monitoring_rainfall_task(void *arg)
 
         vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
     }
+}
+
+/**
+ * @brief Calculates and logs the rainfall based on the sensor pulses.
+ * Resets the pulse count after calculation.
+ */
+void gpio_rain_sensor_calculate_rainfall(void)
+{
+    taskENTER_CRITICAL(&rain_sensor_mux);
+
+    float interval_rain = get_rain_pulse() * rain_per_pulse;
+    set_rain_pulse(0);
+
+    taskEXIT_CRITICAL(&rain_sensor_mux);
+
+    rain_total += interval_rain;
 }
