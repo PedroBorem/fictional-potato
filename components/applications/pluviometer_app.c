@@ -13,12 +13,20 @@
 #include "log.h"
 
 #include <string.h>
+#include <time.h>
 
 /** @brief Log tag for this module. */
 #define PLUVIOMETER_TAG "pluviometer_app"
 
+#define SECS_PER_HOUR 3600UL
+#define SECS_PER_DAY 86400UL
+#define HOURS_PER_DAY 24U
+
 /** @brief Spinlock/mutex for ISR-safe access to rain pulse counters. */
 static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
+
+/** @brief Mutex for hour accumulator (rain_total) snapshot/reset and updates. */
+static portMUX_TYPE rain_total_mux = portMUX_INITIALIZER_UNLOCKED;
 
 /** @brief Daily rainfall record; data is distributed by hour index (g_hour_idx). */
 static rain_per_day_data g_rain_day = {0};
@@ -31,6 +39,11 @@ static float rain_per_pulse = 0.1f;
 
 /** @brief When true, reloads rain_per_pulse from NVS on the next loop. */
 static bool rain_per_pulse_flag = false;
+
+/** @brief Último índice horário detectado via RTC (0..23). 0xFF = indefinido/inicial. */
+static uint8_t s_last_hour_idx = 0xFF;
+
+static void update_day_string_from_ts(time_t ts);
 
 /**
  * @brief Save the daily rainfall record to NVS.
@@ -78,8 +91,20 @@ void system_monitoring_init_rainfall_data(void)
         ESP_LOGI(PLUVIOMETER_TAG, "No daily rainfall found, starting fresh.");
     }
 
-    // índice horário inicia em 0 neste modelo simples
-    g_hour_idx = 0;
+    // índice horário inicia pela hora 'real' local (via RTC)
+    time_t now_ts = rtc_app_get_timestamp(true); // true: horário local
+    if (now_ts > 0)
+    {
+        uint32_t sod = (uint32_t)(now_ts % SECS_PER_DAY);
+        g_hour_idx = (uint8_t)(sod / SECS_PER_HOUR); // 0..23
+        s_last_hour_idx = g_hour_idx;                // inicializa o acompanhamento
+        update_day_string_from_ts(now_ts);
+    }
+    else
+    {
+        g_hour_idx = 0;
+        s_last_hour_idx = 0xFF; // primeiro timestamp válido ajustará isso
+    }
 
     // carrega mm por pulso
     float nvs_rain_per_pulse = 0.0f;
@@ -96,110 +121,189 @@ void system_monitoring_init_rainfall_data(void)
 }
 
 /**
- * @brief FreeRTOS task: accumulates rainfall from pulses and periodically saves to NVS.
- *
- * Logic:
- * - Converts pulses to mm and accumulates a temporary total via get_rain_total()/set_rain_total().
- * - Every save interval (1 hour), advances g_hour_idx (0..23).
- * - If there was rain in the last hour, adds it to g_rain_day.rain_hour[g_hour_idx],
- *   recomputes daily_total, and persists the record.
- * - After 24 hours (wrap to index 0), clears the structure for a new day.
- *
- * @param arg Unused.
+ * @brief Update g_rain_day.date_day (DD/MM/YYYY) from a timestamp (local time).
  */
+static void update_day_string_from_ts(time_t ts)
+{
+    struct tm lt;
+    localtime_r(&ts, &lt);
+    strftime(g_rain_day.date_day, sizeof(g_rain_day.date_day), "%d/%m/%Y", &lt);
+}
+
+/**
+ * @brief FreeRTOS task: accumulates rainfall from pulses and writes hourly bins anchored to RTC.
+ *
+ * - Pulses → mm are accumulated in a temporary “current-hour” bucket.
+ * - On RTC hour change (00..23), we atomically snapshot+reset the accumulator
+ *   and store the value into g_rain_day.rain_hour[hour_just_finished].
+ * - We always persist to NVS (including 0.0 mm) and recompute the daily total.
+ * - If hours were skipped within the same day, we fill missed bins with 0.0 mm.
+ * - On day rollover (23→0 or any midnight crossing), we finalize the previous day
+ *   and clear the structure for the new day (date string updated from RTC).
+ */
+
 void system_monitoring_rainfall_task(void *arg)
 {
+    // Periodic loop ticks; used with vTaskDelayUntil for stable cadence.
     TickType_t last_wake_time = xTaskGetTickCount();
-    TickType_t last_save_time = last_wake_time;
-    const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
 
+    // Optional rain-based shutdown parameters
     pivot_actions actions = {};
     float rain_shutdown_value = 0.0f;
+
+    // Throttle for repeated warnings when RTC is invalid
+    static TickType_t s_last_rtc_warn_tick = 0;
+
+    ESP_LOGI(PLUVIOMETER_TAG, "Starting rainfall monitoring task (hourly RTC-anchored windows).");
 
     system_monitoring_init_rainfall_data();
 
     while (1)
     {
-        // atualização de calibração sob demanda
         if (rain_per_pulse_flag)
         {
             float nvs_rain_per_pulse = 0.1f;
-            if (data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse) == ESP_OK &&
-                nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
+            esp_err_t err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
+            if (err == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
             {
+                ESP_LOGI(PLUVIOMETER_TAG, "Updated RAIN_PER_PULSE from NVS: %.3f mm/pulse (prev: %.3f).",
+                         nvs_rain_per_pulse, rain_per_pulse);
                 rain_per_pulse = nvs_rain_per_pulse;
             }
             else
             {
-                ESP_LOGW(PLUVIOMETER_TAG, "Failed to load RAIN_PER_PULSE. Keeping: %.2f", rain_per_pulse);
+                ESP_LOGW(PLUVIOMETER_TAG,
+                         "Failed to load RAIN_PER_PULSE (err=%d or invalid %.3f). Keeping current: %.3f.",
+                         (int)err, nvs_rain_per_pulse, rain_per_pulse);
             }
             rain_per_pulse_flag = false;
         }
 
-        /* Converte pulsos para mm e acumula no total temporário */
         gpio_rain_sensor_calculate_rainfall();
+        float rain_total = get_rain_total();
 
-        float rain_total = get_rain_total(); // acumulado desde o último reset (hora corrente)
-
-        /* Lógica de desligamento por chuva (opcional) baseada na chuva da hora */
         if (rain_total > 0.0f)
         {
-            data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
-            data_app_load(DATA_TYPE_ACTIONS, &actions);
+            (void)data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
+            (void)data_app_load(DATA_TYPE_ACTIONS, &actions);
 
             if (actions.power_state == PIVOT_ON &&
                 actions.watering_state == PIVOT_WET &&
-                rain_shutdown_value != 0.0f)
+                rain_shutdown_value > 0.0f &&
+                rain_total >= rain_shutdown_value)
             {
-                if (rain_total >= rain_shutdown_value)
-                {
-                    gpio_actuator_shutdown();
-                }
+                ESP_LOGW(PLUVIOMETER_TAG,
+                         "Rain shutdown triggered: rain_total=%.2f mm >= threshold=%.2f mm. Requesting actuator OFF.",
+                         rain_total, rain_shutdown_value);
+                gpio_actuator_shutdown();
             }
         }
 
-        /* Gravação periódica (sempre) — persiste 0.0 mm quando não choveu */
-        if ((xTaskGetTickCount() - last_save_time) >= save_interval)
+        time_t now_ts = rtc_app_get_timestamp(true);
+        if (now_ts > 0)
         {
-            // Escreve o valor da hora atual no binário do vetor (pode ser 0.0)
-            g_rain_day.rain_hour[g_hour_idx] = rain_total;
+            uint32_t sod = (uint32_t)(now_ts % SECS_PER_DAY);
+            uint8_t curr_hour_idx = (uint8_t)(sod / SECS_PER_HOUR);
 
-            // Recalcula total diário
-            float total = 0.0f;
-            for (int i = 0; i < 24; ++i)
-                total += g_rain_day.rain_hour[i];
-            g_rain_day.daily_total = total;
-
-            // Persiste sempre (inclusive zeros)
-            if (save_rain_daily(&g_rain_day) != ESP_OK)
+            if (s_last_hour_idx == 0xFF)
             {
-                ESP_LOGE(PLUVIOMETER_TAG,
-                         "Failed to save daily rainfall (hour %u = %.2f mm).",
-                         (unsigned)g_hour_idx, rain_total);
-            }
-            else
-            {
+                s_last_hour_idx = curr_hour_idx;
+                g_hour_idx = curr_hour_idx;
                 ESP_LOGI(PLUVIOMETER_TAG,
-                         "Saved hour %u = %.2f mm. Daily total: %.2f mm.",
-                         (unsigned)g_hour_idx, rain_total, g_rain_day.daily_total);
+                         "Initialized hour index from RTC: hour=%u (sod=%u).",
+                         (unsigned)curr_hour_idx, (unsigned)sod);
             }
 
-            // Reseta acumulado temporário para próxima hora
-            set_rain_total(0.0f);
-
-            // Avança índice da hora
-            g_hour_idx = (uint8_t)((g_hour_idx + 1u) % 24u);
-
-            // Se voltou para 0, inicia um novo dia (reset simples)
-            if (g_hour_idx == 0u)
+            else if (curr_hour_idx != s_last_hour_idx)
             {
-                memset(g_rain_day.rain_hour, 0, sizeof(g_rain_day.rain_hour));
-                g_rain_day.daily_total = 0.0f;
-                strncpy(g_rain_day.date_day, "DD/MM/YYYY", sizeof(g_rain_day.date_day) - 1);
-                g_rain_day.date_day[sizeof(g_rain_day.date_day) - 1] = '\0';
-            }
+                uint8_t step = (uint8_t)((curr_hour_idx + 24 - s_last_hour_idx) % 24);
+                bool rolled_day = (curr_hour_idx < s_last_hour_idx); // crossed midnight if true
 
-            last_save_time = xTaskGetTickCount();
+                if (rolled_day && step > 1)
+                {
+                    uint8_t start = (uint8_t)(s_last_hour_idx + 1); // next hour in the previous day
+                    for (uint8_t h = start; h <= 23; ++h)
+                    {
+                        g_rain_day.rain_hour[h] = 0.0f;
+                    }
+                }
+
+                if (step != 1)
+                {
+                    ESP_LOGW(PLUVIOMETER_TAG,
+                             "Hour jump detected: last=%u -> current=%u (step=%u). "
+                             "Filling only the just-finished bin; consider gap handling if required.",
+                             (unsigned)s_last_hour_idx, (unsigned)curr_hour_idx, (unsigned)step);
+                }
+                if (step > 1 && !rolled_day)
+                {
+                    for (uint8_t k = 1; k < step; ++k)
+                    {
+                        uint8_t missed = (uint8_t)((s_last_hour_idx + k) % 24);
+                        if (missed != curr_hour_idx)
+                        {
+                            g_rain_day.rain_hour[missed] = 0.0f;
+                        }
+                    }
+                }
+
+                bool new_day = (curr_hour_idx == 0 && s_last_hour_idx == 23);
+
+                // Atomic snapshot + reset of the hourly accumulator
+                float snapshot = 0.0f;
+                taskENTER_CRITICAL(&rain_total_mux);
+                snapshot = get_rain_total();
+                set_rain_total(0.0f);
+                taskEXIT_CRITICAL(&rain_total_mux);
+
+                uint8_t bin_to_write = s_last_hour_idx;
+                g_rain_day.rain_hour[bin_to_write] = snapshot;
+
+                float total = 0.0f;
+                for (int i = 0; i < 24; ++i)
+                    total += g_rain_day.rain_hour[i];
+                g_rain_day.daily_total = total;
+
+                esp_err_t err = save_rain_daily(&g_rain_day);
+                if (err != ESP_OK)
+                {
+                    ESP_LOGE(PLUVIOMETER_TAG,
+                             "Failed to save daily rainfall (hour=%u, value=%.2f mm). err=%d",
+                             (unsigned)bin_to_write, snapshot, (int)err);
+                }
+                else
+                {
+                    ESP_LOGI(PLUVIOMETER_TAG,
+                             "Saved hour %u = %.2f mm. Daily total now: %.2f mm.",
+                             (unsigned)bin_to_write, snapshot, g_rain_day.daily_total);
+                }
+
+                ESP_LOGI(PLUVIOMETER_TAG,
+                         "Reset hourly accumulator; new active hour=%u.",
+                         (unsigned)curr_hour_idx);
+
+                if (new_day || rolled_day)
+                {
+                    ESP_LOGI(PLUVIOMETER_TAG, "New day rollover detected. Clearing daily structure.");
+                    memset(g_rain_day.rain_hour, 0, sizeof(g_rain_day.rain_hour));
+                    g_rain_day.daily_total = 0.0f;
+
+                    update_day_string_from_ts(now_ts);
+                }
+
+                s_last_hour_idx = curr_hour_idx;
+                g_hour_idx = curr_hour_idx;
+            }
+        }
+        else
+        {
+            TickType_t now_tick = xTaskGetTickCount();
+            if ((now_tick - s_last_rtc_warn_tick) > pdMS_TO_TICKS(60000))
+            {
+                s_last_rtc_warn_tick = now_tick;
+                ESP_LOGW(PLUVIOMETER_TAG,
+                         "RTC timestamp invalid (<= 0). Skipping hour closure until RTC becomes valid.");
+            }
         }
 
         vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(500));
@@ -221,11 +325,12 @@ void gpio_rain_sensor_calculate_rainfall(void)
     set_rain_pulse(0);
 
     taskEXIT_CRITICAL(&rain_sensor_mux);
-
     float interval_rain = pulses * rain_per_pulse;
 
-    // acumula no total temporário desta hora
+    // accumulate into the current hour bucket (atomic with respect to hour rollover)
+    taskENTER_CRITICAL(&rain_total_mux);
     float acc = get_rain_total();
     acc += interval_rain;
     set_rain_total(acc);
+    taskEXIT_CRITICAL(&rain_total_mux);
 }
