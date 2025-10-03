@@ -31,7 +31,7 @@ static portMUX_TYPE rain_total_mux = portMUX_INITIALIZER_UNLOCKED;
 /** @brief Daily rainfall record; data is distributed by hour index (g_hour_idx). */
 static rain_per_day_data g_rain_day = {0};
 
-/** @brief Current hour bin index (0..23). Advances every save interval (1h). */
+/** @brief Current hour bin index (0..23). Anchored to RTC hour (not timer-driven). */
 static uint8_t g_hour_idx = 0;
 
 /** @brief Millimeters per sensor pulse (mm/pulse). */
@@ -232,7 +232,7 @@ void system_monitoring_rainfall_task(void *arg)
                 {
                     ESP_LOGW(PLUVIOMETER_TAG,
                              "Hour jump detected: last=%u -> current=%u (step=%u). "
-                             "Filling only the just-finished bin; consider gap handling if required.",
+                             "Hour jump detected; same-day missed bins set to 0.0 mm (previous-day remainder handled if midnight crossed).",
                              (unsigned)s_last_hour_idx, (unsigned)curr_hour_idx, (unsigned)step);
                 }
                 if (step > 1 && !rolled_day)
