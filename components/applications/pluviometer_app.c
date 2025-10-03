@@ -1,13 +1,12 @@
 /**
  * @file pluviometer_app.c
- * @brief Pluviometer application implementation for managing rainfall data.
+ * @brief Pluviometer application implementation for managing rainfall data (new daily struct).
  */
 
- /* Self include */
+/* Self include */
 #include "pluviometer_app.h"
 #include "data_app.h"
 #include "rtc_app.h"
-
 #include "gpio_actuator.h"
 
 #include "FreeRTOS_defines.h"
@@ -15,33 +14,44 @@
 
 #include <string.h>
 
+/** @brief Log tag for this module. */
 #define PLUVIOMETER_TAG "pluviometer_app"
 
+/** @brief Spinlock/mutex for ISR-safe access to rain pulse counters. */
 static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
 
-static uint8_t current_index = 0;
+/** @brief Daily rainfall record; currently accumulates into rain_hour[0] as requested. */
+static rain_per_day_data g_rain_day = {0};
 
-static const rain_per_day_data data_rain = {};
-float rain_per_pulse = 0.1f; // Rainfall per pulse (mm)
-bool rain_per_pulse_flag = false;
+/** @brief Millimeters per sensor pulse (mm/pulse). */
+static float rain_per_pulse = 0.1f;
 
-// Rain sensor variables
-float rain_total_per_hour = 0.0f;                // Accumulated rainfall
+/** @brief When true, reloads rain_per_pulse from NVS on the next loop. */
+static bool rain_per_pulse_flag = false;
 
-static esp_err_t save_rain_daily(const rain_per_day_data* data) 
+/**
+ * @brief Save the daily rainfall record to NVS.
+ * @param data Pointer to the daily record to persist.
+ * @return ESP_OK on success, error code otherwise.
+ */
+static esp_err_t save_rain_daily(const rain_per_day_data *data)
 {
     return data_app_save(DATA_TYPE_RAINFALL_DAILY, data, sizeof(*data));
 }
 
-static esp_err_t load_rain_daily(rain_per_day_data* data) 
+/**
+ * @brief Load the daily rainfall record from NVS.
+ * @param data Output pointer to receive the daily record.
+ * @return ESP_OK on success, error code otherwise.
+ */
+static esp_err_t load_rain_daily(rain_per_day_data *data)
 {
     return data_app_load(DATA_TYPE_RAINFALL_DAILY, data);
 }
 
 /**
- * @brief Sets the rain-per-pulse flag status.
- *
- * @param flag true to enable rain-per-pulse mode, false to disable.
+ * @brief Request a refresh of the mm-per-pulse calibration from NVS.
+ * @param flag Set true to refresh on next loop iteration; false to ignore.
  */
 void set_rain_per_pulse_flag(bool flag)
 {
@@ -49,149 +59,122 @@ void set_rain_per_pulse_flag(bool flag)
 }
 
 /**
- * @brief Returns a pointer to the rain data array.
- *
- * Allows read-only or mutable access to the internal rainfall data.
- *
- * @return Pointer to the pluviometer array.
- */
-rain_data *get_rain_data_array()
-{
-    return pluviometer;
-}
-
-/**
- * @brief Sets a rain_data entry at the specified index.
- *
- * @param index Position in the pluviometer array.
- * @param data The rain_data value to set.
- */
-void set_rain_data_entry(int index, rain_data data)
-{
-    if (index >= 0 && index < MAX_RAINFALL_ENTRIES)
-    {
-        pluviometer[index] = data;
-    }
-}
-
-/**
- * @brief Initializes the rain gauge vector with NVS data.
+ * @brief Initialize daily rainfall state from NVS.
+ *        If not found, zeroes the structure and sets date_day to "DD/MM/YYYY".
  */
 void system_monitoring_init_rainfall_data(void)
 {
-    const rain_per_day_data rain_data = {};
-    esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_ACCUMULATED, pluviometer);
+    // tenta carregar o dia salvo
+    esp_err_t err = load_rain_daily(&g_rain_day);
     if (err != ESP_OK)
     {
-        ESP_LOGE(PLUVIOMETER_TAG, "Failed to load rainfall data. Initializing to empty.");
-        memset(pluviometer, 0, sizeof(pluviometer));
+        memset(&g_rain_day, 0, sizeof(g_rain_day));
+        strncpy(g_rain_day.date_day, "DD/MM/YYYY", sizeof(g_rain_day.date_day) - 1);
+        g_rain_day.date_day[sizeof(g_rain_day.date_day) - 1] = '\0';
+        ESP_LOGI(PLUVIOMETER_TAG, "No daily rainfall found, starting fresh.");
     }
 
-    current_index = 0;
-
-    err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
-    if (err != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
+    // carrega mm por pulso
+    float nvs_rain_per_pulse = 0.0f;
+    err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
+    if (err == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
+    {
+        rain_per_pulse = nvs_rain_per_pulse;
+    }
+    else
     {
         rain_per_pulse = 0.1f;
-        ESP_LOGW(PLUVIOMETER_TAG, "Failed to load RAIN_PER_PULSE. Using default: %.2f", rain_per_pulse);
+        ESP_LOGW(PLUVIOMETER_TAG, "RAIN_PER_PULSE not found/invalid. Using default: %.2f", rain_per_pulse);
     }
 }
 
 /**
- * @brief Task to calculate rainfall every second and save accumulated data every hour.
+ * @brief FreeRTOS task: accumulates rainfall from pulses and periodically saves to NVS.
  *
- * This task calculates the rainfall based on sensor pulses and logs the rainfall interval every second.
- * It saves the accumulated rainfall data in persistent memory every hour.
+ * Logic:
+ * - Converts pulses to mm and accumulates a temporary total via get_rain_total()/set_rain_total().
+ * - On save interval and if there was rain, adds the amount to g_rain_day.rain_hour[0],
+ *   recomputes daily_total, and persists the record.
+ * - Preserves existing shutdown-by-rain behavior.
  *
- * @param arg Task argument (default NULL).
+ * @param arg Unused.
  */
-void system_monitoring_rainfall_task(void *arg) 
+void system_monitoring_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     TickType_t last_save_time = last_wake_time;
     const TickType_t save_interval = pdMS_TO_TICKS(RAINFALL_SAVE_INTERVAL_MS);
+
     pivot_actions actions = {};
-    float rain_shutdown_value;
-    /*
-    * - 1 minuto   = 60000 ms
-    * - 2 minutos  = 120000 ms
-    * - 3 minutos  = 180000 ms
-    * - 5 minutos  = 300000 ms
-    * - 10 minutos = 600000 ms
-    * - 30 minutos = 1800000 ms
-    * - 60 minutos = 3600000 ms
-    */
+    float rain_shutdown_value = 0.0f;
+
     system_monitoring_init_rainfall_data();
 
-    while (1) 
+    while (1)
     {
+        // atualização de calibração sob demanda
         if (rain_per_pulse_flag)
         {
-            float nvs_rain_per_pulse = 0.1;
-            esp_err_t ret = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
-            if (ret == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
+            float nvs_rain_per_pulse = 0.1f;
+            if (data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse) == ESP_OK &&
+                nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
             {
                 rain_per_pulse = nvs_rain_per_pulse;
             }
             else
             {
-                ESP_LOGW(PLUVIOMETER_TAG,
-                         "Failed to load RAIN_PER_PULSE. Using default: %.2f", 
-                         rain_per_pulse);
+                ESP_LOGW(PLUVIOMETER_TAG, "Failed to load RAIN_PER_PULSE. Keeping: %.2f", rain_per_pulse);
             }
             rain_per_pulse_flag = false;
         }
 
-        gpio_rain_sensor_calculate_rainfall(); 
-        float rain_total = get_rain_total();
-        if (rain_total > 0.0f) 
+        /* Convert pulses to rainfall and accumulate into a temporary total */
+        gpio_rain_sensor_calculate_rainfall();
+
+        float rain_total = get_rain_total(); // accumulated since last reset
+
+        /* Optional shutdown logic based on accumulated rain */
+        if (rain_total > 0.0f)
         {
             data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
             data_app_load(DATA_TYPE_ACTIONS, &actions);
 
-            if(actions.power_state == PIVOT_ON && actions.watering_state == PIVOT_WET && rain_shutdown_value != 0.0f)
+            if (actions.power_state == PIVOT_ON &&
+                actions.watering_state == PIVOT_WET &&
+                rain_shutdown_value != 0.0f)
             {
-                if(rain_total >= rain_shutdown_value)
+                if (rain_total >= rain_shutdown_value)
                 {
                     gpio_actuator_shutdown();
-                }    
+                }
             }
         }
 
-        if ((xTaskGetTickCount() - last_save_time) >= save_interval) 
+        /* Periodic save to NVS */
+        if ((xTaskGetTickCount() - last_save_time) >= save_interval)
         {
             if (rain_total > 0.0f)
             {
-                time_t timestamp = rtc_app_get_timestamp(false);
+                // Accumulate into bin 0 as requested
+                g_rain_day.rain_hour[0] += rain_total;
 
-                char tmp_date_str[30];
-                rtc_app_get_str_date_time(timestamp, tmp_date_str);
+                // Recompute daily total
+                float total = 0.0f;
+                for (int i = 0; i < 24; ++i)
+                    total += g_rain_day.rain_hour[i];
+                g_rain_day.daily_total = total;
 
-                int oldest_index = rtc_app_find_oldest_timestamp(
-                                       pluviometer, 
-                                       MAX_RAINFALL_ENTRIES
-                                   );
-
-                pluviometer[oldest_index].rain_per_hour = rain_total;
-                strncpy(pluviometer[oldest_index].str_date_time, tmp_date_str, sizeof(pluviometer[oldest_index].str_date_time) - 1);
-
-                ESP_LOGI(PLUVIOMETER_TAG, 
-                         "Saved rainfall data (%.2f) at index %d - %s", 
-                         pluviometer[oldest_index].rain_per_hour, 
-                         oldest_index,
-                         pluviometer[oldest_index].str_date_time);
-
-                if (data_app_save(DATA_TYPE_RAINFALL_ACCUMULATED, 
-                                  pluviometer, 
-                                  sizeof(pluviometer)) != ESP_OK) 
+                // Persist
+                if (save_rain_daily(&g_rain_day) != ESP_OK)
                 {
-                    ESP_LOGE(PLUVIOMETER_TAG, "Failed to save rainfall data.");
+                    ESP_LOGE(PLUVIOMETER_TAG, "Failed to save daily rainfall.");
                 }
-                else 
+                else
                 {
-                    ESP_LOGI(PLUVIOMETER_TAG, "Rainfall data saved successfully.");
+                    ESP_LOGI(PLUVIOMETER_TAG, "Daily rainfall saved (bin 0 += %.2f mm).", rain_total);
                 }
 
+                // Reset temporary accumulator
                 set_rain_total(0.0f);
             }
 
@@ -203,17 +186,25 @@ void system_monitoring_rainfall_task(void *arg)
 }
 
 /**
- * @brief Calculates and logs the rainfall based on the sensor pulses.
- * Resets the pulse count after calculation.
+ * @brief Convert accumulated pulses to millimeters and add to the temporary total.
+ *
+ * Thread-safe with a critical section:
+ * - Reads and clears the pulse count.
+ * - Adds (pulses * rain_per_pulse) to the current temporary total.
  */
 void gpio_rain_sensor_calculate_rainfall(void)
 {
     taskENTER_CRITICAL(&rain_sensor_mux);
 
-    float interval_rain = get_rain_pulse() * rain_per_pulse;
+    float pulses = (float)get_rain_pulse();
     set_rain_pulse(0);
 
     taskEXIT_CRITICAL(&rain_sensor_mux);
 
-    rain_total += interval_rain;
+    float interval_rain = pulses * rain_per_pulse;
+
+    // accumulate into the temporary total
+    float acc = get_rain_total();
+    acc += interval_rain;
+    set_rain_total(acc);
 }
