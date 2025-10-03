@@ -20,8 +20,11 @@
 /** @brief Spinlock/mutex for ISR-safe access to rain pulse counters. */
 static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
 
-/** @brief Daily rainfall record; currently accumulates into rain_hour[0] as requested. */
+/** @brief Daily rainfall record; data is distributed by hour index (g_hour_idx). */
 static rain_per_day_data g_rain_day = {0};
+
+/** @brief Current hour bin index (0..23). Advances every save interval (1h). */
+static uint8_t g_hour_idx = 0;
 
 /** @brief Millimeters per sensor pulse (mm/pulse). */
 static float rain_per_pulse = 0.1f;
@@ -61,6 +64,7 @@ void set_rain_per_pulse_flag(bool flag)
 /**
  * @brief Initialize daily rainfall state from NVS.
  *        If not found, zeroes the structure and sets date_day to "DD/MM/YYYY".
+ *        Also resets the hour index to 0.
  */
 void system_monitoring_init_rainfall_data(void)
 {
@@ -73,6 +77,9 @@ void system_monitoring_init_rainfall_data(void)
         g_rain_day.date_day[sizeof(g_rain_day.date_day) - 1] = '\0';
         ESP_LOGI(PLUVIOMETER_TAG, "No daily rainfall found, starting fresh.");
     }
+
+    // índice horário inicia em 0 neste modelo simples
+    g_hour_idx = 0;
 
     // carrega mm por pulso
     float nvs_rain_per_pulse = 0.0f;
@@ -93,9 +100,10 @@ void system_monitoring_init_rainfall_data(void)
  *
  * Logic:
  * - Converts pulses to mm and accumulates a temporary total via get_rain_total()/set_rain_total().
- * - On save interval and if there was rain, adds the amount to g_rain_day.rain_hour[0],
+ * - Every save interval (1 hour), advances g_hour_idx (0..23).
+ * - If there was rain in the last hour, adds it to g_rain_day.rain_hour[g_hour_idx],
  *   recomputes daily_total, and persists the record.
- * - Preserves existing shutdown-by-rain behavior.
+ * - After 24 hours (wrap to index 0), clears the structure for a new day.
  *
  * @param arg Unused.
  */
@@ -128,12 +136,12 @@ void system_monitoring_rainfall_task(void *arg)
             rain_per_pulse_flag = false;
         }
 
-        /* Convert pulses to rainfall and accumulate into a temporary total */
+        /* Converte pulsos para mm e acumula no total temporário */
         gpio_rain_sensor_calculate_rainfall();
 
-        float rain_total = get_rain_total(); // accumulated since last reset
+        float rain_total = get_rain_total(); // acumulado desde o último reset (hora corrente)
 
-        /* Optional shutdown logic based on accumulated rain */
+        /* Lógica de desligamento por chuva (opcional) baseada na chuva da hora */
         if (rain_total > 0.0f)
         {
             data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
@@ -150,32 +158,45 @@ void system_monitoring_rainfall_task(void *arg)
             }
         }
 
-        /* Periodic save to NVS */
+        /* Gravação periódica (sempre) — persiste 0.0 mm quando não choveu */
         if ((xTaskGetTickCount() - last_save_time) >= save_interval)
         {
-            if (rain_total > 0.0f)
+            // Escreve o valor da hora atual no binário do vetor (pode ser 0.0)
+            g_rain_day.rain_hour[g_hour_idx] = rain_total;
+
+            // Recalcula total diário
+            float total = 0.0f;
+            for (int i = 0; i < 24; ++i)
+                total += g_rain_day.rain_hour[i];
+            g_rain_day.daily_total = total;
+
+            // Persiste sempre (inclusive zeros)
+            if (save_rain_daily(&g_rain_day) != ESP_OK)
             {
-                // Accumulate into bin 0 as requested
-                g_rain_day.rain_hour[0] += rain_total;
+                ESP_LOGE(PLUVIOMETER_TAG,
+                         "Failed to save daily rainfall (hour %u = %.2f mm).",
+                         (unsigned)g_hour_idx, rain_total);
+            }
+            else
+            {
+                ESP_LOGI(PLUVIOMETER_TAG,
+                         "Saved hour %u = %.2f mm. Daily total: %.2f mm.",
+                         (unsigned)g_hour_idx, rain_total, g_rain_day.daily_total);
+            }
 
-                // Recompute daily total
-                float total = 0.0f;
-                for (int i = 0; i < 24; ++i)
-                    total += g_rain_day.rain_hour[i];
-                g_rain_day.daily_total = total;
+            // Reseta acumulado temporário para próxima hora
+            set_rain_total(0.0f);
 
-                // Persist
-                if (save_rain_daily(&g_rain_day) != ESP_OK)
-                {
-                    ESP_LOGE(PLUVIOMETER_TAG, "Failed to save daily rainfall.");
-                }
-                else
-                {
-                    ESP_LOGI(PLUVIOMETER_TAG, "Daily rainfall saved (bin 0 += %.2f mm).", rain_total);
-                }
+            // Avança índice da hora
+            g_hour_idx = (uint8_t)((g_hour_idx + 1u) % 24u);
 
-                // Reset temporary accumulator
-                set_rain_total(0.0f);
+            // Se voltou para 0, inicia um novo dia (reset simples)
+            if (g_hour_idx == 0u)
+            {
+                memset(g_rain_day.rain_hour, 0, sizeof(g_rain_day.rain_hour));
+                g_rain_day.daily_total = 0.0f;
+                strncpy(g_rain_day.date_day, "DD/MM/YYYY", sizeof(g_rain_day.date_day) - 1);
+                g_rain_day.date_day[sizeof(g_rain_day.date_day) - 1] = '\0';
             }
 
             last_save_time = xTaskGetTickCount();
@@ -203,7 +224,7 @@ void gpio_rain_sensor_calculate_rainfall(void)
 
     float interval_rain = pulses * rain_per_pulse;
 
-    // accumulate into the temporary total
+    // acumula no total temporário desta hora
     float acc = get_rain_total();
     acc += interval_rain;
     set_rain_total(acc);
