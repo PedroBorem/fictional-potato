@@ -700,9 +700,16 @@ void actuator_wait_pressure(void* arg)
 
 				rotation_relay_control(task_actions_set);
 				percent_relay_control(task_actions_set, perc_sec);
-
-				//wait additional 3 seconds before turning on the system
+				
+				/* !!!!!!!!!!!!!!!!! BUG_FIX !!!!!!!!!!!!!!!!
+				Quando estiver em vTaskDelay e receber um outro comando causa error de acionamento.
+				Isso ocorre pq a task de pressurização está em delay e não consegue ser suspensa.
+				*/
 				vTaskDelay(pdMS_TO_TICKS(gpio_act_after_pressurization_time_to_start));
+				/* !!!!!!!!!!!!!!!!! BUG_FIX !!!!!!!!!!!!!!!!
+				Quando estiver em vTaskDelay e receber um outro comando causa error de acionamento.
+				Isso ocorre pq a task de pressurização está em delay e não consegue ser suspensa.
+				*/
 				
 				//system on
 				gpio_actuator_start();
