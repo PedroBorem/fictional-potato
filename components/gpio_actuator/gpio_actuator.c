@@ -410,8 +410,8 @@ void water_pump_relay_control(pivot_actions actions)
     }
     else if (actions.watering_state == PIVOT_WET)
     {
-        gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
-        gpio_actuator_pressure_on();
+		gpio_set_level(GPIO_ACT_PIN_WATERING, GPIO_ACT_SYS_ENABLE);
+		gpio_actuator_pressure_on();
     }
 }
 
@@ -461,9 +461,18 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	
 	if(actions.power_state == PIVOT_ON)
 	{
-		rotation_relay_control(actions);
-		percent_relay_control(actions, perc_sec);
+		if(actions.watering_state == PIVOT_DRY)
+		{
+			// if dry mode, start rotation and percent control
+			rotation_relay_control(actions);
+			percent_relay_control(actions, perc_sec);
+			
+		}
+		
+		//otherwise, wait for pressure to stabilize to start rotation and percent control
+		// this will be done in the pressure task
 		water_pump_relay_control(actions);
+
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
@@ -679,20 +688,37 @@ void actuator_wait_pressure(void* arg)
 		LOG_ACTUATION(GPIO_ACT_TAG,"%s, Result: %lud",__func__, pdTICKS_TO_MS(xTaskGetTickCount() - check_start));
 		if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
 		{
-			vTaskDelay(pdMS_TO_TICKS(3000)); 
-			//system on
-			gpio_actuator_start();
-			pressurizing = false;
+			LOG_ACTUATION(GPIO_ACT_TAG,"%s, Pressure detected", __func__);
+			vTaskDelay(pdMS_TO_TICKS(5000));
 
-			// send current action
-			gpio_actuator_callback("#00$", COMM_MQTT);
+			if(gpio_get_level(GPIO_ACT_PIN_PRESS) == gpio_act_pressure_type)
+			{
+				//stable pressure for 5 seconds
+				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Stable pressure confirmed", __func__);
+				//start rotation and percent control
+				uint16_t perc_sec = task_actions_set.percentimeter * (GPIO_ACT_PERC_FULL_CYCLE / 100);
+				LOG_ACTUATION(GPIO_ACT_TAG,"%s, Perc sec: %d", __func__, perc_sec);
 
-			//suspend own task
-			vTaskSuspend(NULL);
+				rotation_relay_control(task_actions_set);
+				percent_relay_control(task_actions_set, perc_sec);
 
-			//task resume
-			pressurizing = true;
-			check_start = xTaskGetTickCount();
+				//wait additional 3 seconds before turning on the system
+				vTaskDelay(pdMS_TO_TICKS(3000));
+				
+				//system on
+				gpio_actuator_start();
+				pressurizing = false;
+
+				// send current action
+				gpio_actuator_callback("#00$", comm_main_mode);
+
+				//suspend own task
+				vTaskSuspend(NULL);
+
+				//task resume
+				pressurizing = true;
+				check_start = xTaskGetTickCount();
+			}
 		}
 		else if((pdTICKS_TO_MS(xTaskGetTickCount() - check_start)) > gpio_act_pressure_timeout)
 		{
