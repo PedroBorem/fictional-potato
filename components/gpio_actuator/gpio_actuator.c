@@ -771,37 +771,65 @@ void actuator_wait_pressure(void* arg)
  */
 void actuator_read_percent(void* arg)
 {
-	while(1)
-	{
-		//suspend own task
-		vTaskSuspend(NULL);
+    static volatile uint32_t g_percentimeter_on_time_ms  = 0;
+    static volatile uint32_t g_percentimeter_off_time_ms = 0;
+    static volatile uint32_t g_percentimeter_period_ms   = 0;
 
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == gpio_act_contactor_type)
-		{
-			posedge_perc = clock();
-		}
+    while (1)
+    {
+        vTaskSuspend(NULL);
 
-		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == !gpio_act_contactor_type)
-		{
-			negedge_perc = clock();
+        int8_t  level_now = gpio_get_level(GPIO_ACT_PIN_PERC_IN);
+        clock_t now_clk   = clock();
 
-			if(posedge_perc != 0 && negedge_perc != 0)
-			{
-				perc_diff_onoff = (negedge_perc - posedge_perc);
-				if (perc_diff_onoff != 0)
-				{
-					perc_sec_on = perc_diff_onoff / CLOCKS_PER_SEC;
-					perc_pct_on = (perc_sec_on * 100) / (GPIO_ACT_PERC_FULL_CYCLE / 1000);
+        if (level_now == gpio_act_contactor_type)
+        {
+            posedge_perc = now_clk;
 
-					if(perc_pct_on <= 100)
-					{
-						pivot_actions_read.percentimeter = perc_pct_on;
-					}
-				}
-			}
-		}
+            if (negedge_perc != 0)
+            {
+                clock_t diff_low = now_clk - negedge_perc;
+                if (diff_low > 0)
+                    g_percentimeter_off_time_ms = (uint32_t)((diff_low * 1000UL) / CLOCKS_PER_SEC);
 
-		percent_watchdog = clock();
-		vTaskDelay(pdMS_TO_TICKS(200));
-	}
+                negedge_perc = 0;
+
+                g_percentimeter_period_ms = g_percentimeter_on_time_ms + g_percentimeter_off_time_ms;
+                if (g_percentimeter_period_ms > 0)
+                {
+                    double pct = ((double)g_percentimeter_on_time_ms * 100.0) / (double)g_percentimeter_period_ms;
+                    if (pct < 0.0) pct = 0.0;
+                    if (pct > 100.0) pct = 100.0;
+                    pivot_actions_read.percentimeter = (uint32_t)pct;
+                }
+            }
+        }
+
+        if (level_now == !gpio_act_contactor_type)
+        {
+            negedge_perc = now_clk;
+
+            if (posedge_perc != 0)
+            {
+                clock_t diff_high = now_clk - posedge_perc;
+                if (diff_high > 0)
+                    g_percentimeter_on_time_ms = (uint32_t)((diff_high * 1000UL) / CLOCKS_PER_SEC);
+
+                posedge_perc = 0;
+
+                g_percentimeter_period_ms = g_percentimeter_on_time_ms + g_percentimeter_off_time_ms;
+                if (g_percentimeter_period_ms > 0)
+                {
+                    double pct = ((double)g_percentimeter_on_time_ms * 100.0) / (double)g_percentimeter_period_ms;
+                    if (pct < 0.0) pct = 0.0;
+                    if (pct > 100.0) pct = 100.0;
+                    pivot_actions_read.percentimeter = (uint32_t)pct;
+                }
+            }
+        }
+
+        percent_watchdog = now_clk;
+        vTaskDelay(pdMS_TO_TICKS(200));
+    }
 }
+
