@@ -25,6 +25,20 @@ typedef struct __attribute__((__packed__))
 #define RAINFALL_SAVE_INTERVAL_MS (3600000) /**< Interval for saving rainfall data in milliseconds (1 hour) */
 
 /**
+ * @brief Get the current hour's accumulated rainfall.
+ * @note Must be called from within a 'rain_total_mux' critical section.
+ * @return Rain total in mm.
+ */
+float get_rain_total(void);
+
+/**
+ * @brief Set the current hour's accumulated rainfall.
+ * @note Must be called from within a 'rain_total_mux' critical section.
+ * @param value Rain total in mm.
+ */
+void set_rain_total(float value);
+
+/**
  * @brief Returns the rain calibration value in millimeters per pulse.
  * @return Current calibration value (mm/pulse).
  */
@@ -46,6 +60,19 @@ void set_rain_per_pulse_flag(bool flag);
  * @brief Initializes the rain gauge vector with NVS data.
  */
 void system_monitoring_init_rainfall_data(void);
+
+/**
+ * @brief Obtains a safe copy of the current day's data structure.
+ * @param out_data Pointer to the structure where the data will be copied.
+ * @return ESP_OK if successful.
+ */
+esp_err_t pluviometer_app_get_current_day(rain_per_day_data *out_data);
+
+/**
+ * @brief Obtains the index of the last closed hour (0-23).
+ * @return uint8_t Hour index (0-23), or 0xFF if not yet initialized.
+ */
+uint8_t pluviometer_app_get_last_hour_idx(void);
 
 /**
  * @brief Task to monitor and manage rainfall data.

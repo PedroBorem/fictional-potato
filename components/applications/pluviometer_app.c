@@ -45,6 +45,29 @@ static uint8_t s_last_hour_idx = 0xFF;
 
 static void update_day_string_from_ts(time_t ts);
 
+/** @brief Accumulator for the current hour's rainfall (mm). */
+static float s_rain_total_mm = 0.0f;
+
+/**
+ * @brief Get the current hour's accumulated rainfall.
+ * @note Must be called from within a 'rain_total_mux' critical section.
+ * @return Rain total in mm.
+ */
+float get_rain_total(void)
+{
+    return s_rain_total_mm;
+}
+
+/**
+ * @brief Set the current hour's accumulated rainfall.
+ * @note Must be called from within a 'rain_total_mux' critical section.
+ * @param value Rain total in mm.
+ */
+void set_rain_total(float value)
+{
+    s_rain_total_mm = value;
+}
+
 /**
  * @brief Get the rain calibration (mm per pulse).
  * @return Current calibration in mm/pulse.
@@ -101,6 +124,30 @@ static esp_err_t load_rain_daily(rain_per_day_data *data)
 void set_rain_per_pulse_flag(bool flag)
 {
     rain_per_pulse_flag = flag;
+}
+
+ /**
+ * @brief Get a safe copy of the current day's data structure.
+ * @param out_data Pointer to the structure where the data will be copied.
+ * @return ESP_OK if successful.
+ */
+esp_err_t pluviometer_app_get_current_day(rain_per_day_data *out_data)
+{
+    if (out_data == NULL)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+    *out_data = g_rain_day; 
+    return ESP_OK;
+}
+
+/**
+ * @brief Get the index of the last closed hour (0-23).
+ * @return uint8_t Hour index (0-23), or 0xFF if not yet initialized.
+ */
+uint8_t pluviometer_app_get_last_hour_idx(void)
+{
+    return s_last_hour_idx;
 }
 
 /**
@@ -209,9 +256,9 @@ void system_monitoring_rainfall_task(void *arg)
         }
 
         gpio_rain_sensor_calculate_rainfall();
-        float rain_total = get_rain_total();
+        s_rain_total_mm  = get_rain_total();
 
-        if (rain_total > 0.0f)
+        if (s_rain_total_mm > 0.0f)
         {
             (void)data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &rain_shutdown_value);
             (void)data_app_load(DATA_TYPE_ACTIONS, &actions);
@@ -219,11 +266,11 @@ void system_monitoring_rainfall_task(void *arg)
             if (actions.power_state == PIVOT_ON &&
                 actions.watering_state == PIVOT_WET &&
                 rain_shutdown_value > 0.0f &&
-                rain_total >= rain_shutdown_value)
+                s_rain_total_mm >= rain_shutdown_value)
             {
                 ESP_LOGW(PLUVIOMETER_TAG,
                          "Rain shutdown triggered: rain_total=%.2f mm >= threshold=%.2f mm. Requesting actuator OFF.",
-                         rain_total, rain_shutdown_value);
+                         s_rain_total_mm, rain_shutdown_value);
                 gpio_actuator_shutdown();
             }
         }
