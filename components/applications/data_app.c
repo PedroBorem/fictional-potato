@@ -165,7 +165,17 @@
  */
 #define DATA_RAIN_SHUTDOWN_VALUE "rain_stop"
 
+/**
+ * @def DATA_RAINFALL_DAILY
+ * @brief NVS access space for daily rainfall data
+ */
 #define DATA_RAINFALL_DAILY "rainfall_daily"
+
+/**
+ * @def DATA_RAINFALL_DAILY_YESTERDAY
+ * @brief NVS access space for yesterday's daily rainfall data
+ */
+#define DATA_RAINFALL_DAILY_YESTERDAY "rainfall_yest"
 
 /**
  * @brief Initializes the data application.
@@ -177,7 +187,7 @@ esp_err_t data_app_init(void)
 
 	const rain_per_day_data default_rainfall = {
 			.date_day = "DD/MM/YYYY",
-			.rain_hour = {0},
+			.rain_per_hour = {0},
 			.daily_total = 0,
 	};
 
@@ -320,9 +330,13 @@ esp_err_t data_app_init(void)
 		{
 			data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &default_rain_shutdown_value, sizeof(default_rain_shutdown_value));
 		}
-		if(nvs_data_get_size(DATA_TYPE_RAINFALL_DAILY) == 0)
+		if(nvs_data_get_size(DATA_RAINFALL_DAILY) == 0)
 		{
-			data_app_save(DATA_RAINFALL_DAILY, &default_rainfall, sizeof(default_rainfall));
+			data_app_save(DATA_TYPE_RAINFALL_DAILY, &default_rainfall, sizeof(default_rainfall));
+		}
+		if(nvs_data_get_size(DATA_RAINFALL_DAILY_YESTERDAY) == 0)
+		{
+			data_app_save(DATA_TYPE_RAINFALL_DAILY_YESTERDAY, &default_rainfall, sizeof(default_rainfall));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -510,6 +524,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_RAINFALL_DAILY, data, data_size);
 			break;
 		}
+		case DATA_TYPE_RAINFALL_DAILY_YESTERDAY:
+		{
+			ret = nvs_data_set(DATA_RAINFALL_DAILY_YESTERDAY, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -650,6 +669,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_RAINFALL_DAILY:
 		{
 			ret = nvs_data_get_blob(DATA_RAINFALL_DAILY, data);
+			break;
+		}
+		case DATA_TYPE_RAINFALL_DAILY_YESTERDAY:
+		{
+			ret = nvs_data_get_blob(DATA_RAINFALL_DAILY_YESTERDAY, data);
 			break;
 		}
 		default:

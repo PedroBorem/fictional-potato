@@ -50,6 +50,7 @@ typedef enum
     DATA_TYPE_COMM_MAIN_MODE, /**< Communication Principal Mode data type. */
     DATA_TYPE_RAIN_SHUTDOWN_VALUE, /**< Rain needed to turn off the pivot */
     DATA_TYPE_RAINFALL_DAILY, /**< Daily rainfall data type. */
+    DATA_TYPE_RAINFALL_DAILY_YESTERDAY, /**< Yesterday's daily rainfall data type. */
 } data_type_t;
 
 
