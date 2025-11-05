@@ -13,8 +13,6 @@
 /* include components */
 #include "driver/gpio.h"
 
-extern float rain_per_pulse;
-
 /**
  * @brief Macro to enable the GPIO actuator system.
  */
