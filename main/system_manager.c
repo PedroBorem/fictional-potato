@@ -2916,8 +2916,8 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
         char rain_total_data[1000] = {}; 
         char entry[50] = {}; 
         uint8_t idp = IDP_32;
-		rain_data* pluviometer = get_rain_data_array();
-		float current_rain_value = get_current_rain_value(); 
+		rain_per_day_data* pluviometer = get_rain_data_array();
+		float current_rain_value = get_rain_total(); 
 
         for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
         {
@@ -3023,14 +3023,15 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
         {
             char str_out[200] = {};
             uint8_t idp = IDP_34;
-            float rain_per_pulse = 0.1f;
+            set_rain_per_pulse(0.1f);
 			float rain_shutdown_value = 5.0f;
 
-            esp_err_t ret_pulse = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_per_pulse);
-            if (ret_pulse != ESP_OK || rain_per_pulse <= 0.0 || rain_per_pulse > 10.0)
+            if (get_rain_per_pulse() <= 0.0 || get_rain_per_pulse() > 10.0)
             {
-                rain_per_pulse = 0.1f; 
+                set_rain_per_pulse(0.1f);
             }
+
+			float rain_per_pulse = get_rain_per_pulse();
 
 			esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_shutdown_value);
             if (ret_shutdown != ESP_OK || rain_shutdown_value <= 0.0 || rain_shutdown_value > 10.0)
