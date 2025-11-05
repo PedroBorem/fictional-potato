@@ -16,7 +16,7 @@
 typedef struct __attribute__((__packed__))
 {
     char date_day[50];   /**< Local date in "YYYYMMDD". */
-    float rain_hour[24];  /**< Hourly rainfall (index 0..23 = 00–01 ... 23–00), 0.1 mm. */
+    float rain_per_hour[24];  /**< Hourly rainfall (index 0..23 = 00–01 ... 23–00), 0.1 mm. */
     float daily_total;      /**< Daily total (sum of 24 hours), 0.1 mm. */
 } rain_per_day_data;
 
@@ -24,27 +24,23 @@ typedef struct __attribute__((__packed__))
 
 #define RAINFALL_SAVE_INTERVAL_MS (3600000) /**< Interval for saving rainfall data in milliseconds (1 hour) */
 
-void pluviometer_counter_rain_pulse();
+/**
+ * @brief Returns the rain calibration value in millimeters per pulse.
+ * @return Current calibration value (mm/pulse).
+ */
+float get_rain_per_pulse(void);
+
+/**
+ * @brief Sets the rain calibration value in millimeters per pulse.
+ * @param mm_per_pulse New calibration value (mm/pulse).
+ */
+void set_rain_per_pulse(float mm_per_pulse);
 
 /**
  * @brief Set the rain-per-pulse flag status.
  * @param flag true to enable rain-per-pulse mode, false to disable.
  */
 void set_rain_per_pulse_flag(bool flag);
-
-/**
- * @brief Get a pointer to the rain data array.
- * @return Pointer to the pluviometer array.
- */
-rain_data *get_rain_data_array();
-
-/**
- * @brief Set a rain_data entry at the specified index.
- *
- * @param index Position in the pluviometer array.
- * @param data The rain_data value to set.
- */
-void set_rain_data_entry(int index, rain_data data);
 
 /**
  * @brief Initializes the rain gauge vector with NVS data.
