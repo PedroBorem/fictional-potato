@@ -112,7 +112,6 @@ static TimerHandle_t system_timer = NULL;
  */
 static bool gps_flag_send_to_mqtt = false;
 
-
 uint32_t counter_reading_panel_off = NO_MANUAL_READING;
 
 static void system_manager_reboot(void);
@@ -134,7 +133,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_18(const char *buffer, comm_type comm_mode);
-static void system_manager_idp_19(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_19(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode);
@@ -143,8 +142,8 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_27(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
-static void system_manager_idp_32(const char* buffer, comm_type comm_mode);
-static void system_manager_idp_34(const char* buffer, comm_type comm_mode);
+static void system_manager_idp_32(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_34(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
@@ -168,7 +167,7 @@ void system_manager_init(void)
 	pivot_config config = {};
 	data_app_load(DATA_TYPE_PIVOT_CONFIG, &config);
 	actuation_app_set_config(config);
-	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));	
+	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));
 	actuation_app_hangs_up_callback(&system_monitoring_pivot_shutdown);
 
 	// system monitoring init
@@ -483,6 +482,16 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_31(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_40:
+		{
+			system_manager_idp_40(str_pkg, comm_mode);
+			break;
+		}
+        case IDP_41:
+		{
+            system_manager_idp_41(buffer, comm_mode);
+            break;
+		}
 		case IDP_90:
 		{
 			system_manager_idp_90(str_pkg, comm_mode);
@@ -614,13 +623,13 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 				}
 
-				if(old_actions.power_state == PIVOT_ON)
+				if (old_actions.power_state == PIVOT_ON)
 				{
-					if(strcmp(new_actions.user, "Irrigabras") == 0)
+					if (strcmp(new_actions.user, "Irrigabras") == 0)
 					{
 						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_IRRIGABRAS_APP, idp, "0", new_actions.user);
 					}
-					else if(strcmp(system_id, pivot_id) == 0)
+					else if (strcmp(system_id, pivot_id) == 0)
 					{
 						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_SOIL_APP, idp, "0", new_actions.user);
 					}
@@ -1962,34 +1971,33 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
  * @param buffer The input buffer containing the request.
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
  */
-static void system_manager_idp_19(const char* buffer, comm_type comm_mode)
+static void system_manager_idp_19(const char *buffer, comm_type comm_mode)
 {
-    if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
-    {
-        pivot_actions actions = {};
-        char str_out[200] = {};
-        char str_date_time[50] = {};
-        uint16_t dwp = 0;
-        uint8_t idp = 19;
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	{
+		pivot_actions actions = {};
+		char str_out[200] = {};
+		char str_date_time[50] = {};
+		uint16_t dwp = 0;
+		uint8_t idp = 19;
 
-        actuation_app_get_actions(&actions, sizeof(actions));
-        dwp = idp_parser_create_pwd(actions);
+		actuation_app_get_actions(&actions, sizeof(actions));
+		dwp = idp_parser_create_pwd(actions);
 
-        time_t timestamp = rtc_app_get_timestamp(false);
-        rtc_app_get_str_date_time(timestamp, str_date_time);
+		time_t timestamp = rtc_app_get_timestamp(false);
+		rtc_app_get_str_date_time(timestamp, str_date_time);
 
-        arg_pair_t arg_pairs[] = {
-            { "uint8_t", &idp },
-            { "string", system_id },
-            { "uint16_t", &dwp },
-            { "uint16_t", &global_pressure },
-            { "string", str_date_time },
-            { NULL, NULL }
-        };
+		arg_pair_t arg_pairs[] = {
+			{"uint8_t", &idp},
+			{"string", system_id},
+			{"uint16_t", &dwp},
+			{"uint16_t", &global_pressure},
+			{"string", str_date_time},
+			{NULL, NULL}};
 
-        idp_parser_create_package(str_out, arg_pairs);
-        comm_app_send_idp_pack(str_out, comm_mode);
-    }
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
 }
 
 /**
@@ -2322,7 +2330,7 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
 	uint8_t expected_delimiter_num = (REBOOT_CONFIG_VAR_COUNT + 1);
 
-	if (comm_mode == COMM_MQTT || comm_mode ==  COMM_RF)
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		if (delimiter_num >= expected_delimiter_num)
 		{
@@ -2709,7 +2717,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	data_app_load(DATA_TYPE_ACTIONS, &old_actions);
 
-	if(new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
+	if (new_actions.watering_state == PIVOT_DRY && old_actions.watering_state == PIVOT_WET)
 	{
 		new_actions.power_state = PIVOT_OFF;
 		system_monitoring_pivot_shutdown(TYPE_HANGS_UP_PIVOT_WITHOUT_WATER, IDP_30, "0", SYSTEM_MANAGER_TAG);
@@ -2744,7 +2752,6 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 		counter_reading_panel_off++;
 		data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
-
 	}
 
 	ret = data_app_save(DATA_TYPE_ACTIONS, &new_actions, sizeof(new_actions));
@@ -2811,7 +2818,6 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
 	comm_app_send_idp_pack(str_out, comm_main_mode);
-
 }
 
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
@@ -2860,7 +2866,6 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 			{
 				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 			}
-
 		}
 		else
 		{
@@ -2900,48 +2905,6 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 }
 
 /**
- * @brief Handle IDP package type 32.
- *
- * This function handles IDP package type 32, listing all saved rainfall data with timestamps,
- * formatted as #32-system_id-@rain_total-date@rain_total-date@...$
- *
- * @param buffer The input buffer containing the request.
- * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
- */
-static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
-{
-    if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
-    {
-        char str_out[1000] = {};
-        char rain_total_data[1000] = {}; 
-        char entry[50] = {}; 
-        uint8_t idp = IDP_32;
-		rain_per_day_data* pluviometer = get_rain_data_array();
-		float current_rain_value = get_rain_total(); 
-
-        for (int i = 0; i < MAX_RAINFALL_ENTRIES; i++) 
-        {
-            if (pluviometer[i].rain_per_hour > 0.0f) 
-            {
-                snprintf(entry, sizeof(entry), "@%.2f-%s", pluviometer[i].rain_per_hour, pluviometer[i].str_date_time);
-                strncat(rain_total_data, entry, sizeof(rain_total_data) - strlen(rain_total_data) - 1);
-            }
-        }
-
-        arg_pair_t arg_pairs[] = {
-            { "uint8_t", &idp },
-            { "string", system_id },
-			{"float", &current_rain_value},
-            { "string", rain_total_data },
-            { NULL, NULL }
-        };
-
-        idp_parser_create_package(str_out, arg_pairs);
-        comm_app_send_idp_pack(str_out, comm_mode);
-    }
-}
-
-/**
  * @brief Handle IDP package type 34.
  *
  * This function handles IDP package type 34, extracting or saving rain_per_pulse and rain_shutdown_value data via MQTT.
@@ -2951,61 +2914,61 @@ static void system_manager_idp_32(const char* buffer, comm_type comm_mode)
  */
 static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 {
-    if (comm_mode == COMM_MQTT)
-    {
-        bool mqtt_load_pkg = false;
-        bool mqtt_save_pkg = false;
+	if (comm_mode == COMM_MQTT)
+	{
+		bool mqtt_load_pkg = false;
+		bool mqtt_save_pkg = false;
 
-        uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-        uint8_t expected_delimiter_num = 2;
+		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+		uint8_t expected_delimiter_num = 2;
 
-        if (delimiter_num >= expected_delimiter_num)
-        {
-            mqtt_save_pkg = true;
-        }
-        else if (delimiter_num == 1 || delimiter_num == 0)
-        {
-            mqtt_load_pkg = true;
-        }
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
 
-        if (mqtt_save_pkg)
-        {
-            uint8_t idp = 0;
-            char pivot_id[50] = {};
-            float new_rain_per_pulse = 0.0f;
+		if (mqtt_save_pkg)
+		{
+			uint8_t idp = 0;
+			char pivot_id[50] = {};
+			float new_rain_per_pulse = 0.0f;
 			float new_rain_shutdown_value = 0.0f;
 
-            arg_pair_t arg_pairs[] = {
-                {"uint8_t", &idp},
-                {"string", pivot_id},
-                {"float", &new_rain_per_pulse},
+			arg_pair_t arg_pairs[] = {
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"float", &new_rain_per_pulse},
 				{"float", &new_rain_shutdown_value},
-                {NULL, NULL}};
+				{NULL, NULL}};
 
-            idp_parser_get_packet_data(buffer, arg_pairs);
+			idp_parser_get_packet_data(buffer, arg_pairs);
 
-            if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
-            {
-                esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &new_rain_per_pulse, sizeof(new_rain_per_pulse));
-                if (ret == ESP_OK)
-                {
+			if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
+			{
+				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &new_rain_per_pulse, sizeof(new_rain_per_pulse));
+				if (ret == ESP_OK)
+				{
 					set_rain_per_pulse_flag(true);
-                    ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
-                }
-                else
-                {
-                    ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
-                }
-            }
-            else
-            {
-                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", new_rain_per_pulse);
-            }
+					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
+				}
+				else
+				{
+					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
+				}
+			}
+			else
+			{
+				ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", new_rain_per_pulse);
+			}
 
-			if(new_rain_shutdown_value >= 0.0f && new_rain_shutdown_value < 200.0f)
+			if (new_rain_shutdown_value >= 0.0f && new_rain_shutdown_value < 200.0f)
 			{
 				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &new_rain_shutdown_value, sizeof(new_rain_shutdown_value));
-				if(ret == ESP_OK)
+				if (ret == ESP_OK)
 				{
 					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_SHUTDOWN_VALUE updated to %.2f", new_rain_shutdown_value);
 				}
@@ -3015,41 +2978,171 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 				}
 			}
 			else
-            {
-                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_SHUTDOWN_VALUE value: %.2f", new_rain_shutdown_value);
-            }
-        }
-        else if (mqtt_load_pkg)
-        {
-            char str_out[200] = {};
-            uint8_t idp = IDP_34;
-            set_rain_per_pulse(0.1f);
+			{
+				ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_SHUTDOWN_VALUE value: %.2f", new_rain_shutdown_value);
+			}
+		}
+		else if (mqtt_load_pkg)
+		{
+			char str_out[200] = {};
+			uint8_t idp = IDP_34;
+			set_rain_per_pulse(0.1f);
 			float rain_shutdown_value = 5.0f;
 
-            if (get_rain_per_pulse() <= 0.0 || get_rain_per_pulse() > 10.0)
-            {
-                set_rain_per_pulse(0.1f);
-            }
+			if (get_rain_per_pulse() <= 0.0 || get_rain_per_pulse() > 10.0)
+			{
+				set_rain_per_pulse(0.1f);
+			}
 
 			float rain_per_pulse = get_rain_per_pulse();
 
 			esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_shutdown_value);
-            if (ret_shutdown != ESP_OK || rain_shutdown_value <= 0.0 || rain_shutdown_value > 10.0)
-            {
-                rain_shutdown_value = 5.0f; 
-            }
+			if (ret_shutdown != ESP_OK || rain_shutdown_value <= 0.0 || rain_shutdown_value > 10.0)
+			{
+				rain_shutdown_value = 5.0f;
+			}
 
-            arg_pair_t arg_pairs[] = {
-                {"uint8_t", &idp},
-                {"string", system_id},
-                {"float", &rain_per_pulse},
+			arg_pair_t arg_pairs[] = {
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"float", &rain_per_pulse},
 				{"float", &rain_shutdown_value},
-                {NULL, NULL}};
+				{NULL, NULL}};
 
-            idp_parser_create_package(str_out, arg_pairs);
-            comm_app_send_idp_pack(str_out, comm_mode);
-        }
-    }
+			idp_parser_create_package(str_out, arg_pairs);
+			comm_app_send_idp_pack(str_out, comm_mode);
+		}
+	}
+}
+
+/**
+ * @brief Handle IDP package type 40 (Rainfall last hour).
+ *
+ * Format: #40-PIVOT_ID-DATA-ID_HOUR-MM_ACC$
+ * Sends data for the last completed hour, *only* if rainfall occurred.
+ *
+ * @param buffer The input buffer containing the request.
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
+static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode != COMM_HTTP_GET && comm_mode != COMM_MQTT)
+	{
+		return;
+	}
+
+	char str_out[200] = {};
+	uint8_t idp = IDP_40;
+
+	rain_per_day_data current_day_data;
+	if (pluviometer_app_get_current_day(&current_day_data) != ESP_OK)
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP 40: Failed to get current day data.");
+		return;
+	}
+
+	uint8_t last_hour_idx_0_23 = pluviometer_app_get_last_hour_idx();
+
+	if (last_hour_idx_0_23 > 23)
+	{
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "IDP 40: Invalid last hour index (%u).", (unsigned)last_hour_idx_0_23);
+		return;
+	}
+
+	float mm_acc = current_day_data.rain_per_hour[last_hour_idx_0_23];
+
+	if (mm_acc > 0.0f)
+	{
+		uint8_t id_hour_1_24 = last_hour_idx_0_23 + 1;
+
+		arg_pair_t arg_pairs[] = {
+			{"uint8_t", &idp},
+			{"string", system_id},
+			{"string", current_day_data.date_day},
+			{"uint8_t", &id_hour_1_24},
+			{"float", &mm_acc},
+			{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+}
+
+/**
+ * @brief Handle IDP package type 41 (Rainfall daily summary).
+ *
+ * Esta função carrega o registro de chuva do dia anterior (arquivado pela
+ * 'system_monitoring_rainfall_task' na virada do dia) e o formata
+ * conforme a especificação do pacote 41.
+ *
+ * Formato (com chuva): #41-PIVOT_ID-DATA@ID_HOUR-MM_ACC@...$
+ * Formato (sem chuva): #41-PIVOT_ID-DATA$
+ *
+ * @param buffer The input buffer containing the request (não utilizado aqui).
+ * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
+ */
+static void system_manager_idp_41(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode != COMM_HTTP_GET && comm_mode != COMM_MQTT)
+	{
+		return;
+	}
+
+	char str_out[1000] = {};			 // Buffer grande para o pacote completo
+	char rain_hourly_data_str[800] = {}; // Buffer p/ string de dados "@1-0.1@..."
+	uint8_t idp = IDP_41;				 // Assume IDP_41 = 41
+
+	rain_per_day_data yesterday_data = {0};
+
+	esp_err_t err = data_app_load(DATA_TYPE_RAINFALL_DAILY_YESTERDAY, &yesterday_data);
+
+	if (err != ESP_OK)
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP 41: Falha ao carregar dados de chuva de ontem (err=%d).", (int)err);
+		return;
+	}
+
+	bool did_it_rain = (yesterday_data.daily_total > 0.0f);
+
+	if (did_it_rain)
+	{
+		char entry[30] = {}; 
+
+		for (int i = 0; i < HOURS_PER_DAY; i++)
+		{
+			float mm = yesterday_data.rain_per_hour[i];
+
+			if (mm > 0.0f)
+			{
+				snprintf(entry, sizeof(entry), "@%d-%.2f",
+						 (i + 1),
+						 mm);
+
+				strncat(rain_hourly_data_str, entry, sizeof(rain_hourly_data_str) - strlen(rain_hourly_data_str) - 1);
+			}
+		}
+	}
+
+	arg_pair_t base_arg_pairs[] = {
+		{"uint8_t", &idp},
+		{"string", system_id},				 
+		{"string", yesterday_data.date_day},
+		{NULL, NULL}};
+
+	idp_parser_create_package(str_out, base_arg_pairs);
+
+	if (did_it_rain)
+	{
+		char *end_marker = strrchr(str_out, '$');
+		if (end_marker)
+		{
+			*end_marker = '\0';
+
+			strncat(str_out, rain_hourly_data_str, sizeof(str_out) - strlen(str_out) - 1);
+			strncat(str_out, "$", sizeof(str_out) - strlen(str_out) - 1);
+		}
+	}
+	comm_app_send_idp_pack(str_out, comm_mode);
 }
 
 /**
