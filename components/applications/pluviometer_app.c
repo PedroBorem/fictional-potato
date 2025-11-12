@@ -28,6 +28,9 @@ static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
 /** @brief Mutex for hour accumulator (rain_total) snapshot/reset and updates. */
 static portMUX_TYPE rain_total_mux = portMUX_INITIALIZER_UNLOCKED;
 
+/** @brief Spinlock to protect read/write access to g_rain_day structure. */
+static portMUX_TYPE g_rain_day_mux = portMUX_INITIALIZER_UNLOCKED;
+
 /** @brief Daily rainfall record; data is distributed by hour index (g_hour_idx). */
 static rain_per_day_data g_rain_day = {0};
 
@@ -126,8 +129,9 @@ void set_rain_per_pulse_flag(bool flag)
     rain_per_pulse_flag = flag;
 }
 
- /**
+/**
  * @brief Get a safe copy of the current day's data structure.
+ * @note This function is thread-safe.
  * @param out_data Pointer to the structure where the data will be copied.
  * @return ESP_OK if successful.
  */
@@ -137,7 +141,11 @@ esp_err_t pluviometer_app_get_current_day(rain_per_day_data *out_data)
     {
         return ESP_ERR_INVALID_ARG;
     }
-    *out_data = g_rain_day; 
+
+    taskENTER_CRITICAL(&g_rain_day_mux);
+    *out_data = g_rain_day; // Cópia em memória (muito rápido)
+    taskEXIT_CRITICAL(&g_rain_day_mux);
+    
     return ESP_OK;
 }
 
@@ -211,23 +219,20 @@ static void update_day_string_from_ts(time_t ts)
  *
  * - Pulses → mm are accumulated in a temporary “current-hour” bucket.
  * - On RTC hour change (00..23), we atomically snapshot+reset the accumulator
- *   and store the value into g_rain_day.rain_per_hour[hour_just_finished].
+ * and store the value into g_rain_day.rain_per_hour[hour_just_finished].
  * - We always persist to NVS (including 0.0 mm) and recompute the daily total.
  * - If hours were skipped within the same day, we fill missed bins with 0.0 mm.
  * - On day rollover (23→0 or any midnight crossing), we finalize the previous day
- *   and clear the structure for the new day (date string updated from RTC).
+ * and clear the structure for the new day (date string updated from RTC).
  */
 
 void system_monitoring_rainfall_task(void *arg)
 {
-    // Periodic loop ticks; used with vTaskDelayUntil for stable cadence.
     TickType_t last_wake_time = xTaskGetTickCount();
 
-    // Optional rain-based shutdown parameters
     pivot_actions actions = {};
     float rain_shutdown_value = 0.0f;
 
-    // Throttle for repeated warnings when RTC is invalid
     static TickType_t s_last_rtc_warn_tick = 0;
 
     ESP_LOGI(PLUVIOMETER_TAG, "Starting rainfall monitoring task (hourly RTC-anchored windows).");
@@ -239,6 +244,7 @@ void system_monitoring_rainfall_task(void *arg)
         if (rain_per_pulse_flag)
         {
             float nvs_rain_per_pulse = 0.1f;
+
             esp_err_t err = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &nvs_rain_per_pulse);
             if (err == ESP_OK && nvs_rain_per_pulse > 0.0f && nvs_rain_per_pulse <= 10.0f)
             {
@@ -256,7 +262,7 @@ void system_monitoring_rainfall_task(void *arg)
         }
 
         gpio_rain_sensor_calculate_rainfall();
-        s_rain_total_mm  = get_rain_total();
+        s_rain_total_mm  = get_rain_total(); 
 
         if (s_rain_total_mm > 0.0f)
         {
@@ -292,24 +298,41 @@ void system_monitoring_rainfall_task(void *arg)
 
             else if (curr_hour_idx != s_last_hour_idx)
             {
+                rain_per_day_data current_day_to_save;
+                rain_per_day_data yesterday_to_save;
+                esp_err_t err;
+                esp_err_t aerr;
+                char new_date_str[sizeof(g_rain_day.date_day)];
+
                 uint8_t step = (uint8_t)((curr_hour_idx + 24 - s_last_hour_idx) % 24);
-                bool rolled_day = (curr_hour_idx < s_last_hour_idx); // crossed midnight if true
+                bool rolled_day = (curr_hour_idx < s_last_hour_idx);
+                bool new_day = (curr_hour_idx == 0 && s_last_hour_idx == 23);
+                bool must_archive_yesterday = (new_day || rolled_day);
+
+                float snapshot = 0.0f;
+                taskENTER_CRITICAL(&rain_total_mux);
+                snapshot = get_rain_total();
+                set_rain_total(0.0f);
+                taskEXIT_CRITICAL(&rain_total_mux);
+
+                uint8_t bin_to_write = s_last_hour_idx;
+
+                if (must_archive_yesterday)
+                {
+                    struct tm lt;
+                    localtime_r(&now_ts, &lt);
+                    strftime(new_date_str, sizeof(new_date_str), "%d/%m/%Y", &lt);
+                }
+                
+                taskENTER_CRITICAL(&g_rain_day_mux); 
 
                 if (rolled_day && step > 1)
                 {
-                    uint8_t start = (uint8_t)(s_last_hour_idx + 1); // next hour in the previous day
+                    uint8_t start = (uint8_t)(s_last_hour_idx + 1);
                     for (uint8_t h = start; h <= 23; ++h)
                     {
                         g_rain_day.rain_per_hour[h] = 0.0f;
                     }
-                }
-
-                if (step != 1)
-                {
-                    ESP_LOGW(PLUVIOMETER_TAG,
-                             "Hour jump detected: last=%u -> current=%u (step=%u). "
-                             "Hour jump detected; same-day missed bins set to 0.0 mm (previous-day remainder handled if midnight crossed).",
-                             (unsigned)s_last_hour_idx, (unsigned)curr_hour_idx, (unsigned)step);
                 }
                 if (step > 1 && !rolled_day)
                 {
@@ -323,24 +346,57 @@ void system_monitoring_rainfall_task(void *arg)
                     }
                 }
 
-                bool new_day = (curr_hour_idx == 0 && s_last_hour_idx == 23);
-
-                // Atomic snapshot + reset of the hourly accumulator
-                float snapshot = 0.0f;
-                taskENTER_CRITICAL(&rain_total_mux);
-                snapshot = get_rain_total();
-                set_rain_total(0.0f);
-                taskEXIT_CRITICAL(&rain_total_mux);
-
-                uint8_t bin_to_write = s_last_hour_idx;
                 g_rain_day.rain_per_hour[bin_to_write] = snapshot;
-
                 float total = 0.0f;
                 for (int i = 0; i < 24; ++i)
                     total += g_rain_day.rain_per_hour[i];
                 g_rain_day.daily_total = total;
 
-                esp_err_t err = save_rain_daily(&g_rain_day);
+                if (must_archive_yesterday)
+                {
+                    yesterday_to_save = g_rain_day; 
+                    
+                    memset(g_rain_day.rain_per_hour, 0, sizeof(g_rain_day.rain_per_hour));
+                    g_rain_day.daily_total = 0.0f;
+
+                    memcpy(g_rain_day.date_day, new_date_str, sizeof(new_date_str)); 
+                }
+
+                current_day_to_save = g_rain_day;
+
+                s_last_hour_idx = curr_hour_idx;
+                g_hour_idx = curr_hour_idx;
+
+                taskEXIT_CRITICAL(&g_rain_day_mux); 
+
+                if (step != 1)
+                {
+                    ESP_LOGW(PLUVIOMETER_TAG,
+                             "Hour jump detected: last=%u -> current=%u (step=%u). "
+                             "Missed bins handled.",
+                             (unsigned)bin_to_write, (unsigned)curr_hour_idx, (unsigned)step);
+                }
+
+
+                if (must_archive_yesterday)
+                {
+                    aerr = save_rain_yesterday(&yesterday_to_save); 
+                    if (aerr != ESP_OK)
+                    {
+                        ESP_LOGE(PLUVIOMETER_TAG,
+                                 "Failed to archive yesterday rainfall (date=%s). err=%d",
+                                 yesterday_to_save.date_day, (int)aerr);
+                    }
+                    else
+                    {
+                        ESP_LOGI(PLUVIOMETER_TAG,
+                                 "Archived yesterday rainfall (date=%s, total=%.2f mm).",
+                                 yesterday_to_save.date_day, yesterday_to_save.daily_total);
+                    }
+                    ESP_LOGI(PLUVIOMETER_TAG, "New day rollover detected. Clearing daily structure.");
+                }
+
+                err = save_rain_daily(&current_day_to_save); 
                 if (err != ESP_OK)
                 {
                     ESP_LOGE(PLUVIOMETER_TAG,
@@ -351,44 +407,12 @@ void system_monitoring_rainfall_task(void *arg)
                 {
                     ESP_LOGI(PLUVIOMETER_TAG,
                              "Saved hour %u = %.2f mm. Daily total now: %.2f mm.",
-                             (unsigned)bin_to_write, snapshot, g_rain_day.daily_total);
+                             (unsigned)bin_to_write, snapshot, current_day_to_save.daily_total);
                 }
 
                 ESP_LOGI(PLUVIOMETER_TAG,
                          "Reset hourly accumulator; new active hour=%u.",
                          (unsigned)curr_hour_idx);
-
-                if (new_day || rolled_day)
-                {
-                    {
-                        rain_per_day_data yesterday = g_rain_day; 
-                        esp_err_t aerr = save_rain_yesterday(&yesterday);
-                        if (aerr != ESP_OK)
-                        {
-                            ESP_LOGE(PLUVIOMETER_TAG,
-                                    "Failed to archive yesterday rainfall (date=%s). err=%d",
-                                    yesterday.date_day, (int)aerr);
-                        }
-                        else
-                        {
-                            ESP_LOGI(PLUVIOMETER_TAG,
-                                    "Archived yesterday rainfall (date=%s, total=%.2f mm).",
-                                    yesterday.date_day, yesterday.daily_total);
-                        }
-                    }
-
-                    ESP_LOGI(PLUVIOMETER_TAG, "New day rollover detected. Clearing daily structure.");
-                    memset(g_rain_day.rain_per_hour, 0, sizeof(g_rain_day.rain_per_hour));
-                    g_rain_day.daily_total = 0.0f;
-
-                    update_day_string_from_ts(now_ts);
-
-                    (void)save_rain_daily(&g_rain_day);
-                }
-
-
-                s_last_hour_idx = curr_hour_idx;
-                g_hour_idx = curr_hour_idx;
             }
         }
         else
