@@ -53,20 +53,6 @@ void system_monitoring_register_callback(const app_callback callback);
 void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type_barrier barrier_type);
 
 /**
- * @brief Task function for monitoring rainfall.
- *
- * This function continuously monitors rainfall and updates the total accumulated rainfall.
- *
- * @param arg Task argument (default NULL).
- */
-void system_monitoring_rainfall_task(void *arg);
-
-/**
- * @brief Initializes the rain gauge vector with NVS data.
- */
-void system_monitoring_init_rainfall_data(void);
-
-/**
  * @brief Checks if the current angle is within the specified range barrier.
  *
  * This function evaluates the pivot's current angle and determines if it falls

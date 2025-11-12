@@ -66,6 +66,8 @@
  */
 #define SYSTEM_SAVE_FLASH_TIME_MS (600000) // 10 minutes
 
+#define HOURS_PER_DAY (24U)
+
 /** @var global_pressure
  *  @brief Global variable for the current pressure.
  */
@@ -143,7 +145,6 @@ static void system_manager_idp_27(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
-static void system_manager_idp_32(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_34(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_40(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_41(const char *buffer, comm_type comm_mode);
@@ -185,6 +186,8 @@ void system_manager_init(void)
 	pivot_comm_main_mode_config comm_main_mode_config = {};
 	data_app_load(DATA_TYPE_COMM_MAIN_MODE, &comm_main_mode_config);
 	comm_app_set_main_mode_config(comm_main_mode_config);
+
+	pluviometer_app_init_rainfall_data(&system_manager_callback);
 
 	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
@@ -469,11 +472,6 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_30(str_pkg, comm_mode);
 			break;
 		}
-		case IDP_32:
-		{
-			system_manager_idp_32(str_pkg, comm_mode);
-			break;
-		}
 		case IDP_34:
 		{
 			system_manager_idp_34(str_pkg, comm_mode);
@@ -491,7 +489,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		}
         case IDP_41:
 		{
-            system_manager_idp_41(buffer, comm_mode);
+            system_manager_idp_41(str_pkg, comm_mode);
             break;
 		}
 		case IDP_90:
@@ -3074,7 +3072,7 @@ static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
  * @brief Handle IDP package type 41 (Rainfall daily summary).
  *
  * Esta função carrega o registro de chuva do dia anterior (arquivado pela
- * 'system_monitoring_rainfall_task' na virada do dia) e o formata
+ * 'pluviometer_app_rainfall_task' na virada do dia) e o formata
  * conforme a especificação do pacote 41.
  *
  * Formato (com chuva): #41-PIVOT_ID-DATA@ID_HOUR-MM_ACC@...$

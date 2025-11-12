@@ -58,13 +58,6 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
 /* Private methods ----------------------------------- */
 
 /**
- * @brief Task to calculate rainfall every second and save accumulated data every 10 minutes.
- *
- * @param arg Task argument (default NULL).
- */
-void system_monitoring_rainfall_task(void *arg);
-
-/**
  * @brief Executes the actuation process based on the system configuration.
  *
  * This function performs the actuation process based on the current system configuration.
@@ -578,7 +571,7 @@ void system_monitoring_start(const pivot_physical_config physical_config, const 
                     &xTask_system_monitoring);
     }
 
-    BaseType_t rainfall_task_created = xTaskCreate(system_monitoring_rainfall_task, 
+    BaseType_t rainfall_task_created = xTaskCreate(pluviometer_app_rainfall_task, 
                                        PLUV_TASK_NAME, 
                                        PLUV_STACK_SIZE, 
                                        NULL, 
