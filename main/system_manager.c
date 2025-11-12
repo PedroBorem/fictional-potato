@@ -487,10 +487,10 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_40(str_pkg, comm_mode);
 			break;
 		}
-        case IDP_41:
+		case IDP_41:
 		{
-            system_manager_idp_41(str_pkg, comm_mode);
-            break;
+			system_manager_idp_41(str_pkg, comm_mode);
+			break;
 		}
 		case IDP_90:
 		{
@@ -3025,12 +3025,11 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
  */
 static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
-{
+{	
 	if (comm_mode != COMM_HTTP_GET && comm_mode != COMM_MQTT)
 	{
 		return;
 	}
-
 	char str_out[200] = {};
 	uint8_t idp = IDP_40;
 
@@ -3041,19 +3040,24 @@ static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
 		return;
 	}
 
-	uint8_t last_hour_idx_0_23 = pluviometer_app_get_last_hour_idx();
-
-	if (last_hour_idx_0_23 > 23)
+	uint8_t active_hour_idx = pluviometer_app_get_last_hour_idx(); // hora ATIVA após o fechamento
+	if (active_hour_idx > 23)
 	{
-		ESP_LOGW(SYSTEM_MANAGER_TAG, "IDP 40: Invalid last hour index (%u).", (unsigned)last_hour_idx_0_23);
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "IDP 40: Invalid hour idx (%u).", (unsigned)active_hour_idx);
 		return;
 	}
 
-	float mm_acc = current_day_data.rain_per_hour[last_hour_idx_0_23];
+	uint8_t closed_hour_idx = (uint8_t)((active_hour_idx + 23U) % 24U);
+	float mm_acc = current_day_data.rain_per_hour[closed_hour_idx];
+
+	ESP_LOGI(SYSTEM_MANAGER_TAG,
+			 "IDP 40: active=%u closed=%u mm=%.2f date=%s",
+			 (unsigned)active_hour_idx, (unsigned)closed_hour_idx,
+			 (double)mm_acc, current_day_data.date_day);
 
 	if (mm_acc > 0.0f)
 	{
-		uint8_t id_hour_1_24 = last_hour_idx_0_23 + 1;
+		uint8_t id_hour_1_24 = (uint8_t)(closed_hour_idx + 1U);
 
 		arg_pair_t arg_pairs[] = {
 			{"uint8_t", &idp},
@@ -3064,7 +3068,15 @@ static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
 			{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);
+
+		ESP_LOGI(SYSTEM_MANAGER_TAG, "IDP 40: pkg='%s'", str_out);
 		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGI(SYSTEM_MANAGER_TAG,
+				 "IDP 40: closed hour %u has 0.00 mm — skipping send.",
+				 (unsigned)closed_hour_idx);
 	}
 }
 
@@ -3106,7 +3118,7 @@ static void system_manager_idp_41(const char *buffer, comm_type comm_mode)
 
 	if (did_it_rain)
 	{
-		char entry[30] = {}; 
+		char entry[30] = {};
 
 		for (int i = 0; i < HOURS_PER_DAY; i++)
 		{
@@ -3125,7 +3137,7 @@ static void system_manager_idp_41(const char *buffer, comm_type comm_mode)
 
 	arg_pair_t base_arg_pairs[] = {
 		{"uint8_t", &idp},
-		{"string", system_id},				 
+		{"string", system_id},
 		{"string", yesterday_data.date_day},
 		{NULL, NULL}};
 

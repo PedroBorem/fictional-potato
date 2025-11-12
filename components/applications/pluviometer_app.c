@@ -29,8 +29,8 @@
 #define RAIN_PER_PULSE_DEFAULT_MM (0.1f)
 
 /* Time constants (keep only what is used here) */
-#define SECS_PER_HOUR 120UL
-#define SECS_PER_DAY 2880UL
+#define SECS_PER_HOUR 60UL
+#define SECS_PER_DAY 1440UL
 
 /** @brief Optional callback for actuation/events integration. */
 static MAYBE_UNUSED app_callback pluviometer_app_call = NULL;
@@ -197,7 +197,7 @@ void pluviometer_app_init_rainfall_data(const app_callback callback)
     }
 
     /* Initialize hour state from local RTC time */
-    time_t now_ts = rtc_app_get_timestamp(true); /* true: local time */
+    time_t now_ts = rtc_app_get_timestamp(true);
     if (now_ts > 0)
     {
         uint32_t sod = (uint32_t)(now_ts % SECS_PER_DAY);
@@ -273,28 +273,29 @@ static void update_rain_per_pulse_if_needed(void)
  * and the threshold is configured (>0), and @c s_rain_total_mm >= threshold, then it calls
  * @c gpio_actuator_shutdown() and logs the event.
  */
-static void maybe_trigger_rain_shutdown(void)
+static void maybe_trigger_rain_shutdown()
 {
-    if (s_rain_total_mm <= 0.0f)
-    {
+    float rain_mm;
+    taskENTER_CRITICAL(&rain_total_mux);
+    rain_mm = get_rain_total();
+    taskEXIT_CRITICAL(&rain_total_mux);
+
+    if (rain_mm <= 0.0f)
         return;
-    }
 
     float shutdown_value = 0.0f;
     pivot_actions acts = {};
     (void)data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &shutdown_value);
     (void)data_app_load(DATA_TYPE_ACTIONS, &acts);
 
-    bool pivot_on = (acts.power_state == PIVOT_ON);
-    bool pivot_wet = (acts.watering_state == PIVOT_WET);
-    bool threshold_configured = (shutdown_value > 0.0f);
-    bool reached_threshold = (s_rain_total_mm >= shutdown_value);
+    const bool pivot_on = (acts.power_state == PIVOT_ON);
+    const bool pivot_wet = (acts.watering_state == PIVOT_WET);
 
-    if (pivot_on && pivot_wet && threshold_configured && reached_threshold)
+    if (pivot_on && pivot_wet && shutdown_value > 0.0f && rain_mm >= shutdown_value)
     {
         ESP_LOGW(PLUVIOMETER_TAG,
-                 "Rain shutdown triggered: rain_total=%.2f mm >= threshold=%.2f mm. Requesting actuator OFF.",
-                 s_rain_total_mm, shutdown_value);
+                 "Rain shutdown: rain_total=%.2f >= threshold=%.2f. Actuator OFF.",
+                 rain_mm, shutdown_value);
         gpio_actuator_shutdown();
     }
 }
@@ -480,8 +481,7 @@ static void prepare_day_rollover_locked(const char *new_date_str, rain_per_day_d
 
     if (new_date_str != NULL)
     {
-        size_t len = sizeof(g_rain_day.date_day);
-        memcpy(g_rain_day.date_day, new_date_str, len);
+        snprintf(g_rain_day.date_day, sizeof(g_rain_day.date_day), "%s", new_date_str);
     }
 }
 
