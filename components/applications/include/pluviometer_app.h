@@ -9,6 +9,8 @@
 
 #include "project_config.h"
 
+#include "esp_err.h"
+
 /**
  * @brief Daily rainfall with 24 hourly bins.
  * @note Values are in tenths of a millimeter (0.1 mm).
@@ -59,7 +61,7 @@ void set_rain_per_pulse_flag(bool flag);
 /**
  * @brief Initializes the rain gauge vector with NVS data.
  */
-void system_monitoring_init_rainfall_data(void);
+void pluviometer_app_init_rainfall_data(const app_callback callback);
 
 /**
  * @brief Obtains a safe copy of the current day's data structure.
@@ -81,6 +83,6 @@ uint8_t pluviometer_app_get_last_hour_idx(void);
  *
  * @param arg Pointer to task arguments (not used).
  */
-void system_monitoring_rainfall_task(void *arg);
+void pluviometer_app_rainfall_task(void *arg);
 
 #endif // PLUVIOMETER_APP_H

@@ -11,7 +11,6 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
-#include "esp_err.h"
 
 #include <string.h>
 #include <time.h>
@@ -30,9 +29,8 @@
 #define RAIN_PER_PULSE_DEFAULT_MM (0.1f)
 
 /* Time constants (keep only what is used here) */
-#define SECS_PER_HOUR 3600UL
-#define SECS_PER_DAY 86400UL
-/* #define HOURS_PER_DAY 24U  // (unused here) */
+#define SECS_PER_HOUR 120UL
+#define SECS_PER_DAY 2880UL
 
 /** @brief Optional callback for actuation/events integration. */
 static MAYBE_UNUSED app_callback pluviometer_app_call = NULL;
@@ -60,8 +58,6 @@ static bool rain_per_pulse_flag = false;
 
 /** @brief Last hour index detected from RTC (0..23). 0xFF = undefined/uninitialized. */
 static uint8_t s_last_hour_idx = 0xFF;
-
-static void update_day_string_from_ts(time_t ts);
 
 /** @brief Accumulator for the current hour's rainfall (mm). */
 static float s_rain_total_mm = 0.0f;
@@ -174,11 +170,21 @@ uint8_t pluviometer_app_get_last_hour_idx(void)
 }
 
 /**
+ * @brief Update g_rain_day.date_day (DD/MM/YYYY) from a timestamp (local time).
+ */
+static void update_day_string_from_ts(time_t ts)
+{
+    struct tm lt;
+    localtime_r(&ts, &lt);
+    (void)strftime(g_rain_day.date_day, sizeof(g_rain_day.date_day), "%d/%m/%Y", &lt);
+}
+
+/**
  * @brief Initialize daily rainfall state from NVS.
  *        If not found, zeroes the structure and sets date_day to "DD/MM/YYYY".
  *        Also sets the hour index from RTC or leaves it uninitialized (0xFF).
  */
-void system_monitoring_init_rainfall_data(const app_callback callback)
+void pluviometer_app_init_rainfall_data(const app_callback callback)
 {
     /* Try to load the persisted day */
     esp_err_t err = load_rain_daily(&g_rain_day);
@@ -223,26 +229,6 @@ void system_monitoring_init_rainfall_data(const app_callback callback)
     }
 
     pluviometer_app_call = callback; /* may be unused now; kept for future hooks */
-}
-
-/**
- * @brief Update g_rain_day.date_day (DD/MM/YYYY) from a timestamp (local time).
- */
-static void update_day_string_from_ts(time_t ts)
-{
-    struct tm lt;
-    localtime_r(&ts, &lt);
-    (void)strftime(g_rain_day.date_day, sizeof(g_rain_day.date_day), "%d/%m/%Y", &lt);
-}
-
-/**
- * @brief Update g_rain_day.date_day (DD/MM/YYYY) from a timestamp (local time).
- */
-static void update_day_string_from_ts(time_t ts)
-{
-    struct tm lt;
-    localtime_r(&ts, &lt);
-    strftime(g_rain_day.date_day, sizeof(g_rain_day.date_day), "%d/%m/%Y", &lt);
 }
 
 /**
@@ -328,7 +314,7 @@ static bool rtc_get_current_hour(uint8_t *out_hour, uint32_t *out_sod, time_t *o
         return false;
     }
 
-    time_t now_ts = rtc_app_get_timestamp(true);
+    time_t now_ts = rtc_app_get_timestamp(false);
     if (now_ts <= 0)
     {
         return false;
@@ -534,7 +520,7 @@ static void persist_and_publish(bool must_archive_yesterday,
                      yesterday_to_save->date_day, yesterday_to_save->daily_total);
 
             ESP_LOGI(PLUVIOMETER_TAG, "Publishing daily summary packet (#41).");
-            pluviometer_app_call("#41$", NULL);
+            pluviometer_app_call("#41$", comm_main_mode);
         }
         ESP_LOGI(PLUVIOMETER_TAG, "New day rollover detected. Clearing daily structure.");
     }
@@ -557,7 +543,7 @@ static void persist_and_publish(bool must_archive_yesterday,
             if (snapshot > 0.0f)
             {
                 ESP_LOGI(PLUVIOMETER_TAG, "Publishing hourly packet (#40) for hour=%u.", (unsigned)bin_written);
-                pluviometer_app_call("#40$", NULL);
+                pluviometer_app_call("#40$", comm_main_mode);
             }
         }
     }
@@ -665,14 +651,12 @@ static void handle_hour_change(uint8_t curr_hour_idx, time_t now_ts, uint32_t so
  * - On day rollover (23→0 or any midnight crossing), we finalize the previous day
  * and clear the structure for the new day (date string updated from RTC).
  */
-void system_monitoring_rainfall_task(void *arg)
+void pluviometer_app_rainfall_task(void *arg)
 {
     TickType_t last_wake_time = xTaskGetTickCount();
     static TickType_t s_last_rtc_warn_tick = 0;
 
     ESP_LOGI(PLUVIOMETER_TAG, "Starting rainfall monitoring task (hourly RTC-anchored windows).");
-
-    system_monitoring_init_rainfall_data();
 
     while (1)
     {
