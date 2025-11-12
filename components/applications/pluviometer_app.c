@@ -29,8 +29,8 @@
 #define RAIN_PER_PULSE_DEFAULT_MM (0.1f)
 
 /* Time constants (keep only what is used here) */
-#define SECS_PER_HOUR 60UL
-#define SECS_PER_DAY 1440UL
+#define SECS_PER_HOUR 3600UL
+#define SECS_PER_DAY 86400UL
 
 /** @brief Optional callback for actuation/events integration. */
 static MAYBE_UNUSED app_callback pluviometer_app_call = NULL;
