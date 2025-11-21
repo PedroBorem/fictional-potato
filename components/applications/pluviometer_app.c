@@ -63,26 +63,6 @@ static uint8_t s_last_hour_idx = 0xFF;
 static float s_rain_total_mm = 0.0f;
 
 /**
- * @brief Get the current hour's accumulated rainfall.
- * @note Must be called from within a 'rain_total_mux' critical section.
- * @return Rain total in mm.
- */
-float get_rain_total(void)
-{
-    return s_rain_total_mm;
-}
-
-/**
- * @brief Set the current hour's accumulated rainfall.
- * @note Must be called from within a 'rain_total_mux' critical section.
- * @param value Rain total in mm.
- */
-void set_rain_total(float value)
-{
-    s_rain_total_mm = value;
-}
-
-/**
  * @brief Get the rain calibration (mm per pulse).
  * @return Current calibration in mm/pulse.
  */
@@ -277,7 +257,7 @@ static void maybe_trigger_rain_shutdown()
 {
     float rain_mm;
     taskENTER_CRITICAL(&rain_total_mux);
-    rain_mm = get_rain_total();
+    rain_mm = s_rain_total_mm;
     taskEXIT_CRITICAL(&rain_total_mux);
 
     if (rain_mm <= 0.0f)
@@ -364,8 +344,8 @@ static void snapshot_and_reset_hour_accumulator(float *out_snapshot)
 
     float snapshot = 0.0f;
     taskENTER_CRITICAL(&rain_total_mux);
-    snapshot = get_rain_total();
-    set_rain_total(0.0f);
+    snapshot = s_rain_total_mm;
+    s_rain_total_mm = 0.0f;
     taskEXIT_CRITICAL(&rain_total_mux);
 
     *out_snapshot = snapshot;
@@ -663,7 +643,6 @@ void pluviometer_app_rainfall_task(void *arg)
         update_rain_per_pulse_if_needed();
 
         gpio_rain_sensor_calculate_rainfall();
-        s_rain_total_mm = get_rain_total();
 
         maybe_trigger_rain_shutdown();
 
@@ -718,6 +697,6 @@ void gpio_rain_sensor_calculate_rainfall(void)
     float interval_rain = pulses * rain_per_pulse;
 
     taskENTER_CRITICAL(&rain_total_mux);
-    set_rain_total(get_rain_total() + interval_rain);
+    s_rain_total_mm += interval_rain;
     taskEXIT_CRITICAL(&rain_total_mux);
 }
