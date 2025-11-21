@@ -38,7 +38,7 @@ static MAYBE_UNUSED app_callback pluviometer_app_call = NULL;
 /** @brief Spinlock/mutex for ISR-safe access to rain pulse counters. */
 static portMUX_TYPE rain_pulse_counter_mux = portMUX_INITIALIZER_UNLOCKED;
 
-/** @brief Mutex for hour accumulator (rain_total) snapshot/reset and updates. */
+/** @brief Mutex for the current-hour rainfall accumulator snapshot/reset and updates. */
 static portMUX_TYPE current_hour_rain_mux = portMUX_INITIALIZER_UNLOCKED;
 
 /** @brief Spinlock to protect read/write access to g_rain_day structure. */
@@ -60,7 +60,7 @@ static bool rain_per_pulse_flag = false;
 static uint8_t s_last_hour_idx = 0xFF;
 
 /** @brief Accumulator for the current hour's rainfall (mm). */
-static float s_current_hour_rain_mm  = 0.0f;
+static float s_current_hour_rain_mm = 0.0f;
 
 /**
  * @brief Get the rain calibration (mm per pulse).
@@ -141,8 +141,11 @@ esp_err_t pluviometer_app_get_current_day(rain_per_day_data *out_data)
 }
 
 /**
- * @brief Get the index of the last closed hour (0-23).
- * @return Hour index (0-23), or 0xFF if not yet initialized.
+ * @brief Get the index of the current ACTIVE hour (0–23).
+ *
+ * This corresponds to the hour currently reported by the RTC.
+ *
+ * @return Hour index (0–23), or 0xFF if not yet initialized.
  */
 uint8_t pluviometer_app_get_active_hour_idx(void)
 {
@@ -257,7 +260,7 @@ static void maybe_trigger_rain_shutdown()
 {
     float rain_mm;
     taskENTER_CRITICAL(&current_hour_rain_mux);
-    rain_mm = s_current_hour_rain_mm ;
+    rain_mm = s_current_hour_rain_mm;
     taskEXIT_CRITICAL(&current_hour_rain_mux);
 
     if (rain_mm <= 0.0f)
@@ -328,12 +331,12 @@ static void init_hour_index_from_rtc(uint8_t curr_hour, uint32_t sod)
 }
 
 /**
- * @brief Atomically snapshots and resets the hourly rainfall accumulator.
+ * @brief Atomically snapshot and reset the current-hour rainfall accumulator.
  *
- * Acquires @c current_hour_rain_mux to read @c get_rain_total(), writes its value into @p out_snapshot,
- * and resets the accumulator to zero via @c set_rain_total(0.0f).
+ * Protects @c s_current_hour_rain_mm with @c current_hour_rain_mux,
+ * copies its value into @p out_snapshot and then resets the accumulator to 0.0f.
  *
- * @param[out] out_snapshot The snapshot value of the accumulator in mm.
+ * @param[out] out_snapshot Pointer that will receive the snapshot value in mm.
  */
 static void snapshot_and_reset_current_hour_rain(float *out_snapshot)
 {
@@ -344,8 +347,8 @@ static void snapshot_and_reset_current_hour_rain(float *out_snapshot)
 
     float snapshot = 0.0f;
     taskENTER_CRITICAL(&current_hour_rain_mux);
-    snapshot = s_current_hour_rain_mm ;
-    s_current_hour_rain_mm  = 0.0f;
+    snapshot = s_current_hour_rain_mm;
+    s_current_hour_rain_mm = 0.0f;
     taskEXIT_CRITICAL(&current_hour_rain_mux);
 
     *out_snapshot = snapshot;
@@ -371,27 +374,27 @@ static void format_local_date_ddmmyyyy(time_t now_ts, char *out_buf, size_t out_
 }
 
 /**
- * @brief Fills missed hourly bins inside the same day with 0.0, and the tail of the day on rollover.
+ * @brief Fill missing hourly bins with 0.0 mm, for the same day or the tail of the previous day.
  *
- * Must be called with @c g_rain_day_mux held by the caller.
+ * Must be called with @c g_rain_day_mux already held by the caller.
  *
- * @param curr_hour     Current hour index (0..23).
- * @param last_hour     Previous hour index (0..23).
- * @param step          Forward distance from @p last_hour to @p curr_hour modulo 24.
- * @param rolled_day    True if the clock wrapped to a new day (curr_hour < last_hour).
+ * @param curr_hour_idx   Current hour index (0..23) reported by the RTC.
+ * @param last_hour_idx   Previous hour index (0..23) used as the starting point.
+ * @param hours_advanced  Forward distance in hours from @p last_hour_idx to @p curr_hour_idx (modulo 24).
+ * @param day_rolled      True if the clock wrapped to a new day (curr_hour_idx < last_hour_idx).
  */
 static void fill_missing_hours_with_zero(uint8_t curr_hour_idx,
                                          uint8_t last_hour_idx,
                                          uint8_t hours_advanced,
-                                         bool day_rolled);
-
+                                         bool day_rolled)
 {
-    if (rolled_day)
+    if (day_rolled)
     {
-        /* When day rolled and more than one hour advanced: zero the remaining hours of the previous day. */
-        if (step > 1U)
+        /* When the day rolled and more than one hour advanced:
+         * zero the remaining hours of the previous day. */
+        if (hours_advanced > 1U)
         {
-            uint8_t start = (uint8_t)(last_hour + 1U);
+            uint8_t start = (uint8_t)(last_hour_idx + 1U);
             uint8_t h = start;
             while (h <= 23U)
             {
@@ -402,16 +405,16 @@ static void fill_missing_hours_with_zero(uint8_t curr_hour_idx,
         return;
     }
 
-    /* Same day, jumped multiple hours: zero each missed hour except the current one. */
-    if (step > 1U)
+    /* Same day, multiple hours skipped: zero each missed hour except the current one. */
+    if (hours_advanced > 1U)
     {
         uint8_t k = 1U;
-        while (k < step)
+        while (k < hours_advanced)
         {
-            uint8_t missed = (uint8_t)((last_hour + k) % 24U);
-            if (missed != curr_hour)
+            uint8_t missing_hour_idx = (uint8_t)((last_hour_idx + k) % 24U);
+            if (missing_hour_idx != curr_hour_idx)
             {
-                g_rain_day.rain_per_hour[missed] = 0.0f;
+                g_rain_day.rain_per_hour[missing_hour_idx] = 0.0f;
             }
             k++;
         }
@@ -419,15 +422,15 @@ static void fill_missing_hours_with_zero(uint8_t curr_hour_idx,
 }
 
 /**
- * @brief Writes the snapshot to the specified hourly bin and recomputes daily total.
+ * @brief Write the finished hour rainfall into its bin and recompute the daily total.
  *
  * Must be called with @c g_rain_day_mux held by the caller.
  *
- * @param finished_hour_idx Hourly bin index (0..23).
- * @param snapshot     Hourly rainfall in mm to write.
+ * @param finished_hour_idx     Hour index (0..23) that has just finished.
+ * @param finished_hour_rain_mm Rainfall in mm for the finished hour.
  */
 static void write_hour_rain_and_recompute_daily_total(uint8_t finished_hour_idx,
-                                                      float finished_hour_rain_mm);
+                                                      float finished_hour_rain_mm)
 {
     g_rain_day.rain_per_hour[finished_hour_idx] = finished_hour_rain_mm;
 
@@ -469,23 +472,23 @@ static void prepare_day_rollover_locked(const char *new_date_str, rain_per_day_d
 }
 
 /**
- * @brief Saves daily structures and publishes packets according to rollover and snapshot.
+ * @brief Save daily structures and publish packets according to rollover and snapshot.
  *
  * Persists @p yesterday_to_save when provided (rollover case) and always persists
  * @p current_day_to_save. Publishes packet #41 for daily summary when yesterday is archived,
- * and packet #40 for the hourly bin when @p snapshot > 0.0.
+ * and packet #40 for the hourly bin when @p finished_hour_rain_mm > 0.0.
  *
  * @param must_archive_yesterday  True if there was a day rollover.
  * @param yesterday_to_save       Pointer to "yesterday" structure (valid if @p must_archive_yesterday is true).
  * @param current_day_to_save     Pointer to the current day structure to persist.
- * @param bin_written             The hour index that was written.
- * @param snapshot                The rainfall snapshot stored in @p bin_written.
+ * @param finished_hour_idx       Index (0–23) of the hour that has just finished.
+ * @param finished_hour_rain_mm   Rainfall in mm stored in @p finished_hour_idx.
  */
 static void persist_and_publish(bool must_archive_yesterday,
                                 const rain_per_day_data *yesterday_to_save,
                                 const rain_per_day_data *current_day_to_save,
-                                uint8_t bin_written,
-                                float snapshot)
+                                uint8_t finished_hour_idx,
+                                float finished_hour_rain_mm)
 {
     if (must_archive_yesterday && (yesterday_to_save != NULL))
     {
@@ -515,17 +518,21 @@ static void persist_and_publish(bool must_archive_yesterday,
         {
             ESP_LOGE(PLUVIOMETER_TAG,
                      "Failed to save daily rainfall (hour=%u, value=%.2f mm). err=%d",
-                     (unsigned)bin_written, snapshot, (int)err);
+                     (unsigned)finished_hour_idx, finished_hour_rain_mm, (int)err);
         }
         else
         {
             ESP_LOGI(PLUVIOMETER_TAG,
                      "Saved hour %u = %.2f mm. Daily total now: %.2f mm.",
-                     (unsigned)bin_written, snapshot, current_day_to_save->daily_total);
+                     (unsigned)finished_hour_idx,
+                     finished_hour_rain_mm,
+                     current_day_to_save->daily_total);
 
-            if (snapshot > 0.0f)
+            if (finished_hour_rain_mm > 0.0f)
             {
-                ESP_LOGI(PLUVIOMETER_TAG, "Publishing hourly packet (#40) for hour=%u.", (unsigned)bin_written);
+                ESP_LOGI(PLUVIOMETER_TAG,
+                         "Publishing hourly packet (#40) for hour=%u.",
+                         (unsigned)finished_hour_idx);
                 pluviometer_app_call("#40$", comm_main_mode);
             }
         }
@@ -533,10 +540,10 @@ static void persist_and_publish(bool must_archive_yesterday,
 }
 
 /**
- * @brief Processes an hour change boundary: snapshot, zero missed bins, rollover if needed, persist and publish.
+ * @brief Handle an hour boundary: snapshot, fill missing hours, handle rollover, persist and publish.
  *
  * This function encapsulates the full hour-boundary transition while keeping critical sections minimal.
- * It also logs hour jumps (step != 1).
+ * It also logs hour jumps (hours_advanced != 1).
  *
  * @param curr_hour_idx  Current hour index (0..23).
  * @param now_ts         Current epoch seconds.
@@ -545,22 +552,10 @@ static void persist_and_publish(bool must_archive_yesterday,
 static void handle_rain_hour_boundary(uint8_t curr_hour_idx, time_t now_ts, uint32_t sod)
 {
     /* Step and rollover detection */
-    uint8_t step = (uint8_t)((curr_hour_idx + 24U - s_last_hour_idx) % 24U);
-    bool rolled_day = (curr_hour_idx < s_last_hour_idx);
+    uint8_t hours_advanced = (uint8_t)((curr_hour_idx + 24U - s_last_hour_idx) % 24U);
+    bool day_rolled = (curr_hour_idx < s_last_hour_idx);
     bool new_day_boundary = (curr_hour_idx == 0U) && (s_last_hour_idx == 23U);
-    bool must_archive_yesterday = false;
-
-    if (new_day_boundary)
-    {
-        must_archive_yesterday = true;
-    }
-    else
-    {
-        if (rolled_day)
-        {
-            must_archive_yesterday = true;
-        }
-    }
+    bool must_archive_yesterday = new_day_boundary || day_rolled;
 
     /* Snapshot accumulator */
     float snapshot = 0.0f;
@@ -584,10 +579,13 @@ static void handle_rain_hour_boundary(uint8_t curr_hour_idx, time_t now_ts, uint
     taskENTER_CRITICAL(&g_rain_day_mux);
 
     /* Fill missed hourly bins with zeros (same day or tail of previous day). */
-    fill_missing_hours_with_zero(curr_hour_idx, s_last_hour_idx, step, rolled_day);
+    fill_missing_hours_with_zero(curr_hour_idx,
+                                 s_last_hour_idx,
+                                 hours_advanced,
+                                 day_rolled);
 
     /* Write this hour's snapshot and recompute total. */
-    write_hour_rain_and_recompute_daily_total(bin_to_write, snapshot);
+    write_hour_rain_and_recompute_daily_total(finished_hour_idx, snapshot);
 
     /* Handle day rollover: copy yesterday, clear current and set new date. */
     if (must_archive_yesterday)
@@ -604,18 +602,20 @@ static void handle_rain_hour_boundary(uint8_t curr_hour_idx, time_t now_ts, uint
 
     taskEXIT_CRITICAL(&g_rain_day_mux);
 
-    if (step != 1U)
+    if (hours_advanced != 1U)
     {
         ESP_LOGW(PLUVIOMETER_TAG,
                  "Hour jump detected: last=%u -> current=%u (step=%u). Missed bins handled.",
-                 (unsigned)bin_to_write, (unsigned)curr_hour_idx, (unsigned)step);
+                 (unsigned)finished_hour_idx,
+                 (unsigned)curr_hour_idx,
+                 (unsigned)hours_advanced);
     }
 
     /* Persist and publish according to the actions taken. */
     persist_and_publish(must_archive_yesterday,
                         must_archive_yesterday ? &yesterday_to_save : NULL,
                         &current_day_to_save,
-                        bin_to_write,
+                        finished_hour_idx,
                         snapshot);
 
     ESP_LOGI(PLUVIOMETER_TAG,
@@ -700,6 +700,6 @@ void gpio_rain_sensor_calculate_rainfall(void)
     float interval_rain = pulses * rain_per_pulse;
 
     taskENTER_CRITICAL(&current_hour_rain_mux);
-    s_current_hour_rain_mm  += interval_rain;
+    s_current_hour_rain_mm += interval_rain;
     taskEXIT_CRITICAL(&current_hour_rain_mux);
 }
