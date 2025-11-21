@@ -36,10 +36,10 @@
 static MAYBE_UNUSED app_callback pluviometer_app_call = NULL;
 
 /** @brief Spinlock/mutex for ISR-safe access to rain pulse counters. */
-static portMUX_TYPE rain_sensor_mux = portMUX_INITIALIZER_UNLOCKED;
+static portMUX_TYPE rain_pulse_counter_mux = portMUX_INITIALIZER_UNLOCKED;
 
 /** @brief Mutex for hour accumulator (rain_total) snapshot/reset and updates. */
-static portMUX_TYPE rain_total_mux = portMUX_INITIALIZER_UNLOCKED;
+static portMUX_TYPE current_hour_rain_mux = portMUX_INITIALIZER_UNLOCKED;
 
 /** @brief Spinlock to protect read/write access to g_rain_day structure. */
 static portMUX_TYPE g_rain_day_mux = portMUX_INITIALIZER_UNLOCKED;
@@ -60,7 +60,7 @@ static bool rain_per_pulse_flag = false;
 static uint8_t s_last_hour_idx = 0xFF;
 
 /** @brief Accumulator for the current hour's rainfall (mm). */
-static float s_rain_total_mm = 0.0f;
+static float s_current_hour_rain_mm  = 0.0f;
 
 /**
  * @brief Get the rain calibration (mm per pulse).
@@ -144,7 +144,7 @@ esp_err_t pluviometer_app_get_current_day(rain_per_day_data *out_data)
  * @brief Get the index of the last closed hour (0-23).
  * @return Hour index (0-23), or 0xFF if not yet initialized.
  */
-uint8_t pluviometer_app_get_last_hour_idx(void)
+uint8_t pluviometer_app_get_active_hour_idx(void)
 {
     return s_last_hour_idx;
 }
@@ -250,15 +250,15 @@ static void update_rain_per_pulse_if_needed(void)
  * @brief Applies automatic shutdown if cumulative hourly rain exceeds the configured threshold.
  *
  * Reads @c DATA_TYPE_RAIN_SHUTDOWN_VALUE and @c DATA_TYPE_ACTIONS. If pivot is ON and WET,
- * and the threshold is configured (>0), and @c s_rain_total_mm >= threshold, then it calls
+ * and the threshold is configured (>0), and @c s_current_hour_rain_mm  >= threshold, then it calls
  * @c gpio_actuator_shutdown() and logs the event.
  */
 static void maybe_trigger_rain_shutdown()
 {
     float rain_mm;
-    taskENTER_CRITICAL(&rain_total_mux);
-    rain_mm = s_rain_total_mm;
-    taskEXIT_CRITICAL(&rain_total_mux);
+    taskENTER_CRITICAL(&current_hour_rain_mux);
+    rain_mm = s_current_hour_rain_mm ;
+    taskEXIT_CRITICAL(&current_hour_rain_mux);
 
     if (rain_mm <= 0.0f)
         return;
@@ -330,12 +330,12 @@ static void init_hour_index_from_rtc(uint8_t curr_hour, uint32_t sod)
 /**
  * @brief Atomically snapshots and resets the hourly rainfall accumulator.
  *
- * Acquires @c rain_total_mux to read @c get_rain_total(), writes its value into @p out_snapshot,
+ * Acquires @c current_hour_rain_mux to read @c get_rain_total(), writes its value into @p out_snapshot,
  * and resets the accumulator to zero via @c set_rain_total(0.0f).
  *
  * @param[out] out_snapshot The snapshot value of the accumulator in mm.
  */
-static void snapshot_and_reset_hour_accumulator(float *out_snapshot)
+static void snapshot_and_reset_current_hour_rain(float *out_snapshot)
 {
     if (out_snapshot == NULL)
     {
@@ -343,10 +343,10 @@ static void snapshot_and_reset_hour_accumulator(float *out_snapshot)
     }
 
     float snapshot = 0.0f;
-    taskENTER_CRITICAL(&rain_total_mux);
-    snapshot = s_rain_total_mm;
-    s_rain_total_mm = 0.0f;
-    taskEXIT_CRITICAL(&rain_total_mux);
+    taskENTER_CRITICAL(&current_hour_rain_mux);
+    snapshot = s_current_hour_rain_mm ;
+    s_current_hour_rain_mm  = 0.0f;
+    taskEXIT_CRITICAL(&current_hour_rain_mux);
 
     *out_snapshot = snapshot;
 }
@@ -380,7 +380,11 @@ static void format_local_date_ddmmyyyy(time_t now_ts, char *out_buf, size_t out_
  * @param step          Forward distance from @p last_hour to @p curr_hour modulo 24.
  * @param rolled_day    True if the clock wrapped to a new day (curr_hour < last_hour).
  */
-static void fill_missed_bins_zeros(uint8_t curr_hour, uint8_t last_hour, uint8_t step, bool rolled_day)
+static void fill_missing_hours_with_zero(uint8_t curr_hour_idx,
+                                         uint8_t last_hour_idx,
+                                         uint8_t hours_advanced,
+                                         bool day_rolled);
+
 {
     if (rolled_day)
     {
@@ -419,19 +423,18 @@ static void fill_missed_bins_zeros(uint8_t curr_hour, uint8_t last_hour, uint8_t
  *
  * Must be called with @c g_rain_day_mux held by the caller.
  *
- * @param bin_to_write Hourly bin index (0..23).
+ * @param finished_hour_idx Hourly bin index (0..23).
  * @param snapshot     Hourly rainfall in mm to write.
  */
-static void write_bin_and_recompute_total(uint8_t bin_to_write, float snapshot)
+static void write_hour_rain_and_recompute_daily_total(uint8_t finished_hour_idx,
+                                                      float finished_hour_rain_mm);
 {
-    g_rain_day.rain_per_hour[bin_to_write] = snapshot;
+    g_rain_day.rain_per_hour[finished_hour_idx] = finished_hour_rain_mm;
 
     float total = 0.0f;
-    int i = 0;
-    while (i < 24)
+    for (int i = 0; i < 24; i++)
     {
         total += g_rain_day.rain_per_hour[i];
-        i++;
     }
     g_rain_day.daily_total = total;
 }
@@ -539,7 +542,7 @@ static void persist_and_publish(bool must_archive_yesterday,
  * @param now_ts         Current epoch seconds.
  * @param sod            Seconds-of-day (for logging only).
  */
-static void handle_hour_change(uint8_t curr_hour_idx, time_t now_ts, uint32_t sod)
+static void handle_rain_hour_boundary(uint8_t curr_hour_idx, time_t now_ts, uint32_t sod)
 {
     /* Step and rollover detection */
     uint8_t step = (uint8_t)((curr_hour_idx + 24U - s_last_hour_idx) % 24U);
@@ -561,9 +564,9 @@ static void handle_hour_change(uint8_t curr_hour_idx, time_t now_ts, uint32_t so
 
     /* Snapshot accumulator */
     float snapshot = 0.0f;
-    snapshot_and_reset_hour_accumulator(&snapshot);
+    snapshot_and_reset_current_hour_rain(&snapshot);
 
-    uint8_t bin_to_write = s_last_hour_idx;
+    uint8_t finished_hour_idx = s_last_hour_idx;
 
     /* If rolling over, prepare the new date string */
     char new_date_str[sizeof(g_rain_day.date_day)] = {0};
@@ -581,10 +584,10 @@ static void handle_hour_change(uint8_t curr_hour_idx, time_t now_ts, uint32_t so
     taskENTER_CRITICAL(&g_rain_day_mux);
 
     /* Fill missed hourly bins with zeros (same day or tail of previous day). */
-    fill_missed_bins_zeros(curr_hour_idx, s_last_hour_idx, step, rolled_day);
+    fill_missing_hours_with_zero(curr_hour_idx, s_last_hour_idx, step, rolled_day);
 
     /* Write this hour's snapshot and recompute total. */
-    write_bin_and_recompute_total(bin_to_write, snapshot);
+    write_hour_rain_and_recompute_daily_total(bin_to_write, snapshot);
 
     /* Handle day rollover: copy yesterday, clear current and set new date. */
     if (must_archive_yesterday)
@@ -660,7 +663,7 @@ void pluviometer_app_rainfall_task(void *arg)
             {
                 if (curr_hour_idx != s_last_hour_idx)
                 {
-                    handle_hour_change(curr_hour_idx, now_ts, sod);
+                    handle_rain_hour_boundary(curr_hour_idx, now_ts, sod);
                 }
             }
         }
@@ -689,14 +692,14 @@ void pluviometer_app_rainfall_task(void *arg)
  */
 void gpio_rain_sensor_calculate_rainfall(void)
 {
-    taskENTER_CRITICAL(&rain_sensor_mux);
+    taskENTER_CRITICAL(&rain_pulse_counter_mux);
     float pulses = (float)get_rain_pulse();
     set_rain_pulse(0);
-    taskEXIT_CRITICAL(&rain_sensor_mux);
+    taskEXIT_CRITICAL(&rain_pulse_counter_mux);
 
     float interval_rain = pulses * rain_per_pulse;
 
-    taskENTER_CRITICAL(&rain_total_mux);
-    s_rain_total_mm += interval_rain;
-    taskEXIT_CRITICAL(&rain_total_mux);
+    taskENTER_CRITICAL(&current_hour_rain_mux);
+    s_current_hour_rain_mm  += interval_rain;
+    taskEXIT_CRITICAL(&current_hour_rain_mux);
 }

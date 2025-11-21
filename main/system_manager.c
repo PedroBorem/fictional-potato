@@ -3040,7 +3040,7 @@ static void system_manager_idp_40(const char *buffer, comm_type comm_mode)
 		return;
 	}
 
-	uint8_t active_hour_idx = pluviometer_app_get_last_hour_idx(); // hora ATIVA após o fechamento
+	uint8_t active_hour_idx = pluviometer_app_get_active_hour_idx(); // hora ATIVA após o fechamento
 	if (active_hour_idx > 23)
 	{
 		ESP_LOGW(SYSTEM_MANAGER_TAG, "IDP 40: Invalid hour idx (%u).", (unsigned)active_hour_idx);
