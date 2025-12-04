@@ -63,9 +63,6 @@ static void eco_mode_task(void *arg)
     bool already_off = false;
 
     pivot_actions old_actions = {};
-    char pivot_id[50] = {};
-    uint16_t dwp = 0;
-    uint8_t idp = 0;
 
     time_t current_time = 0;
 
@@ -91,7 +88,6 @@ static void eco_mode_task(void *arg)
             {
                 actuation_app_set_actions(old_actions, false);
                 eco_mode_callback("#00$", comm_main_mode);
-                // todo : revert configurations
                 already_off = false;
             }
         }

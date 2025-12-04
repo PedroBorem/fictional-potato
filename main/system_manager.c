@@ -614,6 +614,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				new_actions.power_state = PIVOT_OFF;
 				new_actions.watering_state = PIVOT_DRY;
 
+				
+				if(strcmp(pivot_id, "eco_mode") == 0)
+				{
+					new_actions.rotation = PIVOT_SUSPENDED;
+				}
+
 				// Save old History
 				if (old_actions.power_state != PIVOT_OFF)
 				{
