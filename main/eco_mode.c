@@ -65,6 +65,7 @@ static void eco_mode_task(void* arg)
     while(1)
     {
         current_time = rtc_app_get_timestamp(false);
+        
 
         if (eco_mode.start_time < eco_mode.end_time)
         {
@@ -74,7 +75,7 @@ static void eco_mode_task(void* arg)
                 {
                     if (eco_mode_callback != NULL)
                     {
-                        eco_mode_callback("#01-eco_mode-002-000-eco_mode", COMM_MQTT);
+                        eco_mode_callback("#01-eco_mode-002-000-eco_mode$", COMM_MQTT);
                     }
                     already_off = true;
                 }
@@ -85,28 +86,9 @@ static void eco_mode_task(void* arg)
                 already_off = false;
             }
         }
-        else
-        {
-            if (current_time >= eco_mode.end_time && current_time <= eco_mode.start_time)
-            {
-                if (!already_off)
-                {
-                    if (eco_mode_callback != NULL)
-                    {
-                        // todo
-                        eco_mode_callback("#01-eco_mode-002-000-eco_mode", COMM_MQTT);
-                    }
-                    already_off = true;
-                }
-            }
-            else if (already_off)
-            {
-                // todo : revert configurations
-                already_off = false;
-            }
-        }
-        vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
+
     }
+    vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
 }
 
 void eco_mode_start(eco_mode_config current_eco_mode)
@@ -124,6 +106,8 @@ void eco_mode_start(eco_mode_config current_eco_mode)
                     NULL,
                     ECO_MODE_TASK_PRIORITY,
                     &xTask_eco_mode);
+
+        ESP_LOGE(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
     }
 }
 
@@ -133,6 +117,7 @@ void eco_mode_stop(void)
     {
         vTaskDelete(xTask_eco_mode);
         xTask_eco_mode = NULL;
+        ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped");
     }
 }
 
@@ -140,6 +125,7 @@ void eco_mode_register_callback(const app_callback callback)
 {
     if (callback != NULL)
     {
+        ESP_LOGE(ECO_MODE_TAG, "Eco Mode callback registered");
         eco_mode_callback = callback;
     }
 }

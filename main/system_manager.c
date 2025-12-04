@@ -25,6 +25,7 @@
 #include "comm_app.h"
 #include "data_app.h"
 #include "rf_uart.h"
+#include "eco_mode.h"
 
 #include "scheduling.h"
 #include "system_monitoring.h"
@@ -181,6 +182,8 @@ void system_manager_init(void)
 	comm_app_set_main_mode_config(comm_main_mode_config);
 
 	system_monitoring_start(physical_config, virtual_config, system_read_time);
+
+	eco_mode_register_callback(&system_manager_callback);
 
 	// communication modules init
 	network_config network = {};
@@ -967,10 +970,8 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 			}
 
-			/*
 			eco_mode_stop();
 			eco_mode_start(eco_mode);
-			*/
 		}
 		else
 		{
