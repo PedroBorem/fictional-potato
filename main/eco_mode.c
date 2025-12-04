@@ -6,13 +6,15 @@
  */
 
 #include "eco_mode.h"
+#include "actuation_app.h"
+#include "data_app.h"
 #include "rtc_app.h"
 #include "FreeRTOS_defines.h"
 #include "log.h"
 
 #include <string.h>
 
-#define ECO_MODE_TAG	"eco_mode"
+#define ECO_MODE_TAG "eco_mode"
 
 /**
  * @brief Task handle for the Eco Mode task.
@@ -33,7 +35,7 @@ static app_callback eco_mode_callback = NULL;
  * @brief Eco Mode task implementation.
  * @param arg Task argument (not used).
  */
-static void eco_mode_task(void* arg);
+static void eco_mode_task(void *arg);
 
 /**
  * @brief Starts the Eco Mode with the provided configuration.
@@ -56,16 +58,20 @@ void eco_mode_register_callback(const app_callback callback);
 /**
  * @brief Eco Mode task implementation.
  */
-static void eco_mode_task(void* arg)
+static void eco_mode_task(void *arg)
 {
     bool already_off = false;
 
+    pivot_actions old_actions = {};
+    char pivot_id[50] = {};
+    uint16_t dwp = 0;
+    uint8_t idp = 0;
+
     time_t current_time = 0;
 
-    while(1)
+    while (1)
     {
         current_time = rtc_app_get_timestamp(false);
-        
 
         if (eco_mode.start_time < eco_mode.end_time)
         {
@@ -75,18 +81,20 @@ static void eco_mode_task(void* arg)
                 {
                     if (eco_mode_callback != NULL)
                     {
-                        eco_mode_callback("#01-eco_mode-002-000-eco_mode$", COMM_MQTT);
+                        data_app_load(DATA_TYPE_ACTIONS, &old_actions);
+                        eco_mode_callback("#01-eco_mode-002-000-eco_mode$", comm_main_mode);
                     }
                     already_off = true;
                 }
             }
             else if (already_off)
             {
+                actuation_app_set_actions(old_actions, false);
+                eco_mode_callback("#00$", comm_main_mode);
                 // todo : revert configurations
                 already_off = false;
             }
         }
-
     }
     vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
 }
