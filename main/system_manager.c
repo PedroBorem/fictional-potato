@@ -142,6 +142,7 @@ static void system_manager_idp_27(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_32(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -466,6 +467,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_31(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_32:
+		{
+			system_manager_idp_32(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_90:
 		{
 			system_manager_idp_90(str_pkg, comm_mode);
@@ -655,6 +661,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				// save new history
 				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 				{
+					eco_mode_cmd_stop();
 					new_history.start_date = rtc_app_get_timestamp(false);
 					new_history.start_angle = global_angle;
 					memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
@@ -2721,6 +2728,8 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 			counter_reading_panel_off = NO_MANUAL_READING;
 			data_app_save(DATA_TYPE_MANUAL_COUNTER, &counter_reading_panel_off, sizeof(counter_reading_panel_off));
 
+			eco_mode_cmd_stop();
+
 			new_history.start_date = rtc_app_get_timestamp(false);
 			new_history.start_angle = global_angle;
 			memcpy(&new_history.actions, &new_actions, sizeof(new_actions));
@@ -2846,6 +2855,14 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
+}
+
+static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	{
+		comm_app_send_idp_pack(buffer, comm_mode);
 	}
 }
 

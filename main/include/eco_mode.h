@@ -23,6 +23,11 @@ void eco_mode_start(eco_mode_config current_eco_mode);
 void eco_mode_stop(void);
 
 /**
+ * @brief Stops the Eco Mode if it had turned off the pivot.
+ */
+void eco_mode_cmd_stop(void);
+
+/**
  * @brief Registers a callback function for Eco Mode events.
  * @param callback Callback function to be registered.
  */

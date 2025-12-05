@@ -17,6 +17,11 @@
 #define ECO_MODE_TAG "eco_mode"
 
 /**
+ * @brief Variable to track if the Eco Mode has already turned off the pivot.
+ */
+static bool already_off = false;
+
+/**
  * @brief Task handle for the Eco Mode task.
  */
 static TaskHandle_t xTask_eco_mode = NULL;
@@ -60,11 +65,9 @@ void eco_mode_register_callback(const app_callback callback);
  */
 static void eco_mode_task(void *arg)
 {
-    bool already_off = false;
-
     pivot_actions old_actions = {};
 
-    time_t current_time = 0;
+    time_t current_time = 0;  
 
     while (1)
     {
@@ -111,7 +114,7 @@ void eco_mode_start(eco_mode_config current_eco_mode)
                     ECO_MODE_TASK_PRIORITY,
                     &xTask_eco_mode);
 
-        ESP_LOGE(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
+        ESP_LOGI(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
     }
 }
 
@@ -122,6 +125,19 @@ void eco_mode_stop(void)
         vTaskDelete(xTask_eco_mode);
         xTask_eco_mode = NULL;
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped");
+        already_off = false;
+    }
+}
+
+void eco_mode_cmd_stop(void)
+{
+    if (xTask_eco_mode != NULL && already_off == true)
+    {
+        vTaskDelete(xTask_eco_mode);
+        xTask_eco_mode = NULL;
+        already_off = false;
+        ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped by command");
+        eco_mode_callback("#32-soilteste_2-rush_mode_deactivated$", comm_main_mode);
     }
 }
 
