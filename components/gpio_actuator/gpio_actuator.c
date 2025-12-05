@@ -59,6 +59,11 @@ static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
+// Rotation variable
+static pivot_actions pivot_rotation = {
+	.rotation = PIVOT_UNKNOWN
+};
+
 // Pressurizing flag
 static bool pressurizing = false;
 
@@ -474,6 +479,10 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
+		if(actions.rotation == PIVOT_SUSPENDED)
+		{
+			pivot_rotation.rotation = PIVOT_SUSPENDED;
+		}
 		gpio_actuator_shutdown();
 	}
 
@@ -504,7 +513,7 @@ pivot_actions gpio_actuator_get(void)
 	else
 	{
 		pivot_actions_read.power_state = PIVOT_OFF;
-		pivot_actions_read.rotation = PIVOT_UNKNOWN;
+		pivot_actions_read.rotation = pivot_rotation.rotation;
 	}
 
 	if(pressurizing == true)
