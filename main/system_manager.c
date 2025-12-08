@@ -621,14 +621,10 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				new_actions.watering_state = PIVOT_DRY;
 				new_actions.rotation = PIVOT_UNKNOWN;
 	
-				if(strcmp(system_id, "eco_mode") != 0)
+				if(strcmp(pivot_id, "eco_mode") == 0)
 				{
 					new_actions.rotation = PIVOT_SUSPENDED;
 					ESP_LOGE(SYSTEM_MANAGER_TAG, "NEW ACTIONS ROTATION: %d", new_actions.rotation);
-				}
-				else
-				{
-					new_actions.rotation = PIVOT_UNKNOWN;
 				}
 
 				// Save old History
