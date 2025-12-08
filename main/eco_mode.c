@@ -92,7 +92,11 @@ static void eco_mode_task(void *arg)
 
         if (eco_mode.start_time < eco_mode.end_time)
         {
-            if (current_time >= eco_mode.start_time && current_time <= eco_mode.end_time)
+            time_t current_seconds = current_time % 86400;
+            time_t start_seconds = eco_mode.start_time % 86400;
+            time_t end_seconds = eco_mode.end_time % 86400;
+
+            if (current_seconds >= start_seconds && current_seconds <= end_seconds)
             {
                 if (!already_off)
                 {
