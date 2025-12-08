@@ -60,18 +60,34 @@ void eco_mode_stop(void);
  */
 void eco_mode_register_callback(const app_callback callback);
 
+static bool eco_mode_weekend(time_t ts)
+{
+    int days = ts / 86400;
+    int weekday = (days + 4) % 7;
+    return (weekday == 0 || weekday == 6);
+}
+
 /**
  * @brief Eco Mode task implementation.
  */
 static void eco_mode_task(void *arg)
 {
     pivot_actions old_actions = {};
-
     time_t current_time = 0;  
 
     while (1)
     {
         current_time = rtc_app_get_timestamp(false);
+
+        if (eco_mode_weekend(current_time))
+        {
+            if (already_off)
+            {
+                already_off = false;
+            }
+            vTaskDelay(pdMS_TO_TICKS(15000));
+            continue;
+        }
 
         if (eco_mode.start_time < eco_mode.end_time)
         {
@@ -90,12 +106,16 @@ static void eco_mode_task(void *arg)
             else if (already_off)
             {
                 actuation_app_set_actions(old_actions, false);
-                eco_mode_callback("#00$", comm_main_mode);
+                if (eco_mode_callback != NULL)
+                {
+                    eco_mode_callback("#00$", comm_main_mode);
+                }
                 already_off = false;
             }
         }
+
+        vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
     }
-    vTaskDelay(pdMS_TO_TICKS(15000)); // 15 seconds
 }
 
 void eco_mode_start(eco_mode_config current_eco_mode)
