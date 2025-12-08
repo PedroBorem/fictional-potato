@@ -85,6 +85,7 @@ static void eco_mode_task(void *arg)
             {
                 already_off = false;
             }
+            ESP_LOGE(ECO_MODE_TAG, "Eco Mode weekend detected, skipping...");
             vTaskDelay(pdMS_TO_TICKS(15000));
             continue;
         }
