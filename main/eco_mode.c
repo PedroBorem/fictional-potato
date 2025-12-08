@@ -20,6 +20,7 @@
  * @brief Variable to track if the Eco Mode has already turned off the pivot.
  */
 static bool already_off = false;
+static bool eco_mode_suspended = false;
 
 /**
  * @brief Task handle for the Eco Mode task.
@@ -67,6 +68,35 @@ static bool eco_mode_weekend(time_t ts)
     return (weekday == 0 || weekday == 6);
 }
 
+static bool eco_mode_is_in_window_internal(time_t current_time)
+{
+    if (eco_mode.start_time == 0 || eco_mode.end_time == 0)
+    {
+        return false;
+    }
+
+    if (eco_mode_weekend(current_time))
+    {
+        return false;
+    }
+
+    if (eco_mode.start_time >= eco_mode.end_time)
+    {
+        return false;
+    }
+
+    time_t current_seconds = current_time % 86400;
+    time_t start_seconds = eco_mode.start_time % 86400;
+    time_t end_seconds = eco_mode.end_time % 86400;
+
+    if (current_seconds >= start_seconds && current_seconds <= end_seconds)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 /**
  * @brief Eco Mode task implementation.
  */
@@ -92,11 +122,22 @@ static void eco_mode_task(void *arg)
 
         if (eco_mode.start_time < eco_mode.end_time)
         {
-            time_t current_seconds = current_time % 86400;
-            time_t start_seconds = eco_mode.start_time % 86400;
-            time_t end_seconds = eco_mode.end_time % 86400;
+            bool in_window = eco_mode_is_in_window_internal(current_time);
 
-            if (current_seconds >= start_seconds && current_seconds <= end_seconds)
+            if (eco_mode_suspended)
+            {
+                if (!in_window)
+                {
+                    eco_mode_suspended = false;
+                }
+                else
+                {
+                    vTaskDelay(pdMS_TO_TICKS(15000));
+                    continue;
+                }
+            }
+
+            if (in_window)
             {
                 if (!already_off)
                 {
@@ -158,8 +199,7 @@ void eco_mode_cmd_stop(void)
 {
     if (xTask_eco_mode != NULL && already_off == true)
     {
-        vTaskDelete(xTask_eco_mode);
-        xTask_eco_mode = NULL;
+        eco_mode_suspended = true;
         already_off = false;
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped by command");
         eco_mode_callback("#32-soilteste_2-rush_mode_deactivated$", comm_main_mode);
@@ -173,4 +213,10 @@ void eco_mode_register_callback(const app_callback callback)
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode callback registered");
         eco_mode_callback = callback;
     }
+}
+
+bool eco_mode_is_in_window_now(void)
+{
+    time_t current_time = rtc_app_get_timestamp(false);
+    return eco_mode_is_in_window_internal(current_time);
 }

@@ -27,6 +27,8 @@ void eco_mode_stop(void);
  */
 void eco_mode_cmd_stop(void);
 
+bool eco_mode_is_in_window_now(void);
+
 /**
  * @brief Registers a callback function for Eco Mode events.
  * @param callback Callback function to be registered.
