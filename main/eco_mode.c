@@ -14,15 +14,18 @@
 
 #include <string.h>
 
+/**
+ * @brief Tag used for Eco Mode log messages.
+ */
 #define ECO_MODE_TAG "eco_mode"
 
 /**
- * @brief Variable to track if the Eco Mode has already turned off the pivot.
+ * @brief Tracks if Eco Mode has already turned off the pivot.
  */
 static bool already_off = false;
 
 /**
- * @brief Flag indicating if Eco Mode has been temporarily suspended by command.
+ * @brief Indicates if Eco Mode was temporarily suspended by command.
  */
 static bool eco_mode_suspended = false;
 
@@ -32,7 +35,7 @@ static bool eco_mode_suspended = false;
 static TaskHandle_t xTask_eco_mode = NULL;
 
 /**
- * @brief Configuration structure for Eco Mode.
+ * @brief Current Eco Mode configuration.
  */
 static eco_mode_config eco_mode = {};
 
@@ -43,32 +46,18 @@ static app_callback eco_mode_callback = NULL;
 
 /**
  * @brief Eco Mode task implementation.
- * @param arg Task argument (not used).
+ * @param arg Task argument (unused).
  */
 static void eco_mode_task(void *arg);
 
-/**
- * @brief Starts the Eco Mode with the provided configuration.
- * @param current_eco_mode Configuration for Eco Mode.
- * @note If the start or end time is not set, the Eco Mode will be stopped.
- */
 void eco_mode_start(eco_mode_config current_eco_mode);
-
-/**
- * @brief Stops the Eco Mode.
- */
 void eco_mode_stop(void);
-
-/**
- * @brief Registers a callback function for Eco Mode events.
- * @param callback Callback function to be registered.
- */
 void eco_mode_register_callback(const app_callback callback);
 
 /**
  * @brief Checks if a given timestamp falls on a weekend.
- * @param ts Current timestamp in seconds.
- * @return true if the timestamp is on Saturday or Sunday, false otherwise.
+ * @param ts Timestamp in seconds.
+ * @return true if Saturday or Sunday, false otherwise.
  */
 static bool eco_mode_weekend(time_t ts)
 {
@@ -78,9 +67,9 @@ static bool eco_mode_weekend(time_t ts)
 }
 
 /**
- * @brief Checks if a given time is inside the configured Eco Mode window.
+ * @brief Checks if a time is inside the configured Eco Mode window.
  * @param current_time Current timestamp in seconds.
- * @return true if the time is inside the Eco Mode window, false otherwise.
+ * @return true if inside the Eco Mode window, false otherwise.
  */
 static bool eco_mode_is_in_window_internal(time_t current_time)
 {
@@ -112,8 +101,8 @@ static bool eco_mode_is_in_window_internal(time_t current_time)
 }
 
 /**
- * @brief Eco Mode task implementation.
- * @param arg Task argument (not used).
+ * @brief Eco Mode task main loop.
+ * @param arg Task argument (unused).
  */
 static void eco_mode_task(void *arg)
 {
@@ -181,6 +170,10 @@ static void eco_mode_task(void *arg)
     }
 }
 
+/**
+ * @brief Starts Eco Mode with the provided configuration.
+ * @param current_eco_mode Eco Mode configuration.
+ */
 void eco_mode_start(eco_mode_config current_eco_mode)
 {
     if (current_eco_mode.start_time == 0 || current_eco_mode.end_time == 0)
@@ -201,6 +194,9 @@ void eco_mode_start(eco_mode_config current_eco_mode)
     }
 }
 
+/**
+ * @brief Stops Eco Mode and resets its state.
+ */
 void eco_mode_stop(void)
 {
     if (xTask_eco_mode != NULL)
@@ -226,6 +222,10 @@ void eco_mode_cmd_stop(void)
     }
 }
 
+/**
+ * @brief Registers a callback for Eco Mode events.
+ * @param callback Callback to be registered.
+ */
 void eco_mode_register_callback(const app_callback callback)
 {
     if (callback != NULL)
@@ -237,7 +237,7 @@ void eco_mode_register_callback(const app_callback callback)
 
 /**
  * @brief Checks if the current time is inside the Eco Mode window.
- * @return true if the current time is inside the Eco Mode window, false otherwise.
+ * @return true if inside the Eco Mode window, false otherwise.
  */
 bool eco_mode_is_in_window_now(void)
 {
