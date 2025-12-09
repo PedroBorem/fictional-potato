@@ -218,7 +218,7 @@ void eco_mode_cmd_stop(void)
         eco_mode_suspended = true;
         already_off = false;
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped by command");
-        eco_mode_callback("#32-soilteste_2-rush_mode_deactivated$", comm_main_mode);
+        eco_mode_callback("#32-rush_mode_deactivated$", comm_main_mode);
     }
 }
 
