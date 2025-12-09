@@ -613,6 +613,10 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					{
 						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_SOIL_APP, idp, "0", new_actions.user);
 					}
+					else if(strcmp(new_actions.user, "eco_mode") == 0)
+					{
+						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_ECO_MODE, idp, "0", new_actions.user);
+					}
 				}
 
 				actuation_app_get_actions(&new_actions, sizeof(new_actions));

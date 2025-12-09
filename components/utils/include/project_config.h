@@ -499,6 +499,7 @@ typedef enum
     TYPE_HANGS_UP_SCHEDULE_17,
     TYPE_HANGS_UP_SOIL_APP,
     TYPE_HANGS_UP_IRRIGABRAS_APP,
+    TYPE_HANGS_UP_ECO_MODE,
 } hangs_up_status;
 
 /**

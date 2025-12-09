@@ -653,6 +653,11 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
             is_external_agent = true;
             break;
         }
+        case TYPE_HANGS_UP_ECO_MODE:
+        {
+            reason_str = "eco_mode";
+            break;
+        }
         default:
         {
             break;
