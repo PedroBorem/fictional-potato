@@ -2854,8 +2854,27 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
-	{
-		comm_app_send_idp_pack(buffer, comm_mode);
+	{	
+		uint8_t idp = IDP_32;
+		char str_rush[50] = {};
+		char str_out[200] = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", str_rush},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		arg_pair_t arg_pairs_ack[] = {
+			{"uint8_t", &idp},
+			{"string", system_id},
+			{"string", str_rush},
+			{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs_ack);
+		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
 
