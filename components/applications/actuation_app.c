@@ -266,7 +266,9 @@ void actuation_app_task(void* arg)
 				last_tick = xTaskGetTickCount();
 			}
 		}
-		else if(current_action.rotation != actuation_config.rotation && current_action.rotation != PIVOT_UNKNOWN)
+		else if(current_action.rotation != actuation_config.rotation 
+			&& current_action.rotation != PIVOT_UNKNOWN 
+			&& current_action.rotation != PIVOT_SUSPENDED)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_ROTATION_TIME)
 			{
