@@ -20,6 +20,10 @@
  * @brief Variable to track if the Eco Mode has already turned off the pivot.
  */
 static bool already_off = false;
+
+/**
+ * @brief Flag indicating if Eco Mode has been temporarily suspended by command.
+ */
 static bool eco_mode_suspended = false;
 
 /**
@@ -61,6 +65,11 @@ void eco_mode_stop(void);
  */
 void eco_mode_register_callback(const app_callback callback);
 
+/**
+ * @brief Checks if a given timestamp falls on a weekend.
+ * @param ts Current timestamp in seconds.
+ * @return true if the timestamp is on Saturday or Sunday, false otherwise.
+ */
 static bool eco_mode_weekend(time_t ts)
 {
     int days = ts / 86400;
@@ -68,6 +77,11 @@ static bool eco_mode_weekend(time_t ts)
     return (weekday == 0 || weekday == 6);
 }
 
+/**
+ * @brief Checks if a given time is inside the configured Eco Mode window.
+ * @param current_time Current timestamp in seconds.
+ * @return true if the time is inside the Eco Mode window, false otherwise.
+ */
 static bool eco_mode_is_in_window_internal(time_t current_time)
 {
     if (eco_mode.start_time == 0 || eco_mode.end_time == 0)
@@ -99,6 +113,7 @@ static bool eco_mode_is_in_window_internal(time_t current_time)
 
 /**
  * @brief Eco Mode task implementation.
+ * @param arg Task argument (not used).
  */
 static void eco_mode_task(void *arg)
 {
@@ -197,6 +212,9 @@ void eco_mode_stop(void)
     }
 }
 
+/**
+ * @brief Suspends Eco Mode actions on command without stopping the task.
+ */
 void eco_mode_cmd_stop(void)
 {
     if (xTask_eco_mode != NULL && already_off == true)
@@ -217,6 +235,10 @@ void eco_mode_register_callback(const app_callback callback)
     }
 }
 
+/**
+ * @brief Checks if the current time is inside the Eco Mode window.
+ * @return true if the current time is inside the Eco Mode window, false otherwise.
+ */
 bool eco_mode_is_in_window_now(void)
 {
     time_t current_time = rtc_app_get_timestamp(false);

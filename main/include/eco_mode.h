@@ -1,6 +1,6 @@
 /**
  * @file eco_mode.h
- * @brief Header file for the Eco Mode module.
+ * @brief Eco Mode public API.
  * @author soil-dev
  * @date 15 de out. de 2023
  */
@@ -11,27 +11,30 @@
 #include "project_config.h"
 
 /**
- * @brief Starts the Eco Mode with the provided configuration.
- * @param current_eco_mode Configuration for Eco Mode.
- * @note If the start or end time is not set, the Eco Mode will be stopped.
+ * @brief Starts Eco Mode with the given configuration.
+ * @param current_eco_mode Eco Mode configuration.
  */
 void eco_mode_start(eco_mode_config current_eco_mode);
 
 /**
- * @brief Stops the Eco Mode.
+ * @brief Stops Eco Mode.
  */
 void eco_mode_stop(void);
 
 /**
- * @brief Stops the Eco Mode if it had turned off the pivot.
+ * @brief Suspends Eco Mode actions if they are active.
  */
 void eco_mode_cmd_stop(void);
 
+/**
+ * @brief Checks if the Eco Mode window is active now.
+ * @return true if the current time is inside the Eco Mode window.
+ */
 bool eco_mode_is_in_window_now(void);
 
 /**
- * @brief Registers a callback function for Eco Mode events.
- * @param callback Callback function to be registered.
+ * @brief Registers a callback for Eco Mode events.
+ * @param callback Callback to be registered.
  */
 void eco_mode_register_callback(const app_callback callback);
 

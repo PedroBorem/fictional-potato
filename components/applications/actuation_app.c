@@ -317,10 +317,14 @@ void actuation_app_manual_call(pivot_actions current_action)
 	idp_parser_get_pwd(dwp, &current_action);
 }
 
-/*
-	MOTIVO DO DESLIGA ACTUATION
-*/
-
+/**
+ * @brief Updates the Eco Mode window state through the GPIO actuator.
+ *
+ * This function is used by the Eco Mode logic to propagate the current
+ * time-window flag to the GPIO layer.
+ *
+ * @param in_window True when Eco Mode window is active, false otherwise.
+ */
 void actuation_app_set_eco_window_state(bool in_window)
 {
     gpio_actuator_set_eco_window_state(in_window);
