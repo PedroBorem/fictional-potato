@@ -321,6 +321,11 @@ void actuation_app_manual_call(pivot_actions current_action)
 	MOTIVO DO DESLIGA ACTUATION
 */
 
+void actuation_app_set_eco_window_state(bool in_window)
+{
+    gpio_actuator_set_eco_window_state(in_window);
+}
+
 /**
  * @brief Set the callback function for actuation hang-up events.
  * @param callback [in]: Callback function for actuation hang-up events.

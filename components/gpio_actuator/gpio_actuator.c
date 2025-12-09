@@ -69,6 +69,8 @@ static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
 
+static bool s_eco_window_active = false;
+
 /**
  * @brief Callback function for the expiration of the Perc On timer.
  * @param pxTimer The timer handle
@@ -100,6 +102,8 @@ void actuator_wait_pressure(void* arg);
  * @param arg Task argument (default NULL)
  */
 void actuator_read_percent(void* arg);
+
+void gpio_actuator_apply_rotation(void);
 
 
 /* Public methods ------------------------------------------------ */
@@ -479,10 +483,6 @@ esp_err_t gpio_actuator_set(pivot_actions actions)
 	}
 	else if(actions.power_state == PIVOT_OFF)
 	{
-		if(actions.rotation == PIVOT_SUSPENDED)
-		{
-			pivot_rotation.rotation = PIVOT_SUSPENDED;
-		}
 		gpio_actuator_shutdown();
 	}
 
@@ -513,6 +513,7 @@ pivot_actions gpio_actuator_get(void)
 	else
 	{
 		pivot_actions_read.power_state = PIVOT_OFF;
+		gpio_actuator_apply_rotation();
 		pivot_actions_read.rotation = pivot_rotation.rotation;
 	}
 
@@ -813,4 +814,22 @@ void actuator_read_percent(void* arg)
 		percent_watchdog = clock();
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
+}
+
+void gpio_actuator_set_eco_window_state(bool in_window)
+{
+    s_eco_window_active = in_window;
+	gpio_actuator_apply_rotation();
+}
+
+void gpio_actuator_apply_rotation(void)
+{
+    if (s_eco_window_active)
+    {
+        pivot_rotation.rotation = PIVOT_SUSPENDED;
+    }
+    else
+    {
+        pivot_rotation.rotation = PIVOT_UNKNOWN;
+    }
 }

@@ -103,7 +103,7 @@ static bool eco_mode_is_in_window_internal(time_t current_time)
 static void eco_mode_task(void *arg)
 {
     pivot_actions old_actions = {};
-    time_t current_time = 0;  
+    time_t current_time = 0;
 
     while (1)
     {
@@ -123,6 +123,8 @@ static void eco_mode_task(void *arg)
         if (eco_mode.start_time < eco_mode.end_time)
         {
             bool in_window = eco_mode_is_in_window_internal(current_time);
+
+            actuation_app_set_eco_window_state(in_window);
 
             if (eco_mode_suspended)
             {
