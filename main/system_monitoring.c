@@ -583,6 +583,35 @@ void system_monitoring_stop(void)
 	}
 }
 
+/**
+ * @brief Builds and stores a pivot shutdown record and triggers an IDP #28 notification.
+ *
+ * This function maps the given @p shutdown_reason to a textual tag
+ * (e.g. "manual", "virtual_barrier", "eco_mode"), reads the current
+ * timestamp, and assembles an IDP_28 payload with:
+ * - shutdown reason;
+ * - system ID and origin;
+ * - scheduling identifier (if provided);
+ * - current pivot angle and barrier flag;
+ * - timestamp and external-agent flag.
+ *
+ * The payload is stored using DATA_TYPE_REASON_HANG_UP and, after a short
+ * delay, the function notifies the communication layer by calling
+ * system_monitoring_callback("#28$", comm_main_mode).
+ *
+ * If @p shutdown_reason does not match any known cause, the function returns
+ * without generating or sending any record.
+ *
+ * @note This function calls vTaskDelay(), so it must be executed from a
+ *       FreeRTOS task context, not from an ISR.
+ *
+ * @param shutdown_reason Enumerated cause of the pivot shutdown.
+ * @param idp             IDP value associated with this shutdown event.
+ * @param scheduling_id   Optional scheduling identifier string (may be NULL).
+ * @param origin          Optional string that identifies the origin module
+ *                        or external application that requested the shutdown
+ *                        (may be NULL).
+ */
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin)
 {
     char str_out[200] = {};
