@@ -953,6 +953,30 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
 }
 
 /**
+ * @brief Validate pluviometer configuration values for IDP 34.
+ *
+ * Validation rules:
+ * - rain_per_pulse: (0.0, 10.0]
+ * - shutdown_value: [0.0, 200.0)
+ *
+ * @param pluviometer_config Pointer to the pluviometer configuration structure.
+ * @return true if all values are within the allowed ranges; false otherwise.
+ */
+bool idp_parser_validate_idp_34(const pluviometer_config *pluviometer_config)
+{
+    if (pluviometer_config == NULL)
+        return false;
+
+    if (!(pluviometer_config->rain_per_pulse > 0.0f && pluviometer_config->rain_per_pulse <= 10.0f))
+        return false;
+
+    if (!(pluviometer_config->shutdown_value >= 0.0f && pluviometer_config->shutdown_value < 200.0f))
+        return false;
+
+    return true;
+}
+
+/**
  * @brief Builds argument pairs for an IDP pivot shutdown package.
  *
  * This function populates an array of argument pairs used to create an IDP package for a pivot shutdown event.

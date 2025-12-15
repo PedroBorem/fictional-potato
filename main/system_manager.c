@@ -2914,107 +2914,116 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_MQTT)
-	{
-		bool mqtt_load_pkg = false;
-		bool mqtt_save_pkg = false;
+    if (comm_mode == COMM_MQTT)
+    {
+        bool mqtt_load_pkg = false;
+        bool mqtt_save_pkg = false;
 
-		uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-		uint8_t expected_delimiter_num = 2;
+        uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+        uint8_t expected_delimiter_num = 2;
 
-		if (delimiter_num >= expected_delimiter_num)
-		{
-			mqtt_save_pkg = true;
-		}
-		else if (delimiter_num == 1 || delimiter_num == 0)
-		{
-			mqtt_load_pkg = true;
-		}
+        if (delimiter_num >= expected_delimiter_num)
+        {
+            mqtt_save_pkg = true;
+        }
+        else if (delimiter_num == 1 || delimiter_num == 0)
+        {
+            mqtt_load_pkg = true;
+        }
 
-		if (mqtt_save_pkg)
-		{
-			uint8_t idp = 0;
-			char pivot_id[50] = {};
-			float new_rain_per_pulse = 0.0f;
-			float new_rain_shutdown_value = 0.0f;
+        if (mqtt_save_pkg)
+        {
+            uint8_t idp = 0;
+            char pivot_id[50] = {};
+            pluviometer_config pluviometer_config = {0};
 
-			arg_pair_t arg_pairs[] = {
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"float", &new_rain_per_pulse},
-				{"float", &new_rain_shutdown_value},
-				{NULL, NULL}};
+            arg_pair_t arg_pairs[] = {
+                {"uint8_t", &idp},
+                {"string", pivot_id},
+                {"float", &pluviometer_config.rain_per_pulse},
+                {"float", &pluviometer_config.shutdown_value},
+                {NULL, NULL}};
 
-			idp_parser_get_packet_data(buffer, arg_pairs);
+            idp_parser_get_packet_data(buffer, arg_pairs);
 
-			if (new_rain_per_pulse > 0.0 && new_rain_per_pulse <= 10.0)
-			{
-				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &new_rain_per_pulse, sizeof(new_rain_per_pulse));
-				if (ret == ESP_OK)
-				{
-					set_rain_per_pulse_flag(true);
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", new_rain_per_pulse);
-				}
-				else
-				{
-					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
-				}
-			}
-			else
-			{
-				ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", new_rain_per_pulse);
-			}
+            if (!idp_parser_validate_idp_34(&pluviometer_config))
+            {
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid pluviometer_config: rain_per_pulse=%.2f shutdown_value=%.2f",
+                         pluviometer_config.rain_per_pulse, pluviometer_config.shutdown_value);
+                return;
+            }
 
-			if (new_rain_shutdown_value >= 0.0f && new_rain_shutdown_value < 200.0f)
-			{
-				esp_err_t ret = data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &new_rain_shutdown_value, sizeof(new_rain_shutdown_value));
-				if (ret == ESP_OK)
-				{
-					ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_SHUTDOWN_VALUE updated to %.2f", new_rain_shutdown_value);
-				}
-				else
-				{
-					ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_SHUTDOWN_VALUE to NVS.");
-				}
-			}
-			else
-			{
-				ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_SHUTDOWN_VALUE value: %.2f", new_rain_shutdown_value);
-			}
-		}
-		else if (mqtt_load_pkg)
-		{
-			char str_out[200] = {};
-			uint8_t idp = IDP_34;
-			set_rain_per_pulse(0.1f);
-			float rain_shutdown_value = 5.0f;
+            if (pluviometer_config.rain_per_pulse > 0.0f && pluviometer_config.rain_per_pulse <= 10.0f)
+            {
+                esp_err_t ret = data_app_save(DATA_TYPE_RAIN_PER_PULSE, &pluviometer_config.rain_per_pulse, sizeof(pluviometer_config.rain_per_pulse));
+                if (ret == ESP_OK)
+                {
+                    set_rain_per_pulse_flag(true);
+                    ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_PER_PULSE updated to %.2f", pluviometer_config.rain_per_pulse);
+                }
+                else
+                {
+                    ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_PER_PULSE to NVS.");
+                }
+            }
+            else
+            {
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_PER_PULSE value: %.2f", pluviometer_config.rain_per_pulse);
+            }
 
-			if (get_rain_per_pulse() <= 0.0 || get_rain_per_pulse() > 10.0)
-			{
-				set_rain_per_pulse(0.1f);
-			}
+            if (pluviometer_config.shutdown_value >= 0.0f && pluviometer_config.shutdown_value < 200.0f)
+            {
+                esp_err_t ret = data_app_save(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &pluviometer_config.shutdown_value, sizeof(pluviometer_config.shutdown_value));
+                if (ret == ESP_OK)
+                {
+                    ESP_LOGI(SYSTEM_MANAGER_TAG, "RAIN_SHUTDOWN_VALUE updated to %.2f", pluviometer_config.shutdown_value);
+                }
+                else
+                {
+                    ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to save RAIN_SHUTDOWN_VALUE to NVS.");
+                }
+            }
+            else
+            {
+                ESP_LOGW(SYSTEM_MANAGER_TAG, "Invalid RAIN_SHUTDOWN_VALUE value: %.2f", pluviometer_config.shutdown_value);
+            }
+        }
+        else if (mqtt_load_pkg)
+        {
+            char str_out[200] = {};
+            uint8_t idp = IDP_34;
+            pluviometer_config pluviometer_config = {0};
 
-			float rain_per_pulse = get_rain_per_pulse();
+            set_rain_per_pulse(0.1f);
+            pluviometer_config.shutdown_value = 5.0f;
 
-			esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &rain_shutdown_value);
-			if (ret_shutdown != ESP_OK || rain_shutdown_value <= 0.0 || rain_shutdown_value > 10.0)
-			{
-				rain_shutdown_value = 5.0f;
-			}
+            if (get_rain_per_pulse() <= 0.0f || get_rain_per_pulse() > 10.0f)
+            {
+                set_rain_per_pulse(0.1f);
+            }
 
-			arg_pair_t arg_pairs[] = {
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"float", &rain_per_pulse},
-				{"float", &rain_shutdown_value},
-				{NULL, NULL}};
+            pluviometer_config.rain_per_pulse = get_rain_per_pulse();
 
-			idp_parser_create_package(str_out, arg_pairs);
-			comm_app_send_idp_pack(str_out, comm_mode);
-		}
-	}
+            esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &pluviometer_config.shutdown_value);
+            if (ret_shutdown != ESP_OK || pluviometer_config.shutdown_value <= 0.0f || pluviometer_config.shutdown_value > 10.0f)
+            {
+                pluviometer_config.shutdown_value = 5.0f;
+            }
+
+            (void)idp_parser_validate_idp_34(&pluviometer_config);
+
+            arg_pair_t arg_pairs[] = {
+                {"uint8_t", &idp},
+                {"string", system_id},
+                {"float", &pluviometer_config.rain_per_pulse},
+                {"float", &pluviometer_config.shutdown_value},
+                {NULL, NULL}};
+
+            idp_parser_create_package(str_out, arg_pairs);
+            comm_app_send_idp_pack(str_out, comm_mode);
+        }
+    }
 }
-
 /**
  * @brief Handle IDP package type 40 (Rainfall last hour).
  *

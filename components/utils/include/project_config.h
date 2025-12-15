@@ -444,7 +444,6 @@ typedef struct __attribute__((__packed__))
     time_t end_date;                /*!< End date */
 } pivot_history;
 
-
 /**
  * @brief Indicates which type the barrier
  * 
@@ -504,6 +503,17 @@ typedef enum
     TYPE_HANGS_UP_SOIL_APP,
     TYPE_HANGS_UP_IRRIGABRAS_APP,
 } hangs_up_status;
+
+/**
+ * @brief Pluviometer configuration parameters.
+ *
+ * Structure defining the pluviometer configuration parameters.
+ */
+typedef struct __attribute__((__packed__))
+{
+    float rain_per_pulse;
+    float shutdown_value;
+} pluviometer_config;
 
 /**
  * @brief Application callback function.

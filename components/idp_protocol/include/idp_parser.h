@@ -289,6 +289,14 @@ bool idp_parser_validate_idp_26(const pivot_virtual_config virtual_config);
 bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config);
 
 /**
+ * @brief Validate pluviometer configuration values for IDP 34.
+ *
+ * @param pluviometer_config Pointer to pluviometer configuration.
+ * @return true if valid; false otherwise.
+ */
+bool idp_parser_validate_idp_34(const pluviometer_config *pluviometer_config);
+
+/**
  * @brief Build argument pairs for IDP 28 packet.
  *
  * This function builds argument pairs for the IDP 28 packet based on the specified parameters.
