@@ -113,8 +113,6 @@ static void eco_mode_task(void *arg)
     {
         current_time = rtc_app_get_timestamp(false) + (RTC_CONFIG_TIMEZONE * 3600);
 
-        ESP_LOGE(ECO_MODE_TAG, "Eco Mode Task running at time: %lld", current_time);
-
         if (eco_mode_weekend(current_time))
         {
             if (already_off)
