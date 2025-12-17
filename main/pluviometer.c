@@ -5,6 +5,7 @@
 
 /* Self include */
 #include "pluviometer.h"
+
 #include "data_app.h"
 #include "rtc_app.h"
 #include "gpio_actuator.h"
