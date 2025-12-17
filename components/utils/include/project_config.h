@@ -135,6 +135,7 @@ typedef enum
     IDP_28,
     IDP_30 = 30,
     IDP_31,
+    IDP_69 = 69,
     IDP_90 = 90,
     IDP_91,
     IDP_92,
@@ -158,6 +159,7 @@ typedef enum
     COMM_HTTP_GET,
     COMM_MQTT,
     COMM_RF,
+    COMM_TEST,
 } comm_type;
 
 /**

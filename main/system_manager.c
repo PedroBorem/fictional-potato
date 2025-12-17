@@ -26,6 +26,8 @@
 #include "data_app.h"
 #include "rf_uart.h"
 
+#include "hw_test.h"
+
 #include "scheduling.h"
 #include "system_monitoring.h"
 #include "sectorization.h"
@@ -144,6 +146,7 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_69(const char *buffer, comm_type comm_mode);
 
 /**
  * @brief Initializes the system manager module.
@@ -165,6 +168,8 @@ void system_manager_init(void)
 	actuation_app_set_config(config);
 	ESP_ERROR_CHECK(actuation_app_init(&system_manager_callback));	
 	actuation_app_hangs_up_callback(&system_monitoring_pivot_shutdown);
+
+	hw_test_init(&system_manager_callback);
 
 	// system monitoring init
 	system_read_time = config.read_time;
@@ -478,6 +483,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_92(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_69:
+		{
+			system_manager_idp_69(str_pkg, comm_mode);
+			break;
+		}
 		default:
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
@@ -509,7 +519,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
  */
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF || comm_mode == COMM_TEST)
 	{
 		pivot_actions actions = {};
 		char str_out[200] = {};
@@ -555,7 +565,7 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF || comm_mode == COMM_TEST)
 	{
 		esp_err_t ret = ESP_FAIL;
 		pivot_actions old_actions = {};
@@ -2937,3 +2947,51 @@ static void system_manager_idp_92(const char *buffer, comm_type comm_mode)
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
 }
+
+static void system_manager_idp_69(const char *buffer, comm_type comm_mode)
+{
+    if (comm_mode == COMM_MQTT || comm_mode == COMM_RF || comm_mode == COMM_HTTP_POST)
+    {
+        uint8_t idp = 0;
+
+        arg_pair_t arg_pairs[] = {
+            {"uint8_t", &idp},
+            {NULL, NULL}
+        };
+
+        idp_parser_get_packet_data(buffer, arg_pairs);
+
+        if (idp != 69)
+        {
+            ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid state (%s)", buffer);
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid state");
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+
+            if (comm_mode == COMM_HTTP_POST)
+            {
+                comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+            }
+            return;
+        }
+
+        bool ok = hw_test_start_suite();
+        if (ok)
+        {
+            ESP_LOGI(SYSTEM_MANAGER_TAG, "HW test suite started by #69");
+            if (comm_mode == COMM_HTTP_POST)
+            {
+                comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+            }
+        }
+        else
+        {
+            ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
+            if (comm_mode == COMM_HTTP_POST)
+            {
+                comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+            }
+        }
+    }
+}
+

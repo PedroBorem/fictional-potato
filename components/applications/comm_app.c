@@ -13,6 +13,8 @@
 #include "wifi_app.h"
 #include "http_api.h"
 
+#include "hw_test.h"
+
 #include "log.h"
 
 /* Private definitions ------------------------------------------- */
@@ -80,6 +82,11 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
         rf_uart_send_event(str_copy, strlen(str_copy));
         LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
 
+    }
+    else if (communication == COMM_TEST)
+    {
+        hw_test_on_tx_packet(str_copy);
+        LOG_COMM(COMM_APP_TAG, "COMM_TEST - intercept %s", str_copy);
     }
 
     free(str_copy);
