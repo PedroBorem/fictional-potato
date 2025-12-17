@@ -2953,13 +2953,15 @@ static void system_manager_idp_69(const char *buffer, comm_type comm_mode)
     if (comm_mode == COMM_MQTT || comm_mode == COMM_RF || comm_mode == COMM_HTTP_POST)
     {
         uint8_t idp = 0;
+        char pivot_id[50] = {};
 
-        arg_pair_t arg_pairs[] = {
+        arg_pair_t arg_pairs_base[] = {
             {"uint8_t", &idp},
+            {"string",  pivot_id},
             {NULL, NULL}
         };
 
-        idp_parser_get_packet_data(buffer, arg_pairs);
+        idp_parser_get_packet_data(buffer, arg_pairs_base);
 
         if (idp != 69)
         {
@@ -2968,30 +2970,129 @@ static void system_manager_idp_69(const char *buffer, comm_type comm_mode)
             LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 
             if (comm_mode == COMM_HTTP_POST)
-            {
                 comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
-            }
+
             return;
         }
 
-        bool ok = hw_test_start_suite();
-        if (ok)
+        if (strcmp(pivot_id, system_id) != 0)
         {
-            ESP_LOGI(SYSTEM_MANAGER_TAG, "HW test suite started by #69");
+            ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP69 pivot_id mismatch (rx=%s, local=%s)", pivot_id, system_id);
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "IDP69 pivot_id mismatch");
+
             if (comm_mode == COMM_HTTP_POST)
-            {
-                comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
-            }
-        }
-        else
-        {
-            ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
-            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
-            if (comm_mode == COMM_HTTP_POST)
-            {
                 comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
-            }
+
+            return;
         }
+
+        const char *last_dash = strrchr(buffer, '-');
+        const char *dollar = strchr(buffer, '$');
+
+        if (last_dash == NULL || dollar == NULL || last_dash > dollar)
+        {
+            ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP69 malformed (%s)", buffer);
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "IDP69 malformed");
+            LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+
+            if (comm_mode == COMM_HTTP_POST)
+                comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+
+            return;
+        }
+
+        const char *last_field = last_dash + 1;
+        size_t last_len = (size_t)(dollar - last_field);
+
+        bool is_start = false;
+        if (last_len == 5 && strncmp(last_field, "START", 5) == 0)
+            is_start = true;
+
+        if (is_start)
+        {
+            uint32_t req_ts = 0;
+            char cmd[16] = {};
+
+            arg_pair_t arg_pairs_start[] = {
+                {"uint8_t",  &idp},
+                {"string",   pivot_id},
+                {"uint32_t", &req_ts},
+                {"string",   cmd},
+                {NULL, NULL}
+            };
+
+            idp_parser_get_packet_data(buffer, arg_pairs_start);
+
+            if (strcmp(cmd, "START") != 0)
+            {
+                ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP69 invalid START (%s)", buffer);
+                LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "IDP69 invalid START");
+                LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+
+                if (comm_mode == COMM_HTTP_POST)
+                    comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+
+                return;
+            }
+
+            time_t now_ts = rtc_app_get_timestamp(false);
+            if (now_ts <= 0)
+            {
+                ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP69 RTC invalid");
+                LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "IDP69 RTC invalid");
+
+                if (comm_mode == COMM_HTTP_POST)
+                    comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+
+                return;
+            }
+
+            uint32_t now_u = (uint32_t)now_ts;
+            uint32_t diff = 0;
+
+            if (now_u >= req_ts)
+                diff = now_u - req_ts;
+            else
+                diff = req_ts - now_u;
+
+            if (diff > (3UL * 3600UL))
+            {
+                ESP_LOGE(SYSTEM_MANAGER_TAG, "IDP69 timestamp rejected (req=%u now=%u diff=%u)",
+                         (unsigned)req_ts, (unsigned)now_u, (unsigned)diff);
+                LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "IDP69 timestamp rejected");
+
+                if (comm_mode == COMM_HTTP_POST)
+                    comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+
+                return;
+            }
+
+            bool ok = hw_test_start_suite();
+            if (ok)
+            {
+                ESP_LOGI(SYSTEM_MANAGER_TAG, "HW test suite started by #69 (pivot=%s req_ts=%u)", pivot_id, (unsigned)req_ts);
+
+                if (comm_mode == COMM_HTTP_POST)
+                    comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
+            }
+            else
+            {
+                ESP_LOGE(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
+                LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Failed to start HW test suite");
+
+                if (comm_mode == COMM_HTTP_POST)
+                    comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
+            }
+
+            return;
+        }
+
+        ESP_LOGI(SYSTEM_MANAGER_TAG, "IDP69 report accepted (%s)", buffer);
+        comm_app_send_idp_pack(buffer, COMM_MQTT);
+
+        if (comm_mode == COMM_HTTP_POST)
+            comm_app_send_idp_pack(CONFIG_HTTP_OK, COMM_HTTP_POST);
     }
 }
+
 

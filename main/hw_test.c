@@ -41,26 +41,28 @@ void hw_test_init(const app_callback callback)
     hw_test_call = callback;
 }
 
-static void hw_test_set_expected_exact(uint16_t dwp, uint16_t percent)
+static void hw_test_reset_last_seen(void)
 {
-    s_expect_mode = HW_EXPECT_EXACT;
-    s_expected_dwp = dwp;
-    s_expected_percent = percent;
     s_last_dwp = 0;
     s_last_percent = 0;
     s_last_pivot_id[0] = '\0';
     s_last_pkt[0] = '\0';
 }
 
-static void hw_test_set_expected_pivot_shutdown(void)
+static void hw_test_set_expected_exact(uint16_t dwp, uint16_t percent)
+{
+    s_expect_mode = HW_EXPECT_EXACT;
+    s_expected_dwp = dwp;
+    s_expected_percent = percent;
+    hw_test_reset_last_seen();
+}
+
+static void hw_test_set_expected_dwp_ends_2(void)
 {
     s_expect_mode = HW_EXPECT_DWP_ENDS_2;
     s_expected_dwp = 0;
     s_expected_percent = 0;
-    s_last_dwp = 0;
-    s_last_percent = 0;
-    s_last_pivot_id[0] = '\0';
-    s_last_pkt[0] = '\0';
+    hw_test_reset_last_seen();
 }
 
 bool hw_test_start_suite(void)
@@ -121,7 +123,7 @@ void hw_test_on_tx_packet(const char *idp_pack)
             xTaskNotify(s_hw_test_task, 1, eSetValueWithOverwrite);
         }
     }
-    else if (s_expect_mode == HW_EXPECT_DWP_ENDS_2)
+    else
     {
         if ((dwp % 10U) == 2U)
         {
@@ -149,13 +151,12 @@ static bool hw_test_wait_match(uint32_t timeout_ms)
     return false;
 }
 
-static void hw_test_send_off_and_wait(void)
+static bool hw_test_send_off_and_wait(void)
 {
-    hw_test_set_expected_pivot_shutdown();
+    hw_test_set_expected_dwp_ends_2();
 
     char cmd_off[200] = {};
-    snprintf(cmd_off, sizeof(cmd_off), "#01-%s-002-000-hw_test$",
-             system_id);
+    snprintf(cmd_off, sizeof(cmd_off), "#01-%s-002-000-hw_test$", system_id);
 
     ESP_LOGI(HW_TEST_TAG, "Sending OFF command: %s", cmd_off);
     hw_test_call(cmd_off, COMM_TEST);
@@ -174,6 +175,59 @@ static void hw_test_send_off_and_wait(void)
                  (unsigned)s_last_percent,
                  s_last_pkt);
     }
+
+    return ok_off;
+}
+
+static void hw_test_send_final_report(const uint16_t *dwps,
+                                      const uint16_t *percents,
+                                      const uint8_t *main_ok,
+                                      const uint8_t *off_ok,
+                                      int n)
+{
+    char report[512] = {};
+    int used = snprintf(report, sizeof(report), "#69-%s", system_id);
+    if (used < 0 || used >= (int)sizeof(report))
+        return;
+
+    for (int i = 0; i < n; i++)
+    {
+        const char *r1 = "ER";
+        const char *r2 = "ER";
+
+        if (main_ok[i])
+            r1 = "OK";
+
+        if (off_ok[i])
+            r2 = "OK";
+
+        int w = snprintf(report + used, (size_t)(sizeof(report) - used),
+                         "-t%d-%u-%02u-%s-OFF-%s",
+                         i + 1,
+                         (unsigned)dwps[i],
+                         (unsigned)percents[i],
+                         r1,
+                         r2);
+        if (w < 0)
+            break;
+
+        used += w;
+        if (used >= (int)(sizeof(report) - 2))
+            break;
+    }
+
+    if (used < (int)(sizeof(report) - 2))
+    {
+        report[used++] = '$';
+        report[used] = '\0';
+    }
+    else
+    {
+        report[sizeof(report) - 2] = '$';
+        report[sizeof(report) - 1] = '\0';
+    }
+
+    hw_test_call(report, COMM_MQTT);
 }
 
 static void hw_test_suite_task(void *arg)
@@ -183,7 +237,15 @@ static void hw_test_suite_task(void *arg)
     const uint16_t dwps[] = {351, 451};
     const uint16_t percents[] = {5, 25};
 
-    const int n = (int)(sizeof(dwps) / sizeof(dwps[0]));
+    const int n_dwps = (int)(sizeof(dwps) / sizeof(dwps[0]));
+    const int n_perc = (int)(sizeof(percents) / sizeof(percents[0]));
+
+    int n = n_dwps;
+    if (n_perc < n)
+        n = n_perc;
+
+    uint8_t main_ok[8] = {0};
+    uint8_t off_ok[8] = {0};
 
     for (int i = 0; i < n; i++)
     {
@@ -199,6 +261,10 @@ static void hw_test_suite_task(void *arg)
         hw_test_call(cmd_01, COMM_TEST);
 
         bool ok = hw_test_wait_match(5UL * 60UL * 1000UL);
+        if (ok)
+            main_ok[i] = 1U;
+        else
+            main_ok[i] = 0U;
 
         if (ok)
         {
@@ -217,13 +283,19 @@ static void hw_test_suite_task(void *arg)
                      s_last_pkt);
         }
 
-        hw_test_send_off_and_wait();
+        bool ok_off = hw_test_send_off_and_wait();
+        if (ok_off)
+            off_ok[i] = 1U;
+        else
+            off_ok[i] = 0U;
 
         if (i < (n - 1))
         {
             vTaskDelay(pdMS_TO_TICKS(30000));
         }
     }
+
+    hw_test_send_final_report(dwps, percents, main_ok, off_ok, n);
 
     s_running = false;
     s_hw_test_task = NULL;
