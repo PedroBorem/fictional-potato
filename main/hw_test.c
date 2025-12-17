@@ -234,8 +234,8 @@ static void hw_test_suite_task(void *arg)
 {
     (void)arg;
 
-    const uint16_t dwps[] = {351, 451};
-    const uint16_t percents[] = {5, 25};
+    const uint16_t dwps[] = {351, 461, 361, 451};
+    const uint16_t percents[] = {5, 25, 75, 100};
 
     const int n_dwps = (int)(sizeof(dwps) / sizeof(dwps[0]));
     const int n_perc = (int)(sizeof(percents) / sizeof(percents[0]));
