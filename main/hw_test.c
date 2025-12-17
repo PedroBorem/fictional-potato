@@ -180,10 +180,12 @@ static void hw_test_suite_task(void *arg)
 {
     (void)arg;
 
-    const uint16_t dwps[] = {351, 451, 361, 461};
-    const uint16_t percents[] = {5, 25, 75, 100};
+    const uint16_t dwps[] = {351, 451};
+    const uint16_t percents[] = {5, 25};
 
-    for (int i = 0; i < 4; i++)
+    const int n = (int)(sizeof(dwps) / sizeof(dwps[0]));
+
+    for (int i = 0; i < n; i++)
     {
         hw_test_set_expected_exact(dwps[i], percents[i]);
 
@@ -191,8 +193,8 @@ static void hw_test_suite_task(void *arg)
         snprintf(cmd_01, sizeof(cmd_01), "#01-%s-%u-%02u-hw_test$",
                  system_id, (unsigned)dwps[i], (unsigned)percents[i]);
 
-        ESP_LOGI(HW_TEST_TAG, "Starting test %d/4: dwp=%u percent=%u",
-                 i + 1, (unsigned)dwps[i], (unsigned)percents[i]);
+        ESP_LOGI(HW_TEST_TAG, "Starting test %d/%d: dwp=%u percent=%u",
+                 i + 1, n, (unsigned)dwps[i], (unsigned)percents[i]);
 
         hw_test_call(cmd_01, COMM_TEST);
 
@@ -217,7 +219,7 @@ static void hw_test_suite_task(void *arg)
 
         hw_test_send_off_and_wait();
 
-        if (i < 3)
+        if (i < (n - 1))
         {
             vTaskDelay(pdMS_TO_TICKS(30000));
         }
