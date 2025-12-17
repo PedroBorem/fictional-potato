@@ -52,7 +52,7 @@ static void hw_test_set_expected_exact(uint16_t dwp, uint16_t percent)
     s_last_pkt[0] = '\0';
 }
 
-static void hw_test_set_expected_dwp_ends_2(void)
+static void hw_test_set_expected_pivot_shutdown(void)
 {
     s_expect_mode = HW_EXPECT_DWP_ENDS_2;
     s_expected_dwp = 0;
@@ -151,7 +151,7 @@ static bool hw_test_wait_match(uint32_t timeout_ms)
 
 static void hw_test_send_off_and_wait(void)
 {
-    hw_test_set_expected_dwp_ends_2();
+    hw_test_set_expected_pivot_shutdown();
 
     char cmd_off[200] = {};
     snprintf(cmd_off, sizeof(cmd_off), "#01-%s-002-000-hw_test$",
