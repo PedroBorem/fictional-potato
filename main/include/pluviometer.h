@@ -11,34 +11,8 @@
 
 #include "esp_err.h"
 
-/**
- * @brief Daily rainfall with 24 hourly bins.
- * @note Values are in tenths of a millimeter (0.1 mm).
- */
-typedef struct __attribute__((__packed__))
-{
-    char date_day[50];   /**< Local date in "YYYYMMDD". */
-    float rain_per_hour[24];  /**< Hourly rainfall (index 0..23 = 00–01 ... 23–00), 0.1 mm. */
-    float daily_total;      /**< Daily total (sum of 24 hours), 0.1 mm. */
-} rain_per_day_data;
-
-#define MAX_RAINFALL_ENTRIES 24 /**< Maximum number of rainfall entries */
 
 #define RAINFALL_SAVE_INTERVAL_MS (3600000) /**< Interval for saving rainfall data in milliseconds (1 hour) */
-
-/**
- * @brief Get the current hour's accumulated rainfall.
- * @note Must be called from within a 'current_hour_rain_mux' critical section.
- * @return Rain total in mm.
- */
-float get_rain_total(void);
-
-/**
- * @brief Set the current hour's accumulated rainfall.
- * @note Must be called from within a 'current_hour_rain_mux' critical section.
- * @param value Rain total in mm.
- */
-void set_rain_total(float value);
 
 /**
  * @brief Returns the rain calibration value in millimeters per pulse.

@@ -516,6 +516,19 @@ typedef struct __attribute__((__packed__))
 } pluviometer_config;
 
 /**
+ * @brief Daily rainfall with 24 hourly bins.
+ * @note Values are in tenths of a millimeter (0.1 mm).
+ */
+typedef struct __attribute__((__packed__))
+{
+    char date_day[50];   /**< Local date in "YYYYMMDD". */
+    float rain_per_hour[24];  /**< Hourly rainfall (index 0..23 = 00–01 ... 23–00), 0.1 mm. */
+    float daily_total;      /**< Daily total (sum of 24 hours), 0.1 mm. */
+} rain_per_day_data;
+
+#define MAX_RAINFALL_ENTRIES 24 /**< Maximum number of rainfall entries */
+
+/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.

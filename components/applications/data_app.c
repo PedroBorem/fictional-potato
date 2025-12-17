@@ -8,8 +8,6 @@
 #include "data_app.h"
 #include "nvs_data.h"
 
-#include "pluviometer_app.h"
-
 /* Project include */
 #include "log.h"
 #include "esp_log.h"

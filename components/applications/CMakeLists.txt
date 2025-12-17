@@ -3,7 +3,6 @@ idf_component_register(SRCS
 						"data_app.c"
 						"comm_app.c"
 						"actuation_app.c"
-						"pluviometer_app.c"
                     INCLUDE_DIRS
                     	"include"
                     PRIV_REQUIRES

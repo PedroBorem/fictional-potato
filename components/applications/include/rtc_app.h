@@ -8,8 +8,6 @@
 #ifndef COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
 #define COMPONENTS_APPLICATIONS_INCLUDE_RTC_APP_H_
 
-#include "pluviometer_app.h"
-
 #include <time.h>
 #include <stdbool.h>
 

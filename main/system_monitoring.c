@@ -17,7 +17,7 @@
 #include "idp_parser.h"
 #include "gpio_actuator.h"
 #include "project_config.h"
-#include "pluviometer_app.h"
+#include "pluviometer.h"
 
 #include <string.h>
 
