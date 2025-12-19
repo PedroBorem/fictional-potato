@@ -271,6 +271,7 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 {
     time_t start_time;              /*!< Start time */
     time_t end_time;                /*!< End time */
+    bool enable;                     /*!< Enable or Disable */
 } eco_mode_config;
 
 /**

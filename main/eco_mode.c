@@ -20,6 +20,11 @@
 #define ECO_MODE_TAG "eco_mode"
 
 /**
+ * @brief Name of the Eco Mode task.
+ */
+static bool enabled_rush_mode = false;
+
+/**
  * @brief Tracks if Eco Mode has already turned off the pivot.
  */
 static bool already_off = false;
@@ -111,6 +116,12 @@ static void eco_mode_task(void *arg)
 
     while (1)
     {
+        if(eco_mode.enable == false)
+        {
+            vTaskDelay(pdMS_TO_TICKS(15000));
+            continue;
+        }
+        
         current_time = rtc_app_get_timestamp(false) + (RTC_CONFIG_TIMEZONE * 3600);
 
         if (eco_mode_weekend(current_time))
@@ -190,7 +201,17 @@ void eco_mode_start(eco_mode_config current_eco_mode)
                     ECO_MODE_TASK_PRIORITY,
                     &xTask_eco_mode);
 
-        ESP_LOGI(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
+        enabled_rush_mode = eco_mode.enable;
+
+        if (enabled_rush_mode)
+        {
+            ESP_LOGI(ECO_MODE_TAG, "Rush Mode enabled in Eco Mode");
+            ESP_LOGI(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
+        }
+        else
+        {
+            ESP_LOGE(ECO_MODE_TAG, "Rush Mode disabled in Eco Mode");
+        }
     }
 }
 

@@ -964,6 +964,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				{"string", pivot_id},
 				{"uint32_t", &eco_mode.start_time},
 				{"uint32_t", &eco_mode.end_time},
+				{"bool", &eco_mode.enable},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
@@ -1011,6 +1012,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				{"string", system_id},
 				{"uint32_t", &eco_mode.start_time},
 				{"uint32_t", &eco_mode.end_time},
+				{"bool", &eco_mode.enable},
 				{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);
