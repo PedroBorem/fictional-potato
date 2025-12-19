@@ -121,7 +121,7 @@ static void eco_mode_task(void *arg)
             vTaskDelay(pdMS_TO_TICKS(15000));
             continue;
         }
-        
+
         current_time = rtc_app_get_timestamp(false) + (RTC_CONFIG_TIMEZONE * 3600);
 
         if (eco_mode_weekend(current_time))
@@ -205,12 +205,12 @@ void eco_mode_start(eco_mode_config current_eco_mode)
 
         if (enabled_rush_mode)
         {
-            ESP_LOGI(ECO_MODE_TAG, "Rush Mode enabled in Eco Mode");
-            ESP_LOGI(ECO_MODE_TAG, "Eco Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
+            ESP_LOGI(ECO_MODE_TAG, "Rush Mode enabled");
+            ESP_LOGI(ECO_MODE_TAG, "Rush Mode started: Start Time: %lld, End Time: %lld", eco_mode.start_time, eco_mode.end_time);
         }
         else
         {
-            ESP_LOGE(ECO_MODE_TAG, "Rush Mode disabled in Eco Mode");
+            ESP_LOGE(ECO_MODE_TAG, "Rush Mode disabled");
         }
     }
 }
