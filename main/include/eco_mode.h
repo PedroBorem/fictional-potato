@@ -27,12 +27,6 @@ void eco_mode_stop(void);
 void eco_mode_cmd_stop(void);
 
 /**
- * @brief Checks if the Eco Mode window is active now.
- * @return true if the current time is inside the Eco Mode window.
- */
-bool eco_mode_is_in_window_now(void);
-
-/**
  * @brief Registers a callback for Eco Mode events.
  * @param callback Callback to be registered.
  */

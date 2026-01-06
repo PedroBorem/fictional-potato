@@ -49,6 +49,8 @@ static eco_mode_config eco_mode = {};
  */
 static app_callback eco_mode_callback = NULL;
 
+static portMUX_TYPE s_eco_mode_mux = portMUX_INITIALIZER_UNLOCKED;
+
 /**
  * @brief Eco Mode task implementation.
  * @param arg Task argument (unused).
@@ -78,7 +80,15 @@ static bool eco_mode_weekend(time_t ts)
  */
 static bool eco_mode_is_in_window_internal(time_t current_time)
 {
-    if (eco_mode.start_time == 0 || eco_mode.end_time == 0)
+    time_t start_time = 0;
+    time_t end_time = 0;
+
+    taskENTER_CRITICAL(&s_eco_mode_mux);
+    start_time = eco_mode.start_time;
+    end_time = eco_mode.end_time;
+    taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+    if (start_time == 0 || end_time == 0)
     {
         return false;
     }
@@ -88,14 +98,14 @@ static bool eco_mode_is_in_window_internal(time_t current_time)
         return false;
     }
 
-    if (eco_mode.start_time >= eco_mode.end_time)
+    if (start_time >= end_time)
     {
         return false;
     }
 
     time_t current_seconds = current_time % 86400;
-    time_t start_seconds = eco_mode.start_time % 86400;
-    time_t end_seconds = eco_mode.end_time % 86400;
+    time_t start_seconds = start_time % 86400;
+    time_t end_seconds = end_time % 86400;
 
     if (current_seconds >= start_seconds && current_seconds <= end_seconds)
     {
@@ -116,7 +126,13 @@ static void eco_mode_task(void *arg)
 
     while (1)
     {
-        if(eco_mode.enable == false)
+        bool enabled = false;
+
+        taskENTER_CRITICAL(&s_eco_mode_mux);
+        enabled = eco_mode.enable;
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+        if (enabled == false)
         {
             vTaskDelay(pdMS_TO_TICKS(15000));
             continue;
@@ -126,26 +142,58 @@ static void eco_mode_task(void *arg)
 
         if (eco_mode_weekend(current_time))
         {
-            if (already_off)
+            bool local_already_off = false;
+
+            taskENTER_CRITICAL(&s_eco_mode_mux);
+            local_already_off = already_off;
+            taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+            if (local_already_off)
             {
+                actuation_app_set_actions(old_actions, false);
+                if (eco_mode_callback != NULL)
+                {
+                    eco_mode_callback("#00$", comm_main_mode);
+                }
+
+                taskENTER_CRITICAL(&s_eco_mode_mux);
                 already_off = false;
+                eco_mode_suspended = false;
+                taskEXIT_CRITICAL(&s_eco_mode_mux);
             }
+
             ESP_LOGE(ECO_MODE_TAG, "Eco Mode weekend detected, skipping...");
             vTaskDelay(pdMS_TO_TICKS(15000));
             continue;
         }
 
-        if (eco_mode.start_time < eco_mode.end_time)
+        time_t start_time = 0;
+        time_t end_time = 0;
+
+        taskENTER_CRITICAL(&s_eco_mode_mux);
+        start_time = eco_mode.start_time;
+        end_time = eco_mode.end_time;
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+        if (start_time < end_time)
         {
             bool in_window = eco_mode_is_in_window_internal(current_time);
 
             actuation_app_set_eco_window_state(in_window);
 
-            if (eco_mode_suspended)
+            bool suspended = false;
+
+            taskENTER_CRITICAL(&s_eco_mode_mux);
+            suspended = eco_mode_suspended;
+            taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+            if (suspended)
             {
                 if (!in_window)
                 {
+                    taskENTER_CRITICAL(&s_eco_mode_mux);
                     eco_mode_suspended = false;
+                    taskEXIT_CRITICAL(&s_eco_mode_mux);
                 }
                 else
                 {
@@ -154,26 +202,38 @@ static void eco_mode_task(void *arg)
                 }
             }
 
+            bool local_already_off = false;
+
+            taskENTER_CRITICAL(&s_eco_mode_mux);
+            local_already_off = already_off;
+            taskEXIT_CRITICAL(&s_eco_mode_mux);
+
             if (in_window)
             {
-                if (!already_off)
+                if (!local_already_off)
                 {
                     if (eco_mode_callback != NULL)
                     {
                         data_app_load(DATA_TYPE_ACTIONS, &old_actions);
                         eco_mode_callback("#01-eco_mode-002-000-eco_mode$", comm_main_mode);
+
+                        taskENTER_CRITICAL(&s_eco_mode_mux);
+                        already_off = true;
+                        taskEXIT_CRITICAL(&s_eco_mode_mux);
                     }
-                    already_off = true;
                 }
             }
-            else if (already_off)
+            else if (local_already_off)
             {
                 actuation_app_set_actions(old_actions, false);
                 if (eco_mode_callback != NULL)
                 {
                     eco_mode_callback("#00$", comm_main_mode);
                 }
+
+                taskENTER_CRITICAL(&s_eco_mode_mux);
                 already_off = false;
+                taskEXIT_CRITICAL(&s_eco_mode_mux);
             }
         }
 
@@ -193,13 +253,24 @@ void eco_mode_start(eco_mode_config current_eco_mode)
     }
     else
     {
+        taskENTER_CRITICAL(&s_eco_mode_mux);
         memcpy(&eco_mode, &current_eco_mode, sizeof(eco_mode));
-        xTaskCreate(&eco_mode_task,
-                    ECO_MODE_TASK_NAME,
-                    ECO_MODE_TASK_SIZE,
-                    NULL,
-                    ECO_MODE_TASK_PRIORITY,
-                    &xTask_eco_mode);
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+        if (xTask_eco_mode == NULL)
+        {
+            BaseType_t ok = xTaskCreate(&eco_mode_task,
+                                       ECO_MODE_TASK_NAME,
+                                       ECO_MODE_TASK_SIZE,
+                                       NULL,
+                                       ECO_MODE_TASK_PRIORITY,
+                                       &xTask_eco_mode);
+            if (ok != pdPASS)
+            {
+                xTask_eco_mode = NULL;
+                ESP_LOGE(ECO_MODE_TAG, "Eco Mode task creation failed");
+            }
+        }
 
         enabled_rush_mode = eco_mode.enable;
 
@@ -225,7 +296,11 @@ void eco_mode_stop(void)
         vTaskDelete(xTask_eco_mode);
         xTask_eco_mode = NULL;
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped");
+
+        taskENTER_CRITICAL(&s_eco_mode_mux);
         already_off = false;
+        eco_mode_suspended = false;
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
     }
 }
 
@@ -234,12 +309,24 @@ void eco_mode_stop(void)
  */
 void eco_mode_cmd_stop(void)
 {
-    if (xTask_eco_mode != NULL && already_off == true)
+    bool local_already_off = false;
+
+    taskENTER_CRITICAL(&s_eco_mode_mux);
+    local_already_off = already_off;
+    taskEXIT_CRITICAL(&s_eco_mode_mux);
+
+    if (xTask_eco_mode != NULL && local_already_off == true)
     {
+        taskENTER_CRITICAL(&s_eco_mode_mux);
         eco_mode_suspended = true;
         already_off = false;
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
+
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode stopped by command");
-        eco_mode_callback("#32-rush_mode_deactivated$", comm_main_mode);
+        if (eco_mode_callback != NULL)
+        {
+            eco_mode_callback("#32-rush_mode_deactivated$", comm_main_mode);
+        }
     }
 }
 
@@ -252,16 +339,8 @@ void eco_mode_register_callback(const app_callback callback)
     if (callback != NULL)
     {
         ESP_LOGE(ECO_MODE_TAG, "Eco Mode callback registered");
+        taskENTER_CRITICAL(&s_eco_mode_mux);
         eco_mode_callback = callback;
+        taskEXIT_CRITICAL(&s_eco_mode_mux);
     }
-}
-
-/**
- * @brief Checks if the current time is inside the Eco Mode window.
- * @return true if inside the Eco Mode window, false otherwise.
- */
-bool eco_mode_is_in_window_now(void)
-{
-    time_t current_time = rtc_app_get_timestamp(false);
-    return eco_mode_is_in_window_internal(current_time);
 }
