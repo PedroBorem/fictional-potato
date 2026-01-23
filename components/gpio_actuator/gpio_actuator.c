@@ -798,14 +798,16 @@ void actuator_read_percent(void* arg)
                 if (g_percentimeter_period_ms > 0)
                 {
                     double pct = ((double)g_percentimeter_on_time_ms * 100.0) / (double)g_percentimeter_period_ms;
-                    if (pct < 0.0) pct = 0.0;
-                    if (pct > 100.0) pct = 100.0;
+                    if (pct < 0.0) 
+						pct = 0.0;
+                    if (pct > 100.0) 
+						pct = 100.0;
                     pivot_actions_read.percentimeter = (uint32_t)pct;
                 }
             }
         }
 
-        if (level_now == !gpio_act_contactor_type)
+        if (level_now != gpio_act_contactor_type)
         {
             negedge_perc = now_clk;
 
@@ -821,8 +823,10 @@ void actuator_read_percent(void* arg)
                 if (g_percentimeter_period_ms > 0)
                 {
                     double pct = ((double)g_percentimeter_on_time_ms * 100.0) / (double)g_percentimeter_period_ms;
-                    if (pct < 0.0) pct = 0.0;
-                    if (pct > 100.0) pct = 100.0;
+                    if (pct < 0.0) 
+						pct = 0.0;
+                    if (pct > 100.0) 
+						pct = 100.0;
                     pivot_actions_read.percentimeter = (uint32_t)pct;
                 }
             }
