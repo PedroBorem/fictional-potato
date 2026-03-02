@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.8.7")
+#define CONFIG_FW_VERSION           ("rc2.9.0_TESTE")
 
 /**
  * @brief Maximum number of scheduling values.

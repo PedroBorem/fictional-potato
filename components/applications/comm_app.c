@@ -115,9 +115,14 @@ esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
         err = ESP_OK;
         return err;
 	}
+    else if(strcmp(config.comm_main_mode_config, "MQTT") == 0)
+    {
+        comm_main_mode = COMM_MQTT;
+        err = ESP_OK;
+        return err;
+    }
 	else
 	{
-        comm_main_mode = COMM_MQTT;
 		ESP_LOGE(COMM_APP_TAG,"Invalid Comm Mode type configuration");
 		LOG_DBG_ERROR(COMM_APP_TAG, "Invalid_comm_mode_type");
 		return err;
