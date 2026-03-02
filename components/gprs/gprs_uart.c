@@ -1,5 +1,5 @@
 /**
- * @file gprs.c
+ * @file gprs_uart.c
  * @brief GPRS UART control
  */
 
@@ -11,8 +11,10 @@
 
 #include "FreeRTOS_defines.h"
 #include "log.h"
+#include "ota_uart.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -45,6 +47,12 @@
  */
 #define GPRS_UART_BUF_SIZE 	(1024)
 
+/**
+ * @def GPRS_UART_FRAME_SIZE_MAX
+ * @brief Maximum complete frame size handled by stream parser.
+ */
+#define GPRS_UART_FRAME_SIZE_MAX (2048)
+
 /* Private variables  -------------------------------------------- */
 /**
  * @brief Callback function for GPRS UART events
@@ -56,12 +64,41 @@ static app_callback gprs_callback = NULL;
  */
 static QueueHandle_t gprs_uart_queue = NULL;
 
+/**
+ * @brief Temporary buffer for assembling complete '#...$' frames.
+ */
+static char gprs_frame_buffer[GPRS_UART_FRAME_SIZE_MAX] = {0};
+
+/**
+ * @brief Current number of bytes in @ref gprs_frame_buffer.
+ */
+static size_t gprs_frame_length = 0;
+
+/**
+ * @brief Indicates if parser is currently inside a frame.
+ */
+static bool gprs_receiving_frame = false;
+
 /* Private function prototype ------------------------------------ */
 /**
  * @brief Task to handle GPRS UART events
  * @param arg User-defined argument passed to the task
  */
 static void gprs_uart_event_task(void* arg);
+
+/**
+ * @brief Consumes one received character and extracts complete frames.
+ *
+ * @param received_char Character from UART stream.
+ */
+static void gprs_uart_consume_char(char received_char);
+
+/**
+ * @brief Dispatches a complete frame to OTA UART handler or application callback.
+ *
+ * @param frame Null-terminated complete frame (`#...$`).
+ */
+static void gprs_uart_dispatch_frame(const char *frame);
 
 /* Public methods ------------------------------------------------ */
 /**
@@ -112,6 +149,13 @@ esp_err_t gprs_uart_init(const app_callback callback)
             if (callback != NULL && xReturn == pdPASS)
             {
                 gprs_callback = callback;
+
+                esp_err_t ota_err = ota_uart_init();
+                if (ota_err != ESP_OK)
+                {
+                    ESP_LOGW(GPRS_UART_TAG, "%s, OTA UART storage not available (%s)",
+                             __func__, esp_err_to_name(ota_err));
+                }
             }
             else
             {
@@ -167,6 +211,13 @@ static void gprs_uart_event_task(void* arg)
     uart_event_t event = {};
     uint8_t* dtmp = (uint8_t*)malloc(GPRS_UART_BUF_SIZE);
 
+    if (dtmp == NULL)
+    {
+        ESP_LOGE(GPRS_UART_TAG, "%s, failed to allocate RX buffer", __func__);
+        vTaskDelete(NULL);
+        return;
+    }
+
     while (1)
     {
         // Waiting for UART event.
@@ -178,30 +229,37 @@ static void gprs_uart_event_task(void* arg)
             {
             case UART_DATA:
             {
-                if (event.size > 0 && event.size < 3000) // 3 KB
+                if (event.size > 0)
                 {
-                    char* buff_in = (char*)malloc(event.size);
-                    int aux = 0;
-
-                    // Event of UART receiving data
-                    uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
                     LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
 
-                    for (int char_position = 0; char_position < event.size; char_position++)
+                    int remaining = event.size;
+                    while (remaining > 0)
                     {
-                        // 0x7F = ASCII space
-                        // 0x1A <= ASCII C^ values
-                        if (dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+                        int read_request = remaining;
+                        if (read_request > GPRS_UART_BUF_SIZE)
                         {
-                            buff_in[aux] = dtmp[char_position];
-                            aux++;
+                            read_request = GPRS_UART_BUF_SIZE;
                         }
+
+                        int read_len = uart_read_bytes(GPRS_UART_NUM, dtmp, read_request, portMAX_DELAY);
+                        if (read_len <= 0)
+                        {
+                            break;
+                        }
+
+                        for (int char_position = 0; char_position < read_len; char_position++)
+                        {
+                            // 0x7F = ASCII DEL
+                            // 0x1A <= ASCII C^ values
+                            if (dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+                            {
+                                gprs_uart_consume_char((char)dtmp[char_position]);
+                            }
+                        }
+
+                        remaining -= read_len;
                     }
-
-                    // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
-
-                    gprs_callback(buff_in, COMM_MQTT);
-                    free(buff_in);
                 }
                 break;
             }
@@ -264,4 +322,79 @@ static void gprs_uart_event_task(void* arg)
         vTaskDelay(pdMS_TO_TICKS(20));
     }
     free(dtmp);
+}
+
+/* Private methods ----------------------------------------------- */
+/**
+ * @brief Consumes one UART character and extracts complete '#...$' frames.
+ *
+ * @param received_char Character read from UART.
+ */
+static void gprs_uart_consume_char(char received_char)
+{
+    if (received_char == '#')
+    {
+        gprs_receiving_frame = true;
+        gprs_frame_length = 0;
+        gprs_frame_buffer[gprs_frame_length++] = received_char;
+        return;
+    }
+
+    if (!gprs_receiving_frame)
+    {
+        return;
+    }
+
+    if (gprs_frame_length >= (GPRS_UART_FRAME_SIZE_MAX - 1))
+    {
+        gprs_receiving_frame = false;
+        gprs_frame_length = 0;
+        ESP_LOGW(GPRS_UART_TAG, "Discarded oversized frame");
+        return;
+    }
+
+    gprs_frame_buffer[gprs_frame_length++] = received_char;
+
+    if (received_char == '$')
+    {
+        gprs_frame_buffer[gprs_frame_length] = '\0';
+        gprs_uart_dispatch_frame(gprs_frame_buffer);
+        gprs_receiving_frame = false;
+        gprs_frame_length = 0;
+    }
+}
+
+/**
+ * @brief Dispatches complete frame.
+ *
+ * OTA frames are handled locally by OTA UART module and acknowledged over UART.
+ * Other frames follow the existing callback path to the system manager.
+ *
+ * @param frame Complete frame (`#...$`).
+ */
+static void gprs_uart_dispatch_frame(const char *frame)
+{
+    if (frame == NULL)
+    {
+        return;
+    }
+
+    if (ota_uart_handle_frame(frame, gprs_uart_send_event))
+    {
+        return;
+    }
+
+    if (gprs_callback != NULL)
+    {
+        char *frame_copy = strdup(frame);
+        if (frame_copy != NULL)
+        {
+            gprs_callback(frame_copy, COMM_MQTT);
+            free(frame_copy);
+        }
+        else
+        {
+            ESP_LOGE(GPRS_UART_TAG, "Failed to duplicate frame for callback");
+        }
+    }
 }
