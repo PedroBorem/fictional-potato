@@ -105,6 +105,24 @@ typedef struct
 static ota_uart_state_t ota_state = {0};
 
 /**
+ * @brief Returns true when character belongs to Base64 alphabet.
+ *
+ * Accepted set: A-Z, a-z, 0-9, '+', '/', '='.
+ *
+ * @param c Character to validate.
+ * @return true for valid Base64 character.
+ */
+static bool ota_uart_is_base64_char(char c)
+{
+    if ((c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9'))
+    {
+        return true;
+    }
+
+    return (c == '+' || c == '/' || c == '=');
+}
+
+/**
  * @brief Safely closes current firmware file handle.
  */
 static void ota_uart_close_file(void)
@@ -265,6 +283,30 @@ static void ota_uart_send_nack(ota_uart_tx_callback_t tx_callback, const char *r
     ota_uart_send_frame(tx_callback, nack_frame);
 }
 
+static uint32_t ota_uart_crc32(const uint8_t *data, size_t length)
+{
+    uint32_t crc = 0xFFFFFFFFU;
+
+    for (size_t i = 0; i < length; i++)
+    {
+        crc ^= data[i];
+
+        for (uint8_t bit = 0; bit < 8; bit++)
+        {
+            if ((crc & 1U) != 0U)
+            {
+                crc = (crc >> 1U) ^ 0xEDB88320U;
+            }
+            else
+            {
+                crc >>= 1U;
+            }
+        }
+    }
+
+    return ~crc;
+}
+
 /**
  * @brief Parses begin frame and extracts metadata.
  *
@@ -316,13 +358,15 @@ static bool ota_uart_parse_begin_frame(const char *frame, size_t *file_size, siz
  *
  * @param frame Input frame.
  * @param packet_id Output packet id.
+ * @param expected_crc32 Output expected CRC32 for decoded payload.
  * @param payload Output pointer to payload start.
  * @param payload_len Output payload length.
  * @return true on successful parse.
  */
-static bool ota_uart_parse_data_frame(const char *frame, size_t *packet_id, const char **payload, size_t *payload_len)
+static bool ota_uart_parse_data_frame(const char *frame, size_t *packet_id, uint32_t *expected_crc32,
+                                     const char **payload, size_t *payload_len)
 {
-    if (frame == NULL || packet_id == NULL || payload == NULL || payload_len == NULL)
+    if (frame == NULL || packet_id == NULL || expected_crc32 == NULL || payload == NULL || payload_len == NULL)
     {
         return false;
     }
@@ -341,6 +385,13 @@ static bool ota_uart_parse_data_frame(const char *frame, size_t *packet_id, cons
         return false;
     }
 
+    cursor = end_ptr + 1;
+    unsigned long parsed_crc32 = strtoul(cursor, &end_ptr, 10);
+    if (end_ptr == cursor || *end_ptr != '-')
+    {
+        return false;
+    }
+
     const char *payload_start = end_ptr + 1;
     const char *payload_end = strrchr(payload_start, '$');
     if (payload_end == NULL || *(payload_end + 1) != '\0')
@@ -354,6 +405,7 @@ static bool ota_uart_parse_data_frame(const char *frame, size_t *packet_id, cons
     }
 
     *packet_id = (size_t)parsed_packet_id;
+    *expected_crc32 = (uint32_t)parsed_crc32;
     *payload = payload_start;
     *payload_len = (size_t)(payload_end - payload_start);
     return true;
@@ -380,27 +432,109 @@ static bool ota_uart_decode_payload(const char *payload, size_t payload_len, uin
         return false;
     }
 
-    size_t output_capacity = ((payload_len + 3U) / 4U) * 3U;
+    /* Normalize payload to support URL-safe variants and ignore accidental whitespaces. */
+    size_t normalized_capacity = payload_len + 4U;
+    char *normalized_payload = (char *)malloc(normalized_capacity + 1U);
+    if (normalized_payload == NULL)
+    {
+        return false;
+    }
+
+    size_t normalized_len = 0U;
+    for (size_t i = 0; i < payload_len; i++)
+    {
+        char current = payload[i];
+
+        if (current == '\r' || current == '\n' || current == '\t' || current == ' ')
+        {
+            continue;
+        }
+
+        if (current == '-')
+        {
+            current = '+';
+        }
+        else if (current == '_')
+        {
+            current = '/';
+        }
+
+        normalized_payload[normalized_len++] = current;
+    }
+
+    while ((normalized_len % 4U) != 0U && normalized_len < normalized_capacity)
+    {
+        normalized_payload[normalized_len++] = '=';
+    }
+    normalized_payload[normalized_len] = '\0';
+
+    size_t output_capacity = ((normalized_len + 3U) / 4U) * 3U;
     if (output_capacity == 0 || output_capacity > ota_uart_rx_max_decoded_packet_size)
     {
+        free(normalized_payload);
         return false;
     }
 
     uint8_t *decoded_buffer = (uint8_t *)malloc(output_capacity);
     if (decoded_buffer == NULL)
     {
+        free(normalized_payload);
         return false;
+    }
+
+    int invalid_base64_index = -1;
+    for (size_t i = 0; i < normalized_len; i++)
+    {
+        if (!ota_uart_is_base64_char(normalized_payload[i]))
+        {
+            invalid_base64_index = (int)i;
+            break;
+        }
     }
 
     size_t decoded_len = 0;
     int decode_status = mbedtls_base64_decode(decoded_buffer, output_capacity, &decoded_len,
-                                              (const unsigned char *)payload, payload_len);
+                                              (const unsigned char *)normalized_payload, normalized_len);
     if (decode_status != 0 || decoded_len == 0)
     {
+        char head_preview[33] = {0};
+        size_t preview_len = normalized_len;
+        if (preview_len > 32U)
+        {
+            preview_len = 32U;
+        }
+        if (preview_len > 0U)
+        {
+            memcpy(head_preview, normalized_payload, preview_len);
+        }
+
+        if (invalid_base64_index >= 0)
+        {
+            ESP_LOGW(OTA_UART_TAG,
+                     "Base64 decode failed: status=%d payload_len=%u normalized_len=%u invalid_char_index=%d invalid_char=0x%02X head='%s'",
+                     decode_status,
+                     (unsigned int)payload_len,
+                     (unsigned int)normalized_len,
+                     invalid_base64_index,
+                     (unsigned int)(uint8_t)normalized_payload[invalid_base64_index],
+                     head_preview);
+        }
+        else
+        {
+            ESP_LOGW(OTA_UART_TAG,
+                     "Base64 decode failed: status=%d payload_len=%u normalized_len=%u head='%s'",
+                     decode_status,
+                     (unsigned int)payload_len,
+                     (unsigned int)normalized_len,
+                     head_preview);
+        }
+
         free(decoded_buffer);
+        free(normalized_payload);
         return false;
     }
 
+    free(normalized_payload);
     *output_decoded = decoded_buffer;
     *output_decoded_len = decoded_len;
     return true;
@@ -482,6 +616,7 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
 static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t tx_callback)
 {
     size_t packet_id = 0;
+    uint32_t expected_crc32 = 0U;
     const char *payload = NULL;
     size_t payload_len = 0;
 
@@ -491,7 +626,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
         return;
     }
 
-    if (!ota_uart_parse_data_frame(frame, &packet_id, &payload, &payload_len))
+    if (!ota_uart_parse_data_frame(frame, &packet_id, &expected_crc32, &payload, &payload_len))
     {
         ota_uart_send_nack(tx_callback, "invalid_data");
         return;
@@ -509,12 +644,36 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
         return;
     }
 
+    if (packet_id < 3U || (packet_id % 250U) == 0U)
+    {
+        ESP_LOGI(OTA_UART_TAG,
+                 "RX data packet id=%u expected_next=%u payload_len=%u crc=%" PRIu32,
+                 (unsigned int)packet_id,
+                 (unsigned int)ota_state.next_packet_id,
+                 (unsigned int)payload_len,
+                 expected_crc32);
+    }
+
     uint8_t *decoded_payload = NULL;
     size_t decoded_payload_len = 0;
 
     if (!ota_uart_decode_payload(payload, payload_len, &decoded_payload, &decoded_payload_len))
     {
+        ESP_LOGW(OTA_UART_TAG,
+                 "Invalid Base64 payload on packet id=%u payload_len=%u",
+                 (unsigned int)packet_id,
+                 (unsigned int)payload_len);
         ota_uart_send_nack(tx_callback, "invalid_base64_payload");
+        return;
+    }
+
+    uint32_t calculated_crc32 = ota_uart_crc32(decoded_payload, decoded_payload_len);
+    if (calculated_crc32 != expected_crc32)
+    {
+        ESP_LOGW(OTA_UART_TAG, "CRC mismatch on packet %u (expected=%" PRIu32 ", got=%" PRIu32 ")",
+                 (unsigned int)packet_id, expected_crc32, calculated_crc32);
+        free(decoded_payload);
+        ota_uart_send_nack(tx_callback, "crc_mismatch");
         return;
     }
 

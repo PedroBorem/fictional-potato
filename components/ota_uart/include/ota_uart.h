@@ -49,7 +49,7 @@ extern size_t ota_uart_rx_max_decoded_packet_size;
  * @brief Maximum Base64 payload length accepted per OTA UART data packet.
  *
  * This value is runtime-configurable and controls the largest encoded payload
- * accepted in the `#OTA-DATA-<id>-<payload>$` frame.
+ * accepted in the `#OTA-DATA-<id>-<crc32>-<payload>$` frame.
  */
 extern size_t ota_uart_rx_max_base64_payload_size;
 
@@ -85,7 +85,7 @@ bool ota_uart_is_protocol_frame(const char *frame);
  *
  * Supported frames:
  * - `#OTA-BEGIN-<file_size>-<total_packets>$`
- * - `#OTA-DATA-<packet_id>-<base64_payload>$`
+ * - `#OTA-DATA-<packet_id>-<crc32>-<base64_payload>$`
  * - `#OTA-END$`
  *
  * ACK/NACK responses are sent through `tx_callback`.

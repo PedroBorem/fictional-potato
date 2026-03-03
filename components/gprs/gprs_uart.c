@@ -15,6 +15,7 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <inttypes.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -78,6 +79,11 @@ static size_t gprs_frame_length = 0;
  * @brief Indicates if parser is currently inside a frame.
  */
 static bool gprs_receiving_frame = false;
+
+/**
+ * @brief OTA DATA frame counter for sparse debug logging.
+ */
+static uint32_t gprs_ota_data_frame_counter = 0U;
 
 /* Private function prototype ------------------------------------ */
 /**
@@ -377,6 +383,18 @@ static void gprs_uart_dispatch_frame(const char *frame)
     if (frame == NULL)
     {
         return;
+    }
+
+    if (strncmp(frame, "#OTA-DATA-", 10) == 0)
+    {
+        gprs_ota_data_frame_counter++;
+        if (gprs_ota_data_frame_counter <= 3U || (gprs_ota_data_frame_counter % 250U) == 0U)
+        {
+            ESP_LOGI(GPRS_UART_TAG,
+                     "OTA DATA frame rx_count=%" PRIu32 " len=%u",
+                     gprs_ota_data_frame_counter,
+                     (unsigned int)strlen(frame));
+        }
     }
 
     if (ota_uart_handle_frame(frame, gprs_uart_send_event))
