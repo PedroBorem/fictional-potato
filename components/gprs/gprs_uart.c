@@ -146,15 +146,33 @@ esp_err_t gprs_uart_init(const app_callback callback)
  */
 esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 {
-    esp_err_t err = ESP_FAIL;
-
-    if (uart_write_bytes(GPRS_UART_NUM, event, event_size) != -1)
+    if (event == NULL || event_size == 0U)
     {
-        LOG_COMM(GPRS_UART_TAG, "OK");
-        err = ESP_OK;
+        ESP_LOGE(GPRS_UART_TAG, "%s, invalid argument", __func__);
+        return ESP_ERR_INVALID_ARG;
     }
 
-    return err;
+    size_t sent_total = 0U;
+    while (sent_total < event_size)
+    {
+        int sent = uart_write_bytes(GPRS_UART_NUM, event + sent_total, event_size - sent_total);
+        if (sent < 0)
+        {
+            ESP_LOGE(GPRS_UART_TAG, "%s, uart_write_bytes failed after %u/%u bytes", __func__,
+                     (unsigned)sent_total, (unsigned)event_size);
+            return ESP_FAIL;
+        }
+
+        sent_total += (size_t)sent;
+    }
+
+    if (uart_wait_tx_done(GPRS_UART_NUM, pdMS_TO_TICKS(500)) != ESP_OK)
+    {
+        ESP_LOGW(GPRS_UART_TAG, "%s, TX wait timeout for %u bytes", __func__, (unsigned)event_size);
+    }
+
+    LOG_COMM(GPRS_UART_TAG, "OK (%u bytes)", (unsigned)event_size);
+    return ESP_OK;
 }
 
 /* Private methods ----------------------------------------------- */
@@ -178,9 +196,15 @@ static void gprs_uart_event_task(void* arg)
             {
             case UART_DATA:
             {
-                if (event.size > 0 && event.size < 3000) // 3 KB
+                if (event.size > 0 && event.size < GPRS_UART_BUF_SIZE)
                 {
-                    char* buff_in = (char*)malloc(event.size);
+                    char* buff_in = (char*)malloc(event.size + 1U);
+                    if (buff_in == NULL)
+                    {
+                        ESP_LOGE(GPRS_UART_TAG, "%s, malloc failed (size=%d)", __func__, event.size + 1);
+                        break;
+                    }
+
                     int aux = 0;
 
                     // Event of UART receiving data
@@ -198,10 +222,20 @@ static void gprs_uart_event_task(void* arg)
                         }
                     }
 
+                    buff_in[aux] = '\0';
+
                     // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
 
-                    gprs_callback(buff_in, COMM_MQTT);
+                    if (aux > 0 && gprs_callback != NULL)
+                    {
+                        gprs_callback(buff_in, COMM_MQTT);
+                    }
                     free(buff_in);
+                }
+                else if (event.size >= GPRS_UART_BUF_SIZE)
+                {
+                    ESP_LOGW(GPRS_UART_TAG, "UART_DATA too large (%d), flushing input", event.size);
+                    uart_flush_input(GPRS_UART_NUM);
                 }
                 break;
             }
