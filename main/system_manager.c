@@ -3004,7 +3004,7 @@ static void system_manager_idp_34(const char *buffer, comm_type comm_mode)
 
             pluviometer_config.rain_per_pulse = get_rain_per_pulse();
 
-            esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_PER_PULSE, &pluviometer_config.shutdown_value);
+            esp_err_t ret_shutdown = data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &pluviometer_config.shutdown_value);
             if (ret_shutdown != ESP_OK || pluviometer_config.shutdown_value <= 0.0f || pluviometer_config.shutdown_value > 10.0f)
             {
                 pluviometer_config.shutdown_value = 5.0f;
