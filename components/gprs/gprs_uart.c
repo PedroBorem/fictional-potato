@@ -54,6 +54,18 @@
  */
 #define GPRS_UART_FRAME_SIZE_MAX (2048)
 
+/**
+ * @def GPRS_UART_ASCII_PREVIEW_BYTES
+ * @brief Number of bytes captured in frame previews for diagnostics.
+ */
+#define GPRS_UART_ASCII_PREVIEW_BYTES (24U)
+
+/**
+ * @def GPRS_UART_CONTROL_DROP_LOG_LIMIT
+ * @brief Maximum number of immediate control-byte drop warnings.
+ */
+#define GPRS_UART_CONTROL_DROP_LOG_LIMIT (20U)
+
 /* Private variables  -------------------------------------------- */
 /**
  * @brief Callback function for GPRS UART events
@@ -85,6 +97,16 @@ static bool gprs_receiving_frame = false;
  */
 static uint32_t gprs_ota_data_frame_counter = 0U;
 
+/**
+ * @brief Counter for dropped control bytes while frame assembly is active.
+ */
+static uint32_t gprs_ota_control_drop_counter = 0U;
+
+/**
+ * @brief Counter for parser restarts triggered by a new frame prefix.
+ */
+static uint32_t gprs_ota_frame_restart_counter = 0U;
+
 /* Private function prototype ------------------------------------ */
 /**
  * @brief Task to handle GPRS UART events
@@ -105,6 +127,21 @@ static void gprs_uart_consume_char(char received_char);
  * @param frame Null-terminated complete frame (`#...$`).
  */
 static void gprs_uart_dispatch_frame(const char *frame);
+
+/**
+ * @brief Copies head and tail previews from frame buffer.
+ *
+ * @param input Input string.
+ * @param input_len Input length.
+ * @param preview_len Preview size for head/tail.
+ * @param head_out Output head preview.
+ * @param head_out_size Head buffer size.
+ * @param tail_out Output tail preview.
+ * @param tail_out_size Tail buffer size.
+ */
+static void gprs_uart_copy_ascii_preview(const char *input, size_t input_len, size_t preview_len,
+                                         char *head_out, size_t head_out_size,
+                                         char *tail_out, size_t tail_out_size);
 
 /* Public methods ------------------------------------------------ */
 /**
@@ -256,12 +293,31 @@ static void gprs_uart_event_task(void* arg)
 
                         for (int char_position = 0; char_position < read_len; char_position++)
                         {
+                            const uint8_t current_byte = dtmp[char_position];
+
                             // 0x7F = ASCII DEL
                             // 0x1A <= ASCII C^ values
-                            if (dtmp[char_position] != 0x7F && dtmp[char_position] > 0x1A)
+                            if (current_byte == 0x7F || current_byte <= 0x1A)
                             {
-                                gprs_uart_consume_char((char)dtmp[char_position]);
+                                if (gprs_receiving_frame)
+                                {
+                                    gprs_ota_control_drop_counter++;
+                                    if (gprs_ota_control_drop_counter <= GPRS_UART_CONTROL_DROP_LOG_LIMIT ||
+                                        (gprs_ota_control_drop_counter % 100U) == 0U)
+                                    {
+                                        ESP_LOGW(GPRS_UART_TAG,
+                                                 "Dropped control byte 0x%02X while assembling frame "
+                                                 "(frame_len=%u, drop_count=%" PRIu32 ")",
+                                                 (unsigned int)current_byte,
+                                                 (unsigned int)gprs_frame_length,
+                                                 gprs_ota_control_drop_counter);
+                                    }
+                                }
+
+                                continue;
                             }
+
+                            gprs_uart_consume_char((char)current_byte);
                         }
 
                         remaining -= read_len;
@@ -340,6 +396,25 @@ static void gprs_uart_consume_char(char received_char)
 {
     if (received_char == '#')
     {
+        if (gprs_receiving_frame && gprs_frame_length > 0U)
+        {
+            char abandoned_head[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+            char abandoned_tail[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+
+            gprs_ota_frame_restart_counter++;
+            gprs_uart_copy_ascii_preview(gprs_frame_buffer, gprs_frame_length, GPRS_UART_ASCII_PREVIEW_BYTES,
+                                         abandoned_head, sizeof(abandoned_head),
+                                         abandoned_tail, sizeof(abandoned_tail));
+
+            ESP_LOGW(GPRS_UART_TAG,
+                     "Parser restarted on new '#' before '$' "
+                     "(prev_len=%u, restart_count=%" PRIu32 ", head='%s', tail='%s')",
+                     (unsigned int)gprs_frame_length,
+                     gprs_ota_frame_restart_counter,
+                     abandoned_head,
+                     abandoned_tail);
+        }
+
         gprs_receiving_frame = true;
         gprs_frame_length = 0;
         gprs_frame_buffer[gprs_frame_length++] = received_char;
@@ -353,9 +428,17 @@ static void gprs_uart_consume_char(char received_char)
 
     if (gprs_frame_length >= (GPRS_UART_FRAME_SIZE_MAX - 1))
     {
+        char oversized_head[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+        char oversized_tail[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+
+        gprs_uart_copy_ascii_preview(gprs_frame_buffer, gprs_frame_length, GPRS_UART_ASCII_PREVIEW_BYTES,
+                                     oversized_head, sizeof(oversized_head),
+                                     oversized_tail, sizeof(oversized_tail));
+
         gprs_receiving_frame = false;
         gprs_frame_length = 0;
-        ESP_LOGW(GPRS_UART_TAG, "Discarded oversized frame");
+        ESP_LOGW(GPRS_UART_TAG, "Discarded oversized frame (head='%s', tail='%s')",
+                 oversized_head, oversized_tail);
         return;
     }
 
@@ -390,10 +473,30 @@ static void gprs_uart_dispatch_frame(const char *frame)
         gprs_ota_data_frame_counter++;
         if (gprs_ota_data_frame_counter <= 3U || (gprs_ota_data_frame_counter % 250U) == 0U)
         {
+            size_t frame_len = strlen(frame);
+            char frame_head[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+            char frame_tail[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
+            size_t hyphen_count = 0U;
+
+            for (size_t i = 0; i < frame_len; i++)
+            {
+                if (frame[i] == '-')
+                {
+                    hyphen_count++;
+                }
+            }
+
+            gprs_uart_copy_ascii_preview(frame, frame_len, GPRS_UART_ASCII_PREVIEW_BYTES,
+                                         frame_head, sizeof(frame_head),
+                                         frame_tail, sizeof(frame_tail));
+
             ESP_LOGI(GPRS_UART_TAG,
-                     "OTA DATA frame rx_count=%" PRIu32 " len=%u",
+                     "OTA DATA frame rx_count=%" PRIu32 " len=%u hyphens=%u head='%s' tail='%s'",
                      gprs_ota_data_frame_counter,
-                     (unsigned int)strlen(frame));
+                     (unsigned int)frame_len,
+                     (unsigned int)hyphen_count,
+                     frame_head,
+                     frame_tail);
         }
     }
 
@@ -414,5 +517,70 @@ static void gprs_uart_dispatch_frame(const char *frame)
         {
             ESP_LOGE(GPRS_UART_TAG, "Failed to duplicate frame for callback");
         }
+    }
+}
+
+/* Private methods ----------------------------------------------- */
+/**
+ * @brief Copies head and tail previews from frame buffer.
+ *
+ * @param input Input string.
+ * @param input_len Input length.
+ * @param preview_len Preview size for head/tail.
+ * @param head_out Output head preview.
+ * @param head_out_size Head buffer size.
+ * @param tail_out Output tail preview.
+ * @param tail_out_size Tail buffer size.
+ */
+static void gprs_uart_copy_ascii_preview(const char *input, size_t input_len, size_t preview_len,
+                                         char *head_out, size_t head_out_size,
+                                         char *tail_out, size_t tail_out_size)
+{
+    if (head_out != NULL && head_out_size > 0U)
+    {
+        head_out[0] = '\0';
+    }
+
+    if (tail_out != NULL && tail_out_size > 0U)
+    {
+        tail_out[0] = '\0';
+    }
+
+    if (input == NULL || input_len == 0U)
+    {
+        return;
+    }
+
+    if (head_out != NULL && head_out_size > 1U)
+    {
+        size_t head_len = input_len;
+        if (head_len > preview_len)
+        {
+            head_len = preview_len;
+        }
+        if (head_len >= head_out_size)
+        {
+            head_len = head_out_size - 1U;
+        }
+
+        memcpy(head_out, input, head_len);
+        head_out[head_len] = '\0';
+    }
+
+    if (tail_out != NULL && tail_out_size > 1U)
+    {
+        size_t tail_len = input_len;
+        if (tail_len > preview_len)
+        {
+            tail_len = preview_len;
+        }
+        if (tail_len >= tail_out_size)
+        {
+            tail_len = tail_out_size - 1U;
+        }
+
+        const char *tail_start = input + (input_len - tail_len);
+        memcpy(tail_out, tail_start, tail_len);
+        tail_out[tail_len] = '\0';
     }
 }
