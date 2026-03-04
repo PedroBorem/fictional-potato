@@ -66,6 +66,24 @@
  */
 #define GPRS_UART_CONTROL_DROP_LOG_LIMIT (20U)
 
+/**
+ * @def GPRS_POST_UPDATE_NOTICE_FRAME
+ * @brief One-shot frame sent after reboot from successful OTA apply.
+ */
+#define GPRS_POST_UPDATE_NOTICE_FRAME "#OTA-BOARD-UPDATE-REBOOTED$"
+
+/**
+ * @def GPRS_POST_UPDATE_NOTICE_RETRY_COUNT
+ * @brief Number of post-update notice retries sent on boot.
+ */
+#define GPRS_POST_UPDATE_NOTICE_RETRY_COUNT (3U)
+
+/**
+ * @def GPRS_POST_UPDATE_NOTICE_RETRY_DELAY_MS
+ * @brief Delay between post-update notice retries.
+ */
+#define GPRS_POST_UPDATE_NOTICE_RETRY_DELAY_MS (300U)
+
 /* Private variables  -------------------------------------------- */
 /**
  * @brief Callback function for GPRS UART events
@@ -198,6 +216,34 @@ esp_err_t gprs_uart_init(const app_callback callback)
                 {
                     ESP_LOGW(GPRS_UART_TAG, "%s, OTA UART storage not available (%s)",
                              __func__, esp_err_to_name(ota_err));
+                }
+                else if (ota_uart_consume_post_update_notice())
+                {
+                    ESP_LOGI(GPRS_UART_TAG, "Post-update reboot notice detected. Sending frame to modem.");
+
+                    for (uint8_t attempt = 1U; attempt <= GPRS_POST_UPDATE_NOTICE_RETRY_COUNT; attempt++)
+                    {
+                        if (gprs_uart_send_event(GPRS_POST_UPDATE_NOTICE_FRAME,
+                                                 strlen(GPRS_POST_UPDATE_NOTICE_FRAME)) == ESP_OK)
+                        {
+                            ESP_LOGI(GPRS_UART_TAG,
+                                     "Post-update notice sent (%u/%u)",
+                                     (unsigned int)attempt,
+                                     (unsigned int)GPRS_POST_UPDATE_NOTICE_RETRY_COUNT);
+                        }
+                        else
+                        {
+                            ESP_LOGW(GPRS_UART_TAG,
+                                     "Failed to send post-update notice (%u/%u)",
+                                     (unsigned int)attempt,
+                                     (unsigned int)GPRS_POST_UPDATE_NOTICE_RETRY_COUNT);
+                        }
+
+                        if (attempt < GPRS_POST_UPDATE_NOTICE_RETRY_COUNT)
+                        {
+                            vTaskDelay(pdMS_TO_TICKS(GPRS_POST_UPDATE_NOTICE_RETRY_DELAY_MS));
+                        }
+                    }
                 }
             }
             else

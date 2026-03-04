@@ -100,6 +100,18 @@ bool ota_uart_is_protocol_frame(const char *frame);
 bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback);
 
 /**
+ * @brief Consumes one-shot notice that board rebooted after successful OTA apply.
+ *
+ * When OTA apply succeeds, the module persists a flag before restart. On the
+ * next boot this function returns true once and clears the flag so upper layers
+ * can notify the modem/cloud about update completion.
+ *
+ * @return true when post-update reboot notice was pending.
+ * @return false otherwise.
+ */
+bool ota_uart_consume_post_update_notice(void);
+
+/**
  * @brief Indicates if the last transfer was completed successfully.
  *
  * @return true when `#OTA-END$` was validated and acknowledged.

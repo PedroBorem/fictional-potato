@@ -6,4 +6,5 @@ idf_component_register(SRCS
                         app_update
                         spiffs
                         mbedtls
+                        nvs_flash
 )

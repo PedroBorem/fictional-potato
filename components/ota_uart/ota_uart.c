@@ -16,6 +16,7 @@
 #include "esp_ota_ops.h"
 #include "esp_system.h"
 #include "esp_spiffs.h"
+#include "nvs.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
@@ -77,6 +78,16 @@
  * @brief Number of bytes used in hex previews for debug logs.
  */
 #define OTA_UART_HEX_PREVIEW_BYTES (8U)
+
+/**
+ * @brief NVS namespace used to persist post-update reboot notice.
+ */
+#define OTA_UART_POST_UPDATE_NOTICE_NAMESPACE "ota_uart"
+
+/**
+ * @brief NVS key used to persist post-update reboot notice.
+ */
+#define OTA_UART_POST_UPDATE_NOTICE_KEY "post_ok"
 
 /**
  * @brief Runtime configuration for maximum firmware size.
@@ -408,6 +419,37 @@ static void ota_uart_send_nack(ota_uart_tx_callback_t tx_callback, const char *r
     char nack_frame[96] = {0};
     snprintf(nack_frame, sizeof(nack_frame), "#OTA-NACK-%s$", reason);
     ota_uart_send_frame(tx_callback, nack_frame);
+}
+
+/**
+ * @brief Persists one-shot flag to report successful OTA reboot on next boot.
+ */
+static void ota_uart_set_post_update_notice_flag(void)
+{
+    nvs_handle_t handle = 0;
+    esp_err_t err = nvs_open(OTA_UART_POST_UPDATE_NOTICE_NAMESPACE, NVS_READWRITE, &handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(OTA_UART_TAG, "Failed to open NVS for post-update notice (%s)", esp_err_to_name(err));
+        return;
+    }
+
+    err = nvs_set_u8(handle, OTA_UART_POST_UPDATE_NOTICE_KEY, 1U);
+    if (err == ESP_OK)
+    {
+        err = nvs_commit(handle);
+    }
+
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(OTA_UART_TAG, "Failed to persist post-update notice flag (%s)", esp_err_to_name(err));
+    }
+    else
+    {
+        ESP_LOGI(OTA_UART_TAG, "Post-update reboot notice persisted in NVS");
+    }
+
+    nvs_close(handle);
 }
 
 /**
@@ -1108,6 +1150,7 @@ static void ota_uart_handle_end_frame(ota_uart_tx_callback_t tx_callback)
         return;
     }
 
+    ota_uart_set_post_update_notice_flag();
     remove(OTA_UART_FIRMWARE_FILE_PATH);
 
     ESP_LOGW(OTA_UART_TAG, "Firmware applied. Rebooting in 3 seconds...");
@@ -1205,6 +1248,56 @@ bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback
     }
 
     ota_uart_send_nack(tx_callback, "invalid_command");
+    return true;
+}
+
+/**
+ * @brief Consumes persisted post-update reboot notice flag.
+ *
+ * @return true when notice flag existed and was cleared.
+ * @return false when no notice was pending.
+ */
+bool ota_uart_consume_post_update_notice(void)
+{
+    nvs_handle_t handle = 0;
+    uint8_t notice_flag = 0U;
+    esp_err_t err = nvs_open(OTA_UART_POST_UPDATE_NOTICE_NAMESPACE, NVS_READWRITE, &handle);
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(OTA_UART_TAG, "Failed to open NVS to consume post-update notice (%s)", esp_err_to_name(err));
+        return false;
+    }
+
+    err = nvs_get_u8(handle, OTA_UART_POST_UPDATE_NOTICE_KEY, &notice_flag);
+    if (err == ESP_ERR_NVS_NOT_FOUND || notice_flag == 0U)
+    {
+        nvs_close(handle);
+        return false;
+    }
+
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(OTA_UART_TAG, "Failed to read post-update notice flag (%s)", esp_err_to_name(err));
+        nvs_close(handle);
+        return false;
+    }
+
+    err = nvs_erase_key(handle, OTA_UART_POST_UPDATE_NOTICE_KEY);
+    if (err == ESP_OK)
+    {
+        err = nvs_commit(handle);
+    }
+
+    if (err != ESP_OK)
+    {
+        ESP_LOGW(OTA_UART_TAG, "Failed to clear post-update notice flag (%s)", esp_err_to_name(err));
+    }
+    else
+    {
+        ESP_LOGI(OTA_UART_TAG, "Post-update reboot notice consumed");
+    }
+
+    nvs_close(handle);
     return true;
 }
 
