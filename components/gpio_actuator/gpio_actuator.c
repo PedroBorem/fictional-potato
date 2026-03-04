@@ -141,7 +141,7 @@ static void IRAM_ATTR gpio_isr_handler(void* arg)
 
         if ((interrupt_time - last_interrupt_time) > pdMS_TO_TICKS(51)) 
         {
-			if (gpio_get_level(GPIO_ACT_RAIN_SENSOR_PIN) == 1)
+			if (gpio_get_level(GPIO_ACT_RAIN_SENSOR_PIN) == 0)
 			{
 				rain_pulse_count++;
 				last_interrupt_time = interrupt_time;
@@ -227,8 +227,8 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	io_conf_rain_sensor.intr_type = GPIO_INTR_ANYEDGE; 
 	io_conf_rain_sensor.mode = GPIO_MODE_INPUT;
 	io_conf_rain_sensor.pin_bit_mask = GPIO_INT_RAIN_SENSOR;
-	io_conf_rain_sensor.pull_down_en = GPIO_PULLDOWN_ENABLE;
-	io_conf_rain_sensor.pull_up_en = GPIO_PULLUP_DISABLE;
+	io_conf_rain_sensor.pull_down_en = GPIO_PULLDOWN_DISABLE;
+	io_conf_rain_sensor.pull_up_en = GPIO_PULLUP_ENABLE;
 	gpio_config(&io_conf_rain_sensor);
 
 	if(xTask_readpercent == NULL)
