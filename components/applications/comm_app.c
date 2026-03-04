@@ -15,6 +15,8 @@
 
 #include "log.h"
 
+#include <string.h>
+
 /* Private definitions ------------------------------------------- */
 
 /**
@@ -40,14 +42,42 @@
 esp_err_t comm_app_init(const app_callback callback)
 {
     esp_err_t err = ESP_OK;
+    esp_err_t step_err = ESP_OK;
 
-    err &= rf_uart_init(callback);
-    err &= gprs_uart_init(callback);
+    step_err = rf_uart_init(callback);
+    if (step_err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "RF init failed (%d)", (int)step_err);
+        err = step_err;
+    }
 
-    err &= http_server_register_callback(callback);
+    step_err = gprs_uart_init(callback);
+    if (step_err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "GPRS init failed (%d)", (int)step_err);
+        err = step_err;
+    }
 
-    err &= wifi_app_init();
-    err &= http_server_init();
+    step_err = http_server_register_callback(callback);
+    if (step_err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "HTTP callback registration failed (%d)", (int)step_err);
+        err = step_err;
+    }
+
+    step_err = wifi_app_init();
+    if (step_err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "Wi-Fi init failed (%d)", (int)step_err);
+        err = step_err;
+    }
+
+    step_err = http_server_init();
+    if (step_err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "HTTP server init failed (%d)", (int)step_err);
+        err = step_err;
+    }
 
     return err;
 }
@@ -62,27 +92,54 @@ esp_err_t comm_app_init(const app_callback callback)
  */
 void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
-    char* str_copy = strdup(idp_pack);
+    if (idp_pack == NULL)
+    {
+        ESP_LOGE(COMM_APP_TAG, "Invalid package pointer (NULL).");
+        return;
+    }
+
+    size_t pack_len = strlen(idp_pack);
+    if (pack_len == 0U)
+    {
+        ESP_LOGW(COMM_APP_TAG, "Ignoring empty package.");
+        return;
+    }
 
     if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
     {
-        http_server_send_resp(str_copy);
-        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
+        http_server_send_resp((char*)idp_pack);
+        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", idp_pack);
     }
     else if (communication == COMM_MQTT)
     {
-        gprs_uart_send_event(str_copy, strlen(str_copy));
-        LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+        esp_err_t ret = gprs_uart_send_event(idp_pack, pack_len);
+        if (ret == ESP_OK)
+        {
+            LOG_COMM(COMM_APP_TAG, "MQTT - send %s", idp_pack);
+        }
+        else
+        {
+            ESP_LOGE(COMM_APP_TAG, "MQTT send failed (%d): %s", (int)ret, idp_pack);
+        }
 
     }
     else if(communication == COMM_RF)
     {
-        rf_uart_send_event(str_copy, strlen(str_copy));
-        LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+        esp_err_t ret = rf_uart_send_event(idp_pack, pack_len);
+        if (ret == ESP_OK)
+        {
+            LOG_COMM(COMM_APP_TAG, "RF - send %s", idp_pack);
+        }
+        else
+        {
+            ESP_LOGE(COMM_APP_TAG, "RF send failed (%d): %s", (int)ret, idp_pack);
+        }
 
     }
-
-    free(str_copy);
+    else
+    {
+        ESP_LOGW(COMM_APP_TAG, "Invalid communication type (%d) for package: %s", (int)communication, idp_pack);
+    }
 }
 
 /**
@@ -107,19 +164,20 @@ void comm_app_wifi_reloader(void)
 
 esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
 {
-    esp_err_t err = ESP_FAIL;
-    /* configuration variables */
-	if(strcmp(config.comm_main_mode_config, "RF") == 0)
+    if(strcmp(config.comm_main_mode_config, "RF") == 0)
 	{
 		comm_main_mode = COMM_RF;
-        err = ESP_OK;
-        return err;
+        return ESP_OK;
+	}
+    else if(strcmp(config.comm_main_mode_config, "MQTT") == 0)
+    {
+        comm_main_mode = COMM_MQTT;
+        return ESP_OK;
 	}
 	else
 	{
-        comm_main_mode = COMM_MQTT;
 		ESP_LOGE(COMM_APP_TAG,"Invalid Comm Mode type configuration");
 		LOG_DBG_ERROR(COMM_APP_TAG, "Invalid_comm_mode_type");
-		return err;
+		return ESP_FAIL;
 	}
 }
