@@ -27,7 +27,7 @@
 /* Calibration constraints (avoid magic numbers) */
 #define RAIN_PER_PULSE_MIN_MM (0.0f)
 #define RAIN_PER_PULSE_MAX_MM (10.0f)
-#define RAIN_PER_PULSE_DEFAULT_MM (0.1f)
+#define RAIN_PER_PULSE_DEFAULT_MM (0.254f)
 
 /* Time constants (keep only what is used here) */
 #define SECS_PER_HOUR 3600UL
@@ -62,6 +62,15 @@ static uint8_t s_last_hour_idx = 0xFF;
 
 /** @brief Accumulator for the current hour's rainfall (mm). */
 static float s_current_hour_rain_mm = 0.0f;
+
+/** @brief Latch to avoid repeatedly issuing rain shutdown while the same condition persists. */
+static bool s_rain_shutdown_latched = false;
+
+/** @brief Rain accumulator (mm) used only for shutdown logic while pivot is actively irrigating (ON+WET). */
+static float s_operation_rain_mm = 0.0f;
+
+/** @brief True while pivot is in irrigation operation window (ON+WET). */
+static bool s_operation_rain_active = false;
 
 /**
  * @brief Get the rain calibration (mm per pulse).
@@ -253,34 +262,47 @@ static void update_rain_per_pulse_if_needed(void)
 /**
  * @brief Applies automatic shutdown if cumulative hourly rain exceeds the configured threshold.
  *
- * Reads @c DATA_TYPE_RAIN_SHUTDOWN_VALUE and @c DATA_TYPE_ACTIONS. If pivot is ON and WET,
- * and the threshold is configured (>0), and @c s_current_hour_rain_mm  >= threshold, then it calls
+ * Reads @c DATA_TYPE_RAIN_SHUTDOWN_VALUE and checks the live actuator state. If pivot is ON and WET,
+ * and the threshold is configured (>0), and @c s_operation_rain_mm >= threshold, then it calls
  * @c gpio_actuator_shutdown() and logs the event.
  */
 static void maybe_trigger_rain_shutdown()
 {
-    float rain_mm;
-    taskENTER_CRITICAL(&current_hour_rain_mux);
-    rain_mm = s_current_hour_rain_mm;
-    taskEXIT_CRITICAL(&current_hour_rain_mux);
-
-    if (rain_mm <= 0.0f)
-        return;
-
     float shutdown_value = 0.0f;
-    pivot_actions acts = {};
-    (void)data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &shutdown_value);
-    (void)data_app_load(DATA_TYPE_ACTIONS, &acts);
+    if (data_app_load(DATA_TYPE_RAIN_SHUTDOWN_VALUE, &shutdown_value) != ESP_OK || shutdown_value <= 0.0f)
+    {
+        return;
+    }
 
-    const bool pivot_on = (acts.power_state == PIVOT_ON);
-    const bool pivot_wet = (acts.watering_state == PIVOT_WET);
+    /* Use live actuator state instead of persisted "last commanded" state. */
+    pivot_actions hw_acts = gpio_actuator_get();
+    pivot_actions nvs_acts = {};
+    (void)data_app_load(DATA_TYPE_ACTIONS, &nvs_acts);
 
-    if (pivot_on && pivot_wet && shutdown_value > 0.0f && rain_mm >= shutdown_value)
+    const bool pivot_on = (hw_acts.power_state == PIVOT_ON);
+    const bool pivot_wet = (hw_acts.watering_state == PIVOT_WET);
+    const bool pivot_operating = (pivot_on && pivot_wet);
+    const float op_rain_mm = s_operation_rain_mm;
+    const bool should_shutdown = (pivot_operating && s_operation_rain_active && op_rain_mm >= shutdown_value);
+
+    if (should_shutdown && !s_rain_shutdown_latched)
     {
         ESP_LOGW(PLUVIOMETER_TAG,
-                 "Rain shutdown: rain_total=%.2f >= threshold=%.2f. Actuator OFF.",
-                 rain_mm, shutdown_value);
+                 "Rain shutdown: op_rain=%.2f >= threshold=%.2f. HW[p=%u,w=%u] NVS[p=%u,w=%u]. Actuator OFF.",
+                 op_rain_mm,
+                 shutdown_value,
+                 (unsigned)hw_acts.power_state,
+                 (unsigned)hw_acts.watering_state,
+                 (unsigned)nvs_acts.power_state,
+                 (unsigned)nvs_acts.watering_state);
         gpio_actuator_shutdown();
+        s_operation_rain_mm = 0.0f;
+        s_operation_rain_active = false;
+        s_rain_shutdown_latched = true;
+    }
+    else if (!should_shutdown)
+    {
+        s_rain_shutdown_latched = false;
     }
 }
 
@@ -700,7 +722,45 @@ void gpio_rain_sensor_calculate_rainfall(void)
 
     float interval_rain = pulses * rain_per_pulse;
 
+    float hour_total_mm = 0.0f;
     taskENTER_CRITICAL(&current_hour_rain_mux);
     s_current_hour_rain_mm += interval_rain;
+    hour_total_mm = s_current_hour_rain_mm;
     taskEXIT_CRITICAL(&current_hour_rain_mux);
+
+    /* Independent shutdown counter: accumulate only while pivot is ON+WET. */
+    pivot_actions hw_acts = gpio_actuator_get();
+    const bool pivot_operating = (hw_acts.power_state == PIVOT_ON) && (hw_acts.watering_state == PIVOT_WET);
+
+    if (pivot_operating && !s_operation_rain_active)
+    {
+        s_operation_rain_active = true;
+        s_operation_rain_mm = 0.0f;
+        ESP_LOGI(PLUVIOMETER_TAG, "Rain shutdown counter started (pivot ON+WET).");
+    }
+    else if (!pivot_operating && s_operation_rain_active)
+    {
+        ESP_LOGI(PLUVIOMETER_TAG,
+                 "Rain shutdown counter reset (pivot left ON+WET). Last op_rain=%.2f mm.",
+                 s_operation_rain_mm);
+        s_operation_rain_active = false;
+        s_operation_rain_mm = 0.0f;
+        s_rain_shutdown_latched = false;
+    }
+
+    if (pivot_operating && interval_rain > 0.0f)
+    {
+        s_operation_rain_mm += interval_rain;
+    }
+
+    if (pulses > 0.0f)
+    {
+        ESP_LOGI(PLUVIOMETER_TAG,
+                 "Rain measurement detected: pulses=%.0f, interval=%.2f mm, hour_total=%.2f mm, op_total=%.2f mm (active=%u).",
+                 pulses,
+                 interval_rain,
+                 hour_total_mm,
+                 s_operation_rain_mm,
+                 (unsigned)s_operation_rain_active);
+    }
 }
