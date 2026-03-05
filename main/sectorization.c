@@ -22,12 +22,6 @@ static uint16_t* sectorization_current_angle = &global_angle; ///< Pointer to th
  *
  * This task monitors the current angle and activates the pump if the angle falls within specified sectors.
  *
-/**
- * @brief TODO: Describe `argument`.
- *
- * @param arg TODO.
- * @return TODO.
- */
  * @param arg Task argument (not used).
  */
 static void sectorization_task(void* arg)

@@ -190,13 +190,6 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
 
 /**
  * @brief Set the state of the pump.
-/**
- * @brief TODO: Describe `set`.
- *
- * @param on TODO.
- * @param pump_state TODO.
- * @return TODO.
- */
  * @param pump_state [in]: The state to set (true for on, false for off).
  */
 void actuation_app_set_pump(bool pump_state)
@@ -222,12 +215,6 @@ void actuation_app_shutdown(void)
 /* Private methods ----------------------------------------------- */
 /**
  * @brief 	Task responsible for monitoring possible changes in equipment status
-/**
- * @brief TODO: Describe `argument`.
- *
- * @param arg TODO.
- * @return TODO.
- */
  * @param	arg - [in]: task argument (default NULL)
  */
 void actuation_app_task(void* arg)

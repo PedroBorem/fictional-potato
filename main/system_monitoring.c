@@ -278,12 +278,6 @@ static void system_monitoring_actuation_virtual_barrier(void)
  *
  * This task monitors the system state and triggers actuation as needed.
  *
-/**
- * @brief TODO: Describe `argument`.
- *
- * @param arg TODO.
- * @return TODO.
- */
  * @param arg Task argument (unused).
  */
 static void system_monitoring_task(void* arg)
@@ -346,13 +340,6 @@ static void system_monitoring_task(void* arg)
  * It returns true if the angle is within the range, allowing for boundary
  * transitions, and false otherwise.
  *
-/**
- * @brief TODO: Describe `range`.
- *
- * @param range TODO.
- * @param range_barrier TODO.
- * @return TODO.
- */
  * @param[in] range_barrier The tolerance range (in degrees) around the barrier's start and end angles.
  * 
  * @return bool True if the current angle is within the specified range, false otherwise.
@@ -519,12 +506,6 @@ void system_monitoring_barrier(const pivot_actions current_pivot_actions, type_b
  *
  * This function is called periodically to execute specific actions.
  *
-/**
- * @brief TODO: Describe `handle`.
- *
- * @param pxTimer TODO.
- * @return TODO.
- */
  * @param pxTimer Timer handle (unused).
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer)
@@ -543,12 +524,6 @@ static void system_monitoring_timer(TimerHandle_t pxTimer)
  * This function initializes the system monitoring task with the specified configuration.
  *
  * @param virtual_config Configuration for system monitoring.
-/**
- * @brief TODO: Describe `monitoring`.
- *
- * @param monitoring_time TODO.
- * @return TODO.
- */
  * @param monitoring_time Time interval for system monitoring (in minutes).
  */
 void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time)

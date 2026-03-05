@@ -293,12 +293,6 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 /* Private methods ----------------------------------------------- */
 /**
  * @brief UART reception task
-/**
- * @brief TODO: Describe `argument`.
- *
- * @param arg TODO.
- * @return TODO.
- */
  * @param arg[in] : task argument (default NULL)
  */
 static void gprs_uart_event_task(void* arg)
@@ -511,12 +505,6 @@ static void gprs_uart_consume_char(char received_char)
  * OTA frames are handled locally by OTA UART module and acknowledged over UART.
  * Other frames follow the existing callback path to the system manager.
  *
-/**
- * @brief TODO: Describe `frame`.
- *
- * @param frame TODO.
- * @return TODO.
- */
  * @param frame Complete frame (`#...$`).
  */
 static void gprs_uart_dispatch_frame(const char *frame)

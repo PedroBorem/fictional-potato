@@ -227,14 +227,6 @@ void system_manager_init(void)
 /**
  * @brief Performs a system reboot based on certain conditions.
  *
-/**
- * @brief TODO: Describe `storage`.
- *
- * @param and TODO.
- * @param met TODO.
- * @param void TODO.
- * @return TODO.
- */
  * This function checks the timestamp stored in non-volatile storage (NVS) and, if certain conditions are met, performs a system reboot.
  * It waits for the power to stabilize if the system is powered on and then sets the actions accordingly.
  * The timestamp is saved to NVS to keep track of the last reboot.
@@ -333,14 +325,6 @@ static void system_manager_timer_callback(TimerHandle_t pxTimer)
  * This function is called when a request is received by the system manager.
  *
  * @param buffer_request The buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_MQTT TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_MQTT, COMM_HTTP).
  */
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode)
@@ -521,14 +505,6 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
  * This function handles IDP package type 0, extracting relevant data and sending the response.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_GET TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_MQTT).
  */
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
@@ -575,14 +551,6 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 1, validates the data, saves the state, and sends the response.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_POST TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_POST, COMM_MQTT).
  */
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
@@ -727,14 +695,6 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 2, either saving network configuration or retrieving it based on the communication mode.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_GET TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
  */
 static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
@@ -853,14 +813,6 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 3, saving or retrieving pivot configuration based on the communication mode.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_GET TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
  */
 static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
@@ -965,14 +917,6 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 4, saving or retrieving eco mode configuration based on the communication mode.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_GET TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
  */
 static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
@@ -1073,14 +1017,6 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 5, saving or retrieving sector configuration based on the communication mode.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param COMM_HTTP_GET TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
  */
 static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
@@ -1192,13 +1128,6 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 6 for MQTT communication, sending GPRS module information.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_MQTT).
  */
 static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
@@ -1230,13 +1159,6 @@ static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 7 for MQTT communication, updating the system with angle and timestamp information.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_MQTT).
  */
 static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
@@ -1287,13 +1209,6 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
  * This function handles IDP package type 12, providing historical data for HTTP GET requests.
  *
  * @param buffer The input buffer containing the request.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param param1 TODO.
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET).
  */
 static void system_manager_idp_12(const char *buffer, comm_type comm_mode)
@@ -1344,12 +1259,6 @@ static void system_manager_idp_12(const char *buffer, comm_type comm_mode)
  * This function handles the deletion of schedules based on the provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
@@ -1423,12 +1332,6 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
  * This function handles the creation of schedules based on the provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
@@ -1589,12 +1492,6 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
  * This function handles the creation of angle-based schedules.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
@@ -1754,12 +1651,6 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
  * This function handles the creation of schedules with off-dates.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
@@ -1891,12 +1782,6 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
  * This function handles the creation of schedules with off-angles.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
@@ -2017,12 +1902,6 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
  * This function handles the deletion of schedules based on provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (MQTT).
  */
 static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
@@ -2061,12 +1940,6 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
  * This function handles the update of the system timestamp based on the provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (MQTT).
  */
 static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
@@ -2105,12 +1978,6 @@ static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
  * This function handles the modification of return configuration.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
@@ -2216,12 +2083,6 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
  * This function handles the configuration of the GPS through LoraMesh communication.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
@@ -2394,12 +2255,6 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
  * This function handles the modification of return configuration.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
@@ -2482,12 +2337,6 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
  * This function handles the modification of return configuration.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
@@ -2590,12 +2439,6 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
  * This function works like a GET all for schedules
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
@@ -2767,12 +2610,6 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
  * This function handles system actions based on the provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (MQTT).
  */
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
@@ -2788,12 +2625,6 @@ static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
  * This function handles system actions based on the provided parameters.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (MQTT).
  */
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
@@ -3022,12 +2853,6 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
  * This function retrieves the firmware version.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
@@ -3060,12 +2885,6 @@ static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
  * This function handles system reboot requests.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode)
@@ -3101,12 +2920,6 @@ static void system_manager_idp_91(const char *buffer, comm_type comm_mode)
  * This function handles system restart requests.
  *
  * @param buffer The input buffer containing request data.
-/**
- * @brief TODO: Describe `mode`.
- *
- * @param comm_mode TODO.
- * @return TODO.
- */
  * @param comm_mode The communication mode (HTTP or MQTT).
  */
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode)

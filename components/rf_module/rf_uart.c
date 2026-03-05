@@ -149,12 +149,6 @@ esp_err_t rf_uart_send_event(const char* event, size_t event_size)
  * @brief 	UART reception task.
  *
  * This task handles UART events, such as data reception, FIFO overflow, buffer full, etc.
-/**
- * @brief TODO: Describe `argument`.
- *
- * @param arg TODO.
- * @return TODO.
- */
  * @param arg Task argument (default NULL).
  */
 static void rf_uart_event_task(void* arg)

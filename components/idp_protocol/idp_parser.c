@@ -445,13 +445,6 @@ uint8_t idp_parser_get_delimiter(const char *buffer)
  * @brief Validates if characters in a buffer are within the printable ASCII range.
  *
  * Iterates over each character in the buffer to ensure they are within the ASCII printable 
-/**
- * @brief TODO: Describe `range`.
- *
- * @param valid TODO.
- * @param size TODO.
- * @return TODO.
- */
  * range (32 to 125). This validation helps prevent processing issues related to non-printable 
  * characters.
  *
@@ -473,14 +466,6 @@ bool check_valid_characters(const char *buffer, uint8_t size)
 }
 
 /**
-/**
- * @brief TODO: Describe `characters`.
- *
- * @param param1 TODO.
- * @param successful TODO.
- * @param output_buffer_size TODO.
- * @return TODO.
- */
  * @brief Removes specific characters ('#' and '$') from the input buffer.
  *
  * This function iterates over the input buffer and removes any occurrences 
@@ -520,14 +505,6 @@ bool idp_parser_remove_hashtag_cipher(const char *buffer, char *output_buffer, s
 /**
  * @brief Prepares GPS configuration message.
  *
-/**
- * @brief TODO: Describe `bytes`.
- *
- * @param param1 TODO.
- * @param end TODO.
- * @param buffer_gps_config TODO.
- * @return TODO.
- */
  * This function prefixes the input buffer with control bytes (0x01 and 0x00),
  * and adds a null terminator at the end, preparing the GPS configuration message.
  *
@@ -999,14 +976,6 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
  *  10. A terminating pair with NULL values.
  *
  * @param arg_pair Array to be filled with argument pairs (must hold at least 10 pairs).
-/**
- * @brief TODO: Describe `reason`.
- *
- * @param param1 TODO.
- * @param param2 TODO.
- * @param is_external_agent TODO.
- * @return TODO.
- */
  * @param reason_str String indicating the shutdown reason (e.g., "manual", "brownout").
  * @param idp_28 Pointer to a uint8_t representing the IDP_28 constant.
  * @param system_id System identifier string.
@@ -1016,12 +985,6 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
  * @param pivot_is_on_barrier Pointer to a boolean that indicates pivot barrier status.
  * @param global_angle Pointer to a uint16_t representing the global pivot angle.
  * @param str_date_time Formatted date and time string.
-/**
- * @brief TODO: Describe `string`.
- *
- * @param is_external_agent TODO.
- * @return TODO.
- */
  * @param is_external_agent Flag to determine which string (reason_str or origin) to use.
  */
 void idp_parser_build_arg_pairs_pivot_shutdown(
