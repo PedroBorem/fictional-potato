@@ -225,6 +225,14 @@ void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config)
 * This function sets the time to start for the GPIO actuator based on whether the pivot is leaving the barrier,
 * inside the barrier, or outside the barrier.
 *
+/**
+ * @brief TODO: Describe `barrier`.
+ *
+ * @param PIVOT_LEAVING_THE_BARRIER TODO.
+ * @param PIVOT_IN_THE_BARRIER TODO.
+ * @param barrier_status TODO.
+ * @return TODO.
+ */
 * @param barrier_status The status of the barrier (PIVOT_LEAVING_THE_BARRIER, PIVOT_IN_THE_BARRIER, or others).
 * @return esp_err_t Error code indicating the success of the operation.
 */
@@ -673,6 +681,12 @@ esp_err_t gpio_actuator_start(void)
 
 /**
  * @brief Water pressure application task.
+/**
+ * @brief TODO: Describe `argument`.
+ *
+ * @param arg TODO.
+ * @return TODO.
+ */
  * @param arg Task argument (default NULL)
  */
 void actuator_wait_pressure(void* arg)
@@ -767,6 +781,12 @@ void actuator_wait_pressure(void* arg)
 
 /**
  * @brief Percentimeter reading task.
+/**
+ * @brief TODO: Describe `argument`.
+ *
+ * @param arg TODO.
+ * @return TODO.
+ */
  * @param arg Task argument (default NULL)
  */
 void actuator_read_percent(void* arg)

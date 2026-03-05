@@ -109,6 +109,11 @@ static void eco_mode_task(void* arg)
     }
 }
 
+/**
+ * @brief TODO: Describe `eco_mode_start`.
+ *
+ * @param current_eco_mode TODO.
+ */
 void eco_mode_start(eco_mode_config current_eco_mode)
 {
     if (current_eco_mode.start_time == 0 || current_eco_mode.end_time == 0)
@@ -127,6 +132,9 @@ void eco_mode_start(eco_mode_config current_eco_mode)
     }
 }
 
+/**
+ * @brief TODO: Describe `eco_mode_stop`.
+ */
 void eco_mode_stop(void)
 {
     if (xTask_eco_mode != NULL)
@@ -136,6 +144,11 @@ void eco_mode_stop(void)
     }
 }
 
+/**
+ * @brief TODO: Describe `eco_mode_register_callback`.
+ *
+ * @param callback TODO.
+ */
 void eco_mode_register_callback(const app_callback callback)
 {
     if (callback != NULL)

@@ -214,6 +214,12 @@ esp_err_t wifi_app_start(void)
 
 /**
  * @brief Wi-Fi application task function.
+/**
+ * @brief TODO: Describe `argument`.
+ *
+ * @param arg TODO.
+ * @return TODO.
+ */
  * @param arg Task argument (not used).
  */
 static void wifi_app_task(void * arg)
@@ -239,6 +245,12 @@ static void wifi_app_task(void * arg)
 
 /**
  * @brief Handle Wi-Fi events.
+/**
+ * @brief TODO: Describe `argument`.
+ *
+ * @param event_data TODO.
+ * @return TODO.
+ */
  * @param arg Task argument (not used).
  * @param event_base Event base.
  * @param event_id Event ID.

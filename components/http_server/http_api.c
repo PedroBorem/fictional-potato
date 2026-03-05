@@ -56,6 +56,13 @@ static app_callback http_callback = NULL;
 
 static httpd_handle_t server = NULL;
 
+/**
+ * @brief TODO: Describe `http_api_min_size`.
+ *
+ * @param left TODO.
+ * @param right TODO.
+ * @return TODO.
+ */
 static size_t http_api_min_size(size_t left, size_t right)
 {
     if (left < right)

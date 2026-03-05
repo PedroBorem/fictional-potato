@@ -105,6 +105,12 @@ void comm_app_wifi_reloader(void)
 	wifi_reloader();
 }
 
+/**
+ * @brief TODO: Describe `comm_app_set_main_mode_config`.
+ *
+ * @param config TODO.
+ * @return TODO.
+ */
 esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
 {
     esp_err_t err = ESP_FAIL;

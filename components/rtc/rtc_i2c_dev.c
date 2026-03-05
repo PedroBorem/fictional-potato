@@ -50,6 +50,14 @@ esp_err_t i2c_master_init(i2c_port_t port, int sda, int scl)
  * This function reads data from the I2C device.
  *
  * @param dev Pointer to the RTC I2C device structure.
+/**
+ * @brief TODO: Describe `reading`.
+ *
+ * @param success TODO.
+ * @param invalid TODO.
+ * @param in_size TODO.
+ * @return TODO.
+ */
  * @param out_data Data to be written before reading (can be NULL).
  * @param out_size Size of the data to be written.
  * @param in_data Pointer to the buffer for reading data.
@@ -93,6 +101,14 @@ esp_err_t i2c_dev_read(const rtc_i2c_dev_t *dev, const void *out_data, size_t ou
  * This function writes data to the I2C device.
  *
  * @param dev Pointer to the RTC I2C device structure.
+/**
+ * @brief TODO: Describe `to`.
+ *
+ * @param success TODO.
+ * @param invalid TODO.
+ * @param out_size TODO.
+ * @return TODO.
+ */
  * @param out_reg Register address to write to (can be NULL).
  * @param out_reg_size Size of the register address.
  * @param out_data Data to be written.

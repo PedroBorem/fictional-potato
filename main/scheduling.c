@@ -410,6 +410,13 @@ static void scheduling_task_idp_17(void* arg)
 /**
  * @brief Starts a scheduling task based on the provided IDP and data.
  *
+/**
+ * @brief TODO: Describe `IDP`.
+ *
+ * @param IDP TODO.
+ * @param scheduling_data TODO.
+ * @return TODO.
+ */
  * This function initiates a scheduling task based on the given IDP (InterDevice Protocol) and the associated data.
  * The task is selected according to the IDP, and the data is used to configure and execute the task.
  *

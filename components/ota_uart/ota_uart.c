@@ -512,6 +512,13 @@ static uint32_t ota_uart_bswap32(uint32_t value)
            ((value & 0xFF000000U) >> 24U);
 }
 
+/**
+ * @brief TODO: Describe `ota_uart_crc32`.
+ *
+ * @param data TODO.
+ * @param length TODO.
+ * @return TODO.
+ */
 static uint32_t ota_uart_crc32(const uint8_t *data, size_t length)
 {
     return ota_uart_crc32_variant(data, length, 0xFFFFFFFFU, true);
