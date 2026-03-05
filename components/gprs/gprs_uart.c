@@ -211,6 +211,7 @@ esp_err_t gprs_uart_init(const app_callback callback)
             {
                 gprs_callback = callback;
 
+                // Prepare OTA-over-UART storage/state before any OTA frame arrives.
                 esp_err_t ota_err = ota_uart_init();
                 if (ota_err != ESP_OK)
                 {
@@ -219,10 +220,12 @@ esp_err_t gprs_uart_init(const app_callback callback)
                 }
                 else if (ota_uart_consume_post_update_notice())
                 {
+                    // After successful OTA reboot, notify modem/cloud once at boot.
                     ESP_LOGI(GPRS_UART_TAG, "Post-update reboot notice detected. Sending frame to modem.");
 
                     for (uint8_t attempt = 1U; attempt <= GPRS_POST_UPDATE_NOTICE_RETRY_COUNT; attempt++)
                     {
+                        // Repeat a few times to survive transient UART startup glitches.
                         if (gprs_uart_send_event(GPRS_POST_UPDATE_NOTICE_FRAME,
                                                  strlen(GPRS_POST_UPDATE_NOTICE_FRAME)) == ESP_OK)
                         {
@@ -442,6 +445,7 @@ static void gprs_uart_consume_char(char received_char)
 {
     if (received_char == '#')
     {
+        // A new frame start always resets the assembly state machine.
         if (gprs_receiving_frame && gprs_frame_length > 0U)
         {
             char abandoned_head[GPRS_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
@@ -492,6 +496,7 @@ static void gprs_uart_consume_char(char received_char)
 
     if (received_char == '$')
     {
+        // Dispatch only when a full '#...$' frame is complete.
         gprs_frame_buffer[gprs_frame_length] = '\0';
         gprs_uart_dispatch_frame(gprs_frame_buffer);
         gprs_receiving_frame = false;
@@ -548,11 +553,13 @@ static void gprs_uart_dispatch_frame(const char *frame)
 
     if (ota_uart_handle_frame(frame, gprs_uart_send_event))
     {
+        // OTA protocol frame handled locally (ACK/NACK already sent via callback).
         return;
     }
 
     if (gprs_callback != NULL)
     {
+        // Non-OTA frame continues to the existing application callback path.
         char *frame_copy = strdup(frame);
         if (frame_copy != NULL)
         {

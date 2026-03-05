@@ -325,6 +325,7 @@ static esp_err_t ota_uart_apply_saved_firmware(void)
     }
 
     esp_ota_handle_t ota_handle = 0;
+    // Start ESP-IDF OTA write session targeting the next boot partition.
     err = esp_ota_begin(partition, ota_state.expected_file_size, &ota_handle);
     if (err != ESP_OK)
     {
@@ -338,6 +339,7 @@ static esp_err_t ota_uart_apply_saved_firmware(void)
 
     while (total_written < ota_state.expected_file_size)
     {
+        // Stream firmware file into the OTA partition in fixed-size chunks.
         size_t bytes_to_read = ota_state.expected_file_size - total_written;
         if (bytes_to_read > sizeof(buffer))
         {
@@ -374,6 +376,7 @@ static esp_err_t ota_uart_apply_saved_firmware(void)
         return err;
     }
 
+    // Mark written partition as boot target for the next restart.
     err = esp_ota_set_boot_partition(partition);
     if (err != ESP_OK)
     {
@@ -733,6 +736,7 @@ static bool ota_uart_decode_payload(size_t packet_id, const char *payload, size_
     }
 
     size_t added_padding_count = 0U;
+    // Rebuild Base64 padding so decoder receives a canonical multiple-of-4 input.
     while ((normalized_len % 4U) != 0U && normalized_len < normalized_capacity)
     {
         normalized_payload[normalized_len++] = '=';
@@ -790,6 +794,7 @@ static bool ota_uart_decode_payload(size_t packet_id, const char *payload, size_
     }
 
     int invalid_base64_index = -1;
+    // Fast pre-check improves diagnostics before calling mbedtls decoder.
     for (size_t i = 0; i < normalized_len; i++)
     {
         if (!ota_uart_is_base64_char(normalized_payload[i]))
@@ -884,6 +889,7 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
     size_t file_size = 0;
     size_t total_packets = 0;
 
+    // Validate transfer header and runtime limits before touching storage.
     if (!ota_state.storage_ready)
     {
         ota_uart_send_nack(tx_callback, "storage_not_ready");
@@ -920,6 +926,7 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
     ota_uart_close_file();
     ota_uart_reset_runtime_state(true);
 
+    // Start a fresh transfer file for this session.
     remove(OTA_UART_FIRMWARE_FILE_PATH);
 
     ota_state.firmware_file = fopen(OTA_UART_FIRMWARE_FILE_PATH, "wb");
@@ -959,6 +966,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
         return;
     }
 
+    // Parse '#OTA-DATA-<id>-<crc>-<payload>$' and enforce in-order delivery.
     if (!ota_uart_parse_data_frame(frame, &packet_id, &expected_crc32, &payload, &payload_len))
     {
         ota_uart_send_nack(tx_callback, "invalid_data");
@@ -1002,6 +1010,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
     uint8_t *decoded_payload = NULL;
     size_t decoded_payload_len = 0;
 
+    // Decode Base64 payload into binary packet bytes.
     if (!ota_uart_decode_payload(packet_id, payload, payload_len, &decoded_payload, &decoded_payload_len))
     {
         ESP_LOGW(OTA_UART_TAG,
@@ -1044,6 +1053,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
                  decoded_tail_hex);
     }
 
+    // Integrity check is computed over decoded binary payload bytes.
     uint32_t calculated_crc32 = ota_uart_crc32(decoded_payload, decoded_payload_len);
     if (calculated_crc32 != expected_crc32)
     {
@@ -1100,6 +1110,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
         return;
     }
 
+    // Persist validated payload and advance the expected packet pointer.
     size_t written = fwrite(decoded_payload, 1, decoded_payload_len, ota_state.firmware_file);
     free(decoded_payload);
 
@@ -1126,6 +1137,7 @@ static void ota_uart_handle_data_frame(const char *frame, ota_uart_tx_callback_t
  */
 static void ota_uart_handle_end_frame(ota_uart_tx_callback_t tx_callback)
 {
+    // END is only accepted when packet count and total size match header metadata.
     if (!ota_state.transfer_active || ota_state.firmware_file == NULL)
     {
         if (ota_state.transfer_complete)
@@ -1158,6 +1170,7 @@ static void ota_uart_handle_end_frame(ota_uart_tx_callback_t tx_callback)
         return;
     }
 
+    // Apply saved image to OTA partition once transfer is fully committed.
     ota_state.update_in_progress = true;
     esp_err_t ota_err = ota_uart_apply_saved_firmware();
     if (ota_err != ESP_OK)
@@ -1169,6 +1182,7 @@ static void ota_uart_handle_end_frame(ota_uart_tx_callback_t tx_callback)
         return;
     }
 
+    // Persist one-shot flag so next boot can notify modem/cloud about success.
     ota_uart_set_post_update_notice_flag();
     remove(OTA_UART_FIRMWARE_FILE_PATH);
 
@@ -1248,6 +1262,7 @@ bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback
         return false;
     }
 
+    // Route each OTA command frame to the corresponding transfer state handler.
     if (strcmp(frame, OTA_FRAME_END) == 0)
     {
         ota_uart_handle_end_frame(tx_callback);
