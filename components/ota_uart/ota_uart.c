@@ -224,7 +224,15 @@ static void ota_uart_format_hex_bytes(const uint8_t *data, size_t data_len, char
     size_t write_index = 0U;
     for (size_t i = 0; i < data_len; i++)
     {
-        const char *format = (i == 0U) ? "%02X" : " %02X";
+        const char *format = "%02X";
+        if (i == 0U)
+        {
+            format = "%02X";
+        }
+        else
+        {
+            format = " %02X";
+        }
         int written = snprintf(output + write_index, output_size - write_index, format, data[i]);
         if (written <= 0)
         {
@@ -517,7 +525,11 @@ static uint32_t ota_uart_crc32(const uint8_t *data, size_t length)
  */
 static void ota_uart_log_data_frame_parse_error(const char *reason, const char *frame)
 {
-    const char *safe_reason = (reason != NULL) ? reason : "unknown";
+    const char *safe_reason = "unknown";
+    if (reason != NULL)
+    {
+        safe_reason = reason;
+    }
     size_t frame_len = 0U;
     char frame_head[OTA_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
     char frame_tail[OTA_UART_ASCII_PREVIEW_BYTES + 1U] = {0};
