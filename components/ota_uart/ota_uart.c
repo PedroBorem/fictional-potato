@@ -12,7 +12,6 @@
 #include <stdint.h>
 
 #include "mbedtls/base64.h"
-#include "mbedtls/sha256.h"
 #include "esp_log.h"
 #include "esp_ota_ops.h"
 #include "esp_system.h"
@@ -81,9 +80,14 @@
 #define OTA_UART_HEX_PREVIEW_BYTES (8U)
 
 /**
- * @brief Expected length of SHA-256 hash in hexadecimal representation.
+ * @brief Maximum decimal digits accepted for global CRC32 metadata.
  */
-#define OTA_UART_SHA256_HEX_LEN (64U)
+#define OTA_UART_CRC32_DEC_MAX_LEN (10U)
+
+/**
+ * @brief Maximum allowed OTA UART inactivity time during active transfer (ms).
+ */
+#define OTA_UART_INACTIVITY_TIMEOUT_MS (1800000U)
 
 /**
  * @brief NVS namespace used to persist post-update reboot notice.
@@ -119,12 +123,13 @@ typedef struct
     bool transfer_active;
     bool transfer_complete;
     bool update_in_progress;
-    bool has_expected_sha256;
+    bool has_expected_global_crc32;
     size_t expected_file_size;
     size_t expected_packets;
     size_t next_packet_id;
     size_t received_size;
-    char expected_sha256_hex[OTA_UART_SHA256_HEX_LEN + 1U];
+    uint32_t expected_global_crc32;
+    uint32_t last_activity_ms;
     FILE *firmware_file;
 } ota_uart_state_t;
 
@@ -307,58 +312,71 @@ static void ota_uart_reset_runtime_state(bool clear_completion)
     ota_state.expected_packets = 0;
     ota_state.next_packet_id = 0;
     ota_state.received_size = 0;
-    ota_state.has_expected_sha256 = false;
-    ota_state.expected_sha256_hex[0] = '\0';
+    ota_state.expected_global_crc32 = 0U;
+    ota_state.last_activity_ms = 0U;
+    ota_state.has_expected_global_crc32 = false;
 }
 
 /**
- * @brief Computes SHA-256 hash (hex lowercase) for a saved firmware image.
+ * @brief Returns current monotonic timestamp in milliseconds.
+ *
+ * @return uint32_t Monotonic millisecond counter since boot.
+ */
+static uint32_t ota_uart_get_time_ms(void)
+{
+    return (uint32_t)esp_log_timestamp();
+}
+
+/**
+ * @brief Updates last OTA frame activity timestamp.
+ */
+static void ota_uart_mark_activity(void)
+{
+    ota_state.last_activity_ms = ota_uart_get_time_ms();
+}
+
+/**
+ * @brief Computes global CRC32 for a saved firmware image.
  *
  * @param file_path Firmware file path.
- * @param output_hash_hex Output buffer for 64-char lowercase hex hash.
- * @param output_hash_hex_size Output buffer size.
- * @return true when hash was computed successfully.
+ * @param output_crc32 Output CRC32 value.
+ * @return true when CRC32 was computed successfully.
  */
-static bool ota_uart_compute_file_sha256_hex(const char *file_path, char *output_hash_hex, size_t output_hash_hex_size)
+static bool ota_uart_compute_file_crc32(const char *file_path, uint32_t *output_crc32)
 {
-    if (file_path == NULL || output_hash_hex == NULL || output_hash_hex_size < (OTA_UART_SHA256_HEX_LEN + 1U))
+    if (file_path == NULL || output_crc32 == NULL)
     {
         return false;
     }
 
-    output_hash_hex[0] = '\0';
     FILE *firmware = fopen(file_path, "rb");
     if (firmware == NULL)
     {
-        ESP_LOGE(OTA_UART_TAG, "Failed to open file for SHA-256: %s", file_path);
+        ESP_LOGE(OTA_UART_TAG, "Failed to open file for global CRC32: %s", file_path);
         return false;
     }
 
-    mbedtls_sha256_context ctx;
-    mbedtls_sha256_init(&ctx);
-
-    int sha_status = mbedtls_sha256_starts_ret(&ctx, 0);
-    if (sha_status != 0)
-    {
-        ESP_LOGE(OTA_UART_TAG, "mbedtls_sha256_starts_ret failed (status=%d)", sha_status);
-        mbedtls_sha256_free(&ctx);
-        fclose(firmware);
-        return false;
-    }
-
+    uint32_t crc = 0xFFFFFFFFU;
     uint8_t read_buffer[1024] = {0};
     while (true)
     {
         size_t bytes_read = fread(read_buffer, 1, sizeof(read_buffer), firmware);
         if (bytes_read > 0U)
         {
-            sha_status = mbedtls_sha256_update_ret(&ctx, read_buffer, bytes_read);
-            if (sha_status != 0)
+            for (size_t i = 0; i < bytes_read; i++)
             {
-                ESP_LOGE(OTA_UART_TAG, "mbedtls_sha256_update_ret failed (status=%d)", sha_status);
-                mbedtls_sha256_free(&ctx);
-                fclose(firmware);
-                return false;
+                crc ^= read_buffer[i];
+                for (uint8_t bit = 0U; bit < 8U; bit++)
+                {
+                    if ((crc & 1U) != 0U)
+                    {
+                        crc = (crc >> 1U) ^ 0xEDB88320U;
+                    }
+                    else
+                    {
+                        crc >>= 1U;
+                    }
+                }
             }
         }
 
@@ -366,8 +384,7 @@ static bool ota_uart_compute_file_sha256_hex(const char *file_path, char *output
         {
             if (ferror(firmware))
             {
-                ESP_LOGE(OTA_UART_TAG, "Failed reading file while computing SHA-256");
-                mbedtls_sha256_free(&ctx);
+                ESP_LOGE(OTA_UART_TAG, "Failed reading file while computing global CRC32");
                 fclose(firmware);
                 return false;
             }
@@ -375,22 +392,8 @@ static bool ota_uart_compute_file_sha256_hex(const char *file_path, char *output
         }
     }
 
-    uint8_t digest[32] = {0};
-    sha_status = mbedtls_sha256_finish_ret(&ctx, digest);
-    mbedtls_sha256_free(&ctx);
     fclose(firmware);
-
-    if (sha_status != 0)
-    {
-        ESP_LOGE(OTA_UART_TAG, "mbedtls_sha256_finish_ret failed (status=%d)", sha_status);
-        return false;
-    }
-
-    for (size_t i = 0; i < 32U; i++)
-    {
-        snprintf(&output_hash_hex[i * 2U], 3U, "%02x", digest[i]);
-    }
-    output_hash_hex[OTA_UART_SHA256_HEX_LEN] = '\0';
+    *output_crc32 = ~crc;
     return true;
 }
 
@@ -659,25 +662,20 @@ static void ota_uart_log_data_frame_parse_error(const char *reason, const char *
  * @param frame Input frame.
  * @param file_size Output expected file size.
  * @param total_packets Output expected packet count.
- * @param sha256_hex Output SHA-256 hex string when present.
- * @param sha256_hex_size Output buffer size.
- * @param has_sha256 Output flag indicating hash presence.
+ * @param global_crc32 Output global CRC32 when present.
+ * @param has_global_crc32 Output flag indicating global CRC32 presence.
  * @return true on successful parse.
  */
 static bool ota_uart_parse_begin_frame(const char *frame, size_t *file_size, size_t *total_packets,
-                                       char *sha256_hex, size_t sha256_hex_size, bool *has_sha256)
+                                       uint32_t *global_crc32, bool *has_global_crc32)
 {
-    if (frame == NULL || file_size == NULL || total_packets == NULL || sha256_hex == NULL || has_sha256 == NULL)
+    if (frame == NULL || file_size == NULL || total_packets == NULL || global_crc32 == NULL || has_global_crc32 == NULL)
     {
         return false;
     }
 
-    if (sha256_hex_size == 0U)
-    {
-        return false;
-    }
-    sha256_hex[0] = '\0';
-    *has_sha256 = false;
+    *global_crc32 = 0U;
+    *has_global_crc32 = false;
 
     if (strncmp(frame, OTA_FRAME_BEGIN_PREFIX, strlen(OTA_FRAME_BEGIN_PREFIX)) != 0)
     {
@@ -714,39 +712,41 @@ static bool ota_uart_parse_begin_frame(const char *frame, size_t *file_size, siz
     }
     else if (*end_ptr == '-')
     {
-        const char *hash_start = end_ptr + 1;
-        const char *hash_end = strchr(hash_start, '$');
-        if (hash_end == NULL || *(hash_end + 1) != '\0')
+        const char *crc_start = end_ptr + 1;
+        const char *crc_end = strchr(crc_start, '$');
+        if (crc_end == NULL || *(crc_end + 1) != '\0')
         {
             return false;
         }
 
-        size_t hash_len = (size_t)(hash_end - hash_start);
-        if (hash_len != OTA_UART_SHA256_HEX_LEN || hash_len >= sha256_hex_size)
+        size_t crc_len = (size_t)(crc_end - crc_start);
+        if (crc_len == 0U || crc_len > OTA_UART_CRC32_DEC_MAX_LEN)
         {
             return false;
         }
 
-        for (size_t i = 0; i < hash_len; i++)
+        for (size_t i = 0; i < crc_len; i++)
         {
-            char current = hash_start[i];
-            if ((current >= '0' && current <= '9') ||
-                (current >= 'a' && current <= 'f'))
-            {
-                sha256_hex[i] = current;
-            }
-            else if (current >= 'A' && current <= 'F')
-            {
-                sha256_hex[i] = (char)(current - 'A' + 'a');
-            }
-            else
+            char current = crc_start[i];
+            if (current < '0' || current > '9')
             {
                 return false;
             }
         }
 
-        sha256_hex[hash_len] = '\0';
-        *has_sha256 = true;
+        char crc_buffer[OTA_UART_CRC32_DEC_MAX_LEN + 1U] = {0};
+        memcpy(crc_buffer, crc_start, crc_len);
+        crc_buffer[crc_len] = '\0';
+
+        char *crc_end_ptr = NULL;
+        unsigned long parsed_crc = strtoul(crc_buffer, &crc_end_ptr, 10);
+        if (crc_end_ptr == crc_buffer || *crc_end_ptr != '\0')
+        {
+            return false;
+        }
+
+        *global_crc32 = (uint32_t)parsed_crc;
+        *has_global_crc32 = true;
     }
     else
     {
@@ -1040,8 +1040,8 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
 {
     size_t file_size = 0;
     size_t total_packets = 0;
-    char expected_sha256_hex[OTA_UART_SHA256_HEX_LEN + 1U] = {0};
-    bool has_expected_sha256 = false;
+    uint32_t expected_global_crc32 = 0U;
+    bool has_expected_global_crc32 = false;
 
     // Validate transfer header and runtime limits before touching storage.
     if (!ota_state.storage_ready)
@@ -1051,7 +1051,7 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
     }
 
     if (!ota_uart_parse_begin_frame(frame, &file_size, &total_packets,
-                                    expected_sha256_hex, sizeof(expected_sha256_hex), &has_expected_sha256))
+                                    &expected_global_crc32, &has_expected_global_crc32))
     {
         ota_uart_send_nack(tx_callback, "invalid_begin");
         return;
@@ -1095,16 +1095,8 @@ static void ota_uart_handle_begin_frame(const char *frame, ota_uart_tx_callback_
     ota_state.expected_packets = total_packets;
     ota_state.next_packet_id = 0;
     ota_state.received_size = 0;
-    ota_state.has_expected_sha256 = has_expected_sha256;
-    if (has_expected_sha256)
-    {
-        memcpy(ota_state.expected_sha256_hex, expected_sha256_hex, OTA_UART_SHA256_HEX_LEN);
-        ota_state.expected_sha256_hex[OTA_UART_SHA256_HEX_LEN] = '\0';
-    }
-    else
-    {
-        ota_state.expected_sha256_hex[0] = '\0';
-    }
+    ota_state.has_expected_global_crc32 = has_expected_global_crc32;
+    ota_state.expected_global_crc32 = expected_global_crc32;
     ota_state.transfer_active = true;
 
     ESP_LOGI(OTA_UART_TAG, "Begin OTA UART transfer. file_size=%u bytes, packets=%u",
@@ -1324,29 +1316,27 @@ static void ota_uart_handle_end_frame(ota_uart_tx_callback_t tx_callback)
 
     ota_uart_close_file();
 
-    if (ota_state.has_expected_sha256)
+    if (ota_state.has_expected_global_crc32)
     {
-        char calculated_sha256_hex[OTA_UART_SHA256_HEX_LEN + 1U] = {0};
-        bool hash_ok = ota_uart_compute_file_sha256_hex(OTA_UART_FIRMWARE_FILE_PATH,
-                                                        calculated_sha256_hex,
-                                                        sizeof(calculated_sha256_hex));
-        if (!hash_ok)
+        uint32_t calculated_global_crc32 = 0U;
+        bool crc_ok = ota_uart_compute_file_crc32(OTA_UART_FIRMWARE_FILE_PATH, &calculated_global_crc32);
+        if (!crc_ok)
         {
             ota_uart_reset_runtime_state(false);
             remove(OTA_UART_FIRMWARE_FILE_PATH);
-            ota_uart_send_nack(tx_callback, "sha256_compute_failed");
+            ota_uart_send_nack(tx_callback, "global_crc32_compute_failed");
             return;
         }
 
-        if (strcmp(calculated_sha256_hex, ota_state.expected_sha256_hex) != 0)
+        if (calculated_global_crc32 != ota_state.expected_global_crc32)
         {
             ESP_LOGE(OTA_UART_TAG,
-                     "SHA-256 mismatch. expected=%s calculated=%s",
-                     ota_state.expected_sha256_hex,
-                     calculated_sha256_hex);
+                     "Global CRC32 mismatch. expected=0x%08" PRIX32 " calculated=0x%08" PRIX32,
+                     ota_state.expected_global_crc32,
+                     calculated_global_crc32);
             ota_uart_reset_runtime_state(false);
             remove(OTA_UART_FIRMWARE_FILE_PATH);
-            ota_uart_send_nack(tx_callback, "sha256_mismatch");
+            ota_uart_send_nack(tx_callback, "global_crc32_mismatch");
             return;
         }
     }
@@ -1455,6 +1445,8 @@ bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback
         return false;
     }
 
+    ota_uart_mark_activity();
+
     // Route each OTA command frame to the corresponding transfer state handler.
     if (strcmp(frame, OTA_FRAME_END) == 0)
     {
@@ -1476,6 +1468,46 @@ bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback
 
     ota_uart_send_nack(tx_callback, "invalid_command");
     return true;
+}
+
+/**
+ * @brief Processes OTA reception inactivity timeout.
+ *
+ * Aborts current transfer if no OTA frame is received for more than
+ * OTA_UART_INACTIVITY_TIMEOUT_MS while transfer is active.
+ */
+void ota_uart_process_timeouts(void)
+{
+    if (!ota_state.transfer_active)
+    {
+        return;
+    }
+
+    if (ota_state.update_in_progress)
+    {
+        return;
+    }
+
+    if (ota_state.last_activity_ms == 0U)
+    {
+        ota_uart_mark_activity();
+        return;
+    }
+
+    uint32_t now_ms = ota_uart_get_time_ms();
+    uint32_t elapsed_ms = now_ms - ota_state.last_activity_ms;
+    if (elapsed_ms < OTA_UART_INACTIVITY_TIMEOUT_MS)
+    {
+        return;
+    }
+
+    ESP_LOGW(OTA_UART_TAG,
+             "OTA UART inactive for %u ms. Aborting transfer and clearing temporary firmware file.",
+             (unsigned int)elapsed_ms);
+
+    ota_uart_close_file();
+    ota_uart_reset_runtime_state(false);
+    remove(OTA_UART_FIRMWARE_FILE_PATH);
 }
 
 /**
