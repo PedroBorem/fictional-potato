@@ -313,7 +313,7 @@ static void gprs_uart_event_task(void* arg)
     while (1)
     {
         // Waiting for UART event.
-        if (xQueueReceive(gprs_uart_queue, (void*)&event, (TickType_t)portMAX_DELAY))
+        if (xQueueReceive(gprs_uart_queue, (void*)&event, pdMS_TO_TICKS(1000)))
         {
             bzero(dtmp, GPRS_UART_BUF_SIZE);
 
@@ -334,9 +334,13 @@ static void gprs_uart_event_task(void* arg)
                             read_request = GPRS_UART_BUF_SIZE;
                         }
 
-                        int read_len = uart_read_bytes(GPRS_UART_NUM, dtmp, read_request, portMAX_DELAY);
+                        // Avoid indefinite blocking in OTA/UART task when driver reports stale event.size.
+                        int read_len = uart_read_bytes(GPRS_UART_NUM, dtmp, read_request, pdMS_TO_TICKS(50));
                         if (read_len <= 0)
                         {
+                            ESP_LOGW(GPRS_UART_TAG,
+                                     "UART read timeout while draining event buffer (remaining=%d).",
+                                     remaining);
                             break;
                         }
 
@@ -429,6 +433,8 @@ static void gprs_uart_event_task(void* arg)
             }
             }
         }
+
+        ota_uart_process_timeouts();
 
         vTaskDelay(pdMS_TO_TICKS(20));
     }
