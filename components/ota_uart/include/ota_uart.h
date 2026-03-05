@@ -84,7 +84,7 @@ bool ota_uart_is_protocol_frame(const char *frame);
  * @brief Handles one complete UART frame for OTA transfer.
  *
  * Supported frames:
- * - `#OTA-BEGIN-<file_size>-<total_packets>$`
+ * - `#OTA-BEGIN-<file_size>-<total_packets>[-<global_crc32>]$`
  * - `#OTA-DATA-<packet_id>-<crc32>-<base64_payload>$`
  * - `#OTA-END$`
  *
@@ -110,6 +110,15 @@ bool ota_uart_handle_frame(const char *frame, ota_uart_tx_callback_t tx_callback
  * @return false otherwise.
  */
 bool ota_uart_consume_post_update_notice(void);
+
+/**
+ * @brief Processes OTA UART inactivity timeout for active transfer.
+ *
+ * If an OTA transfer remains active without receiving new OTA frames for more
+ * than 30 minutes, the module aborts the transfer, clears runtime state, and
+ * removes the partially received firmware file.
+ */
+void ota_uart_process_timeouts(void);
 
 /**
  * @brief Indicates if the last transfer was completed successfully.
