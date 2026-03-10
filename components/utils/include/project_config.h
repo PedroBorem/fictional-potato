@@ -275,6 +275,24 @@ typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse 
 } eco_mode_config;
 
 /**
+ * @brief Persisted Eco Mode window state.
+ *
+ * Structure used to keep the current active Eco Mode window context.
+ * When `valid` is true, `actions` stores the pivot state captured before
+ * Eco Mode turns the pivot off and that state must be restored when the
+ * current window ends. When `valid` is false and `window_end_time` is
+ * non-zero, the current window was overridden by command and must stay
+ * suspended until `window_end_time`.
+ */
+typedef struct __attribute__((__packed__))
+{
+    bool valid;                     /*!< Indicates whether `actions` contains a state to be restored. */
+    time_t window_start_time;       /*!< Absolute start timestamp of the current protected window. */
+    time_t window_end_time;         /*!< Absolute end timestamp of the current protected window. */
+    pivot_actions actions;          /*!< Pivot state to be restored when `valid` is true. */
+} eco_mode_saved_state;
+
+/**
  * @brief Configuration parameters.
  *
  * How many configuration parameters in eco_mode_config struct.

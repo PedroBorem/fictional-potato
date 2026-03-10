@@ -48,6 +48,12 @@
 #define DATA_ECO_MODE_CONFIG "eco_config"
 
 /**
+ * @def DATA_ECO_MODE_STATE
+ * @brief NVS access space for eco mode runtime state data.
+ */
+#define DATA_ECO_MODE_STATE "eco_state"
+
+/**
  * @def DATA_SECTOR_CONFIG
  * @brief NVS access space for sector configuration data.
  */
@@ -194,6 +200,7 @@ esp_err_t data_app_init(void)
 
 	const gps_config gps_config = {};
 	const eco_mode_config default_eco =	{};
+	const eco_mode_saved_state default_eco_state = {};
 	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -224,6 +231,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_ECO_MODE_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &default_eco, sizeof(default_eco));
+		}
+
+		if(nvs_data_get_size(DATA_ECO_MODE_STATE) == 0)
+		{
+			data_app_save(DATA_TYPE_ECO_MODE_STATE, &default_eco_state, sizeof(default_eco_state));
 		}
 
 		if(nvs_data_get_size(DATA_SECTOR_CONFIG) == 0)
@@ -329,6 +341,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_ECO_MODE_CONFIG:
 		{
 			ret = nvs_data_set(DATA_ECO_MODE_CONFIG, data, data_size);
+			break;
+		}
+		case DATA_TYPE_ECO_MODE_STATE:
+		{
+			ret = nvs_data_set(DATA_ECO_MODE_STATE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SECTOR_CONFIG:
@@ -490,6 +507,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_ECO_MODE_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_ECO_MODE_CONFIG, data);
+			break;
+		}
+		case DATA_TYPE_ECO_MODE_STATE:
+		{
+			ret = nvs_data_get_blob(DATA_ECO_MODE_STATE, data);
 			break;
 		}
 		case DATA_TYPE_SECTOR_CONFIG:

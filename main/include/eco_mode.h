@@ -22,9 +22,20 @@ void eco_mode_start(eco_mode_config current_eco_mode);
 void eco_mode_stop(void);
 
 /**
- * @brief Suspends Eco Mode actions if they are active.
+ * @brief Suspends Eco Mode for the current window and emits the rush override notification.
  */
 void eco_mode_cmd_stop(void);
+
+/**
+ * @brief Suspends Eco Mode for the current window and clears any persisted restore state.
+ *
+ * When called during an active configured window, the current window remains suspended
+ * until its end even after a reboot. Outside the configured window, any stale runtime
+ * state is simply cleared.
+ *
+ * @param notify_override True to emit the rush override notification.
+ */
+void eco_mode_suspend_current_window(bool notify_override);
 
 /**
  * @brief Registers a callback for Eco Mode events.

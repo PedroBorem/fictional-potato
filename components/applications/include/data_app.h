@@ -29,6 +29,7 @@ typedef enum
     DATA_TYPE_PIVOT_CONFIG, /**< Pivot configuration data type. */
     DATA_TYPE_NETWORK_CONFIG, /**< Network configuration data type. */
     DATA_TYPE_ECO_MODE_CONFIG, /**< Eco mode configuration data type. */
+    DATA_TYPE_ECO_MODE_STATE, /**< Eco mode runtime state data type. */
     DATA_TYPE_SECTOR_CONFIG, /**< Sector configuration data type. */
     DATA_TYPE_GPS_CONFIG, /**< GPS configuration data type. */
     DATA_TYPE_REBOOT_CONFIG, /**< Reboot configuration data type. */
