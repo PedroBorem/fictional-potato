@@ -269,8 +269,8 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
 {
-    time_t start_time;              /*!< Start time */
-    time_t end_time;                /*!< End time */
+    time_t start_time;              /*!< Start time in seconds since 00:00. */
+    time_t end_time;                /*!< End time in seconds since 00:00. */
     bool enable;                     /*!< Enable or Disable */
 } eco_mode_config;
 

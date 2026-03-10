@@ -120,11 +120,6 @@ static bool eco_mode_get_window_bounds_internal(time_t current_time, time_t *win
     end_time = eco_mode.end_time;
     taskEXIT_CRITICAL(&s_eco_mode_mux);
 
-    if (start_time == 0 || end_time == 0)
-    {
-        return false;
-    }
-
     time_t day_start = current_time - (current_time % 86400);
     time_t current_seconds = current_time % 86400;
     time_t start_seconds = start_time % 86400;
@@ -507,7 +502,7 @@ static void eco_mode_task(void *arg)
  */
 void eco_mode_start(eco_mode_config current_eco_mode)
 {
-    if (current_eco_mode.start_time == 0 || current_eco_mode.end_time == 0)
+    if (current_eco_mode.enable == false || current_eco_mode.start_time == current_eco_mode.end_time)
     {
         eco_mode_stop();
     }

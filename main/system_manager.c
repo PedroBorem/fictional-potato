@@ -118,6 +118,8 @@ static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
 static void system_manager_handle_eco_mode_override(const pivot_actions *new_actions, const pivot_actions *old_actions, bool ignore_override);
+static bool system_manager_hhmm_to_seconds(uint32_t hhmm_value, time_t *seconds_out);
+static void system_manager_seconds_to_hhmm_string(time_t seconds_value, char *hhmm_out, size_t hhmm_out_size);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -531,6 +533,60 @@ static void system_manager_handle_eco_mode_override(const pivot_actions *new_act
 		bool notify_override = (old_actions->power_state == PIVOT_OFF);
 		eco_mode_suspend_current_window(notify_override);
 	}
+}
+
+/**
+ * @brief Converts an HHMM value from IDP 04 into seconds since midnight.
+ *
+ * @param hhmm_value Time in HHMM format.
+ * @param seconds_out Output buffer for the converted value in seconds.
+ * @return true when the value is a valid HHMM time, false otherwise.
+ */
+static bool system_manager_hhmm_to_seconds(uint32_t hhmm_value, time_t *seconds_out)
+{
+	uint32_t hours = 0;
+	uint32_t minutes = 0;
+
+	if (seconds_out == NULL)
+	{
+		return false;
+	}
+
+	hours = (hhmm_value / 100);
+	minutes = (hhmm_value % 100);
+
+	if (hours > 23 || minutes > 59)
+	{
+		return false;
+	}
+
+	*seconds_out = (time_t)((hours * 3600) + (minutes * 60));
+	return true;
+}
+
+/**
+ * @brief Formats seconds since midnight into a zero-padded HHMM string.
+ *
+ * @param seconds_value Time value stored internally in seconds.
+ * @param hhmm_out Output buffer for the HHMM string.
+ * @param hhmm_out_size Output buffer size.
+ */
+static void system_manager_seconds_to_hhmm_string(time_t seconds_value, char *hhmm_out, size_t hhmm_out_size)
+{
+	uint32_t seconds_of_day = 0;
+	uint32_t hours = 0;
+	uint32_t minutes = 0;
+
+	if (hhmm_out == NULL || hhmm_out_size == 0)
+	{
+		return;
+	}
+
+	seconds_of_day = (uint32_t)(seconds_value % 86400);
+	hours = (seconds_of_day / 3600);
+	minutes = ((seconds_of_day % 3600) / 60);
+
+	snprintf(hhmm_out, hhmm_out_size, "%02lu%02lu", (unsigned long)hours, (unsigned long)minutes);
 }
 
 /**
@@ -982,19 +1038,36 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
+		uint32_t start_time_hhmm = 0;
+		uint32_t end_time_hhmm = 0;
+		time_t start_time_seconds = 0;
+		time_t end_time_seconds = 0;
+		bool valid_time_window = false;
+		bool eco_mode_enable = false;
 		eco_mode_config eco_mode = {};
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint32_t", &eco_mode.start_time},
-				{"uint32_t", &eco_mode.end_time},
-				{"bool", &eco_mode.enable},
+				{"uint32_t", &start_time_hhmm},
+				{"uint32_t", &end_time_hhmm},
+				{"bool", &eco_mode_enable},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if (idp_parser_validate_idp_04(eco_mode))
+
+		eco_mode.enable = eco_mode_enable;
+		valid_time_window = (system_manager_hhmm_to_seconds(start_time_hhmm, &start_time_seconds)
+		&& system_manager_hhmm_to_seconds(end_time_hhmm, &end_time_seconds));
+		if (valid_time_window)
+		{
+			eco_mode.start_time = start_time_seconds;
+			eco_mode.end_time = end_time_seconds;
+		}
+
+		if (valid_time_window
+		&& idp_parser_validate_idp_04(eco_mode))
 		{
 			esp_err_t ret = data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode, sizeof(eco_mode));
 
@@ -1026,18 +1099,22 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
+		char start_time_hhmm[5] = {};
+		char end_time_hhmm[5] = {};
 
 		uint8_t idp = IDP_4;
 		eco_mode_config eco_mode = {};
 
 		data_app_load(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode);
+		system_manager_seconds_to_hhmm_string(eco_mode.start_time, start_time_hhmm, sizeof(start_time_hhmm));
+		system_manager_seconds_to_hhmm_string(eco_mode.end_time, end_time_hhmm, sizeof(end_time_hhmm));
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint32_t", &eco_mode.start_time},
-				{"uint32_t", &eco_mode.end_time},
+				{"string", start_time_hhmm},
+				{"string", end_time_hhmm},
 				{"bool", &eco_mode.enable},
 				{NULL, NULL}};
 
