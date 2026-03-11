@@ -733,8 +733,11 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				// time for the percentage to stabilize
 				system_rtc_percent = rtc_app_get_timestamp(false);
 
-				// send current status
-				system_manager_idp_00("#00$", comm_main_mode);
+				// send current status for regular commands only.
+				if (strcmp(new_actions.user, "eco_mode") != 0)
+				{
+					system_manager_idp_00("#00$", comm_main_mode);
+				}
 
 				system_manager_handle_eco_mode_override(&new_actions, &old_actions, (strcmp(new_actions.user, "eco_mode") == 0));
 

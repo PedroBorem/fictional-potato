@@ -301,7 +301,7 @@ static void eco_mode_store_suspended_window_internal(time_t current_time)
 }
 
 /**
- * @brief Restores the persisted pivot state and publishes the status update.
+ * @brief Restores the persisted pivot state after the Eco Mode window ends.
  *
  * @param saved_state Restore state captured before the Eco Mode shutdown.
  */
@@ -314,11 +314,6 @@ static void eco_mode_restore_saved_state_internal(const eco_mode_saved_state *sa
 
     data_app_save(DATA_TYPE_ACTIONS, &saved_state->actions, sizeof(saved_state->actions));
     actuation_app_set_actions(saved_state->actions, false);
-
-    if (eco_mode_callback != NULL)
-    {
-        eco_mode_callback("#00$", comm_main_mode);
-    }
 }
 
 /**
