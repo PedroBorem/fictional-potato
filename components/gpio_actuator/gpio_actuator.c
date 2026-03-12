@@ -819,15 +819,18 @@ void actuator_read_percent(void* arg)
 /**
  * @brief Stores the Eco Mode window state and reapplies pivot rotation.
  *
- * This function caches the current Eco Mode time-window flag and
- * immediately calls gpio_actuator_apply_rotation() to update the output.
+ * This function caches the current Eco Mode time-window flag and reapplies
+ * the rotation state only when the flag actually changes.
  *
  * @param in_window True when Eco Mode window is active, false otherwise.
  */
 void gpio_actuator_set_eco_window_state(bool in_window)
 {
-    s_eco_window_active = in_window;
-	gpio_actuator_apply_rotation();
+    if (s_eco_window_active != in_window)
+    {
+        s_eco_window_active = in_window;
+	    gpio_actuator_apply_rotation();
+    }
 }
 
 /**

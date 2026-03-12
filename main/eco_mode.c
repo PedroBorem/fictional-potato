@@ -377,6 +377,8 @@ static bool eco_mode_capture_current_actions(pivot_actions *actions_out)
 static void eco_mode_task(void *arg)
 {
     time_t current_time = 0;
+    bool window_state_initialized = false;
+    bool last_window_state = false;
 
     while (1)
     {
@@ -388,7 +390,12 @@ static void eco_mode_task(void *arg)
 
         if (enabled == false)
         {
-            actuation_app_set_eco_window_state(false);
+            if (window_state_initialized == false || last_window_state != false)
+            {
+                actuation_app_set_eco_window_state(false);
+                last_window_state = false;
+                window_state_initialized = true;
+            }
             vTaskDelay(pdMS_TO_TICKS(15000));
             continue;
         }
@@ -396,7 +403,12 @@ static void eco_mode_task(void *arg)
         current_time = eco_mode_get_current_time_internal();
         bool in_window = eco_mode_is_in_window_internal(current_time);
 
-        actuation_app_set_eco_window_state(in_window);
+        if (window_state_initialized == false || last_window_state != in_window)
+        {
+            actuation_app_set_eco_window_state(in_window);
+            last_window_state = in_window;
+            window_state_initialized = true;
+        }
 
         bool suspended = false;
         bool restore_pending = false;
