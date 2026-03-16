@@ -69,7 +69,10 @@ static bool pressurizing = false;
 
 /* Private methods declarations ---------------------------------- */
 
-static bool s_eco_window_active = false;
+/**
+ * @brief Indicates whether the current Rush Mode time window is active.
+ */
+static bool s_rush_mode_window_active = false;
 
 /**
  * @brief Callback function for the expiration of the Perc On timer.
@@ -817,31 +820,31 @@ void actuator_read_percent(void* arg)
 }
 
 /**
- * @brief Stores the Eco Mode window state and reapplies pivot rotation.
+ * @brief Stores the Rush Mode window state and reapplies pivot rotation.
  *
- * This function caches the current Eco Mode time-window flag and reapplies
+ * This function caches the current Rush Mode time-window flag and reapplies
  * the rotation state only when the flag actually changes.
  *
- * @param in_window True when Eco Mode window is active, false otherwise.
+ * @param in_window True when Rush Mode window is active, false otherwise.
  */
-void gpio_actuator_set_eco_window_state(bool in_window)
+void gpio_actuator_set_rush_mode_window_state(bool in_window)
 {
-    if (s_eco_window_active != in_window)
+    if (s_rush_mode_window_active != in_window)
     {
-        s_eco_window_active = in_window;
+        s_rush_mode_window_active = in_window;
 	    gpio_actuator_apply_rotation();
     }
 }
 
 /**
- * @brief Applies pivot rotation according to the Eco Mode window state.
+ * @brief Applies pivot rotation according to the Rush Mode window state.
  *
- * When Eco Mode is active the pivot rotation is set to PIVOT_SUSPENDED;
+ * When Rush Mode is active the pivot rotation is set to PIVOT_SUSPENDED;
  * otherwise it is set to PIVOT_UNKNOWN.
  */
 void gpio_actuator_apply_rotation(void)
 {
-    if (s_eco_window_active)
+    if (s_rush_mode_window_active)
     {
         pivot_rotation.rotation = PIVOT_SUSPENDED;
     }

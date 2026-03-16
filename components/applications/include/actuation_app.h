@@ -85,10 +85,10 @@ void actuation_app_hangs_up_callback(const hangs_up_callback callback);
 void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config);
 
 /**
- * @brief Forwards Eco Mode window state to the GPIO actuator.
+ * @brief Forwards Rush Mode window state to the GPIO actuator.
  *
- * @param in_window True when Eco Mode window is active.
+ * @param in_window True when Rush Mode window is active.
  */
-void actuation_app_set_eco_window_state(bool in_window);
+void actuation_app_set_rush_mode_window_state(bool in_window);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_ */

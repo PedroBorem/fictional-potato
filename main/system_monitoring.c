@@ -587,7 +587,7 @@ void system_monitoring_stop(void)
  * @brief Builds and stores a pivot shutdown record and triggers an IDP #28 notification.
  *
  * This function maps the given @p shutdown_reason to a textual tag
- * (e.g. "manual", "virtual_barrier", "eco_mode"), reads the current
+ * (e.g. "manual", "virtual_barrier", "rush_mode"), reads the current
  * timestamp, and assembles an IDP_28 payload with:
  * - shutdown reason;
  * - system ID and origin;
@@ -682,9 +682,9 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
             is_external_agent = true;
             break;
         }
-        case TYPE_HANGS_UP_ECO_MODE:
+        case TYPE_HANGS_UP_RUSH_MODE:
         {
-            reason_str = "eco_mode";
+            reason_str = "rush_mode";
             break;
         }
         default:

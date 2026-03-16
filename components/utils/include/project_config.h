@@ -87,7 +87,7 @@
  * @var IDP_1 Save actions
  * @var IDP_2 Network configurations
  * @var IDP_3 Pivot configurations
- * @var IDP_4 ECO mode configuration
+ * @var IDP_4 Rush mode configuration
  * @var IDP_5 Sector configurations
  * @var IDP_6 New modem configurations
  * @var IDP_7 Angle and timestamp configuration
@@ -176,7 +176,7 @@ typedef enum
     PIVOT_WET = 6,          /*!< Irrigation on */
     PIVOT_PRESSURIZING = 7, /*!< Pivot pressurizing */
     PIVOT_UNKNOWN = 8,     /*!< Unknown pivot state */
-    PIVOT_SUSPENDED = 9
+    PIVOT_SUSPENDED = 9    /*!< Pivot suspended inside the configured Rush Mode window */
 } pivot_states;
 
 /**
@@ -265,21 +265,21 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
- * Structure defining the eco mode configuration parameters.
+ * Structure defining the rush mode configuration parameters.
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
 {
     time_t start_time;              /*!< Start time in seconds since 00:00. */
     time_t end_time;                /*!< End time in seconds since 00:00. */
     bool enable;                     /*!< Enable or Disable */
-} eco_mode_config;
+} rush_mode_config;
 
 /**
- * @brief Persisted Eco Mode window state.
+ * @brief Persisted Rush Mode window state.
  *
- * Structure used to keep the current active Eco Mode window context.
+ * Structure used to keep the current active Rush Mode window context.
  * When `valid` is true, `actions` stores the pivot state captured before
- * Eco Mode turns the pivot off and that state must be restored when the
+ * Rush Mode turns the pivot off and that state must be restored when the
  * current window ends. When `valid` is false and `window_end_time` is
  * non-zero, the current window was overridden by command and must stay
  * suspended until `window_end_time`.
@@ -290,14 +290,14 @@ typedef struct __attribute__((__packed__))
     time_t window_start_time;       /*!< Absolute start timestamp of the current protected window. */
     time_t window_end_time;         /*!< Absolute end timestamp of the current protected window. */
     pivot_actions actions;          /*!< Pivot state to be restored when `valid` is true. */
-} eco_mode_saved_state;
+} rush_mode_saved_state;
 
 /**
  * @brief Configuration parameters.
  *
- * How many configuration parameters in eco_mode_config struct.
+ * How many configuration parameters in rush_mode_config struct.
  */
-#define ECO_MODE_CONFIG_VAR_COUNT   (2)
+#define RUSH_MODE_CONFIG_VAR_COUNT   (2)
 
 /**
  * @brief Configuration parameters.
@@ -518,7 +518,7 @@ typedef enum
     TYPE_HANGS_UP_SCHEDULE_17,
     TYPE_HANGS_UP_SOIL_APP,
     TYPE_HANGS_UP_IRRIGABRAS_APP,
-    TYPE_HANGS_UP_ECO_MODE,
+    TYPE_HANGS_UP_RUSH_MODE,
 } hangs_up_status;
 
 /**
