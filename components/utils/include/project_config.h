@@ -297,7 +297,7 @@ typedef struct __attribute__((__packed__))
  *
  * How many configuration parameters in rush_mode_config struct.
  */
-#define RUSH_MODE_CONFIG_VAR_COUNT   (2)
+#define RUSH_MODE_CONFIG_VAR_COUNT   (3)
 
 /**
  * @brief Configuration parameters.

@@ -20,6 +20,11 @@
 #define RUSH_MODE_TAG "rush_mode"
 
 /**
+ * @brief Maximum delay, in seconds, allowed to restore the pivot after a Rush Mode window ends.
+ */
+#define RUSH_MODE_RESTORE_TIMEOUT_SEC (1800)
+
+/**
  * @brief Indicates whether Rush Mode is currently enabled.
  */
 static bool rush_mode_enabled = false;
@@ -418,29 +423,20 @@ static void rush_mode_task(void *arg)
 
         window_suspended = rush_mode_window_is_suspended_internal(&restore_state);
 
-        if (rush_mode_has_saved_window_internal(&restore_state))
+        if (rush_mode_has_saved_window_internal(&restore_state) && current_time > restore_state.window_end_time)
         {
-            time_t current_day = current_time / 86400;
-            time_t restore_day = restore_state.window_end_time / 86400;
+            time_t restore_delay = current_time - restore_state.window_end_time;
 
-            if (current_day > restore_day)
-            {
-                rush_mode_clear_saved_state_internal();
-                rush_mode_set_runtime_flags_internal(false, false);
-
-                vTaskDelay(pdMS_TO_TICKS(15000));
-                continue;
-            }
-
-            if (current_time > restore_state.window_end_time && current_day == restore_day)
+            if (restore_delay <= RUSH_MODE_RESTORE_TIMEOUT_SEC)
             {
                 rush_mode_restore_saved_state_internal(&restore_state);
-                rush_mode_clear_saved_state_internal();
-                rush_mode_set_runtime_flags_internal(false, false);
-
-                vTaskDelay(pdMS_TO_TICKS(15000));
-                continue;
             }
+
+            rush_mode_clear_saved_state_internal();
+            rush_mode_set_runtime_flags_internal(false, false);
+
+            vTaskDelay(pdMS_TO_TICKS(15000));
+            continue;
         }
 
         if (suspended || window_suspended)

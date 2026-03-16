@@ -926,7 +926,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
+		if (delimiter_num == expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -1030,7 +1030,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
+		if (delimiter_num == expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -1040,7 +1040,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 		}
 	}
 
-	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	if ((comm_mode == COMM_HTTP_POST && delimiter_num == expected_delimiter_num) || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
@@ -2968,7 +2968,7 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 
 static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{	
 		uint8_t idp = IDP_32;
 		char str_rush[50] = {};
