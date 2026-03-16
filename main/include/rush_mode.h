@@ -22,11 +22,6 @@ void rush_mode_start(rush_mode_config current_rush_mode);
 void rush_mode_stop(void);
 
 /**
- * @brief Suspends Rush Mode for the current window and emits the rush override notification.
- */
-void rush_mode_cmd_stop(void);
-
-/**
  * @brief Suspends Rush Mode for the current window and clears any persisted restore state.
  *
  * When called during an active configured window, the current window remains suspended

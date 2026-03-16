@@ -72,11 +72,6 @@ static void rush_mode_store_suspended_window_internal(time_t current_time);
 static void rush_mode_restore_saved_state_internal(const rush_mode_saved_state *saved_state);
 static bool rush_mode_capture_current_actions(pivot_actions *actions_out);
 
-void rush_mode_start(rush_mode_config current_rush_mode);
-void rush_mode_stop(void);
-void rush_mode_register_callback(const app_callback callback);
-void rush_mode_suspend_current_window(bool notify_override);
-
 /**
  * @brief Checks if a given timestamp falls on a weekend.
  * @param ts Timestamp in seconds.
@@ -591,14 +586,6 @@ void rush_mode_stop(void)
     }
 
     rush_mode_set_runtime_flags_internal(false, false);
-}
-
-/**
- * @brief Suspends Rush Mode actions on command without stopping the task.
- */
-void rush_mode_cmd_stop(void)
-{
-    rush_mode_suspend_current_window(true);
 }
 
 /**
