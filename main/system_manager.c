@@ -654,6 +654,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
+		char command_user[sizeof(new_actions.user)] = {};
 
 		char pivot_id[50] = {};
 		uint16_t dwp = 0;
@@ -670,6 +671,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
+		memcpy(command_user, new_actions.user, sizeof(command_user));
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
@@ -703,7 +705,10 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					}
 				}
 
+				// Preserve the command origin because the live actions read overwrites
+				// the user field and would make Rush Mode look like an external IDP 01.
 				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				memcpy(new_actions.user, command_user, sizeof(new_actions.user));
 				new_actions.percentimeter = 0;
 				new_actions.power_state = PIVOT_OFF;
 				new_actions.watering_state = PIVOT_DRY;
