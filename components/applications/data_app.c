@@ -42,10 +42,16 @@
 #define DATA_NETWORK_CONFIG "net_config"
 
 /**
- * @def DATA_ECO_MODE_CONFIG
- * @brief NVS access space for eco mode configuration data.
+ * @def DATA_RUSH_MODE_CONFIG
+ * @brief NVS access space for Rush Mode configuration data.
  */
-#define DATA_ECO_MODE_CONFIG "eco_config"
+#define DATA_RUSH_MODE_CONFIG "rush_config"
+
+/**
+ * @def DATA_RUSH_MODE_STATE
+ * @brief NVS access space for Rush Mode runtime state data.
+ */
+#define DATA_RUSH_MODE_STATE "rush_state"
 
 /**
  * @def DATA_SECTOR_CONFIG
@@ -193,7 +199,8 @@ esp_err_t data_app_init(void)
 	};
 
 	const gps_config gps_config = {};
-	const eco_mode_config default_eco =	{};
+	const rush_mode_config default_rush_mode = {};
+	const rush_mode_saved_state default_rush_mode_state = {};
 	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
@@ -221,9 +228,14 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_NETWORK_CONFIG, &default_network, sizeof(default_network));
 		}
 
-		if(nvs_data_get_size(DATA_ECO_MODE_CONFIG) == 0)
+		if(nvs_data_get_size(DATA_RUSH_MODE_CONFIG) == 0)
 		{
-			data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &default_eco, sizeof(default_eco));
+			data_app_save(DATA_TYPE_RUSH_MODE_CONFIG, &default_rush_mode, sizeof(default_rush_mode));
+		}
+
+		if(nvs_data_get_size(DATA_RUSH_MODE_STATE) == 0)
+		{
+			data_app_save(DATA_TYPE_RUSH_MODE_STATE, &default_rush_mode_state, sizeof(default_rush_mode_state));
 		}
 
 		if(nvs_data_get_size(DATA_SECTOR_CONFIG) == 0)
@@ -326,9 +338,14 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_NETWORK_CONFIG, data, data_size);
 			break;
 		}
-		case DATA_TYPE_ECO_MODE_CONFIG:
+		case DATA_TYPE_RUSH_MODE_CONFIG:
 		{
-			ret = nvs_data_set(DATA_ECO_MODE_CONFIG, data, data_size);
+			ret = nvs_data_set(DATA_RUSH_MODE_CONFIG, data, data_size);
+			break;
+		}
+		case DATA_TYPE_RUSH_MODE_STATE:
+		{
+			ret = nvs_data_set(DATA_RUSH_MODE_STATE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SECTOR_CONFIG:
@@ -487,9 +504,14 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_NETWORK_CONFIG, data);
 			break;
 		}
-		case DATA_TYPE_ECO_MODE_CONFIG:
+		case DATA_TYPE_RUSH_MODE_CONFIG:
 		{
-			ret = nvs_data_get_blob(DATA_ECO_MODE_CONFIG, data);
+			ret = nvs_data_get_blob(DATA_RUSH_MODE_CONFIG, data);
+			break;
+		}
+		case DATA_TYPE_RUSH_MODE_STATE:
+		{
+			ret = nvs_data_get_blob(DATA_RUSH_MODE_STATE, data);
 			break;
 		}
 		case DATA_TYPE_SECTOR_CONFIG:

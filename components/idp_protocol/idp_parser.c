@@ -579,16 +579,21 @@ bool idp_parser_validate_idp_03(const pivot_config pivot_config)
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param eco_config data to be validated.
+ * @param rush_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_04(const eco_mode_config eco_config)
+bool idp_parser_validate_idp_04(const rush_mode_config rush_config)
 {
     bool ret = false;
 
-    if(eco_config.start_time >= 0 && eco_config.end_time >= 0)
+    if (rush_config.start_time < 86400 && rush_config.end_time < 86400)
     {
-    	ret = true;
+        ret = true;
+    }
+
+    if (ret == true && rush_config.enable == true && rush_config.start_time == rush_config.end_time)
+    {
+        ret = false;
     }
 
     return ret;

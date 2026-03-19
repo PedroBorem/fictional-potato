@@ -65,6 +65,11 @@ static bool pressurizing = false;
 /* Private methods declarations ---------------------------------- */
 
 /**
+ * @brief Indicates whether the current Rush Mode time window is active.
+ */
+static bool s_rush_mode_window_active = false;
+
+/**
  * @brief Callback function for the expiration of the Perc On timer.
  * @param pxTimer The timer handle
  */
@@ -504,7 +509,14 @@ pivot_actions gpio_actuator_get(void)
 	else
 	{
 		pivot_actions_read.power_state = PIVOT_OFF;
-		pivot_actions_read.rotation = PIVOT_UNKNOWN;
+		if (s_rush_mode_window_active == true)
+		{
+			pivot_actions_read.rotation = PIVOT_SUSPENDED;
+		}
+		else
+		{
+			pivot_actions_read.rotation = PIVOT_UNKNOWN;
+		}
 	}
 
 	if(pressurizing == true)
@@ -804,4 +816,17 @@ void actuator_read_percent(void* arg)
 		percent_watchdog = clock();
 		vTaskDelay(pdMS_TO_TICKS(200));
 	}
+}
+
+/**
+ * @brief Stores the Rush Mode window state and reapplies pivot rotation.
+ *
+ * This function caches the current Rush Mode time-window flag and reapplies
+ * the rotation state only when the flag actually changes.
+ *
+ * @param in_window True when Rush Mode window is active, false otherwise.
+ */
+void gpio_actuator_set_rush_mode_window_state(bool in_window)
+{
+    s_rush_mode_window_active = in_window;
 }
