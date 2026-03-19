@@ -59,11 +59,6 @@ static uint32_t gpio_act_leaving_barrier_delay = 0;
 static bool gpio_act_contactor_type = 0;
 static bool gpio_act_pressure_type = 0;
 
-// Rotation variable
-static pivot_actions pivot_rotation = {
-	.rotation = PIVOT_UNKNOWN
-};
-
 // Pressurizing flag
 static bool pressurizing = false;
 
@@ -105,8 +100,6 @@ void actuator_wait_pressure(void* arg);
  * @param arg Task argument (default NULL)
  */
 void actuator_read_percent(void* arg);
-
-void gpio_actuator_apply_rotation(void);
 
 
 /* Public methods ------------------------------------------------ */
@@ -516,8 +509,14 @@ pivot_actions gpio_actuator_get(void)
 	else
 	{
 		pivot_actions_read.power_state = PIVOT_OFF;
-		gpio_actuator_apply_rotation();
-		pivot_actions_read.rotation = pivot_rotation.rotation;
+		if (s_rush_mode_window_active == true)
+		{
+			pivot_actions_read.rotation = PIVOT_SUSPENDED;
+		}
+		else
+		{
+			pivot_actions_read.rotation = PIVOT_UNKNOWN;
+		}
 	}
 
 	if(pressurizing == true)
@@ -829,27 +828,5 @@ void actuator_read_percent(void* arg)
  */
 void gpio_actuator_set_rush_mode_window_state(bool in_window)
 {
-    if (s_rush_mode_window_active != in_window)
-    {
-        s_rush_mode_window_active = in_window;
-	    gpio_actuator_apply_rotation();
-    }
-}
-
-/**
- * @brief Applies pivot rotation according to the Rush Mode window state.
- *
- * When Rush Mode is active the pivot rotation is set to PIVOT_SUSPENDED;
- * otherwise it is set to PIVOT_UNKNOWN.
- */
-void gpio_actuator_apply_rotation(void)
-{
-    if (s_rush_mode_window_active)
-    {
-        pivot_rotation.rotation = PIVOT_SUSPENDED;
-    }
-    else
-    {
-        pivot_rotation.rotation = PIVOT_UNKNOWN;
-    }
+    s_rush_mode_window_active = in_window;
 }
