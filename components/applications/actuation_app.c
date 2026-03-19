@@ -266,7 +266,9 @@ void actuation_app_task(void* arg)
 				last_tick = xTaskGetTickCount();
 			}
 		}
-		else if(current_action.rotation != actuation_config.rotation && current_action.rotation != PIVOT_UNKNOWN)
+		else if(current_action.rotation != actuation_config.rotation 
+			&& current_action.rotation != PIVOT_UNKNOWN 
+			&& current_action.rotation != PIVOT_SUSPENDED)
 		{
 			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_ROTATION_TIME)
 			{
@@ -317,9 +319,18 @@ void actuation_app_manual_call(pivot_actions current_action)
 	idp_parser_get_pwd(dwp, &current_action);
 }
 
-/*
-	MOTIVO DO DESLIGA ACTUATION
-*/
+/**
+ * @brief Updates the Rush Mode window state through the GPIO actuator.
+ *
+ * This function is used by the Rush Mode logic to propagate the current
+ * time-window flag to the GPIO layer.
+ *
+ * @param in_window True when Rush Mode window is active, false otherwise.
+ */
+void actuation_app_set_rush_mode_window_state(bool in_window)
+{
+    gpio_actuator_set_rush_mode_window_state(in_window);
+}
 
 /**
  * @brief Set the callback function for actuation hang-up events.

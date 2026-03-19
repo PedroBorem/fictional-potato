@@ -1,6 +1,6 @@
 idf_component_register(	SRCS 
 							"main.c"
-							"eco_mode.c"
+							"rush_mode.c"
 							"system_manager.c"
 							"system_monitoring.c"
 							"sectorization.c"

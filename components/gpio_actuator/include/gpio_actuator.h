@@ -229,4 +229,11 @@ void gpio_actuator_pressure_off(void);
 
 void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
 
+/**
+ * @brief Updates Rush Mode window state in the GPIO actuator.
+ *
+ * @param in_window True when Rush Mode window is active.
+ */
+void gpio_actuator_set_rush_mode_window_state(bool in_window);
+
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */

@@ -202,19 +202,19 @@
 #define SYSTEM_MONITORING_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
 
 /**
- * @brief Name of the Eco Mode task.
+ * @brief Name of the Rush Mode task.
  */
-#define ECO_MODE_TASK_NAME				"eco mode task"
+#define RUSH_MODE_TASK_NAME				"rush mode task"
 
 /**
- * @brief Stack size of the Eco Mode task.
+ * @brief Stack size of the Rush Mode task.
  */
-#define ECO_MODE_TASK_SIZE				(configMINIMAL_STACK_SIZE * 4)
+#define RUSH_MODE_TASK_SIZE				(configMINIMAL_STACK_SIZE * 4)
 
 /**
- * @brief Priority of the Eco Mode task.
+ * @brief Priority of the Rush Mode task.
  */
-#define ECO_MODE_TASK_PRIORITY			(tskIDLE_PRIORITY + 2)
+#define RUSH_MODE_TASK_PRIORITY			(tskIDLE_PRIORITY + 2)
 
 /** @} */ // end of FREERTOS_DEFINES group
 

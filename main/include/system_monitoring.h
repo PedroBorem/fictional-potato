@@ -67,7 +67,16 @@ void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type
 bool system_monitoring_range_barrier(uint8_t range_barrier);
 
 /**
- * 
+ * @brief Registers a pivot shutdown event for system monitoring.
+ *
+ * Builds and stores a record describing why the pivot was shut down and
+ * schedules an IDP #28 notification to be sent.
+ *
+ * @param shutdown_reason Enumerated cause of the pivot shutdown.
+ * @param idp             IDP value associated with this shutdown event.
+ * @param scheduling_id   Optional scheduling identifier string (may be NULL).
+ * @param origin          Optional string that identifies who requested
+ *                        the shutdown (module, app, etc.) (may be NULL).
  */
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin);
 
