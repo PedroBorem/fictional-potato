@@ -205,6 +205,16 @@ void actuation_app_set_pump(bool pump_state)
 }
 
 /**
+ * @brief Indicates whether the pivot is currently stopped.
+ *
+ * @return true when the live power state is PIVOT_OFF, false otherwise.
+ */
+bool actuation_app_is_pivot_off(void)
+{
+	return (gpio_actuator_get().power_state == PIVOT_OFF);
+}
+
+/**
  * @brief Shutdown the actuation control class.
  */
 void actuation_app_shutdown(void)

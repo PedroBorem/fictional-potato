@@ -31,6 +31,21 @@ static void sectorization_task(void* arg)
 
 	while(1)
 	{
+		/* Reset the internal pump state whenever the pivot is stopped.
+		 * This keeps sectorization in sync with command-based and manual shutdowns. */
+		if(actuation_app_is_pivot_off() == true)
+		{
+			if(pump_is_on == true)
+			{
+				ESP_LOGI(SECTORIZATION_TAG,"Pump OFF (pivot stopped)");
+				actuation_app_set_pump(false);
+				pump_is_on = false;
+			}
+
+			vTaskDelay(pdMS_TO_TICKS(2000));
+			continue;
+		}
+
 		if(sectorization_config.sector_number > 0)
 		{
 			for(uint8_t angles = 0; angles < CONFIG_SECTORS_MAX_VALUE; angles++)

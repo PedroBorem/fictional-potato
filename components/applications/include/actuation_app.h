@@ -74,6 +74,16 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size);
 void actuation_app_set_pump(bool pump_state);
 
 /**
+ * @brief Indicates whether the pivot is currently stopped.
+ *
+ * This function reads the live actuator state and returns true when the
+ * pivot power state is PIVOT_OFF.
+ *
+ * @return true when the pivot is stopped, false otherwise.
+ */
+bool actuation_app_is_pivot_off(void);
+
+/**
  * @brief Shuts down the actuation application.
  *
  * This function gracefully shuts down the actuation application.
