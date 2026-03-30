@@ -1211,7 +1211,7 @@ static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_RF)
+	if (comm_mode == COMM_RF || comm_mode == COMM_MQTT)
 	{
 		uint8_t idp = 0;
 		time_t timestamp;
