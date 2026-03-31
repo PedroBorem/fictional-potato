@@ -194,8 +194,6 @@ void system_manager_init(void)
 
 	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
-	system_monitoring_modem_heartbeat_start();
-
 	// automatic boot
 	system_manager_reboot();
 
@@ -2957,6 +2955,11 @@ static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
 		{
 			ESP_LOGW(SYSTEM_MANAGER_TAG, "Heartbeat payload without state (%s)", buffer);
 			return;
+		}
+
+		if (strcmp(heartbeat_state, "PING") == 0)
+		{
+			system_monitoring_modem_heartbeat_start();
 		}
 
 		system_monitoring_modem_heartbeat_feed(heartbeat_state);

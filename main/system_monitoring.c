@@ -27,6 +27,7 @@
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
 #define SYSTEM_MONITORING_HEARTBEAT_INTERVAL_MS (30000)
 #define SYSTEM_MONITORING_HEARTBEAT_TIMEOUT_MS (90000)
+#define SYSTEM_MONITORING_HEARTBEAT_MODEM_RESET_WAIT_MS (60000)
 #define SYSTEM_MONITORING_HEARTBEAT_TASK_NAME "monitoring heartbeat task"
 #define SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE (configMINIMAL_STACK_SIZE * 4)
 #define SYSTEM_MONITORING_HEARTBEAT_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
@@ -56,8 +57,10 @@ static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current s
 
 static uint32_t panel_reading;
 static volatile TickType_t system_monitoring_heartbeat_last_rx_tick = 0;
+static volatile TickType_t system_monitoring_heartbeat_modem_reset_tick = 0;
 static volatile bool system_monitoring_heartbeat_modem_alive = false;
 static volatile bool system_monitoring_heartbeat_timeout_pending = false;
+static volatile bool system_monitoring_heartbeat_modem_reset_requested = false;
 static bool system_monitoring_heartbeat_reset_blocked_logged = false;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
@@ -88,6 +91,14 @@ static void system_monitoring_task(void* arg);
 static void system_monitoring_modem_heartbeat_task(void* arg);
 
 /**
+ * @brief Requests a modem reset through the local MQTT/UART path.
+ *
+ * The control board uses the local modem link to ask for `IDP 92` recovery
+ * before escalating to its own `IDP 91` reset.
+ */
+static void system_monitoring_request_modem_reset(void);
+
+/**
  * @brief Timer callback for periodic system actions.
  *
  * This function is called periodically to execute specific actions.
@@ -100,7 +111,8 @@ static void system_monitoring_timer(TimerHandle_t pxTimer);
  * @brief Feeds the heartbeat monitor with a valid modem frame.
  *
  * Any valid frame from the modem refreshes the liveness window and clears a
- * pending reset request that was waiting for the pivot to turn off.
+ * pending recovery sequence that was waiting for the modem reset or for the
+ * pivot to turn off.
  *
  * @param heartbeat_state Textual state received in the heartbeat payload.
  */
@@ -108,6 +120,8 @@ void system_monitoring_modem_heartbeat_feed(const char *heartbeat_state)
 {
     system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
     system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_modem_reset_requested = false;
+    system_monitoring_heartbeat_modem_reset_tick = 0;
     system_monitoring_heartbeat_reset_blocked_logged = false;
 
     if (!system_monitoring_heartbeat_modem_alive)
@@ -119,12 +133,33 @@ void system_monitoring_modem_heartbeat_feed(const char *heartbeat_state)
 }
 
 /**
+ * @brief Requests a local modem reset before escalating to a board reset.
+ */
+static void system_monitoring_request_modem_reset(void)
+{
+    if (system_monitoring_callback == NULL)
+    {
+        ESP_LOGW(SYSTEM_MONITORING_TAG, "Cannot request modem reset: callback not registered");
+        return;
+    }
+
+    system_monitoring_heartbeat_modem_reset_requested = true;
+    system_monitoring_heartbeat_modem_reset_tick = xTaskGetTickCount();
+    system_monitoring_heartbeat_reset_blocked_logged = false;
+
+    ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout. Requesting modem reset by local IDP 92 before board reset");
+    LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout_requesting_modem_reset");
+
+    system_monitoring_callback("#92$", COMM_MQTT);
+}
+
+/**
  * @brief Dedicated task that monitors the modem heartbeat timeout.
  *
- * When the modem heartbeat times out, the reset request is held until the
- * control board reports `PIVOT_OFF`. While the pivot is on, the task only
- * logs the blocked reset condition and keeps waiting for either a new valid
- * heartbeat or a safe shutdown state.
+ * When the modem heartbeat times out, the control board first requests a
+ * modem reset through `IDP 92`. Only if the link stays down after that local
+ * recovery window does the task consider a board reset, and even then only
+ * when the pivot reports `PIVOT_OFF`.
  *
  * @param arg Task argument (unused).
  */
@@ -144,27 +179,41 @@ static void system_monitoring_modem_heartbeat_task(void* arg)
             system_monitoring_heartbeat_reset_blocked_logged = false;
             ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout");
             LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout");
+
+            if (!system_monitoring_heartbeat_modem_reset_requested)
+            {
+                system_monitoring_request_modem_reset();
+            }
         }
 
         if (system_monitoring_heartbeat_timeout_pending)
         {
-            if (actuation_app_is_pivot_off())
+            if (!system_monitoring_heartbeat_modem_reset_requested)
             {
-                system_monitoring_heartbeat_timeout_pending = false;
-                system_monitoring_heartbeat_reset_blocked_logged = false;
-
-                ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout with pivot off. Triggering board reset by IDP 91");
-                LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout_resetting_board");
-
-                if (system_monitoring_callback != NULL)
-                {
-                    system_monitoring_callback("#91$", comm_main_mode);
-                }
+                system_monitoring_request_modem_reset();
             }
-            else if (!system_monitoring_heartbeat_reset_blocked_logged)
+            else if ((now - system_monitoring_heartbeat_modem_reset_tick) >= pdMS_TO_TICKS(SYSTEM_MONITORING_HEARTBEAT_MODEM_RESET_WAIT_MS))
             {
-                system_monitoring_heartbeat_reset_blocked_logged = true;
-                ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout detected, but board reset is blocked while pivot is on");
+                if (actuation_app_is_pivot_off())
+                {
+                    system_monitoring_heartbeat_timeout_pending = false;
+                    system_monitoring_heartbeat_modem_reset_requested = false;
+                    system_monitoring_heartbeat_modem_reset_tick = 0;
+                    system_monitoring_heartbeat_reset_blocked_logged = false;
+
+                    ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem reset did not restore heartbeat and pivot is off. Triggering board reset by IDP 91");
+                    LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout_resetting_board");
+
+                    if (system_monitoring_callback != NULL)
+                    {
+                        system_monitoring_callback("#91$", comm_main_mode);
+                    }
+                }
+                else if (!system_monitoring_heartbeat_reset_blocked_logged)
+                {
+                    system_monitoring_heartbeat_reset_blocked_logged = true;
+                    ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem reset did not restore heartbeat, but board reset is blocked while pivot is on");
+                }
             }
         }
 
@@ -178,8 +227,10 @@ static void system_monitoring_modem_heartbeat_task(void* arg)
 void system_monitoring_modem_heartbeat_start(void)
 {
     system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
+    system_monitoring_heartbeat_modem_reset_tick = 0;
     system_monitoring_heartbeat_modem_alive = false;
     system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_modem_reset_requested = false;
     system_monitoring_heartbeat_reset_blocked_logged = false;
 
     if (xTask_system_monitoring_heartbeat == NULL)
@@ -206,6 +257,8 @@ void system_monitoring_modem_heartbeat_stop(void)
 
     system_monitoring_heartbeat_modem_alive = false;
     system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_modem_reset_requested = false;
+    system_monitoring_heartbeat_modem_reset_tick = 0;
     system_monitoring_heartbeat_reset_blocked_logged = false;
 }
 

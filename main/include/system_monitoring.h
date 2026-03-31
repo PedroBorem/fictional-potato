@@ -85,8 +85,10 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
  *
  * This monitor is independent from the barrier analysis task and is responsible
  * only for tracking the liveness packets exchanged with the modem. When the
- * heartbeat times out, the monitor may request a local `IDP 91` reset if the
- * pivot is currently off.
+ * heartbeat times out, the monitor first requests a local modem reset through
+ * `IDP 92` and only later may request a local `IDP 91` reset if the pivot is
+ * currently off. The task is expected to start only after the first valid
+ * `PING` received from the modem.
  */
 void system_monitoring_modem_heartbeat_start(void);
 
@@ -98,7 +100,7 @@ void system_monitoring_modem_heartbeat_stop(void);
 /**
  * @brief Feeds the heartbeat monitor with a new valid frame from the modem.
  *
- * A valid heartbeat frame clears any pending timeout-driven reset request.
+ * A valid heartbeat frame clears any pending timeout-driven recovery stage.
  *
  * @param heartbeat_state Textual state received in the heartbeat payload.
  */
