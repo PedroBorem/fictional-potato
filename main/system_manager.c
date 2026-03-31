@@ -143,6 +143,7 @@ static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_32(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_42(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -193,6 +194,7 @@ void system_manager_init(void)
 
 	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
+	system_monitoring_modem_heartbeat_start();
 
 	// automatic boot
 	system_manager_reboot();
@@ -474,6 +476,11 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		case IDP_32:
 		{
 			system_manager_idp_32(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_42:
+		{
+			system_manager_idp_42(str_pkg, comm_mode);
 			break;
 		}
 		case IDP_90:
@@ -2915,6 +2922,64 @@ static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
 
 		idp_parser_create_package(str_out, arg_pairs_ack);
 		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+}
+
+/**
+ * @brief Handles the heartbeat exchange between modem and control board.
+ *
+ * The handshake follows the sequence PING -> PONG -> ACK. The control board only
+ * responds to PING and PONG frames, while ACK is used only to refresh the local
+ * liveness state without generating another packet.
+ *
+ * @param buffer The input buffer containing heartbeat data.
+ * @param comm_mode The communication mode used by the incoming packet.
+ */
+static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{
+		char pivot_id[50] = {};
+		char heartbeat_state[20] = {};
+		char str_out[100] = {};
+		uint8_t idp = IDP_42;
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"string", heartbeat_state},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if (strlen(heartbeat_state) == 0)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Heartbeat payload without state (%s)", buffer);
+			return;
+		}
+
+		system_monitoring_modem_heartbeat_feed(heartbeat_state);
+
+		if (strcmp(heartbeat_state, "PING") == 0 ||
+		    strcmp(heartbeat_state, "PONG") == 0)
+		{
+			char heartbeat_reply[10] = {};
+			strcpy(heartbeat_reply, (strcmp(heartbeat_state, "PING") == 0) ? "PONG" : "ACK");
+
+			arg_pair_t arg_pairs_ack[] = {
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", heartbeat_reply},
+				{NULL, NULL}};
+
+			idp_parser_create_package(str_out, arg_pairs_ack);
+			comm_app_send_idp_pack(str_out, comm_mode);
+		}
+		else if (strcmp(heartbeat_state, "ACK") != 0)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Unknown heartbeat state (%s)", heartbeat_state);
+		}
 	}
 }
 

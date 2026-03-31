@@ -80,4 +80,28 @@ bool system_monitoring_range_barrier(uint8_t range_barrier);
  */
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin);
 
+/**
+ * @brief Starts the dedicated heartbeat monitoring task for the modem link.
+ *
+ * This monitor is independent from the barrier analysis task and is responsible
+ * only for tracking the liveness packets exchanged with the modem. When the
+ * heartbeat times out, the monitor may request a local `IDP 91` reset if the
+ * pivot is currently off.
+ */
+void system_monitoring_modem_heartbeat_start(void);
+
+/**
+ * @brief Stops the dedicated heartbeat monitoring task for the modem link.
+ */
+void system_monitoring_modem_heartbeat_stop(void);
+
+/**
+ * @brief Feeds the heartbeat monitor with a new valid frame from the modem.
+ *
+ * A valid heartbeat frame clears any pending timeout-driven reset request.
+ *
+ * @param heartbeat_state Textual state received in the heartbeat payload.
+ */
+void system_monitoring_modem_heartbeat_feed(const char *heartbeat_state);
+
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

@@ -25,6 +25,11 @@
 #define SYSTEM_MONITORING_TAG	"system_monitoring"
 
 #define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
+#define SYSTEM_MONITORING_HEARTBEAT_INTERVAL_MS (30000)
+#define SYSTEM_MONITORING_HEARTBEAT_TIMEOUT_MS (90000)
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_NAME "monitoring heartbeat task"
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE (configMINIMAL_STACK_SIZE * 4)
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 
 /**
  * @brief Enumeration representing the possible states of the system monitoring.
@@ -40,6 +45,7 @@ static system_monitoring_states system_states = SYSTEM_PAUSE; /**< Current state
 bool return_back_flag = false;
 
 static TaskHandle_t xTask_system_monitoring = NULL; /**< Task handle for the system monitoring task. */
+static TaskHandle_t xTask_system_monitoring_heartbeat = NULL; /**< Task handle for the modem heartbeat monitor. */
 static TimerHandle_t system_monitoring_timer_handle = NULL; /**< Timer handle for periodic actions. */
 static app_callback system_monitoring_callback = NULL; /**< Callback function for system monitoring events. */
 
@@ -49,6 +55,10 @@ static pivot_physical_config system_monitoring_physical_config = {}; /**< Config
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
 static uint32_t panel_reading;
+static volatile TickType_t system_monitoring_heartbeat_last_rx_tick = 0;
+static volatile bool system_monitoring_heartbeat_modem_alive = false;
+static volatile bool system_monitoring_heartbeat_timeout_pending = false;
+static bool system_monitoring_heartbeat_reset_blocked_logged = false;
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
@@ -71,6 +81,13 @@ static void system_monitoring_actuation_virtual_barrier(void);
 static void system_monitoring_task(void* arg);
 
 /**
+ * @brief Dedicated task that monitors the modem heartbeat timeout.
+ *
+ * @param arg Task argument (unused).
+ */
+static void system_monitoring_modem_heartbeat_task(void* arg);
+
+/**
  * @brief Timer callback for periodic system actions.
  *
  * This function is called periodically to execute specific actions.
@@ -79,8 +96,118 @@ static void system_monitoring_task(void* arg);
  */
 static void system_monitoring_timer(TimerHandle_t pxTimer);
 
+/**
+ * @brief Feeds the heartbeat monitor with a valid modem frame.
+ *
+ * Any valid frame from the modem refreshes the liveness window and clears a
+ * pending reset request that was waiting for the pivot to turn off.
+ *
+ * @param heartbeat_state Textual state received in the heartbeat payload.
+ */
+void system_monitoring_modem_heartbeat_feed(const char *heartbeat_state)
+{
+    system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
+    system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_reset_blocked_logged = false;
 
-void system_monitoring_start(const pivot_physical_config physical_config, const pivot_virtual_config virtual_config, uint8_t monitoring_time);
+    if (!system_monitoring_heartbeat_modem_alive)
+    {
+        ESP_LOGI(SYSTEM_MONITORING_TAG, "Heartbeat restored from modem (%s)", heartbeat_state);
+    }
+
+    system_monitoring_heartbeat_modem_alive = true;
+}
+
+/**
+ * @brief Dedicated task that monitors the modem heartbeat timeout.
+ *
+ * When the modem heartbeat times out, the reset request is held until the
+ * control board reports `PIVOT_OFF`. While the pivot is on, the task only
+ * logs the blocked reset condition and keeps waiting for either a new valid
+ * heartbeat or a safe shutdown state.
+ *
+ * @param arg Task argument (unused).
+ */
+static void system_monitoring_modem_heartbeat_task(void* arg)
+{
+    UNUSED(arg);
+
+    while (1)
+    {
+        TickType_t now = xTaskGetTickCount();
+
+        if (system_monitoring_heartbeat_modem_alive &&
+            ((now - system_monitoring_heartbeat_last_rx_tick) > pdMS_TO_TICKS(SYSTEM_MONITORING_HEARTBEAT_TIMEOUT_MS)))
+        {
+            system_monitoring_heartbeat_modem_alive = false;
+            system_monitoring_heartbeat_timeout_pending = true;
+            system_monitoring_heartbeat_reset_blocked_logged = false;
+            ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout");
+            LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout");
+        }
+
+        if (system_monitoring_heartbeat_timeout_pending)
+        {
+            if (actuation_app_is_pivot_off())
+            {
+                system_monitoring_heartbeat_timeout_pending = false;
+                system_monitoring_heartbeat_reset_blocked_logged = false;
+
+                ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout with pivot off. Triggering board reset by IDP 91");
+                LOG_DBG_ERROR(SYSTEM_MONITORING_TAG, "Modem_heartbeat_timeout_resetting_board");
+
+                if (system_monitoring_callback != NULL)
+                {
+                    system_monitoring_callback("#91$", comm_main_mode);
+                }
+            }
+            else if (!system_monitoring_heartbeat_reset_blocked_logged)
+            {
+                system_monitoring_heartbeat_reset_blocked_logged = true;
+                ESP_LOGW(SYSTEM_MONITORING_TAG, "Modem heartbeat timeout detected, but board reset is blocked while pivot is on");
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(SYSTEM_MONITORING_HEARTBEAT_INTERVAL_MS / 6));
+    }
+}
+
+/**
+ * @brief Starts the modem heartbeat monitor task if it is not running yet.
+ */
+void system_monitoring_modem_heartbeat_start(void)
+{
+    system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
+    system_monitoring_heartbeat_modem_alive = false;
+    system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_reset_blocked_logged = false;
+
+    if (xTask_system_monitoring_heartbeat == NULL)
+    {
+        xTaskCreate(&system_monitoring_modem_heartbeat_task,
+                    SYSTEM_MONITORING_HEARTBEAT_TASK_NAME,
+                    SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE,
+                    NULL,
+                    SYSTEM_MONITORING_HEARTBEAT_TASK_PRIORITY,
+                    &xTask_system_monitoring_heartbeat);
+    }
+}
+
+/**
+ * @brief Stops the modem heartbeat monitor task.
+ */
+void system_monitoring_modem_heartbeat_stop(void)
+{
+    if (xTask_system_monitoring_heartbeat != NULL)
+    {
+        vTaskDelete(xTask_system_monitoring_heartbeat);
+        xTask_system_monitoring_heartbeat = NULL;
+    }
+
+    system_monitoring_heartbeat_modem_alive = false;
+    system_monitoring_heartbeat_timeout_pending = false;
+    system_monitoring_heartbeat_reset_blocked_logged = false;
+}
 
 /**
  * @brief Executes the automatic return process based on the pivot actions and system configuration.
@@ -574,6 +701,8 @@ void system_monitoring_stop(void)
 		vTaskDelete(xTask_system_monitoring);
 		xTask_system_monitoring = NULL;
 	}
+
+	system_monitoring_modem_heartbeat_stop();
 
 	if(system_monitoring_timer_handle != NULL)
 	{

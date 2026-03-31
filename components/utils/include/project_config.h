@@ -103,6 +103,7 @@
  * @var IDP_22 Barrier configurations
  * @var IDP_23 GPS configurations via LoraMesh
  * @var IDP_24 Automatic Reboot configurations
+ * @var IDP_42 Heartbeat between modem and control board
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -136,6 +137,7 @@ typedef enum
     IDP_30 = 30,
     IDP_31,
     IDP_32,
+    IDP_42 = 42,
     IDP_90 = 90,
     IDP_91,
     IDP_92,
