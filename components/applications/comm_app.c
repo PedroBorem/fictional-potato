@@ -37,7 +37,7 @@
  * @param idp_pack IDP payload to evaluate.
  * @return true when the payload should not be printed verbatim.
  */
-static bool comm_app_hide_raw_log(const char *idp_pack)
+static bool comm_app_hide_raw_log_callback(const char *idp_pack)
 {
     return idp_parser_is_payload_from_idp(idp_pack, IDP_42);
 }
@@ -58,6 +58,7 @@ esp_err_t comm_app_init(const app_callback callback)
 
     err &= rf_uart_init(callback);
     err &= gprs_uart_init(callback);
+    gprs_uart_register_raw_log_callback(comm_app_hide_raw_log_callback);
 
     err &= http_server_register_callback(callback);
 
@@ -78,7 +79,7 @@ esp_err_t comm_app_init(const app_callback callback)
 void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
     char* str_copy = strdup(idp_pack);
-    bool hide_raw_log = comm_app_hide_raw_log(str_copy);
+    bool hide_raw_log = comm_app_hide_raw_log_callback(str_copy);
 
     if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
     {

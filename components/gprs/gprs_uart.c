@@ -10,7 +10,6 @@
 #include "driver/gpio.h"
 
 #include "FreeRTOS_defines.h"
-#include "idp_parser.h"
 #include "log.h"
 
 #include <string.h>
@@ -57,6 +56,11 @@ static app_callback gprs_callback = NULL;
  */
 static QueueHandle_t gprs_uart_queue = NULL;
 
+/**
+ * @brief Optional callback used to hide noisy raw UART logs.
+ */
+static gprs_uart_raw_log_callback gprs_raw_log_callback = NULL;
+
 /* Private function prototype ------------------------------------ */
 /**
  * @brief Task to handle GPRS UART events
@@ -75,7 +79,12 @@ static void gprs_uart_event_task(void* arg);
  */
 static bool gprs_uart_hide_raw_log(const char *payload)
 {
-    return idp_parser_is_payload_from_idp(payload, IDP_42);
+    if (gprs_raw_log_callback == NULL)
+    {
+        return false;
+    }
+
+    return gprs_raw_log_callback(payload);
 }
 
 /* Public methods ------------------------------------------------ */
@@ -145,6 +154,16 @@ esp_err_t gprs_uart_init(const app_callback callback)
     }
 
     return err;
+}
+
+/**
+ * @brief Registers an optional raw log filter for UART payloads.
+ *
+ * @param callback Callback responsible for deciding whether a payload should stay hidden.
+ */
+void gprs_uart_register_raw_log_callback(gprs_uart_raw_log_callback callback)
+{
+    gprs_raw_log_callback = callback;
 }
 
 /**
