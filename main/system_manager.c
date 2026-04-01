@@ -343,7 +343,10 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	idp_type idp_request = idp_parser_get(buffer_request, str_pkg);
 	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
 
-	LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
+	if (idp_request != IDP_42)
+	{
+		LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
+	}
 
 	bool payload_ascii_valid = check_valid_characters(str_pkg, strlen(str_pkg));
 

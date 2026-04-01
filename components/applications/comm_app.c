@@ -27,6 +27,24 @@
 
 /* Private methods  ---------------------------------------------- */
 
+/**
+ * @brief Checks whether an IDP packet should be hidden from raw communication logs.
+ *
+ * Heartbeat packets are intentionally kept out of the serial console while the
+ * higher-level heartbeat status logs remain enabled.
+ *
+ * @param idp_pack IDP payload to evaluate.
+ * @return true when the payload should not be printed verbatim.
+ */
+static bool comm_app_hide_raw_log(const char *idp_pack)
+{
+    return (idp_pack != NULL &&
+            idp_pack[0] == '#' &&
+            idp_pack[1] == '4' &&
+            idp_pack[2] == '2' &&
+            (idp_pack[3] == '-' || idp_pack[3] == '$'));
+}
+
 /* Public methods ------------------------------------------------ */
 
 /**
@@ -63,22 +81,32 @@ esp_err_t comm_app_init(const app_callback callback)
 void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
 {
     char* str_copy = strdup(idp_pack);
+    bool hide_raw_log = comm_app_hide_raw_log(str_copy);
 
     if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
     {
         http_server_send_resp(str_copy);
-        LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
+        if (!hide_raw_log)
+        {
+            LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
+        }
     }
     else if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
-        LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+        if (!hide_raw_log)
+        {
+            LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+        }
 
     }
     else if(communication == COMM_RF)
     {
         rf_uart_send_event(str_copy, strlen(str_copy));
-        LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+        if (!hide_raw_log)
+        {
+            LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+        }
 
     }
 

@@ -30,22 +30,6 @@ Mapeamento consolidado dos IDPs encontrados nos projetos:
 - `*` = IDP com observacao relevante no fim do arquivo. Em alguns casos isso indica `ainda em teste`; em outros, legado, fallback, multi-topico, timeout especial ou divergencia de implementacao.
 - IDPs podem aparecer aqui mesmo sem implementacao atual quando ja existem mapeados em documentacao legada ou de refatoracao; nesses casos isso fica explicito na descricao.
 
-## Heartbeat Local `IDP 42*`
-
-- Objetivo: validar se `fw_A7608_SIM7600` e `fw_PlacaDeControle_2.0` continuam vivos no link serial interno.
-- Intervalo atual: `30 s`.
-- Timeout de resposta do primeiro `PING`: `10 s`.
-- Timeout local atual: `90 s`.
-- Janela de recuperacao apos pedir o reset do modem: `60 s`.
-- Fluxo base: `#42-PIVO_ID-PING$ -> #42-PIVO_ID-PONG$ -> #42-PIVO_ID-ACK$`.
-- Publicacao MQTT: nao publica na nuvem; no modem o `IDP 42` e interceptado antes do roteamento MQTT.
-- Lado da placa: o parser e o handler ficam no `system_manager`, mas o monitor de timeout fica no `system_monitoring`.
-- Criacao da task na placa: o monitor local so e criado depois do primeiro `PING` valido vindo do modem. Sem `PING`, nao existe timeout de heartbeat na placa.
-- Lado do modem: a logica periodica fica em task dedicada no modulo `board_heartbeat`.
-- Falha do primeiro `PING`: se a placa nao responder dentro da janela de `10 s`, o modem executa reboot completo do ESP32 e encerra o link atual antes do `esp_restart()`.
-- Falha prolongada do link na placa: quando o timeout local de `90 s` expira, a placa primeiro pede o reset do modem pelo fluxo local `IDP 92`.
-- Escalada final na placa: se o link continuar sem voltar depois da janela de recuperacao e o pivot estiver em `PIVOT_OFF`, a placa dispara reset interno pelo fluxo `#91$`; com `PIVOT_ON`, esse reset fica bloqueado ate o pivot desligar ou o heartbeat voltar.
-
 ## Visao Rapida por Funcao
 
 ### Actions
@@ -186,7 +170,7 @@ Mapeamento consolidado dos IDPs encontrados nos projetos:
 | 36 | Offset de pressao | Le ou grava o offset com sinal e valor absoluto para correcao da leitura. | `fw_ICrop -> icrop-config` | `-` | IDP novo no levantamento; encontrado implementado no `fw_ICrop`. | `GET/SET: #36-PIVO_ID-SINAL-OFFSET$` |
 | 40* | Chuva da ultima hora | Publica o acumulado da ultima hora fechada, somente quando houve chuva; ainda em teste. | `cloudv2-pluv` | `-` | Continua aparecendo como feature de pluviometro em branch paralela; nao encontrei uso equivalente consolidado nos outros firmwares analisados. | `Evento: #40-PIVO_ID-DATA-ID_HORA-MM$` |
 | 41* | Resumo diario de chuva | Publica o consolidado horario do dia anterior; ainda em teste. | `cloudv2-pluv` | `-` | Continua aparecendo como feature de pluviometro em branch paralela; nao encontrei uso equivalente consolidado nos outros firmwares analisados. | `Resumo: #41-PIVO_ID-DATA[@HORA-MM...]$` |
-| 42* | Heartbeat modem <-> placa | O modem envia `PING` a cada 30 s, a placa responde `PONG` e o modem fecha com `ACK`; se o primeiro `PING` nao for respondido em `10 s`, o modem executa reboot completo do ESP32. Na placa, o timeout local primeiro pede o reset do modem por `IDP 92`; so depois, se o link seguir morto e o pivot estiver `PIVOT_OFF`, o monitor dispara reset interno via `#91$`. | `serial interno modem <-> placa` | `modem + placa de controle` | Nos demais projetos o `42` so aparece reservado em enums amplos, sem funcionalidade consolidada no protocolo. | `#42-PIVO_ID-PING$ -> #42-PIVO_ID-PONG$ -> #42-PIVO_ID-ACK$` |
+| 42* | Heartbeat modem <-> placa | O modem envia `PING` a cada 30 s, a placa responde `PONG` e o modem fecha com `ACK`; se o primeiro `PING` nao for respondido em `10 s`, o modem ainda faz uma segunda verificacao com outro `PING`. So depois de duas falhas consecutivas o modem executa reboot completo do ESP32, e isso so vale quando a placa ja provou suporte ao `IDP 42`. Se houver trafego serial valido sem resposta ao heartbeat, o modem entra em fallback `UNSUPPORTED` e para de usar o `42` como criterio de reset. Na placa, o timeout local primeiro pede o reset do modem por `IDP 92`; so depois, se o link seguir morto e o pivot estiver `PIVOT_OFF`, o monitor dispara reset interno via `#91$`. | `serial interno modem <-> placa` | `modem + placa de controle` | Nos demais projetos o `42` so aparece reservado em enums amplos, sem funcionalidade consolidada no protocolo. | `#42-PIVO_ID-PING$ -> #42-PIVO_ID-PONG$ -> #42-PIVO_ID-ACK$` |
 | 69* | Suite de teste de hardware | Recebe `START` para disparar testes de hardware e aceita ou publica relatorios; ainda em teste. | `subscricao padrao -> cloudv2-test` | `placa de controle` | Ate esta passada continuou associado a branch de teste, sem uso equivalente nos demais projetos. | `Start: #69-PIVO_ID-TIMESTAMP-START$; relatorio: #69-PIVO_ID-...$` |
 | 90 | Versao de firmware | Responde a versao da placa; no modem o payload ainda recebe o `TAG_VERSION` local antes da publicacao. | `subscricao padrao -> cloudv2-info` | `-` | No `fw_ICrop` publica em `icrop-update`; no `fmw_wifi-v3.0` publica em `cloudv2-network` com a versao concatenada ao payload. | `Consulta: #90-pivo_1$; retorno: #90-soil_1-v2.0.0$` |
 | 91* | Reboot da placa | A placa envia ACK e executa `esp_restart()`. | `subscricao padrao`; ACK MQTT cai em `cloudv2-error` pelo fallback do modem | `placa de controle` | No `fmw_wifi-v3.0` o `IDP 91` ja e roteado explicitamente para `cloudv2-error`; no `fw_ICrop` houve uso adicional em branch paralela. | `REQ: #91-PIVO_ID$; ACK: #91-PIVO_ID$` |
@@ -211,7 +195,7 @@ Mapeamento consolidado dos IDPs encontrados nos projetos:
 - O `fw_gps_v3.0` nao usa `IDP_` simbolico nos arquivos pesquisados; no fluxo analisado ele emite pacotes brutos `#07-...$`, por isso apareceu apenas como variacao do `IDP 7*`.
 - `IDP 9*` e `IDP 10*` foram mantidos no documento porque ja aparecem mapeados na documentacao legada do modem (`Traceroute` e `Ruido`), mas nesta varredura nao encontrei implementacao ativa deles nos seis firmwares analisados.
 - O `IDP 19*` segue implementado no `master` do `fw_ICrop`; o asterisco dele agora existe porque ha observacao complementar sobre a variante legada de `pressure-test` e os usos em branch paralela.
-- O `IDP 42*` foi criado como heartbeat local entre `fw_A7608_SIM7600` e `fw_PlacaDeControle_2.0`; no modem ele e interceptado antes do roteamento MQTT, entao esse handshake nao sobe para a nuvem. Sem resposta ao primeiro `PING` dentro de `10 s`, o modem faz reboot completo do ESP32. Na placa, o timeout local primeiro dispara um pedido de reset do modem por `IDP 92`; se isso nao recuperar o link dentro da janela configurada, o monitor pode escalar para `#91$` somente com `PIVOT_OFF`.
+- O `IDP 42*` foi criado como heartbeat local entre `fw_A7608_SIM7600` e `fw_PlacaDeControle_2.0`; ele nao sobe para a nuvem e fica restrito ao link serial interno entre modem e placa.
 - IDs marcados com `*` indicam que existe alguma observacao relevante nesta secao; em alguns casos isso significa `ainda em teste`, e em outros indica legado, fallback, multi-topico ou divergencia de implementacao.
 - `34*`, `40*` e `41*` continuam ligados ao conjunto de branches de pluviometro, principalmente `feat/pluviometer` na placa, `feat/pluv` no modem e `feat/pluviometro` no `fw_ICrop`.
 - `69*` apareceu na branch `feat/gpio-test-suite`, com publicacao no topico `cloudv2-test`.
