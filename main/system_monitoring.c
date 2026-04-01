@@ -226,15 +226,15 @@ static void system_monitoring_modem_heartbeat_task(void* arg)
  */
 void system_monitoring_modem_heartbeat_start(void)
 {
-    system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
-    system_monitoring_heartbeat_modem_reset_tick = 0;
-    system_monitoring_heartbeat_modem_alive = false;
-    system_monitoring_heartbeat_timeout_pending = false;
-    system_monitoring_heartbeat_modem_reset_requested = false;
-    system_monitoring_heartbeat_reset_blocked_logged = false;
-
     if (xTask_system_monitoring_heartbeat == NULL)
     {
+        system_monitoring_heartbeat_last_rx_tick = xTaskGetTickCount();
+        system_monitoring_heartbeat_modem_reset_tick = 0;
+        system_monitoring_heartbeat_modem_alive = false;
+        system_monitoring_heartbeat_timeout_pending = false;
+        system_monitoring_heartbeat_modem_reset_requested = false;
+        system_monitoring_heartbeat_reset_blocked_logged = false;
+
         xTaskCreate(&system_monitoring_modem_heartbeat_task,
                     SYSTEM_MONITORING_HEARTBEAT_TASK_NAME,
                     SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE,

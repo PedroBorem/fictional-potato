@@ -63,6 +63,24 @@ static QueueHandle_t gprs_uart_queue = NULL;
  */
 static void gprs_uart_event_task(void* arg);
 
+/**
+ * @brief Checks whether a UART payload should stay hidden from raw GPRS logs.
+ *
+ * Heartbeat packets are exchanged every 30 seconds and would otherwise pollute
+ * the serial console with repetitive `IDP 42` traffic.
+ *
+ * @param payload Full UART payload to inspect.
+ * @return true when the raw UART log should be suppressed.
+ */
+static bool gprs_uart_hide_raw_log(const char *payload)
+{
+    return (payload != NULL &&
+            payload[0] == '#' &&
+            payload[1] == '4' &&
+            payload[2] == '2' &&
+            (payload[3] == '-' || payload[3] == '$'));
+}
+
 /* Public methods ------------------------------------------------ */
 /**
  * @brief Initialize the GPRS UART module.
@@ -150,7 +168,10 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 
     if (uart_write_bytes(GPRS_UART_NUM, event, event_size) != -1)
     {
-        LOG_COMM(GPRS_UART_TAG, "OK");
+        if (!gprs_uart_hide_raw_log(event))
+        {
+            LOG_COMM(GPRS_UART_TAG, "OK");
+        }
         err = ESP_OK;
     }
 
@@ -193,7 +214,6 @@ static void gprs_uart_event_task(void* arg)
 
                     // Event of UART receiving data
                     uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
-                    LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
 
                     for (int char_position = 0; char_position < event.size; char_position++)
                     {
@@ -207,6 +227,11 @@ static void gprs_uart_event_task(void* arg)
                     }
 
                     buff_in[aux] = '\0';
+
+                    if (!gprs_uart_hide_raw_log(buff_in))
+                    {
+                        LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
+                    }
 
                     // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
 
