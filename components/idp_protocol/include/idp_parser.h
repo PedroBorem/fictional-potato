@@ -33,6 +33,18 @@ typedef struct arg_pair {
 idp_type idp_parser_get(const char* string_in, char* string_out);
 
 /**
+ * @brief Checks whether a payload belongs to a specific IDP.
+ *
+ * This helper is intended for lightweight routing or log filtering when the
+ * caller only needs to know whether a raw payload starts with a given IDP.
+ *
+ * @param[in] payload Raw payload to be inspected.
+ * @param[in] idp Expected IDP value.
+ * @return true if the payload matches the requested IDP, false otherwise.
+ */
+bool idp_parser_is_payload_from_idp(const char *payload, idp_type idp);
+
+/**
  * @brief Validate the specified pivot actions.
  *
  * This function validates the specified pivot actions to ensure they conform to the IDP protocol.

@@ -8,6 +8,7 @@
 #include "comm_app.h"
 
 #include "gprs_uart.h"
+#include "idp_parser.h"
 #include "rf_uart.h"
 
 #include "wifi_app.h"
@@ -38,11 +39,7 @@
  */
 static bool comm_app_hide_raw_log(const char *idp_pack)
 {
-    return (idp_pack != NULL &&
-            idp_pack[0] == '#' &&
-            idp_pack[1] == '4' &&
-            idp_pack[2] == '2' &&
-            (idp_pack[3] == '-' || idp_pack[3] == '$'));
+    return idp_parser_is_payload_from_idp(idp_pack, IDP_42);
 }
 
 /* Public methods ------------------------------------------------ */

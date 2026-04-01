@@ -10,6 +10,7 @@
 #include "driver/gpio.h"
 
 #include "FreeRTOS_defines.h"
+#include "idp_parser.h"
 #include "log.h"
 
 #include <string.h>
@@ -74,11 +75,7 @@ static void gprs_uart_event_task(void* arg);
  */
 static bool gprs_uart_hide_raw_log(const char *payload)
 {
-    return (payload != NULL &&
-            payload[0] == '#' &&
-            payload[1] == '4' &&
-            payload[2] == '2' &&
-            (payload[3] == '-' || payload[3] == '$'));
+    return idp_parser_is_payload_from_idp(payload, IDP_42);
 }
 
 /* Public methods ------------------------------------------------ */
