@@ -52,13 +52,13 @@ static pivot_virtual_config system_monitoring_virtual_config = {}; /**< Configur
 static pivot_physical_config system_monitoring_physical_config = {}; /**< Configuration for system monitoring. */
 static barrier_status status_barrier = PIVOT_OUTSIDE_THE_BARRIER; /**< Current status of the barrier. */
 
-static uint32_t panel_reading;
-static volatile TickType_t system_monitoring_heartbeat_last_rx_tick = 0;
-static volatile TickType_t system_monitoring_heartbeat_modem_reset_tick = 0;
-static volatile bool system_monitoring_heartbeat_modem_alive = false;
-static volatile bool system_monitoring_heartbeat_timeout_pending = false;
-static volatile bool system_monitoring_heartbeat_modem_reset_requested = false;
-static bool system_monitoring_heartbeat_reset_blocked_logged = false;
+static uint32_t panel_reading; /**< Latest panel reading used by the physical barrier logic. */
+static volatile TickType_t system_monitoring_heartbeat_last_rx_tick = 0; /**< Tick count of the last valid modem heartbeat frame. */
+static volatile TickType_t system_monitoring_heartbeat_modem_reset_tick = 0; /**< Tick count captured when the board requests a modem reset. */
+static volatile bool system_monitoring_heartbeat_modem_alive = false; /**< Indicates whether the modem heartbeat is currently considered alive. */
+static volatile bool system_monitoring_heartbeat_timeout_pending = false; /**< Indicates whether a heartbeat timeout recovery sequence is in progress. */
+static volatile bool system_monitoring_heartbeat_modem_reset_requested = false; /**< Indicates whether the board has already requested the modem reset for the current timeout. */
+static bool system_monitoring_heartbeat_reset_blocked_logged = false; /**< Avoids repeating the log that explains why the board reset is blocked while the pivot is on. */
 
 static uint16_t* system_monitoring_current_angle = &global_angle; /**< Pointer to the current angle variable. */
 
