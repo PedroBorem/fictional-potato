@@ -67,8 +67,43 @@ void system_monitoring_barrier(pivot_actions current_current_pivot_actions, type
 bool system_monitoring_range_barrier(uint8_t range_barrier);
 
 /**
- * 
+ * @brief Registers a pivot shutdown event for system monitoring.
+ *
+ * Builds and stores a record describing why the pivot was shut down and
+ * schedules an IDP #28 notification to be sent.
+ *
+ * @param shutdown_reason Enumerated cause of the pivot shutdown.
+ * @param idp             IDP value associated with this shutdown event.
+ * @param scheduling_id   Optional scheduling identifier string (may be NULL).
+ * @param origin          Optional string that identifies who requested
+ *                        the shutdown (module, app, etc.) (may be NULL).
  */
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin);
+
+/**
+ * @brief Starts the dedicated heartbeat monitoring task for the modem link.
+ *
+ * This monitor is independent from the barrier analysis task and is responsible
+ * only for tracking the liveness packets exchanged with the modem. When the
+ * heartbeat times out, the monitor first requests a local modem reset through
+ * `IDP 92` and only later may request a local `IDP 91` reset if the pivot is
+ * currently off. The task is expected to start only after the first valid
+ * `PING` received from the modem.
+ */
+void system_monitoring_modem_heartbeat_start(void);
+
+/**
+ * @brief Stops the dedicated heartbeat monitoring task for the modem link.
+ */
+void system_monitoring_modem_heartbeat_stop(void);
+
+/**
+ * @brief Feeds the heartbeat monitor with a new valid frame from the modem.
+ *
+ * A valid heartbeat frame clears any pending timeout-driven recovery stage.
+ *
+ * @param heartbeat_state Textual state received in the heartbeat payload.
+ */
+void system_monitoring_modem_heartbeat_feed(const char *heartbeat_state);
 
 #endif /* MAIN_INCLUDE_SYSTEM_MONITORING_H_ */

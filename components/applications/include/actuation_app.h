@@ -74,6 +74,16 @@ void actuation_app_get_actions(pivot_actions* config_out, size_t config_size);
 void actuation_app_set_pump(bool pump_state);
 
 /**
+ * @brief Indicates whether the pivot is currently stopped.
+ *
+ * This function reads the live actuator state and returns true when the
+ * pivot power state is PIVOT_OFF.
+ *
+ * @return true when the pivot is stopped, false otherwise.
+ */
+bool actuation_app_is_pivot_off(void);
+
+/**
  * @brief Shuts down the actuation application.
  *
  * This function gracefully shuts down the actuation application.
@@ -83,5 +93,12 @@ void actuation_app_shutdown(void);
 void actuation_app_hangs_up_callback(const hangs_up_callback callback);
 
 void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config);
+
+/**
+ * @brief Forwards Rush Mode window state to the GPIO actuator.
+ *
+ * @param in_window True when Rush Mode window is active.
+ */
+void actuation_app_set_rush_mode_window_state(bool in_window);
 
 #endif /* COMPONENTS_APPLICATIONS_INCLUDE_ACTUATION_APP_H_ */

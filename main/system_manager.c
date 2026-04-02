@@ -25,6 +25,7 @@
 #include "comm_app.h"
 #include "data_app.h"
 #include "rf_uart.h"
+#include "rush_mode.h"
 
 #include "scheduling.h"
 #include "system_monitoring.h"
@@ -141,6 +142,8 @@ static void system_manager_idp_27(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_28(const char *buufer, comm_type comm_mode);
 static void system_manager_idp_30(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_31(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_32(const char *buffer, comm_type comm_mode);
+static void system_manager_idp_42(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_90(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_91(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_92(const char *buffer, comm_type comm_mode);
@@ -182,6 +185,8 @@ void system_manager_init(void)
 
 	system_monitoring_start(physical_config, virtual_config, system_read_time);
 
+	rush_mode_register_callback(&system_manager_callback);
+
 	// communication modules init
 	network_config network = {};
 	data_app_load(DATA_TYPE_NETWORK_CONFIG, &network);
@@ -189,9 +194,12 @@ void system_manager_init(void)
 
 	comm_app_wifi_config(network.wifi_ssid, network.wifi_pass);
 	ESP_ERROR_CHECK(comm_app_init(&system_manager_callback));
-
 	// automatic boot
 	system_manager_reboot();
+
+	rush_mode_config saved_rush_mode_config = {};
+	data_app_load(DATA_TYPE_RUSH_MODE_CONFIG, &saved_rush_mode_config);
+	rush_mode_start(saved_rush_mode_config);
 
 	// init sectors
 	sector_config sectors = {};
@@ -335,7 +343,10 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	idp_type idp_request = idp_parser_get(buffer_request, str_pkg);
 	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
 
-	LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
+	if (idp_request != IDP_42)
+	{
+		LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_pkg);
+	}
 
 	bool payload_ascii_valid = check_valid_characters(str_pkg, strlen(str_pkg));
 
@@ -463,6 +474,16 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 			system_manager_idp_31(str_pkg, comm_mode);
 			break;
 		}
+		case IDP_32:
+		{
+			system_manager_idp_32(str_pkg, comm_mode);
+			break;
+		}
+		case IDP_42:
+		{
+			system_manager_idp_42(str_pkg, comm_mode);
+			break;
+		}
 		case IDP_90:
 		{
 			system_manager_idp_90(str_pkg, comm_mode);
@@ -561,6 +582,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
+		char command_user[sizeof(new_actions.user)] = {};
 
 		char pivot_id[50] = {};
 		uint16_t dwp = 0;
@@ -577,6 +599,7 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
+		memcpy(command_user, new_actions.user, sizeof(command_user));
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
@@ -604,9 +627,16 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 					{
 						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_SOIL_APP, idp, "0", new_actions.user);
 					}
+					else if(strcmp(new_actions.user, "rush_mode") == 0)
+					{
+						system_monitoring_pivot_shutdown(TYPE_HANGS_UP_RUSH_MODE, idp, "0", new_actions.user);
+					}
 				}
 
+				// Preserve the command origin because the live actions read overwrites
+				// the user field and would make Rush Mode look like an external IDP 01.
 				actuation_app_get_actions(&new_actions, sizeof(new_actions));
+				memcpy(new_actions.user, command_user, sizeof(new_actions.user));
 				new_actions.percentimeter = 0;
 				new_actions.power_state = PIVOT_OFF;
 				new_actions.watering_state = PIVOT_DRY;
@@ -639,8 +669,13 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				// time for the percentage to stabilize
 				system_rtc_percent = rtc_app_get_timestamp(false);
 
-				// send current status
-				system_manager_idp_00("#00$", comm_main_mode);
+				// send current status for regular commands only.
+				if (strcmp(new_actions.user, "rush_mode") != 0)
+				{
+					system_manager_idp_00("#00$", comm_main_mode);
+				}
+
+				rush_mode_handle_override(&new_actions, &old_actions, (strcmp(new_actions.user, "rush_mode") == 0), true);
 
 				// save new history
 				if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
@@ -824,7 +859,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		if (delimiter_num >= expected_delimiter_num) // number of fields in the payload - 1
+		if (delimiter_num == expected_delimiter_num) // number of fields in the payload - 1
 		{
 			mqtt_save_pkg = true;
 		}
@@ -914,7 +949,7 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 /**
  * @brief Handle IDP package type 4.
  *
- * This function handles IDP package type 4, saving or retrieving eco mode configuration based on the communication mode.
+ * This function handles IDP package type 4, saving or retrieving rush mode configuration based on the communication mode.
  *
  * @param buffer The input buffer containing the request.
  * @param comm_mode The communication mode (e.g., COMM_HTTP_GET, COMM_HTTP_POST).
@@ -924,7 +959,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	bool mqtt_load_pkg = false;
 	bool mqtt_save_pkg = false;
 	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
-	uint8_t expected_delimiter_num = (ECO_MODE_CONFIG_VAR_COUNT + 1);
+	uint8_t expected_delimiter_num = (RUSH_MODE_CONFIG_VAR_COUNT + 1);
 
 	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
@@ -938,24 +973,42 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 		}
 	}
 
-	if (comm_mode == COMM_HTTP_POST || mqtt_save_pkg)
+	if ((comm_mode == COMM_HTTP_POST && delimiter_num >= expected_delimiter_num) || mqtt_save_pkg)
 	{
 		uint8_t idp = 0;
 		char pivot_id[50] = {};
-		eco_mode_config eco_mode = {};
+		uint32_t start_time_hhmm = 0;
+		uint32_t end_time_hhmm = 0;
+		time_t start_time_seconds = 0;
+		time_t end_time_seconds = 0;
+		bool valid_time_window = false;
+		bool rush_mode_enabled = false;
+		rush_mode_config new_rush_mode_config = {};
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", pivot_id},
-				{"uint32_t", &eco_mode.start_time},
-				{"uint32_t", &eco_mode.end_time},
+				{"uint32_t", &start_time_hhmm},
+				{"uint32_t", &end_time_hhmm},
+				{"bool", &rush_mode_enabled},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
-		if (idp_parser_validate_idp_04(eco_mode))
+
+		new_rush_mode_config.enable = rush_mode_enabled;
+		valid_time_window = (rush_mode_hhmm_to_seconds(start_time_hhmm, &start_time_seconds)
+		&& rush_mode_hhmm_to_seconds(end_time_hhmm, &end_time_seconds));
+		if (valid_time_window)
 		{
-			esp_err_t ret = data_app_save(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode, sizeof(eco_mode));
+			new_rush_mode_config.start_time = start_time_seconds;
+			new_rush_mode_config.end_time = end_time_seconds;
+		}
+
+		if (valid_time_window
+		&& idp_parser_validate_idp_04(new_rush_mode_config))
+		{
+			esp_err_t ret = data_app_save(DATA_TYPE_RUSH_MODE_CONFIG, &new_rush_mode_config, sizeof(new_rush_mode_config));
 
 			if (ret == ESP_OK)
 			{
@@ -967,10 +1020,8 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, comm_mode);
 			}
 
-			/*
-			eco_mode_stop();
-			eco_mode_start(eco_mode);
-			*/
+			rush_mode_stop();
+			rush_mode_start(new_rush_mode_config);
 		}
 		else
 		{
@@ -979,7 +1030,7 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 				comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
 			}
 
-			ESP_LOGE(SYSTEM_MANAGER_TAG, "Eco Mode Config invalid packed data (%s)", buffer);
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Rush Mode Config invalid packed data (%s)", buffer);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid data");
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
 		}
@@ -987,18 +1038,23 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
 	{
 		char str_out[200] = {};
+		char start_time_hhmm[5] = {};
+		char end_time_hhmm[5] = {};
 
 		uint8_t idp = IDP_4;
-		eco_mode_config eco_mode = {};
+		rush_mode_config rush_mode = {};
 
-		data_app_load(DATA_TYPE_ECO_MODE_CONFIG, &eco_mode);
+		data_app_load(DATA_TYPE_RUSH_MODE_CONFIG, &rush_mode);
+		rush_mode_seconds_to_hhmm_string(rush_mode.start_time, start_time_hhmm, sizeof(start_time_hhmm));
+		rush_mode_seconds_to_hhmm_string(rush_mode.end_time, end_time_hhmm, sizeof(end_time_hhmm));
 
 		arg_pair_t arg_pairs[] =
 			{
 				{"uint8_t", &idp},
 				{"string", system_id},
-				{"uint32_t", &eco_mode.start_time},
-				{"uint32_t", &eco_mode.end_time},
+				{"string", start_time_hhmm},
+				{"string", end_time_hhmm},
+				{"bool", &rush_mode.enable},
 				{NULL, NULL}};
 
 		idp_parser_create_package(str_out, arg_pairs);
@@ -1163,7 +1219,7 @@ static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 {
-	if (comm_mode == COMM_RF)
+	if (comm_mode == COMM_RF || comm_mode == COMM_MQTT)
 	{
 		uint8_t idp = 0;
 		time_t timestamp;
@@ -2707,6 +2763,8 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// send current status
 		system_manager_idp_00("#00$", comm_main_mode);
 
+		rush_mode_handle_override(&new_actions, &old_actions, false, false);
+
 		// save new history
 		if ((new_actions.power_state != PIVOT_OFF) && (old_actions.power_state == PIVOT_OFF))
 		{
@@ -2838,6 +2896,104 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid configuration payload >> expected {%d} paramters, but receveid {%d}", (expected_delimiter_num + 1), (delimiter_num + 1));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
+}
+
+static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{	
+		uint8_t idp = IDP_32;
+		char str_rush[50] = {};
+		char str_out[200] = {};
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", str_rush},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		arg_pair_t arg_pairs_ack[] = {
+			{"uint8_t", &idp},
+			{"string", system_id},
+			{"string", str_rush},
+			{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs_ack);
+		comm_app_send_idp_pack(str_out, comm_mode);
+	}
+}
+
+/**
+ * @brief Handles the heartbeat exchange between modem and control board.
+ *
+ * The handshake follows the sequence PING -> PONG -> ACK. The control board only
+ * responds to PING and PONG frames, while ACK is used only to refresh the local
+ * liveness state without generating another packet.
+ *
+ * @param buffer The input buffer containing heartbeat data.
+ * @param comm_mode The communication mode used by the incoming packet.
+ */
+static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
+{
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{
+		char pivot_id[50] = {};
+		char heartbeat_state[20] = {};
+		char str_out[100] = {};
+		uint8_t idp = IDP_42;
+
+		arg_pair_t arg_pairs[] =
+			{
+				{"uint8_t", &idp},
+				{"string", pivot_id},
+				{"string", heartbeat_state},
+				{NULL, NULL}};
+
+		idp_parser_get_packet_data(buffer, arg_pairs);
+
+		if (strlen(heartbeat_state) == 0)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Heartbeat payload without state (%s)", buffer);
+			return;
+		}
+
+		if (strcmp(heartbeat_state, "PING") == 0)
+		{
+			system_monitoring_modem_heartbeat_start();
+		}
+
+		system_monitoring_modem_heartbeat_feed(heartbeat_state);
+
+		if (strcmp(heartbeat_state, "PING") == 0 ||
+		    strcmp(heartbeat_state, "PONG") == 0)
+		{
+			char heartbeat_reply[10] = {};
+
+			if (strcmp(heartbeat_state, "PING") == 0)
+			{
+				strcpy(heartbeat_reply, "PONG");
+			}
+			else
+			{
+				strcpy(heartbeat_reply, "ACK");
+			}
+
+			arg_pair_t arg_pairs_ack[] = {
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", heartbeat_reply},
+				{NULL, NULL}};
+
+			idp_parser_create_package(str_out, arg_pairs_ack);
+			comm_app_send_idp_pack(str_out, comm_mode);
+		}
+		else if (strcmp(heartbeat_state, "ACK") != 0)
+		{
+			ESP_LOGW(SYSTEM_MANAGER_TAG, "Unknown heartbeat state (%s)", heartbeat_state);
+		}
 	}
 }
 

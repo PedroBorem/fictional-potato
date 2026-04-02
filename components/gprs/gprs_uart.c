@@ -56,12 +56,36 @@ static app_callback gprs_callback = NULL;
  */
 static QueueHandle_t gprs_uart_queue = NULL;
 
+/**
+ * @brief Optional callback used to hide noisy raw UART logs.
+ */
+static gprs_uart_raw_log_callback gprs_raw_log_callback = NULL;
+
 /* Private function prototype ------------------------------------ */
 /**
  * @brief Task to handle GPRS UART events
  * @param arg User-defined argument passed to the task
  */
 static void gprs_uart_event_task(void* arg);
+
+/**
+ * @brief Checks whether a UART payload should stay hidden from raw GPRS logs.
+ *
+ * Heartbeat packets are exchanged every 30 seconds and would otherwise pollute
+ * the serial console with repetitive `IDP 42` traffic.
+ *
+ * @param payload Full UART payload to inspect.
+ * @return true when the raw UART log should be suppressed.
+ */
+static bool gprs_uart_hide_raw_log(const char *payload)
+{
+    if (gprs_raw_log_callback == NULL)
+    {
+        return false;
+    }
+
+    return gprs_raw_log_callback(payload);
+}
 
 /* Public methods ------------------------------------------------ */
 /**
@@ -133,6 +157,16 @@ esp_err_t gprs_uart_init(const app_callback callback)
 }
 
 /**
+ * @brief Registers an optional raw log filter for UART payloads.
+ *
+ * @param callback Callback responsible for deciding whether a payload should stay hidden.
+ */
+void gprs_uart_register_raw_log_callback(gprs_uart_raw_log_callback callback)
+{
+    gprs_raw_log_callback = callback;
+}
+
+/**
  * @brief Send an event through the GPRS UART module.
  *
  * This function sends an event buffer through the GPRS UART module.
@@ -150,7 +184,10 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
 
     if (uart_write_bytes(GPRS_UART_NUM, event, event_size) != -1)
     {
-        LOG_COMM(GPRS_UART_TAG, "OK");
+        if (!gprs_uart_hide_raw_log(event))
+        {
+            LOG_COMM(GPRS_UART_TAG, "OK");
+        }
         err = ESP_OK;
     }
 
@@ -180,12 +217,19 @@ static void gprs_uart_event_task(void* arg)
             {
                 if (event.size > 0 && event.size < 3000) // 3 KB
                 {
-                    char* buff_in = (char*)malloc(event.size);
+                    char* buff_in = (char*)malloc(event.size + 1);
                     int aux = 0;
+
+                    if (buff_in == NULL)
+                    {
+                        ESP_LOGE(GPRS_UART_TAG, "%s, failed to allocate UART input buffer", __func__);
+                        uart_flush_input(GPRS_UART_NUM);
+                        xQueueReset(gprs_uart_queue);
+                        break;
+                    }
 
                     // Event of UART receiving data
                     uart_read_bytes(GPRS_UART_NUM, dtmp, event.size, portMAX_DELAY);
-                    LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
 
                     for (int char_position = 0; char_position < event.size; char_position++)
                     {
@@ -196,6 +240,13 @@ static void gprs_uart_event_task(void* arg)
                             buff_in[aux] = dtmp[char_position];
                             aux++;
                         }
+                    }
+
+                    buff_in[aux] = '\0';
+
+                    if (!gprs_uart_hide_raw_log(buff_in))
+                    {
+                        LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
                     }
 
                     // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);

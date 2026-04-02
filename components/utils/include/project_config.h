@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.8.7")
+#define CONFIG_FW_VERSION           ("v2.9.3")
 
 /**
  * @brief Maximum number of scheduling values.
@@ -87,7 +87,7 @@
  * @var IDP_1 Save actions
  * @var IDP_2 Network configurations
  * @var IDP_3 Pivot configurations
- * @var IDP_4 ECO mode configuration
+ * @var IDP_4 Rush mode configuration
  * @var IDP_5 Sector configurations
  * @var IDP_6 New modem configurations
  * @var IDP_7 Angle and timestamp configuration
@@ -103,6 +103,7 @@
  * @var IDP_22 Barrier configurations
  * @var IDP_23 GPS configurations via LoraMesh
  * @var IDP_24 Automatic Reboot configurations
+ * @var IDP_42 Heartbeat between modem and control board
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -135,6 +136,8 @@ typedef enum
     IDP_28,
     IDP_30 = 30,
     IDP_31,
+    IDP_32,
+    IDP_42 = 42,
     IDP_90 = 90,
     IDP_91,
     IDP_92,
@@ -174,7 +177,8 @@ typedef enum
     PIVOT_DRY = 5,          /*!< Irrigation off */
     PIVOT_WET = 6,          /*!< Irrigation on */
     PIVOT_PRESSURIZING = 7, /*!< Pivot pressurizing */
-    PIVOT_UNKNOWN = 8       /*!< Unknown pivot state */
+    PIVOT_UNKNOWN = 8,     /*!< Unknown pivot state */
+    PIVOT_SUSPENDED = 9    /*!< Pivot suspended inside the configured Rush Mode window */
 } pivot_states;
 
 /**
@@ -263,20 +267,39 @@ typedef struct __attribute__((__packed__))
 /**
  * @brief Configuration parameters.
  *
- * Structure defining the eco mode configuration parameters.
+ * Structure defining the rush mode configuration parameters.
  */
 typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
 {
-    time_t start_time;              /*!< Start time */
-    time_t end_time;                /*!< End time */
-} eco_mode_config;
+    time_t start_time;              /*!< Start time in seconds since 00:00. */
+    time_t end_time;                /*!< End time in seconds since 00:00. */
+    bool enable;                     /*!< Enable or Disable */
+} rush_mode_config;
+
+/**
+ * @brief Persisted Rush Mode window state.
+ *
+ * Structure used to keep the current active Rush Mode window context.
+ * When `valid` is true, `actions` stores the pivot state captured before
+ * Rush Mode turns the pivot off and that state must be restored when the
+ * current window ends. When `valid` is false and `window_end_time` is
+ * non-zero, the current window was overridden by command and must stay
+ * suspended until `window_end_time`.
+ */
+typedef struct __attribute__((__packed__))
+{
+    bool valid;                     /*!< Indicates whether `actions` contains a state to be restored. */
+    time_t window_start_time;       /*!< Absolute start timestamp of the current protected window. */
+    time_t window_end_time;         /*!< Absolute end timestamp of the current protected window. */
+    pivot_actions actions;          /*!< Pivot state to be restored when `valid` is true. */
+} rush_mode_saved_state;
 
 /**
  * @brief Configuration parameters.
  *
- * How many configuration parameters in eco_mode_config struct.
+ * How many configuration parameters in rush_mode_config struct.
  */
-#define ECO_MODE_CONFIG_VAR_COUNT   (2)
+#define RUSH_MODE_CONFIG_VAR_COUNT   (3)
 
 /**
  * @brief Configuration parameters.
@@ -497,6 +520,7 @@ typedef enum
     TYPE_HANGS_UP_SCHEDULE_17,
     TYPE_HANGS_UP_SOIL_APP,
     TYPE_HANGS_UP_IRRIGABRAS_APP,
+    TYPE_HANGS_UP_RUSH_MODE,
 } hangs_up_status;
 
 /**

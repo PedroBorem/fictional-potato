@@ -181,6 +181,36 @@ idp_type idp_parser_get(const char* string_in, char* string_out)
 }
 
 /**
+ * @brief Checks whether a payload belongs to a specific IDP.
+ *
+ * The function performs a lightweight prefix validation, accepting both
+ * `#IDP-...` and `#IDP$` payload formats.
+ *
+ * @param[in] payload Raw payload to be inspected.
+ * @param[in] idp Expected IDP value.
+ * @return true if the payload matches the requested IDP, false otherwise.
+ */
+bool idp_parser_is_payload_from_idp(const char *payload, idp_type idp)
+{
+    char expected_prefix[8] = {};
+
+    if (payload == NULL)
+    {
+        return false;
+    }
+
+    snprintf(expected_prefix, sizeof(expected_prefix), "#%u", (unsigned int)idp);
+
+    if (strncmp(payload, expected_prefix, strlen(expected_prefix)) != 0)
+    {
+        return false;
+    }
+
+    return (payload[strlen(expected_prefix)] == '-' ||
+            payload[strlen(expected_prefix)] == '$');
+}
+
+/**
  * @brief Validate the actions in a pivot_actions structure.
  *
  * This function validates the actions in a `pivot_actions` structure to ensure they are within valid ranges.
@@ -341,7 +371,14 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 						strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "bool") == 0) {
             bool bool_arg = * (bool *) arg_pairs[i].value;
-            strcat(str_out, bool_arg ? "1" : "0");
+            if (bool_arg == true)
+            {
+                strcat(str_out, "1");
+            }
+            else
+            {
+                strcat(str_out, "0");
+            }
         }
     }
 
@@ -390,7 +427,14 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         	strncpy(arg_pairs[index].value, token, str_size);
             ((char *)arg_pairs[index].value)[str_size] = '\0';
         } else if (strcmp(type, "bool") == 0) {
-            * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
+            if (strcmp(token, "0") == 0)
+            {
+                * (bool *) arg_pairs[index].value = false;
+            }
+            else
+            {
+                * (bool *) arg_pairs[index].value = true;
+            }
         } else if (strcmp(type, "time_t") == 0) {
         	* (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
         }
@@ -579,16 +623,21 @@ bool idp_parser_validate_idp_03(const pivot_config pivot_config)
  *
  * This function validates the specified configuration paramters to ensure they conform to the IDP protocol.
  *
- * @param eco_config data to be validated.
+ * @param rush_config data to be validated.
  * @return true if the data are valid, false otherwise.
  */
-bool idp_parser_validate_idp_04(const eco_mode_config eco_config)
+bool idp_parser_validate_idp_04(const rush_mode_config rush_config)
 {
     bool ret = false;
 
-    if(eco_config.start_time >= 0 && eco_config.end_time >= 0)
+    if (rush_config.start_time < 86400 && rush_config.end_time < 86400)
     {
-    	ret = true;
+        ret = true;
+    }
+
+    if (ret == true && rush_config.enable == true && rush_config.start_time == rush_config.end_time)
+    {
+        ret = false;
     }
 
     return ret;

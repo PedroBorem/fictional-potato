@@ -164,8 +164,15 @@ static void rf_uart_event_task(void* arg)
             switch (event.type) {
                 case UART_DATA: {
                     if (event.size > 0 && event.size < 3000) { // 3 KB
-                        char* buff_in = (char*)malloc(event.size);
+                        char* buff_in = (char*)malloc(event.size + 1);
                         int aux = 0;
+
+                        if (buff_in == NULL) {
+                            ESP_LOGE(RF_UART_TAG, "%s, failed to allocate UART input buffer", __func__);
+                            uart_flush_input(RF_UART_NUM);
+                            xQueueReset(rf_uart_queue);
+                            break;
+                        }
 
                         // Event of UART receiving data.
                         uart_read_bytes(RF_UART_NUM, dtmp, event.size, portMAX_DELAY);
@@ -179,6 +186,8 @@ static void rf_uart_event_task(void* arg)
                                 aux++;
                             }
                         }
+
+                        buff_in[aux] = '\0';
 
                         // LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
 
