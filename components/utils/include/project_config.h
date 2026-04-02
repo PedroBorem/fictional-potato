@@ -29,7 +29,7 @@
 /**
  * @brief Firmware version.
  */
-#define CONFIG_FW_VERSION           ("v2.9.3")
+#define CONFIG_FW_VERSION           ("v2.9.3-pulse")
 
 /**
  * @brief Maximum number of scheduling values.
