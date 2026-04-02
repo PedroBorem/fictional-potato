@@ -2971,7 +2971,15 @@ static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
 		    strcmp(heartbeat_state, "PONG") == 0)
 		{
 			char heartbeat_reply[10] = {};
-			strcpy(heartbeat_reply, (strcmp(heartbeat_state, "PING") == 0) ? "PONG" : "ACK");
+
+			if (strcmp(heartbeat_state, "PING") == 0)
+			{
+				strcpy(heartbeat_reply, "PONG");
+			}
+			else
+			{
+				strcpy(heartbeat_reply, "ACK");
+			}
 
 			arg_pair_t arg_pairs_ack[] = {
 				{"uint8_t", &idp},

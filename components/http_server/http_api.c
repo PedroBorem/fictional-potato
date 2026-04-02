@@ -14,10 +14,6 @@
 #include "esp_spiffs.h"
 #include "log.h"
 
-#ifndef MIN
-# define MIN(a,b) ((a) < (b) ? (a) : (b))
-#endif
-
 /* Private definitions ------------------------------------------- */
 /**
  * Temporary storage during file transfer (size)
@@ -59,6 +55,23 @@ struct async_resp_arg {
 static app_callback http_callback = NULL;
 
 static httpd_handle_t server = NULL;
+
+/**
+ * @brief Returns the smallest value between two sizes.
+ *
+ * @param value_a First value to be compared.
+ * @param value_b Second value to be compared.
+ * @return The smallest value.
+ */
+static size_t http_api_get_min_size(size_t value_a, size_t value_b)
+{
+    if (value_a < value_b)
+    {
+        return value_a;
+    }
+
+    return value_b;
+}
 
 /* Private function prototype ------------------------------------ */
 static esp_err_t http_get_handler(httpd_req_t *req);
@@ -473,7 +486,7 @@ static esp_err_t http_post_handler(httpd_req_t *req)
 	char content[1000] = {};
 
     /* Truncate if content length larger than the buffer */
-    size_t recv_size = MIN(req->content_len, sizeof(content));
+    size_t recv_size = http_api_get_min_size(req->content_len, sizeof(content));
 
     int ret = httpd_req_recv(req, content, recv_size);
     if (ret <= 0) // 0 return value indicates connection closed
@@ -512,7 +525,7 @@ static esp_err_t http_delete_handler(httpd_req_t *req)
 	char content[100] = {};
 
 	/* Truncate if content length larger than the buffer */
-	size_t recv_size = MIN(req->content_len, sizeof(content));
+	size_t recv_size = http_api_get_min_size(req->content_len, sizeof(content));
 
 	int ret = httpd_req_recv(req, content, recv_size);
 	if (ret <= 0) // 0 return value indicates connection closed

@@ -371,7 +371,14 @@ void idp_parser_create_package(char* str_out, arg_pair_t arg_pairs[])
 						strcat(str_out, arg_buffer);
         } else if (strcmp(arg_pairs[i].type, "bool") == 0) {
             bool bool_arg = * (bool *) arg_pairs[i].value;
-            strcat(str_out, bool_arg ? "1" : "0");
+            if (bool_arg == true)
+            {
+                strcat(str_out, "1");
+            }
+            else
+            {
+                strcat(str_out, "0");
+            }
         }
     }
 
@@ -420,7 +427,14 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         	strncpy(arg_pairs[index].value, token, str_size);
             ((char *)arg_pairs[index].value)[str_size] = '\0';
         } else if (strcmp(type, "bool") == 0) {
-            * (bool *) arg_pairs[index].value = strcmp(token, "0") == 0 ? false : true;
+            if (strcmp(token, "0") == 0)
+            {
+                * (bool *) arg_pairs[index].value = false;
+            }
+            else
+            {
+                * (bool *) arg_pairs[index].value = true;
+            }
         } else if (strcmp(type, "time_t") == 0) {
         	* (time_t *) arg_pairs[index].value = (time_t) strtol(token, NULL, 10);
         }
