@@ -24,9 +24,27 @@
 
 #define SYSTEM_MONITORING_TAG	"system_monitoring"
 
-#define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000) // 1 minute
+/**
+ * @brief Delay, in milliseconds, before re-evaluating the barrier angle logic.
+ */
+#define SYSTEM_DELAY_ANALYSIS_ANGLE_MS	(6000)
+
+/**
+ * @brief Interval, in milliseconds, between expected modem heartbeat frames.
+ */
 #define SYSTEM_MONITORING_HEARTBEAT_INTERVAL_MS (30000)
+
+/**
+ * @brief Maximum heartbeat silence, in milliseconds, before starting recovery.
+ */
 #define SYSTEM_MONITORING_HEARTBEAT_TIMEOUT_MS (90000)
+
+/**
+ * @brief Waiting time, in milliseconds, after requesting the modem reset.
+ *
+ * After this window expires, the board may escalate the recovery flow and
+ * consider its own reset when the pivot is off.
+ */
 #define SYSTEM_MONITORING_HEARTBEAT_MODEM_RESET_WAIT_MS (60000)
 
 /**
