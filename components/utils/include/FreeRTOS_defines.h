@@ -202,6 +202,21 @@
 #define SYSTEM_MONITORING_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
 
 /**
+ * @brief Name of the modem heartbeat monitoring task.
+ */
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_NAME     "monitoring heartbeat task"
+
+/**
+ * @brief Stack size of the modem heartbeat monitoring task.
+ */
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE     (configMINIMAL_STACK_SIZE * 4)
+
+/**
+ * @brief Priority of the modem heartbeat monitoring task.
+ */
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
+
+/**
  * @brief Name of the Rush Mode task.
  */
 #define RUSH_MODE_TASK_NAME				"rush mode task"
