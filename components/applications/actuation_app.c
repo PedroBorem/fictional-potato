@@ -350,9 +350,6 @@ void actuation_app_hangs_up_callback(const hangs_up_callback callback)
 {
 	if(callback != NULL)
 	{
-		if(actuation_app_hang_up_call != NULL)
-		{
-			actuation_app_hang_up_call = callback;
-		}
+		actuation_app_hang_up_call = callback;
 	}
 }
