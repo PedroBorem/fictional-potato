@@ -48,6 +48,11 @@
 #define SYSTEM_MONITORING_HEARTBEAT_MODEM_RESET_WAIT_MS (60000)
 
 /**
+ * @brief Tolerance, in degrees, used to report proximity to the physical barrier.
+ */
+#define SYSTEM_MONITORING_PHYSICAL_BARRIER_RANGE_DEG (5)
+
+/**
  * @brief Enumeration representing the possible states of the system monitoring.
  */
 typedef enum {
@@ -818,9 +823,11 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
     char str_date_time[70] = {};
 
     bool pivot_is_on_barrier = false;
+    const uint8_t range_barrier = SYSTEM_MONITORING_PHYSICAL_BARRIER_RANGE_DEG;
 
     timestamp = rtc_app_get_timestamp(false);
     rtc_app_get_str_date_time(timestamp, str_date_time);
+    pivot_is_on_barrier = system_monitoring_range_barrier(range_barrier);
 
     char *reason_str = NULL;
     bool is_external_agent = false;
