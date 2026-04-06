@@ -1556,7 +1556,6 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
-		char str_author[30] = {};
 
 		pivot_scheduling_angle scheduling = {};
 		uint16_t dwp = 0;
@@ -1570,13 +1569,13 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &scheduling.end_angle},
 				{"uint16_t", &dwp},
 				{"uint16_t", &scheduling.actions.percentimeter},
-				{"string", str_author},
+				{"string", scheduling.str_author},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &scheduling.actions);
 
-		if (idp_parser_validate_idp_15(scheduling, str_author))
+		if (idp_parser_validate_idp_15(scheduling, scheduling.str_author))
 		{
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
