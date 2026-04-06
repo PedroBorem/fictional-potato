@@ -292,7 +292,10 @@ static void system_manager_reboot(void)
 			LOG_DATA(SYSTEM_MANAGER_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
 			LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-			system_monitoring_pivot_shutdown(TYPE_HANGS_UP_BROWNOUT, reboot_config_idp, "0", SYSTEM_MANAGER_TAG);
+			if (reset_cause == ESP_RST_BROWNOUT && current_action.power_state == PIVOT_ON)
+			{
+				system_monitoring_pivot_shutdown(TYPE_HANGS_UP_BROWNOUT, reboot_config_idp, "0", SYSTEM_MANAGER_TAG);
+			}
 
 			vTaskDelay(pdMS_TO_TICKS(500));
 
