@@ -211,17 +211,31 @@ void system_manager_init(void)
 	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	esp_reset_reason_t reset_cause = esp_reset_reason();
+	bool suppress_schedule_start_replay = false;
 
 	data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 	data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
+
+	if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
+	{
+		suppress_schedule_start_replay = true;
+	}
+
 	scheduling_register_callback(&system_manager_callback);
+	if (suppress_schedule_start_replay)
+	{
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "Suppressing boot replay for schedule starts after power reset");
+	}
+	scheduling_begin_boot_policy(suppress_schedule_start_replay);
 
 	scheduling_start(IDP_14, scheduling_date);
 	scheduling_start(IDP_15, scheduling_angle);
 	scheduling_start(IDP_16, scheduling_off_date);
 	scheduling_start(IDP_17, scheduling_off_angle);
+	scheduling_end_boot_policy();
 	scheduling_hangs_up_callback(&system_monitoring_pivot_shutdown);
 
 	system_timer = xTimerCreate(

@@ -85,12 +85,31 @@ static app_callback scheduling_callback = NULL;
 static hangs_up_callback scheduling_hang_up_call = NULL;
 
 /**
+ * @brief Tracks whether the startup boot policy window is active.
+ */
+static bool scheduling_boot_policy_active = false;
+
+/**
+ * @brief Suppresses replay of start schedules during the active boot policy window.
+ */
+static bool scheduling_boot_policy_suppress_start_replay = false;
+
+/**
  * @brief Activates the scheduling at the specified position.
  * @param position The position of the scheduling date or angle in the array.
  * @param scheduling_id The ID of the scheduling.
  * @param actions The pivot actions to be performed.
  */
 static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actions actions);
+
+/**
+ * @brief Returns true when a schedule start should be suppressed during boot.
+ *
+ * @param scheduling_timestamp_now Current RTC timestamp.
+ * @param scheduling_start_date Schedule start date.
+ * @return true when the schedule would be replayed only because of the boot/start offset.
+ */
+static bool scheduling_should_skip_boot_start_replay(time_t scheduling_timestamp_now, time_t scheduling_start_date);
 
 /**
  * @brief Deactivates the scheduling with the specified ID.
@@ -176,6 +195,24 @@ static void scheduling_active(uint8_t position, char* scheduling_id, pivot_actio
     rtc_app_get_timestamp(true);
     ESP_LOGW(SCHEDULING_TAG, "processing schedule id : %s (%s)",
             scheduling_id, __func__);
+}
+
+/**
+ * @brief Returns true when a schedule start must not be replayed after boot.
+ *
+ * @param scheduling_timestamp_now Current RTC timestamp.
+ * @param scheduling_start_date Schedule start date.
+ * @return true when boot policy is active and the schedule falls inside the start replay window.
+ */
+static bool scheduling_should_skip_boot_start_replay(time_t scheduling_timestamp_now, time_t scheduling_start_date)
+{
+    if (!scheduling_boot_policy_active || !scheduling_boot_policy_suppress_start_replay)
+    {
+        return false;
+    }
+
+    return ((scheduling_timestamp_now >= scheduling_start_date) &&
+            (scheduling_timestamp_now <= (scheduling_start_date + TIMESTAMP_OFFSET_SCHEDULING)));
 }
 
 /**
@@ -437,11 +474,23 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-				if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date
-				&& strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
+				if(strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
+					if (scheduling_should_skip_boot_start_replay(
+							scheduling_timestamp_now,
+							scheduling_date_current[date_position].start_date))
+					{
+						ESP_LOGW(SCHEDULING_TAG,
+								"Skipping boot replay for schedule date id : %s",
+								scheduling_date_current[date_position].scheduling_id);
+						data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
+					}
+					else if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date)
+					{
+						data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
+					}
 				}
 			}
 
@@ -464,12 +513,24 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 
 			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-				if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
-				&& (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
-				&& (strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0))
+				if(strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
+					if (scheduling_should_skip_boot_start_replay(
+							scheduling_timestamp_now,
+							scheduling_angle_current[angle_position].start_date))
+					{
+						ESP_LOGW(SCHEDULING_TAG,
+								"Skipping boot replay for schedule angle id : %s",
+								scheduling_angle_current[angle_position].scheduling_id);
+						data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
+					}
+					else if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
+					&& (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600)
+					{
+						data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
+					}
 				}
 			}
 
@@ -547,6 +608,26 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 			break;
 		}
 	}
+}
+
+/**
+ * @brief Starts the temporary boot policy window for scheduling startup.
+ *
+ * @param suppress_start_replay True to suppress replay of start schedules during boot.
+ */
+void scheduling_begin_boot_policy(bool suppress_start_replay)
+{
+	scheduling_boot_policy_active = true;
+	scheduling_boot_policy_suppress_start_replay = suppress_start_replay;
+}
+
+/**
+ * @brief Finishes the temporary boot policy window for scheduling startup.
+ */
+void scheduling_end_boot_policy(void)
+{
+	scheduling_boot_policy_active = false;
+	scheduling_boot_policy_suppress_start_replay = false;
 }
 
 /**
