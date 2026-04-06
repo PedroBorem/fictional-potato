@@ -229,13 +229,13 @@ void system_manager_init(void)
 	{
 		ESP_LOGW(SYSTEM_MANAGER_TAG, "Suppressing boot replay for schedule starts after power reset");
 	}
-	scheduling_begin_boot_policy(suppress_schedule_start_replay);
+	scheduling_begin_boot(suppress_schedule_start_replay);
 
 	scheduling_start(IDP_14, scheduling_date);
 	scheduling_start(IDP_15, scheduling_angle);
 	scheduling_start(IDP_16, scheduling_off_date);
 	scheduling_start(IDP_17, scheduling_off_angle);
-	scheduling_end_boot_policy();
+	scheduling_end_boot();
 	scheduling_hangs_up_callback(&system_monitoring_pivot_shutdown);
 
 	system_timer = xTimerCreate(

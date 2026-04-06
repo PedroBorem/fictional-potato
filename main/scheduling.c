@@ -476,9 +476,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 			{
 				if(strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 				{
-					if (scheduling_should_skip_boot_start_replay(
-							scheduling_timestamp_now,
-							scheduling_date_current[date_position].start_date))
+					if (scheduling_should_skip_boot_start_replay(scheduling_timestamp_now, scheduling_date_current[date_position].start_date))
 					{
 						ESP_LOGW(SCHEDULING_TAG,
 								"Skipping boot replay for schedule date id : %s",
@@ -515,9 +513,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 			{
 				if(strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0)
 				{
-					if (scheduling_should_skip_boot_start_replay(
-							scheduling_timestamp_now,
-							scheduling_angle_current[angle_position].start_date))
+					if (scheduling_should_skip_boot_start_replay(scheduling_timestamp_now, scheduling_angle_current[angle_position].start_date))
 					{
 						ESP_LOGW(SCHEDULING_TAG,
 								"Skipping boot replay for schedule angle id : %s",
@@ -615,7 +611,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
  *
  * @param suppress_start_replay True to suppress replay of start schedules during boot.
  */
-void scheduling_begin_boot_policy(bool suppress_start_replay)
+void scheduling_begin_boot(bool suppress_start_replay)
 {
 	scheduling_boot_policy_active = true;
 	scheduling_boot_policy_suppress_start_replay = suppress_start_replay;
@@ -624,7 +620,7 @@ void scheduling_begin_boot_policy(bool suppress_start_replay)
 /**
  * @brief Finishes the temporary boot policy window for scheduling startup.
  */
-void scheduling_end_boot_policy(void)
+void scheduling_end_boot(void)
 {
 	scheduling_boot_policy_active = false;
 	scheduling_boot_policy_suppress_start_replay = false;

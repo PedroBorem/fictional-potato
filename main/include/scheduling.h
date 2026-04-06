@@ -32,7 +32,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
  *
  * @param suppress_start_replay True to suppress boot-time replay of schedule starts.
  */
-void scheduling_begin_boot_policy(bool suppress_start_replay);
+void scheduling_begin_boot(bool suppress_start_replay);
 
 /**
  * @brief Ends the boot replay policy window for schedule starts.
@@ -40,7 +40,7 @@ void scheduling_begin_boot_policy(bool suppress_start_replay);
  * After the initial boot scheduling load is complete, scheduling_start calls
  * should behave normally again.
  */
-void scheduling_end_boot_policy(void);
+void scheduling_end_boot(void);
 
 /**
  * @brief Registers a callback function for scheduling events.

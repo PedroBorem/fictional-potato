@@ -73,7 +73,7 @@
 /** 
  * @brief Offset for scheduling timestamps.
  */
-#define TIMESTAMP_OFFSET_SCHEDULING (18000) // 30 minutes tolerance for start and end dates
+#define TIMESTAMP_OFFSET_SCHEDULING (1800) // 30 minutes tolerance for start and end dates
 
 
 /**
