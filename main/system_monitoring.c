@@ -830,6 +830,8 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
     pivot_is_on_barrier = system_monitoring_range_barrier(range_barrier);
 
     char *reason_str = NULL;
+    char scheduling_origin[] = "scheduling";
+    char *packet_origin = origin;
     bool is_external_agent = false;
 
     switch (shutdown_reason)
@@ -846,22 +848,26 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
         }
         case TYPE_HANGS_UP_SCHEDULE_14:
         {
-            reason_str = "scheduling_14";
+            packet_origin = scheduling_origin;
+            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_14";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_15:
         {
-            reason_str = "scheduling_15";
+            packet_origin = scheduling_origin;
+            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_15";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_16:
         {
-            reason_str = "scheduling_16";
+            packet_origin = scheduling_origin;
+            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_16";
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_17:
         {
-            reason_str = "scheduling_17";
+            packet_origin = scheduling_origin;
+            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_17";
             break;
         }
         case TYPE_HANGS_UP_BROWNOUT:
@@ -905,7 +911,7 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
             reason_str,
             &idp_28,
             system_id,
-            origin,
+            packet_origin,
             &idp,
             scheduling_id,
             &pivot_is_on_barrier,
