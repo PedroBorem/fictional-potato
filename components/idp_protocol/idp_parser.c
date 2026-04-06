@@ -1040,24 +1040,24 @@ void idp_parser_build_arg_pairs_pivot_shutdown(
         idp != NULL && pivot_is_on_barrier != NULL &&
         global_angle != NULL && str_date_time != NULL) 
     {
-        static char default_reason[] = "";
-        static char default_origin[] = "";
+        static char default_reason[] = "unknown";
+        static char default_origin[] = "unknown";
         static char default_scheduling_id[] = "0";
         char *packet_reason = reason_str;
         char *packet_origin = origin;
         char *packet_scheduling_id = scheduling_id;
 
-        if (packet_reason == NULL)
+        if (packet_reason == NULL || packet_reason[0] == '\0')
         {
             packet_reason = default_reason;
         }
 
-        if (packet_origin == NULL)
+        if (packet_origin == NULL || packet_origin[0] == '\0')
         {
             packet_origin = default_origin;
         }
 
-        if (packet_scheduling_id == NULL)
+        if (packet_scheduling_id == NULL || packet_scheduling_id[0] == '\0')
         {
             packet_scheduling_id = default_scheduling_id;
         }
