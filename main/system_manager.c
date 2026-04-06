@@ -2694,6 +2694,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
+	bool shutdown_registered = false;
 
 	arg_pair_t arg_pairs[] = {
 		{"uint8_t", &idp},
@@ -2710,6 +2711,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	{
 		new_actions.power_state = PIVOT_OFF;
 		system_monitoring_pivot_shutdown(TYPE_HANGS_UP_PIVOT_WITHOUT_WATER, IDP_30, "0", SYSTEM_MANAGER_TAG);
+		shutdown_registered = true;
 	}
 
 	if (new_actions.power_state == PIVOT_OFF)
@@ -2732,7 +2734,10 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// Save old History and notify shutdown
 		if (old_actions.power_state != PIVOT_OFF)
 		{
-			system_monitoring_pivot_shutdown(TYPE_HANGS_UP_MANUAL, IDP_30, "0", SYSTEM_MANAGER_TAG);
+			if (shutdown_registered == false)
+			{
+				system_monitoring_pivot_shutdown(TYPE_HANGS_UP_MANUAL, IDP_30, "0", SYSTEM_MANAGER_TAG);
+			}
 			pivot_history old_history = {};
 			old_history.end_date = rtc_app_get_timestamp(false);
 			old_history.end_angle = global_angle;
