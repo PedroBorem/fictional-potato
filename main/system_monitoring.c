@@ -849,25 +849,53 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
         case TYPE_HANGS_UP_SCHEDULE_14:
         {
             packet_origin = scheduling_origin;
-            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_14";
+            if (origin != NULL && origin[0] != '\0')
+            {
+                reason_str = origin;
+            }
+            else
+            {
+                reason_str = "scheduling_14";
+            }
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_15:
         {
             packet_origin = scheduling_origin;
-            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_15";
+            if (origin != NULL && origin[0] != '\0')
+            {
+                reason_str = origin;
+            }
+            else
+            {
+                reason_str = "scheduling_15";
+            }
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_16:
         {
             packet_origin = scheduling_origin;
-            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_16";
+            if (origin != NULL && origin[0] != '\0')
+            {
+                reason_str = origin;
+            }
+            else
+            {
+                reason_str = "scheduling_16";
+            }
             break;
         }
         case TYPE_HANGS_UP_SCHEDULE_17:
         {
             packet_origin = scheduling_origin;
-            reason_str = (origin != NULL && origin[0] != '\0') ? origin : "scheduling_17";
+            if (origin != NULL && origin[0] != '\0')
+            {
+                reason_str = origin;
+            }
+            else
+            {
+                reason_str = "scheduling_17";
+            }
             break;
         }
         case TYPE_HANGS_UP_BROWNOUT:
