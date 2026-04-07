@@ -156,6 +156,30 @@
  * @brief NVS access space for reason why the pivot turned off  
  */
 #define DATA_REASON_HANG_UP "reason_hangup"
+
+/**
+ * @brief Clears the persisted active start scheduling state when it matches the deleted scheduling.
+ * @param scheduling_start_state Loaded active start scheduling state.
+ * @param scheduling_id Scheduling identifier being deleted.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
+static esp_err_t data_app_clear_active_start_state(const pivot_scheduling_start_state *scheduling_start_state, const char *scheduling_id)
+{
+	if (scheduling_start_state == NULL || scheduling_id == NULL)
+	{
+		return ESP_ERR_INVALID_ARG;
+	}
+
+	if (!scheduling_start_state->active ||
+		strcmp(scheduling_start_state->scheduling_id, scheduling_id) != 0)
+	{
+		return ESP_OK;
+	}
+
+	pivot_scheduling_start_state scheduling_start_state_clear = {};
+	return data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
+}
+
 /**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
@@ -635,12 +659,7 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 	esp_err_t ret = ESP_FAIL;
 	pivot_scheduling_start_state scheduling_start_state = {};
 	esp_err_t state_ret = ESP_OK;
-	bool start_state_loaded = false;
-
-	if (data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state) == ESP_OK)
-	{
-		start_state_loaded = true;
-	}
+	data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
 
 	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	ret = data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
@@ -655,15 +674,7 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_date scheduling_delete = {};
 				memcpy(&scheduling_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				if (start_state_loaded)
-				{
-					if (scheduling_start_state.active &&
-						strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
-					{
-						pivot_scheduling_start_state scheduling_start_state_clear = {};
-						state_ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
-					}
-				}
+				state_ret = data_app_clear_active_start_state(&scheduling_start_state, scheduling_id);
 
 				ret = data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 				if (ret != ESP_OK)
@@ -707,15 +718,7 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_angle scheduling_delete = {};
 				memcpy(&scheduling_angle[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				if (start_state_loaded)
-				{
-					if (scheduling_start_state.active &&
-						strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
-					{
-						pivot_scheduling_start_state scheduling_start_state_clear = {};
-						state_ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
-					}
-				}
+				state_ret = data_app_clear_active_start_state(&scheduling_start_state, scheduling_id);
 
 				ret = data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
 				if (ret != ESP_OK)
