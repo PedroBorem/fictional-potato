@@ -514,6 +514,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		return;
 	}
 
+	// Runtime context used to reconcile persisted start schedules after reboot.
 	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
     bool pivot_is_off = actuation_app_is_pivot_off();
     data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
@@ -522,6 +523,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 	{
 		case IDP_14:
 		{
+			// Indicates whether the persisted active start state matches a loaded IDP 14.
             bool active_schedule_found = false;
 			memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 			memcpy(scheduling_date_current, scheduling_data, sizeof(scheduling_date_current));
@@ -582,6 +584,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_15:
 		{
+			// Indicates whether the persisted active start state matches a loaded IDP 15.
             bool active_schedule_found = false;
 			memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 			memcpy(scheduling_angle_current, scheduling_data, sizeof(scheduling_angle_current));

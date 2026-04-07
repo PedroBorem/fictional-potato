@@ -1497,9 +1497,14 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_14(scheduling, scheduling.str_author))
 		{
+			// Base timestamp used to convert the received offsets into absolute dates.
 			time_t timestamp_now = rtc_app_get_timestamp(false);
+
+			// Absolute execution window of the new date schedule being created.
 			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
 			time_t scheduling_end_date = scheduling.end_date + timestamp_now;
+
+			// Current start schedules used to resolve creation conflicts.
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
@@ -1696,8 +1701,13 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_15(scheduling, scheduling.str_author))
 		{
+			// Base timestamp used to convert the received offset into an absolute date.
 			time_t timestamp_now = rtc_app_get_timestamp(false);
+
+			// Absolute start date of the new angle schedule being created.
 			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
+
+			// Current start schedules used to resolve creation conflicts.
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
