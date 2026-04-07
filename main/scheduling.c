@@ -64,19 +64,14 @@ static pivot_scheduling_off_angle scheduling_off_angle_current[CONFIG_SCHEDULING
 static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 /**
- * @brief Array to store the persistent started-state of date schedules.
- */
-static bool scheduling_date_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
  * @brief Array to store the status of scheduling angles.
  */
 static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
 /**
- * @brief Array to store the persistent started-state of angle schedules.
+ * @brief Persistent runtime state of the single active start schedule.
  */
-static bool scheduling_angle_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pivot_scheduling_start_state scheduling_start_state = {};
 
 /**
  * @brief Pointer to the current angle.
@@ -102,6 +97,12 @@ static hangs_up_callback scheduling_hang_up_call = NULL;
  * @param actions The pivot actions to be performed.
  */
 static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* scheduling_id, pivot_actions actions);
+
+/**
+ * @brief Requests a schedule removal using the normal IDP 13 flow.
+ * @param scheduling_id The scheduling ID to be removed.
+ */
+static void scheduling_request_schedule_delete(char* scheduling_id);
 
 /**
  * @brief Deactivates the scheduling with the specified ID.
@@ -158,19 +159,21 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
     if (scheduling_idp == IDP_14)
     {
         scheduling_date_status[position] = true;
-        scheduling_date_started[position] = true;
-        ret = data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started, sizeof(scheduling_date_started));
     }
     else if (scheduling_idp == IDP_15)
     {
         scheduling_angle_status[position] = true;
-        scheduling_angle_started[position] = true;
-        ret = data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started, sizeof(scheduling_angle_started));
     }
+
+    scheduling_start_state.active = true;
+    scheduling_start_state.scheduling_idp = scheduling_idp;
+    memset(scheduling_start_state.scheduling_id, 0x00, sizeof(scheduling_start_state.scheduling_id));
+    memcpy(scheduling_start_state.scheduling_id, scheduling_id, strlen(scheduling_id));
+    ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
 
     if (ret != ESP_OK)
     {
-        ESP_LOGE(SCHEDULING_TAG, "failed to persist started state for schedule id : %s", scheduling_id);
+        ESP_LOGE(SCHEDULING_TAG, "failed to persist active start state for schedule id : %s", scheduling_id);
     }
 
     // create package - send IDP 18
@@ -207,6 +210,37 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
     rtc_app_get_timestamp(true);
     ESP_LOGW(SCHEDULING_TAG, "processing schedule id : %s (%s)",
             scheduling_id, __func__);
+}
+
+/**
+ * @brief Requests a schedule removal using the normal IDP 13 flow.
+ * @param scheduling_id The scheduling ID to be removed.
+ */
+static void scheduling_request_schedule_delete(char* scheduling_id)
+{
+    uint8_t idp = IDP_13;
+    char str_out[50] = {};
+    char scheduling_id_copy[50] = {};
+
+    if (scheduling_callback == NULL || scheduling_id == NULL || scheduling_id[0] == '\0')
+    {
+        return;
+    }
+
+    memcpy(scheduling_id_copy, scheduling_id, strlen(scheduling_id));
+
+    arg_pair_t arg_idp_13[] =
+    {
+        { "uint8_t", &idp },
+        { "string", SCHEDULING_TAG },
+        { "string", scheduling_id_copy },
+        { "string", SCHEDULING_TAG },
+        { NULL, NULL }
+    };
+
+    memset(str_out, 0x00, sizeof(str_out));
+    idp_parser_create_package(str_out, arg_idp_13);
+    scheduling_callback(str_out, COMM_MQTT);
 }
 
 /**
@@ -276,6 +310,14 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
     idp_parser_create_package(str_out, arg_idp_13);
     scheduling_callback(str_out, COMM_MQTT);
 
+    if (scheduling_start_state.active &&
+        strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
+    {
+        pivot_scheduling_start_state scheduling_start_state_clear = {};
+        scheduling_start_state = scheduling_start_state_clear;
+        data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+    }
+
     // log debug
     rtc_app_get_timestamp(true);
     ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
@@ -289,7 +331,6 @@ static void scheduling_task_idp_14(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
-    memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 
     while (1)
     {
@@ -300,7 +341,7 @@ static void scheduling_task_idp_14(void* arg)
             if (strcmp(scheduling_date_current[date_position].scheduling_id, "") > 0)
             {
                 if (!scheduling_date_status[date_position] &&
-                    !scheduling_date_started[date_position] &&
+                    !scheduling_start_state.active &&
                     (scheduling_timestamp_now >= scheduling_date_current[date_position].start_date) &&
                     (scheduling_timestamp_now <= (scheduling_date_current[date_position].start_date) + date_offset))
                 {
@@ -336,8 +377,6 @@ static void scheduling_task_idp_15(void* arg)
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     time_t scheduling_timestamp_now = 0;
 
-    memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
-
     while (1)
     {
         scheduling_timestamp_now = rtc_app_get_timestamp(false);
@@ -347,7 +386,7 @@ static void scheduling_task_idp_15(void* arg)
             if (strcmp(scheduling_angle_current[angle_position].scheduling_id, "") > 0)
             {
                 if (!scheduling_angle_status[angle_position] &&
-                    !scheduling_angle_started[angle_position] &&
+                    !scheduling_start_state.active &&
                     (scheduling_timestamp_now >= scheduling_angle_current[angle_position].start_date) &&
                     (scheduling_timestamp_now <= (scheduling_angle_current[angle_position].start_date) + date_offset))
                 {
@@ -387,6 +426,7 @@ static void scheduling_task_idp_16(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
+    char active_scheduling_id[50] = {};
 
     while (1)
     {
@@ -401,6 +441,13 @@ static void scheduling_task_idp_16(void* arg)
                     if ((scheduling_timestamp_now >= scheduling_off_date_current[date_position].end_date) &&
                         (scheduling_timestamp_now <= (scheduling_off_date_current[date_position].end_date + date_offset)))
                     {
+                        if (scheduling_start_state.active)
+                        {
+                            memcpy(active_scheduling_id, scheduling_start_state.scheduling_id, strlen(scheduling_start_state.scheduling_id));
+                            scheduling_request_schedule_delete(active_scheduling_id);
+                            memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
+                        }
+
                         scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16,
                                                 scheduling_off_date_current[date_position].scheduling_id,
                                                 scheduling_off_date_current[date_position].str_author);
@@ -420,6 +467,7 @@ static void scheduling_task_idp_16(void* arg)
 static void scheduling_task_idp_17(void* arg)
 {
     const uint8_t angle_off_set = 5;
+    char active_scheduling_id[50] = {};
 
     while (1)
     {
@@ -430,6 +478,13 @@ static void scheduling_task_idp_17(void* arg)
                 if (*scheduling_current_angle > (scheduling_off_angle_current[angle_position].end_angle - angle_off_set)
                     && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set))
                 {
+                    if (scheduling_start_state.active)
+                    {
+                        memcpy(active_scheduling_id, scheduling_start_state.scheduling_id, strlen(scheduling_start_state.scheduling_id));
+                        scheduling_request_schedule_delete(active_scheduling_id);
+                        memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
+                    }
+
                     scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
                     scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
                 }
@@ -461,48 +516,57 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 
 	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
     bool pivot_is_off = actuation_app_is_pivot_off();
+    data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
 
 	switch (scheduling_idp)
 	{
 		case IDP_14:
 		{
+            bool active_schedule_found = false;
 			memset(scheduling_date_status, false, sizeof(scheduling_date_status));
 			memcpy(scheduling_date_current, scheduling_data, sizeof(scheduling_date_current));
-            data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-                if (strcmp(scheduling_date_current[date_position].scheduling_id, "") == 0)
-                {
-                    if (scheduling_date_started[date_position])
-                    {
-                        scheduling_date_started[date_position] = false;
-                        data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started, sizeof(scheduling_date_started));
-                    }
-                }
-				else if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date)
+				if(strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
-                    data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
-				}
-                else if (scheduling_date_started[date_position])
-                {
-                    if (pivot_is_off)
-                    {
-						ESP_LOGW(SCHEDULING_TAG,
-								"Clearing interrupted schedule date id : %s",
-								scheduling_date_current[date_position].scheduling_id);
+					if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date)
+					{
 						data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
-                        data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
-                    }
-                    else
+                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+					}
+                    else if (scheduling_start_state.active &&
+                             scheduling_start_state.scheduling_idp == IDP_14 &&
+                             strcmp(scheduling_start_state.scheduling_id, scheduling_date_current[date_position].scheduling_id) == 0)
                     {
-                        scheduling_date_status[date_position] = true;
+                        active_schedule_found = true;
+
+                        if (pivot_is_off)
+                        {
+							ESP_LOGW(SCHEDULING_TAG,
+									"Clearing interrupted schedule date id : %s",
+									scheduling_date_current[date_position].scheduling_id);
+							data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
+							data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
+                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+                        }
+                        else
+                        {
+                            scheduling_date_status[date_position] = true;
+                        }
                     }
 				}
 			}
+
+            if (scheduling_start_state.active &&
+                scheduling_start_state.scheduling_idp == IDP_14 &&
+                !active_schedule_found)
+            {
+                pivot_scheduling_start_state scheduling_start_state_clear = {};
+                scheduling_start_state = scheduling_start_state_clear;
+                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+            }
 
 			if(xTask_scheduling_idp_14 == NULL)
 			{
@@ -518,45 +582,53 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_15:
 		{
+            bool active_schedule_found = false;
 			memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
 			memcpy(scheduling_angle_current, scheduling_data, sizeof(scheduling_angle_current));
-            data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
 
 			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-                if (strcmp(scheduling_angle_current[angle_position].scheduling_id, "") == 0)
-                {
-                    if (scheduling_angle_started[angle_position])
-                    {
-                        scheduling_angle_started[angle_position] = false;
-                        data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started, sizeof(scheduling_angle_started));
-                    }
-                }
-				else if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
-				&& (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
-				&& !scheduling_angle_started[angle_position])
+				if(strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
-                    data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
-				}
-                else if (scheduling_angle_started[angle_position])
-                {
-                    if (pivot_is_off)
+                    if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
+                    && (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
+                    && !scheduling_start_state.active)
                     {
-						ESP_LOGW(SCHEDULING_TAG,
-								"Clearing interrupted schedule angle id : %s",
-								scheduling_angle_current[angle_position].scheduling_id);
 						data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
-                        data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
+                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
                     }
-                    else
+                    else if (scheduling_start_state.active &&
+                             scheduling_start_state.scheduling_idp == IDP_15 &&
+                             strcmp(scheduling_start_state.scheduling_id, scheduling_angle_current[angle_position].scheduling_id) == 0)
                     {
-                        scheduling_angle_status[angle_position] = true;
+                        active_schedule_found = true;
+
+                        if (pivot_is_off)
+                        {
+							ESP_LOGW(SCHEDULING_TAG,
+									"Clearing interrupted schedule angle id : %s",
+									scheduling_angle_current[angle_position].scheduling_id);
+							data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
+							data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
+                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+                        }
+                        else
+                        {
+                            scheduling_angle_status[angle_position] = true;
+                        }
                     }
 				}
 			}
+
+            if (scheduling_start_state.active &&
+                scheduling_start_state.scheduling_idp == IDP_15 &&
+                !active_schedule_found)
+            {
+                pivot_scheduling_start_state scheduling_start_state_clear = {};
+                scheduling_start_state = scheduling_start_state_clear;
+                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+            }
 
 			if(xTask_scheduling_idp_15 == NULL)
 			{
@@ -580,7 +652,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 				&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
 				{
 					data_app_delete_scheduling(scheduling_off_date_current[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_off_date_current);
+					data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date_current);
 				}
 			}
 

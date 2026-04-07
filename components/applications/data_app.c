@@ -97,16 +97,10 @@
 #define DATA_SCHEDULING_OFF_ANGLE "s_off_angle"
 
 /**
- * @def DATA_SCHEDULING_DATE_STARTED
- * @brief NVS access space for date schedule started-state data.
+ * @def DATA_SCHEDULING_START_STATE
+ * @brief NVS access space for the active start schedule state.
  */
-#define DATA_SCHEDULING_DATE_STARTED "s_date_state"
-
-/**
- * @def DATA_SCHEDULING_ANGLE_STARTED
- * @brief NVS access space for angle schedule started-state data.
- */
-#define DATA_SCHEDULING_ANGLE_STARTED "s_angle_state"
+#define DATA_SCHEDULING_START_STATE "s_start_state"
 
 /**
  * @def DATA_HISTORY
@@ -218,8 +212,7 @@ esp_err_t data_app_init(void)
 	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_angle default_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
-	const bool default_scheduling_date_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const bool default_scheduling_angle_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pivot_scheduling_start_state default_scheduling_start_state = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 	const bool default_barrier = false;
@@ -287,14 +280,9 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &default_scheduling_off_angle, sizeof(default_scheduling_off_angle));
 		}
 
-		if(nvs_data_get_size(DATA_SCHEDULING_DATE_STARTED) == 0)
+		if(nvs_data_get_size(DATA_SCHEDULING_START_STATE) == 0)
 		{
-			data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &default_scheduling_date_started, sizeof(default_scheduling_date_started));
-		}
-
-		if(nvs_data_get_size(DATA_SCHEDULING_ANGLE_STARTED) == 0)
-		{
-			data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &default_scheduling_angle_started, sizeof(default_scheduling_angle_started));
+			data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &default_scheduling_start_state, sizeof(default_scheduling_start_state));
 		}
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
@@ -407,14 +395,9 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_SCHEDULING_OFF_ANGLE, data, data_size);
 			break;
 		}
-		case DATA_TYPE_SCHEDULING_DATE_STARTED:
+		case DATA_TYPE_SCHEDULING_START_STATE:
 		{
-			ret = nvs_data_set(DATA_SCHEDULING_DATE_STARTED, data, data_size);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_ANGLE_STARTED:
-		{
-			ret = nvs_data_set(DATA_SCHEDULING_ANGLE_STARTED, data, data_size);
+			ret = nvs_data_set(DATA_SCHEDULING_START_STATE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -583,14 +566,9 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_ANGLE, data);
 			break;
 		}
-		case DATA_TYPE_SCHEDULING_DATE_STARTED:
+		case DATA_TYPE_SCHEDULING_START_STATE:
 		{
-			ret = nvs_data_get_blob(DATA_SCHEDULING_DATE_STARTED, data);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_ANGLE_STARTED:
-		{
-			ret = nvs_data_get_blob(DATA_SCHEDULING_ANGLE_STARTED, data);
+			ret = nvs_data_get_blob(DATA_SCHEDULING_START_STATE, data);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -655,14 +633,19 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 esp_err_t data_app_delete_scheduling(char* scheduling_id)
 {
 	esp_err_t ret = ESP_FAIL;
+	pivot_scheduling_start_state scheduling_start_state = {};
+	esp_err_t state_ret = ESP_OK;
+	bool start_state_loaded = false;
+
+	if (data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state) == ESP_OK)
+	{
+		start_state_loaded = true;
+	}
 
 	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	ret = data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 	if(ret == ESP_OK)
 	{
-		bool scheduling_date_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		esp_err_t state_ret = data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
-
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
 			if(strcmp(scheduling_date[position].scheduling_id, scheduling_id) == 0)
@@ -672,10 +655,14 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_date scheduling_delete = {};
 				memcpy(&scheduling_date[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				if (state_ret == ESP_OK)
+				if (start_state_loaded)
 				{
-					scheduling_date_started[position] = false;
-					state_ret = data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started, sizeof(scheduling_date_started));
+					if (scheduling_start_state.active &&
+						strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
+					{
+						pivot_scheduling_start_state scheduling_start_state_clear = {};
+						state_ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
+					}
 				}
 
 				ret = data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
@@ -711,9 +698,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 	ret = data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 	if(ret == ESP_OK)
 	{
-		bool scheduling_angle_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		esp_err_t state_ret = data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
-
 		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
 			if(strcmp(scheduling_angle[position].scheduling_id, scheduling_id) == 0)
@@ -723,10 +707,14 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 				pivot_scheduling_angle scheduling_delete = {};
 				memcpy(&scheduling_angle[position], &scheduling_delete, sizeof(scheduling_delete));
 
-				if (state_ret == ESP_OK)
+				if (start_state_loaded)
 				{
-					scheduling_angle_started[position] = false;
-					state_ret = data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started, sizeof(scheduling_angle_started));
+					if (scheduling_start_state.active &&
+						strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
+					{
+						pivot_scheduling_start_state scheduling_start_state_clear = {};
+						state_ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
+					}
 				}
 
 				ret = data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));

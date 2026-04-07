@@ -66,6 +66,11 @@
  */
 #define SYSTEM_SAVE_FLASH_TIME_MS (600000) // 10 minutes
 
+/** @def SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC
+ *  @brief Time margin used to resolve conflicting start schedules.
+ */
+#define SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC (1800) // 30 minutes
+
 /** @var global_pressure
  *  @brief Global variable for the current pressure.
  */
@@ -117,6 +122,9 @@ uint32_t counter_reading_panel_off = NO_MANUAL_READING;
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
+static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec);
+static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b);
+static void system_manager_remove_schedule_conflict(char *scheduling_id);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -230,6 +238,74 @@ void system_manager_init(void)
 		pdFALSE,						/* auto reload */
 		(void *)0,						/* timer ID */
 		system_manager_timer_callback); /* callback */
+}
+
+/**
+ * @brief Returns true when two timestamps are within the configured conflict margin.
+ *
+ * @param timestamp_a First timestamp.
+ * @param timestamp_b Second timestamp.
+ * @param margin_sec Allowed absolute difference in seconds.
+ * @return true when the timestamps are within the margin, false otherwise.
+ */
+static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec)
+{
+	time_t timestamp_diff = 0;
+
+	if (timestamp_a >= timestamp_b)
+	{
+		timestamp_diff = timestamp_a - timestamp_b;
+	}
+	else
+	{
+		timestamp_diff = timestamp_b - timestamp_a;
+	}
+
+	return (timestamp_diff <= margin_sec);
+}
+
+/**
+ * @brief Returns true when two date schedules overlap in time.
+ *
+ * @param start_a Start timestamp of the first schedule.
+ * @param end_a End timestamp of the first schedule.
+ * @param start_b Start timestamp of the second schedule.
+ * @param end_b End timestamp of the second schedule.
+ * @return true when the windows overlap, false otherwise.
+ */
+static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b)
+{
+	return (start_a <= end_b && start_b <= end_a);
+}
+
+/**
+ * @brief Removes a conflicting schedule using the normal IDP 13 project flow.
+ *
+ * @param scheduling_id Scheduling identifier to be removed.
+ */
+static void system_manager_remove_schedule_conflict(char *scheduling_id)
+{
+	uint8_t idp = IDP_13;
+	char str_out[80] = {};
+	char scheduling_id_copy[50] = {};
+
+	if (scheduling_id == NULL || scheduling_id[0] == '\0')
+	{
+		return;
+	}
+
+	memcpy(scheduling_id_copy, scheduling_id, strlen(scheduling_id));
+
+	arg_pair_t arg_pairs[] =
+		{
+			{"uint8_t", &idp},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
+			{"string", scheduling_id_copy},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
+			{NULL, NULL}};
+
+	idp_parser_create_package(str_out, arg_pairs);
+	system_manager_callback(str_out, COMM_MQTT);
 }
 
 /**
@@ -1421,10 +1497,48 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_14(scheduling, scheduling.str_author))
 		{
+			time_t timestamp_now = rtc_app_get_timestamp(false);
+			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
+			time_t scheduling_end_date = scheduling.end_date + timestamp_now;
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			bool scheduling_date_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-			data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC) ||
+						system_manager_date_scheduling_has_overlap(
+							scheduling_start_date,
+							scheduling_end_date,
+							scheduling_date[position].start_date,
+							scheduling_date[position].end_date))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
+
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1435,16 +1549,14 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 					if (idp_parser_validate_actions(scheduling.actions) == true)
 					{
 						// get_rtc
-						scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-						scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+						scheduling_date[position].start_date = scheduling_start_date;
+						scheduling_date[position].end_date = scheduling_end_date;
 
 						// gen Key
 						data_app_gen_scheduling_key((char *)&scheduling_date[position].scheduling_id);
 						strcpy(scheduling.scheduling_id, (char *)&scheduling_date[position].scheduling_id);
-						scheduling_date_started[position] = false;
 
 						data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
-						data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started, sizeof(scheduling_date_started));
 
 						scheduling_start(idp, scheduling_date);
 
@@ -1584,10 +1696,43 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_15(scheduling, scheduling.str_author))
 		{
+			time_t timestamp_now = rtc_app_get_timestamp(false);
+			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			bool scheduling_angle_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-			data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if ((scheduling_start_date <= scheduling_date[position].end_date) ||
+						system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
+
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1598,13 +1743,11 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 					if (idp_parser_validate_actions(scheduling.actions) == true)
 					{
 						// get_rtc
-						scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+						scheduling_angle[position].start_date = scheduling_start_date;
 
 						// gen key
 						data_app_gen_scheduling_key((char *)&scheduling_angle[position].scheduling_id);
-						scheduling_angle_started[position] = false;
 						data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
-						data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started, sizeof(scheduling_angle_started));
 
 						strcpy((char *)&scheduling.scheduling_id, (char *)&scheduling_angle[position].scheduling_id);
 

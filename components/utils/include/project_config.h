@@ -447,6 +447,16 @@ typedef struct __attribute__((__packed__))
 } pivot_scheduling_off_angle;
 
 /**
+ * @brief Persistent runtime state for the single active start schedule.
+ */
+typedef struct __attribute__((__packed__))
+{
+    bool active;                    /*!< True when a start schedule is currently active */
+    uint8_t scheduling_idp;         /*!< IDP_14 or IDP_15 for the active start schedule */
+    char scheduling_id[50];         /*!< Active scheduling identifier */
+} pivot_scheduling_start_state;
+
+/**
  * @brief History parameters.
  *
  * Structure defining the history parameters.
