@@ -517,6 +517,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 	// Runtime context used to reconcile persisted start schedules after reboot.
 	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
     bool pivot_is_off = actuation_app_is_pivot_off();
+    bool pivot_is_pressurizing = actuation_app_is_pivot_pressurizing();
     data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
 
 	switch (scheduling_idp)
@@ -544,7 +545,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                     {
                         active_schedule_found = true;
 
-                        if (pivot_is_off)
+                        if (pivot_is_off && !pivot_is_pressurizing)
                         {
 							ESP_LOGW(SCHEDULING_TAG,
 									"Clearing interrupted schedule date id : %s",
@@ -607,7 +608,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                     {
                         active_schedule_found = true;
 
-                        if (pivot_is_off)
+                        if (pivot_is_off && !pivot_is_pressurizing)
                         {
 							ESP_LOGW(SCHEDULING_TAG,
 									"Clearing interrupted schedule angle id : %s",
