@@ -124,18 +124,6 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
 static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec);
 static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b);
-static void system_manager_load_start_schedulings(pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												 pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE]);
-static void system_manager_remove_idp_14_conflicts(time_t scheduling_start_date,
-												  time_t scheduling_end_date,
-												  pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												  pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE]);
-static void system_manager_remove_idp_15_conflicts(time_t scheduling_start_date,
-												  pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												  pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE]);
-static void system_manager_resolve_start_scheduling_conflicts(idp_type scheduling_idp,
-															 time_t scheduling_start_date,
-															 time_t scheduling_end_date);
 static void system_manager_remove_schedule_conflict(char *scheduling_id);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
@@ -288,138 +276,6 @@ static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t ti
 static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b)
 {
 	return (start_a <= end_b && start_b <= end_a);
-}
-
-/**
- * @brief Loads all start scheduling data used to resolve scheduling conflicts.
- *
- * @param scheduling_date Buffer for date-based start schedules.
- * @param scheduling_angle Buffer for angle-based start schedules.
- */
-static void system_manager_load_start_schedulings(pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												 pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE])
-{
-	data_app_load(DATA_TYPE_SCHEDULING_DATE, scheduling_date);
-	data_app_load(DATA_TYPE_SCHEDULING_ANGLE, scheduling_angle);
-}
-
-/**
- * @brief Removes conflicts for a new IDP 14 scheduling.
- *
- * @param scheduling_start_date Start timestamp of the new schedule.
- * @param scheduling_end_date End timestamp of the new schedule.
- * @param scheduling_date Current date-based start schedules.
- * @param scheduling_angle Current angle-based start schedules.
- */
-static void system_manager_remove_idp_14_conflicts(time_t scheduling_start_date,
-												  time_t scheduling_end_date,
-												  pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												  pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE])
-{
-	for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-	{
-		if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
-		{
-			if (system_manager_timestamp_within_margin(
-					scheduling_start_date,
-					scheduling_date[position].start_date,
-					SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC) ||
-				system_manager_date_scheduling_has_overlap(
-					scheduling_start_date,
-					scheduling_end_date,
-					scheduling_date[position].start_date,
-					scheduling_date[position].end_date))
-			{
-				system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
-			}
-		}
-	}
-
-	for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-	{
-		if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
-		{
-			if (system_manager_timestamp_within_margin(
-					scheduling_start_date,
-					scheduling_angle[position].start_date,
-					SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
-			{
-				system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
-			}
-		}
-	}
-}
-
-/**
- * @brief Removes conflicts for a new IDP 15 scheduling.
- *
- * @param scheduling_start_date Start timestamp of the new schedule.
- * @param scheduling_date Current date-based start schedules.
- * @param scheduling_angle Current angle-based start schedules.
- */
-static void system_manager_remove_idp_15_conflicts(time_t scheduling_start_date,
-												  pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-												  pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE])
-{
-	for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-	{
-		if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
-		{
-			if ((scheduling_start_date <= scheduling_date[position].end_date) ||
-				system_manager_timestamp_within_margin(
-					scheduling_start_date,
-					scheduling_date[position].start_date,
-					SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
-			{
-				system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
-			}
-		}
-	}
-
-	for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-	{
-		if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
-		{
-			if (system_manager_timestamp_within_margin(
-					scheduling_start_date,
-					scheduling_angle[position].start_date,
-					SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
-			{
-				system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
-			}
-		}
-	}
-}
-
-/**
- * @brief Resolves conflicts for new start schedulings before they are saved.
- *
- * @param scheduling_idp Start scheduling type being created.
- * @param scheduling_start_date Start timestamp of the new schedule.
- * @param scheduling_end_date End timestamp of the new date schedule or zero for angle schedules.
- */
-static void system_manager_resolve_start_scheduling_conflicts(idp_type scheduling_idp,
-															 time_t scheduling_start_date,
-															 time_t scheduling_end_date)
-{
-	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-	system_manager_load_start_schedulings(scheduling_date, scheduling_angle);
-
-	if (scheduling_idp == IDP_14)
-	{
-		system_manager_remove_idp_14_conflicts(scheduling_start_date,
-											  scheduling_end_date,
-											  scheduling_date,
-											  scheduling_angle);
-	}
-	else if (scheduling_idp == IDP_15)
-	{
-		system_manager_remove_idp_15_conflicts(scheduling_start_date,
-											  scheduling_date,
-											  scheduling_angle);
-	}
 }
 
 /**
@@ -1645,9 +1501,42 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
 			time_t scheduling_end_date = scheduling.end_date + timestamp_now;
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			system_manager_resolve_start_scheduling_conflicts(IDP_14,
-															 scheduling_start_date,
-															 scheduling_end_date);
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC) ||
+						system_manager_date_scheduling_has_overlap(
+							scheduling_start_date,
+							scheduling_end_date,
+							scheduling_date[position].start_date,
+							scheduling_date[position].end_date))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
 
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 
@@ -1810,9 +1699,38 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 			time_t timestamp_now = rtc_app_get_timestamp(false);
 			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			system_manager_resolve_start_scheduling_conflicts(IDP_15,
-															 scheduling_start_date,
-															 0);
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if ((scheduling_start_date <= scheduling_date[position].end_date) ||
+						system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
 
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
