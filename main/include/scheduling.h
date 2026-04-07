@@ -24,25 +24,6 @@
 void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
 
 /**
- * @brief Begins the boot replay policy window for schedule starts.
- *
- * During the initial scheduling load after boot, this policy can be used to
- * suppress replay of date-based start windows that would otherwise be retried
- * because of TIMESTAMP_OFFSET_SCHEDULING.
- *
- * @param suppress_start_replay True to suppress boot-time replay of schedule starts.
- */
-void scheduling_begin_boot(bool suppress_start_replay);
-
-/**
- * @brief Ends the boot replay policy window for schedule starts.
- *
- * After the initial boot scheduling load is complete, scheduling_start calls
- * should behave normally again.
- */
-void scheduling_end_boot(void);
-
-/**
  * @brief Registers a callback function for scheduling events.
  *
  * This function allows the registration of a callback function that will be invoked for scheduling events.

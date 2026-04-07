@@ -211,31 +211,17 @@ void system_manager_init(void)
 	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	esp_reset_reason_t reset_cause = esp_reset_reason();
-	bool suppress_schedule_start_replay = false;
 
 	data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 	data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
-
-	if (reset_cause == ESP_RST_POWERON || reset_cause == ESP_RST_BROWNOUT)
-	{
-		suppress_schedule_start_replay = true;
-	}
-
 	scheduling_register_callback(&system_manager_callback);
-	if (suppress_schedule_start_replay)
-	{
-		ESP_LOGW(SYSTEM_MANAGER_TAG, "Suppressing boot replay for schedule starts after power reset");
-	}
-	scheduling_begin_boot(suppress_schedule_start_replay);
 
 	scheduling_start(IDP_14, scheduling_date);
 	scheduling_start(IDP_15, scheduling_angle);
 	scheduling_start(IDP_16, scheduling_off_date);
 	scheduling_start(IDP_17, scheduling_off_angle);
-	scheduling_end_boot();
 	scheduling_hangs_up_callback(&system_monitoring_pivot_shutdown);
 
 	system_timer = xTimerCreate(
@@ -1436,7 +1422,9 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 		if (idp_parser_validate_idp_14(scheduling, scheduling.str_author))
 		{
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			bool scheduling_date_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1453,8 +1441,10 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 						// gen Key
 						data_app_gen_scheduling_key((char *)&scheduling_date[position].scheduling_id);
 						strcpy(scheduling.scheduling_id, (char *)&scheduling_date[position].scheduling_id);
+						scheduling_date_started[position] = false;
 
 						data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
+						data_app_save(DATA_TYPE_SCHEDULING_DATE_STARTED, &scheduling_date_started, sizeof(scheduling_date_started));
 
 						scheduling_start(idp, scheduling_date);
 
@@ -1595,7 +1585,9 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 		if (idp_parser_validate_idp_15(scheduling, scheduling.str_author))
 		{
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			bool scheduling_angle_started[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1610,7 +1602,9 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 						// gen key
 						data_app_gen_scheduling_key((char *)&scheduling_angle[position].scheduling_id);
+						scheduling_angle_started[position] = false;
 						data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
+						data_app_save(DATA_TYPE_SCHEDULING_ANGLE_STARTED, &scheduling_angle_started, sizeof(scheduling_angle_started));
 
 						strcpy((char *)&scheduling.scheduling_id, (char *)&scheduling_angle[position].scheduling_id);
 
