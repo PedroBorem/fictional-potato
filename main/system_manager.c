@@ -279,7 +279,11 @@ static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t en
 }
 
 /**
- * @brief Removes a conflicting schedule using the normal IDP 13 project flow.
+ * @brief Removes a conflicting start schedule and notifies the backend.
+ *
+ * This helper persists the schedule removal locally and emits the same
+ * outgoing IDP 13 confirmation used by the normal delete flow, but avoids
+ * re-entering the system manager callback from inside the communication task.
  *
  * @param scheduling_id Scheduling identifier to be removed.
  */
@@ -304,8 +308,21 @@ static void system_manager_remove_schedule_conflict(char *scheduling_id)
 			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
 			{NULL, NULL}};
 
-	idp_parser_create_package(str_out, arg_pairs);
-	system_manager_callback(str_out, COMM_MQTT);
+	if (data_app_delete_scheduling(scheduling_id_copy) == ESP_OK)
+	{
+		arg_pair_t arg_pairs_out[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", scheduling_id_copy},
+				{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_out);
+
+		idp_parser_create_package(str_out, arg_pairs_out);
+		comm_app_send_idp_pack(str_out, comm_main_mode);
+	}
 }
 
 /**
@@ -1544,6 +1561,7 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 			}
 
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1563,7 +1581,8 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 						data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
-						scheduling_start(idp, scheduling_date);
+						scheduling_start(IDP_14, scheduling_date);
+						scheduling_start(IDP_15, scheduling_angle);
 
 						// send ack
 						if (comm_mode == COMM_HTTP_POST)
@@ -1742,6 +1761,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 				}
 			}
 
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
@@ -1761,7 +1781,8 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 						strcpy((char *)&scheduling.scheduling_id, (char *)&scheduling_angle[position].scheduling_id);
 
-						scheduling_start(idp, scheduling_angle);
+						scheduling_start(IDP_14, scheduling_date);
+						scheduling_start(IDP_15, scheduling_angle);
 
 						// send ack
 						if (comm_mode == COMM_HTTP_POST)
