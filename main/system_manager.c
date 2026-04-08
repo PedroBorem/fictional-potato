@@ -125,6 +125,8 @@ static void system_manager_timer_callback(TimerHandle_t pxTimer);
 static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec);
 static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b);
 static void system_manager_remove_schedule_conflict(char *scheduling_id);
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type);
+static bool system_manager_append_scheduling_payload_internal(char *buffer_out, size_t buffer_out_size, arg_pair_t arg_pairs[]);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -323,6 +325,90 @@ static void system_manager_remove_schedule_conflict(char *scheduling_id)
 		idp_parser_create_package(str_out, arg_pairs_out);
 		comm_app_send_idp_pack(str_out, comm_main_mode);
 	}
+}
+
+/**
+ * @brief Reloads one scheduling type from NVS and republishes it to the runtime scheduler.
+ *
+ * @param scheduling_idp Scheduling IDP whose runtime state will be refreshed.
+ * @param scheduling_type NVS data type that stores the scheduling array.
+ */
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type)
+{
+	typedef union
+	{
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+	} system_manager_scheduling_buffer;
+
+	system_manager_scheduling_buffer scheduling_buffer = {};
+	void *scheduling_data = NULL;
+
+	switch (scheduling_type)
+	{
+		case DATA_TYPE_SCHEDULING_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_angle;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_angle;
+			break;
+		}
+		default:
+		{
+			return;
+		}
+	}
+
+	if (data_app_load(scheduling_type, scheduling_data) == ESP_OK)
+	{
+		scheduling_start(scheduling_idp, scheduling_data);
+	}
+}
+
+/**
+ * @brief Serializes one scheduling payload and appends it to the IDP 27 list buffer.
+ *
+ * @param buffer_out Output aggregation buffer used by IDP 27.
+ * @param buffer_out_size Size of the output aggregation buffer.
+ * @param arg_pairs Packet arguments for the scheduling payload being appended.
+ * @return true when the scheduling payload was appended successfully, false otherwise.
+ */
+static bool system_manager_append_scheduling_payload_internal(char *buffer_out, size_t buffer_out_size, arg_pair_t arg_pairs[])
+{
+	char buffer_scheduling[100] = {};
+	char str_out_scheduling[100] = {};
+
+	if (buffer_out == NULL || arg_pairs == NULL)
+	{
+		return false;
+	}
+
+	idp_parser_create_package(str_out_scheduling, arg_pairs);
+	if (idp_parser_remove_hashtag_cipher(str_out_scheduling, buffer_scheduling, sizeof(buffer_scheduling)) != true)
+	{
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+		return false;
+	}
+
+	strncat(buffer_out, buffer_scheduling, buffer_out_size - strlen(buffer_out) - 1);
+	strncat(buffer_out, "@", buffer_out_size - strlen(buffer_out) - 1);
+
+	return true;
 }
 
 /**
@@ -599,7 +685,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
-			vTaskDelay(pdMS_TO_TICKS(2000));
+			vTaskDelay(pdMS_TO_TICKS(500));
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
 
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
@@ -611,7 +697,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from %i", str_pkg, comm_mode);
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid characters found");
-		vTaskDelay(pdMS_TO_TICKS(2000));
+		vTaskDelay(pdMS_TO_TICKS(500));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, str_pkg);
 	}
 }
@@ -1417,12 +1503,6 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		// init scheduling
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
 		uint8_t idp = 0;
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1456,15 +1536,10 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 			}
 			comm_app_send_idp_pack(str_out, comm_main_mode);
 
-			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
-
-			scheduling_start(IDP_14, &scheduling_date);
-			scheduling_start(IDP_15, &scheduling_angle);
-			scheduling_start(IDP_16, &scheduling_off_date);
-			scheduling_start(IDP_17, &scheduling_off_angle);
+			system_manager_reload_scheduling_runtime_internal(IDP_14, DATA_TYPE_SCHEDULING_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_15, DATA_TYPE_SCHEDULING_ANGLE);
+			system_manager_reload_scheduling_runtime_internal(IDP_16, DATA_TYPE_SCHEDULING_OFF_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_17, DATA_TYPE_SCHEDULING_OFF_ANGLE);
 		}
 		else
 		{
@@ -2685,6 +2760,14 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
 	{
+		typedef union
+		{
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		} system_manager_scheduling_list_buffer;
+
 		uint16_t dwp = 0;
 		uint8_t scheduling_counter = 0;
 
@@ -2692,141 +2775,99 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 		char buffer_out[1500] = "";
 		char str_out[1500] = "";
 
-		uint8_t idp_14 = IDP_14;
-		char buffer_scheduling_14[100] = "";
-		char str_out_scheduling_14[100] = "";
-
-		uint8_t idp_15 = IDP_15;
-		char buffer_scheduling_15[100] = "";
-		char str_out_scheduling_15[100] = "";
-
-		uint8_t idp_16 = IDP_16;
-		char buffer_scheduling_16[100] = "";
-		char str_out_scheduling_16[100] = "";
-
-		uint8_t idp_17 = IDP_17;
-		char buffer_scheduling_17[100] = "";
-		char str_out_scheduling_17[100] = "";
-
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
+		system_manager_scheduling_list_buffer scheduling_buffer = {};
 
 		strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
+		data_app_load(DATA_TYPE_SCHEDULING_DATE, scheduling_buffer.scheduling_date);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
+			uint8_t idp_14 = IDP_14;
+			dwp = idp_parser_create_pwd(scheduling_buffer.scheduling_date[position].actions);
 
 			if (dwp != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_14[] =
 					{
 						{"uint8_t", &idp_14},
-						{"string", scheduling_date[position].scheduling_id},
-						{"uint32_t", &scheduling_date[position].start_date},
-						{"uint32_t", &scheduling_date[position].end_date},
+						{"string", scheduling_buffer.scheduling_date[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].start_date},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].end_date},
 						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_date[position].actions.percentimeter},
+						{"uint16_t", &scheduling_buffer.scheduling_date[position].actions.percentimeter},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_14, arg_pairs_scheduling_14);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_14, buffer_scheduling_14, sizeof(buffer_scheduling_14)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_14))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_14, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
 		dwp = 0;
 
+		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, scheduling_buffer.scheduling_angle);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
+			uint8_t idp_15 = IDP_15;
+			dwp = idp_parser_create_pwd(scheduling_buffer.scheduling_angle[position].actions);
 
 			if (dwp != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_15[] =
 					{
 						{"uint8_t", &idp_15},
-						{"string", scheduling_angle[position].scheduling_id},
-						{"uint32_t", &scheduling_angle[position].start_date},
-						{"uint16_t", &scheduling_angle[position].end_angle},
+						{"string", scheduling_buffer.scheduling_angle[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_angle[position].start_date},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].end_angle},
 						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_angle[position].actions.percentimeter},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].actions.percentimeter},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_15, arg_pairs_scheduling_15);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_15, buffer_scheduling_15, sizeof(buffer_scheduling_15)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_15))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_15, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, scheduling_buffer.scheduling_off_date);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if (scheduling_off_date[position].end_date != 0)
+			uint8_t idp_16 = IDP_16;
+			if (scheduling_buffer.scheduling_off_date[position].end_date != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_16[] =
 					{
 						{"uint8_t", &idp_16},
-						{"string", scheduling_off_date[position].scheduling_id},
-						{"uint32_t", &scheduling_off_date[position].end_date},
+						{"string", scheduling_buffer.scheduling_off_date[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_off_date[position].end_date},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16, sizeof(buffer_scheduling_16)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_16))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_16, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, scheduling_buffer.scheduling_off_angle);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if (strcmp(scheduling_off_angle[position].scheduling_id, "") != 0)
+			uint8_t idp_17 = IDP_17;
+			if (strcmp(scheduling_buffer.scheduling_off_angle[position].scheduling_id, "") != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_17[] =
 					{
 						{"uint8_t", &idp_17},
-						{"string", scheduling_off_angle[position].scheduling_id},
-						{"uint16_t", &scheduling_off_angle[position].end_angle},
+						{"string", scheduling_buffer.scheduling_off_angle[position].scheduling_id},
+						{"uint16_t", &scheduling_buffer.scheduling_off_angle[position].end_angle},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17, sizeof(buffer_scheduling_17)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_17))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 

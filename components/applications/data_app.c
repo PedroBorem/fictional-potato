@@ -181,6 +181,102 @@ static esp_err_t data_app_clear_active_start_state(const pivot_scheduling_start_
 }
 
 /**
+ * @brief Deletes a scheduling entry from a specific persisted scheduling type.
+ * @param scheduling_type Data type that stores the scheduling array.
+ * @param scheduling_item_size Size of each scheduling item in the array.
+ * @param clear_active_start_state True when the deleted scheduling may own the active start state.
+ * @param scheduling_log_type Scheduling label used in log messages.
+ * @param scheduling_id Scheduling identifier being deleted.
+ * @param scheduling_start_state Persisted active start scheduling state.
+ * @return esp_err_t Error code indicating the success of the operation.
+ */
+static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type,
+													 size_t scheduling_item_size,
+													 bool clear_active_start_state,
+													 const char *scheduling_log_type,
+													 const char *scheduling_id,
+													 const pivot_scheduling_start_state *scheduling_start_state)
+{
+	typedef union
+	{
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+	} data_app_scheduling_buffer;
+
+	data_app_scheduling_buffer scheduling_buffer = {};
+	void *scheduling_data = NULL;
+	size_t scheduling_data_size = 0;
+	esp_err_t ret = ESP_FAIL;
+	esp_err_t state_ret = ESP_OK;
+
+	switch (scheduling_type)
+	{
+		case DATA_TYPE_SCHEDULING_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_date;
+			scheduling_data_size = sizeof(scheduling_buffer.scheduling_date);
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_date;
+			scheduling_data_size = sizeof(scheduling_buffer.scheduling_off_date);
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_angle;
+			scheduling_data_size = sizeof(scheduling_buffer.scheduling_angle);
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_angle;
+			scheduling_data_size = sizeof(scheduling_buffer.scheduling_off_angle);
+			break;
+		}
+		default:
+		{
+			return ESP_ERR_INVALID_ARG;
+		}
+	}
+
+	ret = data_app_load(scheduling_type, scheduling_data);
+	if (ret != ESP_OK)
+	{
+		return ret;
+	}
+
+	for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+	{
+		char *current_scheduling_id = (char *)scheduling_data + (position * scheduling_item_size);
+
+		if (strcmp(current_scheduling_id, scheduling_id) == 0)
+		{
+			ESP_LOGW(DATA_APP_TAG, "deleting schedule %s id : %s", scheduling_log_type, current_scheduling_id);
+			memset((uint8_t *)scheduling_data + (position * scheduling_item_size), 0x00, scheduling_item_size);
+
+			if (clear_active_start_state)
+			{
+				state_ret = data_app_clear_active_start_state(scheduling_start_state, scheduling_id);
+			}
+
+			ret = data_app_save(scheduling_type, scheduling_data, scheduling_data_size);
+			if (ret != ESP_OK)
+			{
+				return ret;
+			}
+
+			return state_ret;
+		}
+	}
+
+	return ESP_ERR_NOT_FOUND;
+}
+
+/**
  * @brief Initializes the data application.
  * @return esp_err_t Error code indicating the success of the operation.
  */
@@ -656,100 +752,81 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
  */
 esp_err_t data_app_delete_scheduling(char* scheduling_id)
 {
-	esp_err_t ret = ESP_FAIL;
+	esp_err_t ret = ESP_OK;
 	pivot_scheduling_start_state scheduling_start_state = {};
-	esp_err_t state_ret = ESP_OK;
+
+	if (scheduling_id == NULL)
+	{
+		return ESP_ERR_INVALID_ARG;
+	}
+
 	data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
 
-	pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	ret = data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-	if(ret == ESP_OK)
+	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_DATE,
+											  sizeof(pivot_scheduling_date),
+											  true,
+											  "date",
+											  scheduling_id,
+											  &scheduling_start_state);
+	if (ret == ESP_OK)
 	{
-		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-		{
-			if(strcmp(scheduling_date[position].scheduling_id, scheduling_id) == 0)
-			{
-				ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_date[position].scheduling_id);
-
-				pivot_scheduling_date scheduling_delete = {};
-				memcpy(&scheduling_date[position], &scheduling_delete, sizeof(scheduling_delete));
-
-				state_ret = data_app_clear_active_start_state(&scheduling_start_state, scheduling_id);
-
-				ret = data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
-				if (ret != ESP_OK)
-				{
-					return ret;
-				}
-
-				return state_ret;
-			}
-		}
+		return ret;
 	}
 
-	pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	ret = data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-	if(ret == ESP_OK)
+	if (ret != ESP_ERR_NOT_FOUND)
 	{
-		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-		{
-			if(strcmp(scheduling_off_date[position].scheduling_id, scheduling_id) == 0)
-			{
-				ESP_LOGW(DATA_APP_TAG, "deleting schedule date id : %s", scheduling_off_date[position].scheduling_id);
-
-				pivot_scheduling_off_date scheduling_delete = {};
-				memcpy(&scheduling_off_date[position], &scheduling_delete, sizeof(scheduling_delete));
-
-				return data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date, sizeof(scheduling_off_date));
-			}
-		}
+		return ret;
 	}
 
-	pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	ret = data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-	if(ret == ESP_OK)
+	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_OFF_DATE,
+											  sizeof(pivot_scheduling_off_date),
+											  false,
+											  "date",
+											  scheduling_id,
+											  &scheduling_start_state);
+	if (ret == ESP_OK)
 	{
-		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-		{
-			if(strcmp(scheduling_angle[position].scheduling_id, scheduling_id) == 0)
-			{
-				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_angle[position].scheduling_id);
-
-				pivot_scheduling_angle scheduling_delete = {};
-				memcpy(&scheduling_angle[position], &scheduling_delete, sizeof(scheduling_delete));
-
-				state_ret = data_app_clear_active_start_state(&scheduling_start_state, scheduling_id);
-
-				ret = data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle, sizeof(scheduling_angle));
-				if (ret != ESP_OK)
-				{
-					return ret;
-				}
-
-				return state_ret;
-			}
-		}
+		return ret;
 	}
 
-	pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	ret = data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
-	if(ret == ESP_OK)
+	if (ret != ESP_ERR_NOT_FOUND)
 	{
-		for(uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
-		{
-			if(strcmp(scheduling_off_angle[position].scheduling_id, scheduling_id) == 0)
-			{
-				ESP_LOGW(DATA_APP_TAG, "deleting schedule angle id : %s", scheduling_off_angle[position].scheduling_id);
-
-				pivot_scheduling_off_angle scheduling_delete = {};
-				memcpy(&scheduling_off_angle[position], &scheduling_delete, sizeof(scheduling_delete));
-
-				return data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle, sizeof(scheduling_off_angle));
-			}
-		}
+		return ret;
 	}
 
-	return ret;
+	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_ANGLE,
+											  sizeof(pivot_scheduling_angle),
+											  true,
+											  "angle",
+											  scheduling_id,
+											  &scheduling_start_state);
+	if (ret == ESP_OK)
+	{
+		return ret;
+	}
+
+	if (ret != ESP_ERR_NOT_FOUND)
+	{
+		return ret;
+	}
+
+	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_OFF_ANGLE,
+											  sizeof(pivot_scheduling_off_angle),
+											  false,
+											  "angle",
+											  scheduling_id,
+											  &scheduling_start_state);
+	if (ret == ESP_OK)
+	{
+		return ret;
+	}
+
+	if (ret != ESP_ERR_NOT_FOUND)
+	{
+		return ret;
+	}
+
+	return ESP_OK;
 }
 
 /**

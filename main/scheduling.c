@@ -74,6 +74,21 @@ static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static pivot_scheduling_start_state scheduling_start_state = {};
 
 /**
+ * @brief End-angle stabilization deadline for the active IDP 15 schedule.
+ */
+static time_t scheduling_angle_end_guard_until = 0;
+
+/**
+ * @brief Scheduling identifier protected by the current IDP 15 guard window.
+ */
+static char scheduling_angle_end_guard_id[30] = {};
+
+/**
+ * @brief Synchronizes access to the shared runtime scheduling state.
+ */
+static portMUX_TYPE s_scheduling_mux = portMUX_INITIALIZER_UNLOCKED;
+
+/**
  * @brief Pointer to the current angle.
  */
 static uint16_t* scheduling_current_angle = &global_angle;
@@ -88,6 +103,59 @@ static app_callback scheduling_callback = NULL;
  * @param callback The callback function for scheduling events.
  */
 static hangs_up_callback scheduling_hang_up_call = NULL;
+
+/**
+ * @brief Stores the runtime state for IDP 14 scheduling atomically.
+ *
+ * @param scheduling_date Runtime array for date schedules.
+ * @param scheduling_status Runtime execution flags for date schedules.
+ * @param start_state Persisted active start schedule state mirrored in RAM.
+ */
+static void scheduling_store_runtime_date_internal(
+    const pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
+    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
+    const pivot_scheduling_start_state *start_state);
+
+/**
+ * @brief Stores the runtime state for IDP 15 scheduling atomically.
+ *
+ * @param scheduling_angle Runtime array for angle schedules.
+ * @param scheduling_status Runtime execution flags for angle schedules.
+ * @param start_state Persisted active start schedule state mirrored in RAM.
+ */
+static void scheduling_store_runtime_angle_internal(
+    const pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE],
+    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
+    const pivot_scheduling_start_state *start_state);
+
+/**
+ * @brief Stores the runtime state for IDP 16 scheduling atomically.
+ *
+ * @param scheduling_off_date Runtime array for date shutdown schedules.
+ */
+static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE]);
+
+/**
+ * @brief Stores the runtime state for IDP 17 scheduling atomically.
+ *
+ * @param scheduling_off_angle Runtime array for angle shutdown schedules.
+ */
+static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE]);
+
+/**
+ * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
+ *
+ * @param scheduling_id Scheduling identifier currently protected.
+ * @param current_time Current timestamp used as the guard base.
+ */
+static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time);
+
+/**
+ * @brief Clears the IDP 15 end-angle stabilization guard.
+ *
+ * @param scheduling_id Scheduling identifier to be cleared from the guard state.
+ */
+static void scheduling_angle_guard_clear_internal(const char *scheduling_id);
 
 /**
  * @brief Activates the scheduling at the specified position.
@@ -137,6 +205,106 @@ static void scheduling_task_idp_16(void* arg);
 static void scheduling_task_idp_17(void* arg);
 
 /**
+ * @brief Stores the runtime state for IDP 14 scheduling atomically.
+ *
+ * @param scheduling_date Runtime array for date schedules.
+ * @param scheduling_status Runtime execution flags for date schedules.
+ * @param start_state Persisted active start schedule state mirrored in RAM.
+ */
+static void scheduling_store_runtime_date_internal(
+    const pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
+    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
+    const pivot_scheduling_start_state *start_state)
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    memcpy(scheduling_date_current, scheduling_date, sizeof(scheduling_date_current));
+    memcpy(scheduling_date_status, scheduling_status, sizeof(scheduling_date_status));
+    memcpy(&scheduling_start_state, start_state, sizeof(scheduling_start_state));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Stores the runtime state for IDP 15 scheduling atomically.
+ *
+ * @param scheduling_angle Runtime array for angle schedules.
+ * @param scheduling_status Runtime execution flags for angle schedules.
+ * @param start_state Persisted active start schedule state mirrored in RAM.
+ */
+static void scheduling_store_runtime_angle_internal(
+    const pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE],
+    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
+    const pivot_scheduling_start_state *start_state)
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    memcpy(scheduling_angle_current, scheduling_angle, sizeof(scheduling_angle_current));
+    memcpy(scheduling_angle_status, scheduling_status, sizeof(scheduling_angle_status));
+    memcpy(&scheduling_start_state, start_state, sizeof(scheduling_start_state));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Stores the runtime state for IDP 16 scheduling atomically.
+ *
+ * @param scheduling_off_date Runtime array for date shutdown schedules.
+ */
+static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE])
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    memcpy(scheduling_off_date_current, scheduling_off_date, sizeof(scheduling_off_date_current));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Stores the runtime state for IDP 17 scheduling atomically.
+ *
+ * @param scheduling_off_angle Runtime array for angle shutdown schedules.
+ */
+static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE])
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    memcpy(scheduling_off_angle_current, scheduling_off_angle, sizeof(scheduling_off_angle_current));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
+ *
+ * @param scheduling_id Scheduling identifier currently protected.
+ * @param current_time Current timestamp used as the guard base.
+ */
+static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time)
+{
+    if (scheduling_id == NULL || scheduling_id[0] == '\0')
+    {
+        return;
+    }
+
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    scheduling_angle_end_guard_until = current_time + 300;
+    memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
+    memcpy(scheduling_angle_end_guard_id, scheduling_id, strlen(scheduling_id));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Clears the IDP 15 end-angle stabilization guard.
+ *
+ * @param scheduling_id Scheduling identifier to be cleared from the guard state.
+ */
+static void scheduling_angle_guard_clear_internal(const char *scheduling_id)
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    if (scheduling_id == NULL ||
+        scheduling_id[0] == '\0' ||
+        strcmp(scheduling_angle_end_guard_id, scheduling_id) == 0)
+    {
+        scheduling_angle_end_guard_until = 0;
+        memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
+    }
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
  * @brief Activates the scheduling at the specified position.
  * @param scheduling_idp The scheduling IDP type that is starting.
  * @param position The position of the scheduling date or angle in the array.
@@ -149,6 +317,7 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
     uint16_t dwp = 0;
     char str_out[50] = {};
     esp_err_t ret = ESP_FAIL;
+    pivot_scheduling_start_state scheduling_start_state_local = {};
 
     if (scheduling_callback == NULL)
     {
@@ -156,6 +325,7 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
         return;
     }
 
+    taskENTER_CRITICAL(&s_scheduling_mux);
     if (scheduling_idp == IDP_14)
     {
         scheduling_date_status[position] = true;
@@ -165,11 +335,14 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
         scheduling_angle_status[position] = true;
     }
 
-    scheduling_start_state.active = true;
-    scheduling_start_state.scheduling_idp = scheduling_idp;
-    memset(scheduling_start_state.scheduling_id, 0x00, sizeof(scheduling_start_state.scheduling_id));
-    memcpy(scheduling_start_state.scheduling_id, scheduling_id, strlen(scheduling_id));
-    ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+    scheduling_start_state_local.active = true;
+    scheduling_start_state_local.scheduling_idp = scheduling_idp;
+    memset(scheduling_start_state_local.scheduling_id, 0x00, sizeof(scheduling_start_state_local.scheduling_id));
+    memcpy(scheduling_start_state_local.scheduling_id, scheduling_id, strlen(scheduling_id));
+    memcpy(&scheduling_start_state, &scheduling_start_state_local, sizeof(scheduling_start_state));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+
+    ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
 
     if (ret != ESP_OK)
     {
@@ -253,6 +426,8 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
     uint8_t idp = IDP_INVALID;
     uint16_t dwp = 0;
     char str_out[50] = {};
+    bool clear_start_state = false;
+    pivot_scheduling_start_state scheduling_start_state_clear = {};
 
     if (scheduling_callback == NULL)
     {
@@ -310,13 +485,21 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
     idp_parser_create_package(str_out, arg_idp_13);
     scheduling_callback(str_out, COMM_MQTT);
 
+    taskENTER_CRITICAL(&s_scheduling_mux);
     if (scheduling_start_state.active &&
         strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
     {
-        pivot_scheduling_start_state scheduling_start_state_clear = {};
-        scheduling_start_state = scheduling_start_state_clear;
-        data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+        memcpy(&scheduling_start_state, &scheduling_start_state_clear, sizeof(scheduling_start_state));
+        clear_start_state = true;
     }
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+
+    if (clear_start_state)
+    {
+        data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
+    }
+
+    scheduling_angle_guard_clear_internal(scheduling_id);
 
     // log debug
     rtc_app_get_timestamp(true);
@@ -331,6 +514,9 @@ static void scheduling_task_idp_14(void* arg)
 {
     time_t scheduling_timestamp_now = 0;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
+    pivot_scheduling_date scheduling_date = {};
+    pivot_scheduling_start_state scheduling_start_state_local = {};
+    bool scheduling_date_status_local = false;
 
     while (1)
     {
@@ -338,27 +524,35 @@ static void scheduling_task_idp_14(void* arg)
 
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if (strcmp(scheduling_date_current[date_position].scheduling_id, "") > 0)
+            taskENTER_CRITICAL(&s_scheduling_mux);
+            memcpy(&scheduling_date, &scheduling_date_current[date_position], sizeof(scheduling_date));
+            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
+            scheduling_date_status_local = scheduling_date_status[date_position];
+            taskEXIT_CRITICAL(&s_scheduling_mux);
+
+            if (strcmp(scheduling_date.scheduling_id, "") > 0)
             {
-                if (!scheduling_date_status[date_position] &&
-                    !scheduling_start_state.active &&
-                    (scheduling_timestamp_now >= scheduling_date_current[date_position].start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_date_current[date_position].start_date) + date_offset))
+                if (!scheduling_date_status_local &&
+                    !scheduling_start_state_local.active &&
+                    (scheduling_timestamp_now >= scheduling_date.start_date) &&
+                    (scheduling_timestamp_now <= (scheduling_date.start_date) + date_offset))
                 {
                     scheduling_active(IDP_14,
                                       date_position,
-                                      scheduling_date_current[date_position].scheduling_id,
-                                      scheduling_date_current[date_position].actions);
+                                      scheduling_date.scheduling_id,
+                                      scheduling_date.actions);
                 }
-                else if (scheduling_date_status[date_position] &&
-                         (scheduling_timestamp_now >= scheduling_date_current[date_position].end_date) &&
-                         (scheduling_timestamp_now <= (scheduling_date_current[date_position].end_date + date_offset)))
+                else if (scheduling_date_status_local &&
+                         (scheduling_timestamp_now >= scheduling_date.end_date) &&
+                         (scheduling_timestamp_now <= (scheduling_date.end_date + date_offset)))
                 {
                     scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14,
-                                            scheduling_date_current[date_position].scheduling_id,
-                                            scheduling_date_current[date_position].str_author);
+                                            scheduling_date.scheduling_id,
+                                            scheduling_date.str_author);
+                    taskENTER_CRITICAL(&s_scheduling_mux);
                     scheduling_date_status[date_position] = false;
-                    scheduling_deactivate(scheduling_date_current[date_position].scheduling_id, false);
+                    taskEXIT_CRITICAL(&s_scheduling_mux);
+                    scheduling_deactivate(scheduling_date.scheduling_id, false);
                 }
             }
         }
@@ -376,6 +570,11 @@ static void scheduling_task_idp_15(void* arg)
     const uint16_t angle_off_set = 3;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     time_t scheduling_timestamp_now = 0;
+    time_t scheduling_angle_end_guard_until_local = 0;
+    pivot_scheduling_angle scheduling_angle = {};
+    pivot_scheduling_start_state scheduling_start_state_local = {};
+    char scheduling_angle_end_guard_id_local[30] = {};
+    bool scheduling_angle_status_local = false;
 
     while (1)
     {
@@ -383,34 +582,57 @@ static void scheduling_task_idp_15(void* arg)
 
         for (uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
         {
-            if (strcmp(scheduling_angle_current[angle_position].scheduling_id, "") > 0)
+            taskENTER_CRITICAL(&s_scheduling_mux);
+            memcpy(&scheduling_angle, &scheduling_angle_current[angle_position], sizeof(scheduling_angle));
+            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
+            scheduling_angle_status_local = scheduling_angle_status[angle_position];
+            scheduling_angle_end_guard_until_local = scheduling_angle_end_guard_until;
+            memcpy(scheduling_angle_end_guard_id_local,
+                   scheduling_angle_end_guard_id,
+                   sizeof(scheduling_angle_end_guard_id_local));
+            taskEXIT_CRITICAL(&s_scheduling_mux);
+
+            if (strcmp(scheduling_angle.scheduling_id, "") > 0)
             {
-                if (!scheduling_angle_status[angle_position] &&
-                    !scheduling_start_state.active &&
-                    (scheduling_timestamp_now >= scheduling_angle_current[angle_position].start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_angle_current[angle_position].start_date) + date_offset))
+                if (!scheduling_angle_status_local &&
+                    !scheduling_start_state_local.active &&
+                    (scheduling_timestamp_now >= scheduling_angle.start_date) &&
+                    (scheduling_timestamp_now <= (scheduling_angle.start_date) + date_offset))
                 {
                     scheduling_active(IDP_15,
                                       angle_position,
-                                      scheduling_angle_current[angle_position].scheduling_id,
-                                      scheduling_angle_current[angle_position].actions);
+                                      scheduling_angle.scheduling_id,
+                                      scheduling_angle.actions);
 
-                    if (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set
-                        && *scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set)
+                    if (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set
+                        && *scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set)
                     {
-                        vTaskDelay(pdMS_TO_TICKS(300000));
+                        scheduling_angle_guard_start_internal(scheduling_angle.scheduling_id, scheduling_timestamp_now);
                     }
                 }
 
-                else if (scheduling_angle_status[angle_position] &&
-                         (*scheduling_current_angle >= scheduling_angle_current[angle_position].end_angle - angle_off_set) &&
-                         (*scheduling_current_angle <= scheduling_angle_current[angle_position].end_angle + angle_off_set))
+                else if (scheduling_angle_status_local &&
+                         (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set) &&
+                         (*scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set))
                 {
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
-                                            scheduling_angle_current[angle_position].scheduling_id,
-                                            scheduling_angle_current[angle_position].str_author);
-                    scheduling_angle_status[angle_position] = false;
-                    scheduling_deactivate(scheduling_angle_current[angle_position].scheduling_id, false);
+                    bool scheduling_angle_guard_active = false;
+
+                    if (strcmp(scheduling_angle_end_guard_id_local, scheduling_angle.scheduling_id) == 0 &&
+                        scheduling_timestamp_now < scheduling_angle_end_guard_until_local)
+                    {
+                        scheduling_angle_guard_active = true;
+                    }
+
+                    if (!scheduling_angle_guard_active)
+                    {
+                        scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
+                                                scheduling_angle.scheduling_id,
+                                                scheduling_angle.str_author);
+                        taskENTER_CRITICAL(&s_scheduling_mux);
+                        scheduling_angle_status[angle_position] = false;
+                        taskEXIT_CRITICAL(&s_scheduling_mux);
+                        scheduling_deactivate(scheduling_angle.scheduling_id, false);
+                    }
                 }
             }
         }
@@ -427,6 +649,8 @@ static void scheduling_task_idp_16(void* arg)
     time_t scheduling_timestamp_now = 0;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     char active_scheduling_id[50] = {};
+    pivot_scheduling_off_date scheduling_off_date = {};
+    pivot_scheduling_start_state scheduling_start_state_local = {};
 
     while (1)
     {
@@ -434,24 +658,29 @@ static void scheduling_task_idp_16(void* arg)
 
         for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
         {
-            if(strcmp(scheduling_off_date_current[date_position].scheduling_id, "") > 0)
+            taskENTER_CRITICAL(&s_scheduling_mux);
+            memcpy(&scheduling_off_date, &scheduling_off_date_current[date_position], sizeof(scheduling_off_date));
+            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
+            taskEXIT_CRITICAL(&s_scheduling_mux);
+
+            if(strcmp(scheduling_off_date.scheduling_id, "") > 0)
             {
-                if (scheduling_off_date_current[date_position].end_date != 0)
+                if (scheduling_off_date.end_date != 0)
                 {
-                    if ((scheduling_timestamp_now >= scheduling_off_date_current[date_position].end_date) &&
-                        (scheduling_timestamp_now <= (scheduling_off_date_current[date_position].end_date + date_offset)))
+                    if ((scheduling_timestamp_now >= scheduling_off_date.end_date) &&
+                        (scheduling_timestamp_now <= (scheduling_off_date.end_date + date_offset)))
                     {
-                        if (scheduling_start_state.active)
+                        if (scheduling_start_state_local.active)
                         {
-                            memcpy(active_scheduling_id, scheduling_start_state.scheduling_id, strlen(scheduling_start_state.scheduling_id));
+                            memcpy(active_scheduling_id, scheduling_start_state_local.scheduling_id, strlen(scheduling_start_state_local.scheduling_id));
                             scheduling_request_schedule_delete(active_scheduling_id);
                             memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
                         }
 
                         scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16,
-                                                scheduling_off_date_current[date_position].scheduling_id,
-                                                scheduling_off_date_current[date_position].str_author);
-                        scheduling_deactivate(scheduling_off_date_current[date_position].scheduling_id, true);
+                                                scheduling_off_date.scheduling_id,
+                                                scheduling_off_date.str_author);
+                        scheduling_deactivate(scheduling_off_date.scheduling_id, true);
                     }
                 }
             }
@@ -468,25 +697,32 @@ static void scheduling_task_idp_17(void* arg)
 {
     const uint8_t angle_off_set = 5;
     char active_scheduling_id[50] = {};
+    pivot_scheduling_off_angle scheduling_off_angle = {};
+    pivot_scheduling_start_state scheduling_start_state_local = {};
 
     while (1)
     {
         for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
         {
-            if(strcmp(scheduling_off_angle_current[angle_position].scheduling_id, "") > 0)
+            taskENTER_CRITICAL(&s_scheduling_mux);
+            memcpy(&scheduling_off_angle, &scheduling_off_angle_current[angle_position], sizeof(scheduling_off_angle));
+            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
+            taskEXIT_CRITICAL(&s_scheduling_mux);
+
+            if(strcmp(scheduling_off_angle.scheduling_id, "") > 0)
             {
-                if (*scheduling_current_angle > (scheduling_off_angle_current[angle_position].end_angle - angle_off_set)
-                    && *scheduling_current_angle < (scheduling_off_angle_current[angle_position].end_angle + angle_off_set))
+                if (*scheduling_current_angle > (scheduling_off_angle.end_angle - angle_off_set)
+                    && *scheduling_current_angle < (scheduling_off_angle.end_angle + angle_off_set))
                 {
-                    if (scheduling_start_state.active)
+                    if (scheduling_start_state_local.active)
                     {
-                        memcpy(active_scheduling_id, scheduling_start_state.scheduling_id, strlen(scheduling_start_state.scheduling_id));
+                        memcpy(active_scheduling_id, scheduling_start_state_local.scheduling_id, strlen(scheduling_start_state_local.scheduling_id));
                         scheduling_request_schedule_delete(active_scheduling_id);
                         memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
                     }
 
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle_current[angle_position].scheduling_id, scheduling_off_angle_current[angle_position].str_author);
-                    scheduling_deactivate(scheduling_off_angle_current[angle_position].scheduling_id, true);
+                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle.scheduling_id, scheduling_off_angle.str_author);
+                    scheduling_deactivate(scheduling_off_angle.scheduling_id, true);
                 }
             }
         }
@@ -518,7 +754,8 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
     bool pivot_is_off = actuation_app_is_pivot_off();
     bool pivot_is_pressurizing = actuation_app_is_pivot_pressurizing();
-    data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+    pivot_scheduling_start_state scheduling_start_state_local = {};
+    data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
 
 	switch (scheduling_idp)
 	{
@@ -526,22 +763,23 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		{
 			// Indicates whether the persisted active start state matches a loaded IDP 14.
             bool active_schedule_found = false;
-			memset(scheduling_date_status, false, sizeof(scheduling_date_status));
-			memcpy(scheduling_date_current, scheduling_data, sizeof(scheduling_date_current));
+            bool scheduling_date_status_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
+            pivot_scheduling_date scheduling_date_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			memcpy(scheduling_date_local, scheduling_data, sizeof(scheduling_date_local));
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-				if(strcmp(scheduling_date_current[date_position].scheduling_id,"") > 0)
+				if(strcmp(scheduling_date_local[date_position].scheduling_id,"") > 0)
 				{
-					if(scheduling_timestamp_now > scheduling_date_current[date_position].end_date)
+					if(scheduling_timestamp_now > scheduling_date_local[date_position].end_date)
 					{
-						data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
-						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
-                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+						data_app_delete_scheduling(scheduling_date_local[date_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_local);
+                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
 					}
-                    else if (scheduling_start_state.active &&
-                             scheduling_start_state.scheduling_idp == IDP_14 &&
-                             strcmp(scheduling_start_state.scheduling_id, scheduling_date_current[date_position].scheduling_id) == 0)
+                    else if (scheduling_start_state_local.active &&
+                             scheduling_start_state_local.scheduling_idp == IDP_14 &&
+                             strcmp(scheduling_start_state_local.scheduling_id, scheduling_date_local[date_position].scheduling_id) == 0)
                     {
                         active_schedule_found = true;
 
@@ -549,27 +787,31 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                         {
 							ESP_LOGW(SCHEDULING_TAG,
 									"Clearing interrupted schedule date id : %s",
-									scheduling_date_current[date_position].scheduling_id);
-							data_app_delete_scheduling(scheduling_date_current[date_position].scheduling_id);
-							data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_current);
-                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+									scheduling_date_local[date_position].scheduling_id);
+							data_app_delete_scheduling(scheduling_date_local[date_position].scheduling_id);
+							data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_local);
+                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
                         }
                         else
                         {
-                            scheduling_date_status[date_position] = true;
+                            scheduling_date_status_local[date_position] = true;
                         }
                     }
 				}
 			}
 
-            if (scheduling_start_state.active &&
-                scheduling_start_state.scheduling_idp == IDP_14 &&
+            if (scheduling_start_state_local.active &&
+                scheduling_start_state_local.scheduling_idp == IDP_14 &&
                 !active_schedule_found)
             {
-                pivot_scheduling_start_state scheduling_start_state_clear = {};
-                scheduling_start_state = scheduling_start_state_clear;
-                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+                memset(&scheduling_start_state_local, 0x00, sizeof(scheduling_start_state_local));
+                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
             }
+
+            scheduling_store_runtime_date_internal(
+                scheduling_date_local,
+                scheduling_date_status_local,
+                &scheduling_start_state_local);
 
 			if(xTask_scheduling_idp_14 == NULL)
 			{
@@ -587,24 +829,26 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		{
 			// Indicates whether the persisted active start state matches a loaded IDP 15.
             bool active_schedule_found = false;
-			memset(scheduling_angle_status, false, sizeof(scheduling_angle_status));
-			memcpy(scheduling_angle_current, scheduling_data, sizeof(scheduling_angle_current));
+            bool scheduling_angle_status_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
+            pivot_scheduling_angle scheduling_angle_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			memcpy(scheduling_angle_local, scheduling_data, sizeof(scheduling_angle_local));
 
 			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-				if(strcmp(scheduling_angle_current[angle_position].scheduling_id,"") > 0)
+				if(strcmp(scheduling_angle_local[angle_position].scheduling_id,"") > 0)
 				{
-                    if((scheduling_timestamp_now > scheduling_angle_current[angle_position].start_date)
-                    && (scheduling_timestamp_now - scheduling_angle_current[angle_position].start_date) > 3600
-                    && !scheduling_start_state.active)
+                    if((scheduling_timestamp_now > scheduling_angle_local[angle_position].start_date)
+                    && (scheduling_timestamp_now - scheduling_angle_local[angle_position].start_date) > 3600
+                    && !scheduling_start_state_local.active)
                     {
-						data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
-						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
-                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+                        scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
+						data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
+						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
+                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
                     }
-                    else if (scheduling_start_state.active &&
-                             scheduling_start_state.scheduling_idp == IDP_15 &&
-                             strcmp(scheduling_start_state.scheduling_id, scheduling_angle_current[angle_position].scheduling_id) == 0)
+                    else if (scheduling_start_state_local.active &&
+                             scheduling_start_state_local.scheduling_idp == IDP_15 &&
+                             strcmp(scheduling_start_state_local.scheduling_id, scheduling_angle_local[angle_position].scheduling_id) == 0)
                     {
                         active_schedule_found = true;
 
@@ -612,27 +856,33 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                         {
 							ESP_LOGW(SCHEDULING_TAG,
 									"Clearing interrupted schedule angle id : %s",
-									scheduling_angle_current[angle_position].scheduling_id);
-							data_app_delete_scheduling(scheduling_angle_current[angle_position].scheduling_id);
-							data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_current);
-                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+									scheduling_angle_local[angle_position].scheduling_id);
+                            scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
+							data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
+							data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
+                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
                         }
                         else
                         {
-                            scheduling_angle_status[angle_position] = true;
+                            scheduling_angle_status_local[angle_position] = true;
                         }
                     }
 				}
 			}
 
-            if (scheduling_start_state.active &&
-                scheduling_start_state.scheduling_idp == IDP_15 &&
+            if (scheduling_start_state_local.active &&
+                scheduling_start_state_local.scheduling_idp == IDP_15 &&
                 !active_schedule_found)
             {
-                pivot_scheduling_start_state scheduling_start_state_clear = {};
-                scheduling_start_state = scheduling_start_state_clear;
-                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state, sizeof(scheduling_start_state));
+                scheduling_angle_guard_clear_internal(scheduling_start_state_local.scheduling_id);
+                memset(&scheduling_start_state_local, 0x00, sizeof(scheduling_start_state_local));
+                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
             }
+
+            scheduling_store_runtime_angle_internal(
+                scheduling_angle_local,
+                scheduling_angle_status_local,
+                &scheduling_start_state_local);
 
 			if(xTask_scheduling_idp_15 == NULL)
 			{
@@ -648,17 +898,20 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		}
 		case IDP_16:
 		{
-			memcpy(scheduling_off_date_current, scheduling_data, sizeof(scheduling_off_date_current));
+            pivot_scheduling_off_date scheduling_off_date_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			memcpy(scheduling_off_date_local, scheduling_data, sizeof(scheduling_off_date_local));
 
 			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
 			{
-				if(scheduling_timestamp_now > scheduling_off_date_current[date_position].end_date
-				&& strcmp(scheduling_off_date_current[date_position].scheduling_id,"") > 0)
+				if(scheduling_timestamp_now > scheduling_off_date_local[date_position].end_date
+				&& strcmp(scheduling_off_date_local[date_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_off_date_current[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date_current);
+					data_app_delete_scheduling(scheduling_off_date_local[date_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date_local);
 				}
 			}
+
+            scheduling_store_runtime_off_date_internal(scheduling_off_date_local);
 
 			if(xTask_scheduling_idp_16 == NULL)
 			{
@@ -675,19 +928,22 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 		case IDP_17:
 		{
             uint8_t angle_offset = 5;
+            pivot_scheduling_off_angle scheduling_off_angle_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
 
-			memcpy(scheduling_off_angle_current, scheduling_data, sizeof(scheduling_off_angle_current));
+			memcpy(scheduling_off_angle_local, scheduling_data, sizeof(scheduling_off_angle_local));
 
             for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
 			{
-				if((*scheduling_current_angle + angle_offset > scheduling_off_angle_current[angle_position].end_angle
-                && *scheduling_current_angle - angle_offset < scheduling_off_angle_current[angle_position].end_angle)
-				&& strcmp(scheduling_off_angle_current[angle_position].scheduling_id,"") > 0)
+				if((*scheduling_current_angle + angle_offset > scheduling_off_angle_local[angle_position].end_angle
+                && *scheduling_current_angle - angle_offset < scheduling_off_angle_local[angle_position].end_angle)
+				&& strcmp(scheduling_off_angle_local[angle_position].scheduling_id,"") > 0)
 				{
-					data_app_delete_scheduling(scheduling_off_angle_current[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle_current);
+					data_app_delete_scheduling(scheduling_off_angle_local[angle_position].scheduling_id);
+					data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle_local);
 				}
 			}
+
+            scheduling_store_runtime_off_angle_internal(scheduling_off_angle_local);
 
 			if(xTask_scheduling_idp_17 == NULL)
 			{
