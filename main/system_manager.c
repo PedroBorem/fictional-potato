@@ -764,6 +764,9 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
+		pivot_scheduling_start_state scheduling_start_state = {};
+		bool delete_active_date_scheduling = false;
+		char active_date_scheduling_id[50] = {};
 		char command_user[sizeof(new_actions.user)] = {};
 
 		char pivot_id[50] = {};
@@ -789,6 +792,22 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 			if (new_actions.power_state == PIVOT_OFF)
 			{
+				if (old_actions.power_state == PIVOT_ON &&
+					strcmp(pivot_id, system_id) == 0)
+				{
+					data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+
+					if (scheduling_start_state.active &&
+						scheduling_start_state.scheduling_idp == IDP_14 &&
+						scheduling_start_state.scheduling_id[0] != '\0')
+					{
+						delete_active_date_scheduling = true;
+						memcpy(active_date_scheduling_id,
+							   scheduling_start_state.scheduling_id,
+							   strlen(scheduling_start_state.scheduling_id));
+					}
+				}
+
 				if (global_angle != 655 && system_initial_angle != 655)
 				{
 					system_initial_angle = global_angle;
@@ -847,6 +866,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				}
 				// act on the equipment
 				actuation_app_set_actions(new_actions, false);
+
+				if (delete_active_date_scheduling)
+				{
+					system_manager_remove_schedule_conflict(active_date_scheduling_id);
+					system_manager_reload_scheduling_runtime_internal(IDP_14, DATA_TYPE_SCHEDULING_DATE);
+				}
 
 				// time for the percentage to stabilize
 				system_rtc_percent = rtc_app_get_timestamp(false);
