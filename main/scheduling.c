@@ -74,6 +74,16 @@ static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
 static pivot_scheduling_start_state scheduling_start_state = {};
 
 /**
+ * @brief End-angle stabilization deadline for the active IDP 15 schedule.
+ */
+static time_t scheduling_angle_end_guard_until = 0;
+
+/**
+ * @brief Scheduling identifier protected by the current IDP 15 guard window.
+ */
+static char scheduling_angle_end_guard_id[30] = {};
+
+/**
  * @brief Synchronizes access to the shared runtime scheduling state.
  */
 static portMUX_TYPE s_scheduling_mux = portMUX_INITIALIZER_UNLOCKED;
@@ -131,6 +141,21 @@ static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_of
  * @param scheduling_off_angle Runtime array for angle shutdown schedules.
  */
 static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE]);
+
+/**
+ * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
+ *
+ * @param scheduling_id Scheduling identifier currently protected.
+ * @param current_time Current timestamp used as the guard base.
+ */
+static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time);
+
+/**
+ * @brief Clears the IDP 15 end-angle stabilization guard.
+ *
+ * @param scheduling_id Scheduling identifier to be cleared from the guard state.
+ */
+static void scheduling_angle_guard_clear_internal(const char *scheduling_id);
 
 /**
  * @brief Activates the scheduling at the specified position.
@@ -238,6 +263,44 @@ static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_o
 {
     taskENTER_CRITICAL(&s_scheduling_mux);
     memcpy(scheduling_off_angle_current, scheduling_off_angle, sizeof(scheduling_off_angle_current));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
+ *
+ * @param scheduling_id Scheduling identifier currently protected.
+ * @param current_time Current timestamp used as the guard base.
+ */
+static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time)
+{
+    if (scheduling_id == NULL || scheduling_id[0] == '\0')
+    {
+        return;
+    }
+
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    scheduling_angle_end_guard_until = current_time + 300;
+    memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
+    memcpy(scheduling_angle_end_guard_id, scheduling_id, strlen(scheduling_id));
+    taskEXIT_CRITICAL(&s_scheduling_mux);
+}
+
+/**
+ * @brief Clears the IDP 15 end-angle stabilization guard.
+ *
+ * @param scheduling_id Scheduling identifier to be cleared from the guard state.
+ */
+static void scheduling_angle_guard_clear_internal(const char *scheduling_id)
+{
+    taskENTER_CRITICAL(&s_scheduling_mux);
+    if (scheduling_id == NULL ||
+        scheduling_id[0] == '\0' ||
+        strcmp(scheduling_angle_end_guard_id, scheduling_id) == 0)
+    {
+        scheduling_angle_end_guard_until = 0;
+        memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
+    }
     taskEXIT_CRITICAL(&s_scheduling_mux);
 }
 
@@ -436,6 +499,8 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
         data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
     }
 
+    scheduling_angle_guard_clear_internal(scheduling_id);
+
     // log debug
     rtc_app_get_timestamp(true);
     ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
@@ -505,8 +570,10 @@ static void scheduling_task_idp_15(void* arg)
     const uint16_t angle_off_set = 3;
     const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
     time_t scheduling_timestamp_now = 0;
+    time_t scheduling_angle_end_guard_until_local = 0;
     pivot_scheduling_angle scheduling_angle = {};
     pivot_scheduling_start_state scheduling_start_state_local = {};
+    char scheduling_angle_end_guard_id_local[30] = {};
     bool scheduling_angle_status_local = false;
 
     while (1)
@@ -519,6 +586,10 @@ static void scheduling_task_idp_15(void* arg)
             memcpy(&scheduling_angle, &scheduling_angle_current[angle_position], sizeof(scheduling_angle));
             memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
             scheduling_angle_status_local = scheduling_angle_status[angle_position];
+            scheduling_angle_end_guard_until_local = scheduling_angle_end_guard_until;
+            memcpy(scheduling_angle_end_guard_id_local,
+                   scheduling_angle_end_guard_id,
+                   sizeof(scheduling_angle_end_guard_id_local));
             taskEXIT_CRITICAL(&s_scheduling_mux);
 
             if (strcmp(scheduling_angle.scheduling_id, "") > 0)
@@ -536,7 +607,7 @@ static void scheduling_task_idp_15(void* arg)
                     if (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set
                         && *scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set)
                     {
-                        vTaskDelay(pdMS_TO_TICKS(300000));
+                        scheduling_angle_guard_start_internal(scheduling_angle.scheduling_id, scheduling_timestamp_now);
                     }
                 }
 
@@ -544,13 +615,24 @@ static void scheduling_task_idp_15(void* arg)
                          (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set) &&
                          (*scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set))
                 {
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
-                                            scheduling_angle.scheduling_id,
-                                            scheduling_angle.str_author);
-                    taskENTER_CRITICAL(&s_scheduling_mux);
-                    scheduling_angle_status[angle_position] = false;
-                    taskEXIT_CRITICAL(&s_scheduling_mux);
-                    scheduling_deactivate(scheduling_angle.scheduling_id, false);
+                    bool scheduling_angle_guard_active = false;
+
+                    if (strcmp(scheduling_angle_end_guard_id_local, scheduling_angle.scheduling_id) == 0 &&
+                        scheduling_timestamp_now < scheduling_angle_end_guard_until_local)
+                    {
+                        scheduling_angle_guard_active = true;
+                    }
+
+                    if (!scheduling_angle_guard_active)
+                    {
+                        scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
+                                                scheduling_angle.scheduling_id,
+                                                scheduling_angle.str_author);
+                        taskENTER_CRITICAL(&s_scheduling_mux);
+                        scheduling_angle_status[angle_position] = false;
+                        taskEXIT_CRITICAL(&s_scheduling_mux);
+                        scheduling_deactivate(scheduling_angle.scheduling_id, false);
+                    }
                 }
             }
         }
@@ -759,6 +841,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                     && (scheduling_timestamp_now - scheduling_angle_local[angle_position].start_date) > 3600
                     && !scheduling_start_state_local.active)
                     {
+                        scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
 						data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
 						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
                         data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
@@ -774,6 +857,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
 							ESP_LOGW(SCHEDULING_TAG,
 									"Clearing interrupted schedule angle id : %s",
 									scheduling_angle_local[angle_position].scheduling_id);
+                            scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
 							data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
 							data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
                             data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
@@ -790,6 +874,7 @@ void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
                 scheduling_start_state_local.scheduling_idp == IDP_15 &&
                 !active_schedule_found)
             {
+                scheduling_angle_guard_clear_internal(scheduling_start_state_local.scheduling_id);
                 memset(&scheduling_start_state_local, 0x00, sizeof(scheduling_start_state_local));
                 data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
             }
