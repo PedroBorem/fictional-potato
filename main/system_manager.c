@@ -125,6 +125,7 @@ static void system_manager_timer_callback(TimerHandle_t pxTimer);
 static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec);
 static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b);
 static void system_manager_remove_schedule_conflict(char *scheduling_id);
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -322,6 +323,59 @@ static void system_manager_remove_schedule_conflict(char *scheduling_id)
 
 		idp_parser_create_package(str_out, arg_pairs_out);
 		comm_app_send_idp_pack(str_out, comm_main_mode);
+	}
+}
+
+/**
+ * @brief Reloads one scheduling type from NVS and republishes it to the runtime scheduler.
+ *
+ * @param scheduling_idp Scheduling IDP whose runtime state will be refreshed.
+ * @param scheduling_type NVS data type that stores the scheduling array.
+ */
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type)
+{
+	typedef union
+	{
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+	} system_manager_scheduling_buffer;
+
+	system_manager_scheduling_buffer scheduling_buffer = {};
+	void *scheduling_data = NULL;
+
+	switch (scheduling_type)
+	{
+		case DATA_TYPE_SCHEDULING_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_angle;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_angle;
+			break;
+		}
+		default:
+		{
+			return;
+		}
+	}
+
+	if (data_app_load(scheduling_type, scheduling_data) == ESP_OK)
+	{
+		scheduling_start(scheduling_idp, scheduling_data);
 	}
 }
 
@@ -1417,12 +1471,6 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		// init scheduling
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
 		uint8_t idp = 0;
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1456,15 +1504,10 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 			}
 			comm_app_send_idp_pack(str_out, comm_main_mode);
 
-			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
-
-			scheduling_start(IDP_14, &scheduling_date);
-			scheduling_start(IDP_15, &scheduling_angle);
-			scheduling_start(IDP_16, &scheduling_off_date);
-			scheduling_start(IDP_17, &scheduling_off_angle);
+			system_manager_reload_scheduling_runtime_internal(IDP_14, DATA_TYPE_SCHEDULING_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_15, DATA_TYPE_SCHEDULING_ANGLE);
+			system_manager_reload_scheduling_runtime_internal(IDP_16, DATA_TYPE_SCHEDULING_OFF_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_17, DATA_TYPE_SCHEDULING_OFF_ANGLE);
 		}
 		else
 		{
