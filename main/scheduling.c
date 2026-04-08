@@ -123,16 +123,14 @@ static void scheduling_store_runtime_angle_internal(
  *
  * @param scheduling_off_date Runtime array for date shutdown schedules.
  */
-static void scheduling_store_runtime_off_date_internal(
-    const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE]);
+static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE]);
 
 /**
  * @brief Stores the runtime state for IDP 17 scheduling atomically.
  *
  * @param scheduling_off_angle Runtime array for angle shutdown schedules.
  */
-static void scheduling_store_runtime_off_angle_internal(
-    const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE]);
+static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE]);
 
 /**
  * @brief Activates the scheduling at the specified position.
@@ -224,8 +222,7 @@ static void scheduling_store_runtime_angle_internal(
  *
  * @param scheduling_off_date Runtime array for date shutdown schedules.
  */
-static void scheduling_store_runtime_off_date_internal(
-    const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE])
+static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE])
 {
     taskENTER_CRITICAL(&s_scheduling_mux);
     memcpy(scheduling_off_date_current, scheduling_off_date, sizeof(scheduling_off_date_current));
@@ -237,8 +234,7 @@ static void scheduling_store_runtime_off_date_internal(
  *
  * @param scheduling_off_angle Runtime array for angle shutdown schedules.
  */
-static void scheduling_store_runtime_off_angle_internal(
-    const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE])
+static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE])
 {
     taskENTER_CRITICAL(&s_scheduling_mux);
     memcpy(scheduling_off_angle_current, scheduling_off_angle, sizeof(scheduling_off_angle_current));
