@@ -16,14 +16,6 @@
 #define DBG_MQTT_ERROR
 
 /**
- * @def LOG_COLOR_WHITE
- * @brief ANSI color code for white.
- *
- * This define specifies the ANSI color code for white, which can be used to customize log colors.
- */
-#define LOG_COLOR_WHITE   "37"
-
-/**
  * @def LOG_COMM
  * @brief Communication logs.
  *
