@@ -45,6 +45,12 @@
  */
 #define GPRS_UART_BUF_SIZE 	(1024)
 
+/**
+ * @def GPRS_UART_IDLE_DELAY_MS
+ * @brief Delay used to stabilize UART pins before enabling the driver.
+ */
+#define GPRS_UART_IDLE_DELAY_MS (20)
+
 /* Private variables  -------------------------------------------- */
 /**
  * @brief Callback function for GPRS UART events
@@ -67,6 +73,21 @@ static gprs_uart_raw_log_callback gprs_raw_log_callback = NULL;
  * @param arg User-defined argument passed to the task
  */
 static void gprs_uart_event_task(void* arg);
+
+/**
+ * @brief Keeps UART pins in the idle state before installing the driver.
+ *
+ * UART idle level is high. This passive preparation reduces the chance of
+ * floating RX/TX lines during power-on and is safe when no modem is connected.
+ */
+static void gprs_uart_prepare_idle_state(void)
+{
+    gpio_set_direction(GPRS_UART_TX_NUM, GPIO_MODE_OUTPUT);
+    gpio_set_level(GPRS_UART_TX_NUM, HIGH);
+    gpio_set_direction(GPRS_UART_RX_NUM, GPIO_MODE_INPUT);
+    gpio_set_pull_mode(GPRS_UART_RX_NUM, GPIO_PULLUP_ONLY);
+    vTaskDelay(pdMS_TO_TICKS(GPRS_UART_IDLE_DELAY_MS));
+}
 
 /**
  * @brief Checks whether a UART payload should stay hidden from raw GPRS logs.
@@ -107,13 +128,15 @@ esp_err_t gprs_uart_init(const app_callback callback)
 
     // Configure parameters of a UART driver, communication pins and install the driver
     const uart_config_t uart_config = {
-        .baud_rate = 115200,
+        .baud_rate = 57600,
         .data_bits = UART_DATA_8_BITS,
         .parity = UART_PARITY_DISABLE,
         .stop_bits = UART_STOP_BITS_1,
         .flow_ctrl = UART_HW_FLOWCTRL_DISABLE,
         .source_clk = UART_SCLK_DEFAULT,
     };
+
+    gprs_uart_prepare_idle_state();
 
     // Install UART driver, and get the queue.
     err = uart_driver_install(GPRS_UART_NUM, GPRS_UART_BUF_SIZE * 6, GPRS_UART_BUF_SIZE * 2, 20, &gprs_uart_queue, 0);
@@ -125,6 +148,9 @@ esp_err_t gprs_uart_init(const app_callback callback)
         err = uart_set_pin(GPRS_UART_NUM, GPRS_UART_TX_NUM, GPRS_UART_RX_NUM, UART_PIN_NO_CHANGE, UART_PIN_NO_CHANGE);
         if (err == ESP_OK)
         {
+            uart_flush_input(GPRS_UART_NUM);
+            xQueueReset(gprs_uart_queue);
+
             // Create a task to handle UART event from ISR
             xReturn = xTaskCreate(gprs_uart_event_task,
                 GPRS_UART_TASK_NAME,
