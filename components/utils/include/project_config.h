@@ -73,7 +73,7 @@
 /** 
  * @brief Offset for scheduling timestamps.
  */
-#define TIMESTAMP_OFFSET_SCHEDULING (18000) // 30 minutes tolerance for start and end dates
+#define TIMESTAMP_OFFSET_SCHEDULING (1800) // 30 minutes tolerance for start and end dates
 
 
 /**
@@ -445,6 +445,16 @@ typedef struct __attribute__((__packed__))
     uint16_t end_angle;             /*!< End angle */
     char str_author[50];
 } pivot_scheduling_off_angle;
+
+/**
+ * @brief Persistent runtime state for the single active start schedule.
+ */
+typedef struct __attribute__((__packed__))
+{
+    bool active;                    /*!< True when a start schedule is currently active */
+    uint8_t scheduling_idp;         /*!< IDP_14 or IDP_15 for the active start schedule */
+    char scheduling_id[50];         /*!< Active scheduling identifier */
+} pivot_scheduling_start_state;
 
 /**
  * @brief History parameters.
