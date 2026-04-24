@@ -309,9 +309,9 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config);
  * @param reason_str The reason string to be included in the packet.
  * @param idp_28 The IDP 28 packet to be built.
  * @param system_id The system ID to be included in the packet.
- * @param origin The origin to be included in the packet.
+ * @param origin The optional origin to be included in the packet.
  * @param idp The IDP type to be included in the packet.
- * @param scheduling_id The scheduling ID to be included in the packet.
+ * @param scheduling_id The optional scheduling ID to be included in the packet.
  * @param pivot_is_on_barrier The pivot barrier status to be included in the packet.
  * @param global_angle The global angle to be included in the packet.
  * @param str_date_time The date and time to be included in the packet.

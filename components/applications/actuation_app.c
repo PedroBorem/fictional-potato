@@ -215,6 +215,16 @@ bool actuation_app_is_pivot_off(void)
 }
 
 /**
+ * @brief Indicates whether the pivot is currently pressurizing.
+ *
+ * @return true when the live watering state is PIVOT_PRESSURIZING, false otherwise.
+ */
+bool actuation_app_is_pivot_pressurizing(void)
+{
+	return (gpio_actuator_get().watering_state == PIVOT_PRESSURIZING);
+}
+
+/**
  * @brief Shutdown the actuation control class.
  */
 void actuation_app_shutdown(void)
@@ -350,9 +360,6 @@ void actuation_app_hangs_up_callback(const hangs_up_callback callback)
 {
 	if(callback != NULL)
 	{
-		if(actuation_app_hang_up_call != NULL)
-		{
-			actuation_app_hang_up_call = callback;
-		}
+		actuation_app_hang_up_call = callback;
 	}
 }

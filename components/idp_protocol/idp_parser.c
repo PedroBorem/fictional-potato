@@ -1014,9 +1014,9 @@ bool idp_parser_validate_idp_31(const pivot_comm_main_mode_config comm_config)
  * @param reason_str String indicating the shutdown reason (e.g., "manual", "brownout").
  * @param idp_28 Pointer to a uint8_t representing the IDP_28 constant.
  * @param system_id System identifier string.
- * @param origin Origin string for the shutdown command.
+ * @param origin Optional origin string for the shutdown command.
  * @param idp Pointer to the IDP type.
- * @param scheduling_id Scheduling identifier string.
+ * @param scheduling_id Optional scheduling identifier string.
  * @param pivot_is_on_barrier Pointer to a boolean that indicates pivot barrier status.
  * @param global_angle Pointer to a uint16_t representing the global pivot angle.
  * @param str_date_time Formatted date and time string.
@@ -1037,44 +1037,54 @@ void idp_parser_build_arg_pairs_pivot_shutdown(
 ) 
 {
     if (arg_pair != NULL && idp_28 != NULL && system_id != NULL && 
-        idp != NULL && scheduling_id != NULL && pivot_is_on_barrier != NULL &&
+        idp != NULL && pivot_is_on_barrier != NULL &&
         global_angle != NULL && str_date_time != NULL) 
     {
+        static char default_reason[] = "unknown";
+        static char default_origin[] = "unknown";
+        static char default_scheduling_id[] = "0";
+        char *packet_reason = reason_str;
+        char *packet_origin = origin;
+        char *packet_scheduling_id = scheduling_id;
+
+        if (packet_reason == NULL || packet_reason[0] == '\0')
+        {
+            packet_reason = default_reason;
+        }
+
+        if (packet_origin == NULL || packet_origin[0] == '\0')
+        {
+            packet_origin = default_origin;
+        }
+
+        if (packet_scheduling_id == NULL || packet_scheduling_id[0] == '\0')
+        {
+            packet_scheduling_id = default_scheduling_id;
+        }
+
         int i = 0;
         arg_pair[i++] = (arg_pair_t){ "uint8_t", idp_28 };
         arg_pair[i++] = (arg_pair_t){ "string", system_id };
 
         if (is_external_agent) 
         {
-            if (reason_str != NULL) 
-            {
-                arg_pair[i++] = (arg_pair_t){ "string", reason_str };
-            }
+            arg_pair[i++] = (arg_pair_t){ "string", packet_reason };
         } 
         else 
         {
-            if (origin != NULL) 
-            {
-                arg_pair[i++] = (arg_pair_t){ "string", origin };
-            }
+            arg_pair[i++] = (arg_pair_t){ "string", packet_origin };
         }
         
         arg_pair[i++] = (arg_pair_t){ "uint8_t", idp };
-        arg_pair[i++] = (arg_pair_t){ "string", scheduling_id };
+        arg_pair[i++] = (arg_pair_t){ "string", packet_scheduling_id };
 
         if (is_external_agent) 
         {
-            if (origin != NULL) 
-            {
-                arg_pair[i++] = (arg_pair_t){ "string", origin };
-            }
+            arg_pair[i++] = (arg_pair_t){ "string", packet_origin };
         } 
         else 
         {
-            if (reason_str != NULL) 
-            {
-                arg_pair[i++] = (arg_pair_t){ "string", reason_str };
-            }
+            arg_pair[i++] = (arg_pair_t){ "string", packet_reason };
         }
         
         arg_pair[i++] = (arg_pair_t){ "bool", pivot_is_on_barrier };
