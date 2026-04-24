@@ -66,6 +66,11 @@
  */
 #define SYSTEM_SAVE_FLASH_TIME_MS (600000) // 10 minutes
 
+/** @def SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC
+ *  @brief Time margin used to resolve conflicting start schedules.
+ */
+#define SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC (1800) // 30 minutes
+
 /** @var global_pressure
  *  @brief Global variable for the current pressure.
  */
@@ -117,6 +122,11 @@ uint32_t counter_reading_panel_off = NO_MANUAL_READING;
 static void system_manager_reboot(void);
 static void system_manager_callback(const char *buffer_request, comm_type comm_mode);
 static void system_manager_timer_callback(TimerHandle_t pxTimer);
+static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec);
+static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b);
+static void system_manager_remove_schedule_conflict(char *scheduling_id);
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type);
+static bool system_manager_append_scheduling_payload_internal(char *buffer_out, size_t buffer_out_size, arg_pair_t arg_pairs[]);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -233,6 +243,175 @@ void system_manager_init(void)
 }
 
 /**
+ * @brief Returns true when two timestamps are within the configured conflict margin.
+ *
+ * @param timestamp_a First timestamp.
+ * @param timestamp_b Second timestamp.
+ * @param margin_sec Allowed absolute difference in seconds.
+ * @return true when the timestamps are within the margin, false otherwise.
+ */
+static bool system_manager_timestamp_within_margin(time_t timestamp_a, time_t timestamp_b, time_t margin_sec)
+{
+	time_t timestamp_diff = 0;
+
+	if (timestamp_a >= timestamp_b)
+	{
+		timestamp_diff = timestamp_a - timestamp_b;
+	}
+	else
+	{
+		timestamp_diff = timestamp_b - timestamp_a;
+	}
+
+	return (timestamp_diff <= margin_sec);
+}
+
+/**
+ * @brief Returns true when two date schedules overlap in time.
+ *
+ * @param start_a Start timestamp of the first schedule.
+ * @param end_a End timestamp of the first schedule.
+ * @param start_b Start timestamp of the second schedule.
+ * @param end_b End timestamp of the second schedule.
+ * @return true when the windows overlap, false otherwise.
+ */
+static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t end_a, time_t start_b, time_t end_b)
+{
+	return (start_a <= end_b && start_b <= end_a);
+}
+
+/**
+ * @brief Removes a conflicting start schedule and notifies the backend.
+ *
+ * This helper persists the schedule removal locally and emits the same
+ * outgoing IDP 13 confirmation used by the normal delete flow, but avoids
+ * re-entering the system manager callback from inside the communication task.
+ *
+ * @param scheduling_id Scheduling identifier to be removed.
+ */
+static void system_manager_remove_schedule_conflict(char *scheduling_id)
+{
+	uint8_t idp = IDP_13;
+	char str_out[80] = {};
+	char scheduling_id_copy[50] = {};
+
+	if (scheduling_id == NULL || scheduling_id[0] == '\0')
+	{
+		return;
+	}
+
+	memcpy(scheduling_id_copy, scheduling_id, strlen(scheduling_id));
+
+	arg_pair_t arg_pairs[] =
+		{
+			{"uint8_t", &idp},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
+			{"string", scheduling_id_copy},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
+			{NULL, NULL}};
+
+	if (data_app_delete_scheduling(scheduling_id_copy) == ESP_OK)
+	{
+		arg_pair_t arg_pairs_out[] =
+			{
+				{"uint8_t", &idp},
+				{"string", system_id},
+				{"string", scheduling_id_copy},
+				{NULL, NULL}};
+
+		idp_parser_create_package(str_out, arg_pairs);
+		LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_out);
+
+		idp_parser_create_package(str_out, arg_pairs_out);
+		comm_app_send_idp_pack(str_out, comm_main_mode);
+	}
+}
+
+/**
+ * @brief Reloads one scheduling type from NVS and republishes it to the runtime scheduler.
+ *
+ * @param scheduling_idp Scheduling IDP whose runtime state will be refreshed.
+ * @param scheduling_type NVS data type that stores the scheduling array.
+ */
+static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type)
+{
+	typedef union
+	{
+		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+	} system_manager_scheduling_buffer;
+
+	system_manager_scheduling_buffer scheduling_buffer = {};
+	void *scheduling_data = NULL;
+
+	switch (scheduling_type)
+	{
+		case DATA_TYPE_SCHEDULING_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_angle;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_DATE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_date;
+			break;
+		}
+		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
+		{
+			scheduling_data = scheduling_buffer.scheduling_off_angle;
+			break;
+		}
+		default:
+		{
+			return;
+		}
+	}
+
+	if (data_app_load(scheduling_type, scheduling_data) == ESP_OK)
+	{
+		scheduling_start(scheduling_idp, scheduling_data);
+	}
+}
+
+/**
+ * @brief Serializes one scheduling payload and appends it to the IDP 27 list buffer.
+ *
+ * @param buffer_out Output aggregation buffer used by IDP 27.
+ * @param buffer_out_size Size of the output aggregation buffer.
+ * @param arg_pairs Packet arguments for the scheduling payload being appended.
+ * @return true when the scheduling payload was appended successfully, false otherwise.
+ */
+static bool system_manager_append_scheduling_payload_internal(char *buffer_out, size_t buffer_out_size, arg_pair_t arg_pairs[])
+{
+	char buffer_scheduling[100] = {};
+	char str_out_scheduling[100] = {};
+
+	if (buffer_out == NULL || arg_pairs == NULL)
+	{
+		return false;
+	}
+
+	idp_parser_create_package(str_out_scheduling, arg_pairs);
+	if (idp_parser_remove_hashtag_cipher(str_out_scheduling, buffer_scheduling, sizeof(buffer_scheduling)) != true)
+	{
+		ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+		return false;
+	}
+
+	strncat(buffer_out, buffer_scheduling, buffer_out_size - strlen(buffer_out) - 1);
+	strncat(buffer_out, "@", buffer_out_size - strlen(buffer_out) - 1);
+
+	return true;
+}
+
+/**
  * @brief Performs a system reboot based on certain conditions.
  *
  * This function checks the timestamp stored in non-volatile storage (NVS) and, if certain conditions are met, performs a system reboot.
@@ -292,7 +471,10 @@ static void system_manager_reboot(void)
 			LOG_DATA(SYSTEM_MANAGER_TAG, " Percentimeter %.3d %%", current_action.percentimeter);
 			LOG_DATA(SYSTEM_MANAGER_TAG, " --------------------------------\n");
 
-			system_monitoring_pivot_shutdown(TYPE_HANGS_UP_BROWNOUT, reboot_config_idp, "0", SYSTEM_MANAGER_TAG);
+			if (reset_cause == ESP_RST_BROWNOUT && current_action.power_state == PIVOT_ON)
+			{
+				system_monitoring_pivot_shutdown(TYPE_HANGS_UP_BROWNOUT, reboot_config_idp, "0", SYSTEM_MANAGER_TAG);
+			}
 
 			vTaskDelay(pdMS_TO_TICKS(500));
 
@@ -503,7 +685,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 		{
 			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid Package (%s)", buffer_request);
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid Package");
-			vTaskDelay(pdMS_TO_TICKS(2000));
+			vTaskDelay(pdMS_TO_TICKS(500));
 			LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer_request);
 
 			comm_app_send_idp_pack(CONFIG_HTTP_ERROR, COMM_HTTP_POST);
@@ -515,7 +697,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	{
 		ESP_LOGE(SYSTEM_MANAGER_TAG, "%s, Invalid Payload from %i", str_pkg, comm_mode);
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, "Invalid characters found");
-		vTaskDelay(pdMS_TO_TICKS(2000));
+		vTaskDelay(pdMS_TO_TICKS(500));
 		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, str_pkg);
 	}
 }
@@ -582,6 +764,9 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 		pivot_actions old_actions = {};
 		pivot_actions new_actions = {};
 		pivot_history new_history = {};
+		pivot_scheduling_start_state scheduling_start_state = {};
+		bool delete_active_date_scheduling = false;
+		char active_date_scheduling_id[50] = {};
 		char command_user[sizeof(new_actions.user)] = {};
 
 		char pivot_id[50] = {};
@@ -607,6 +792,22 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 			if (new_actions.power_state == PIVOT_OFF)
 			{
+				if (old_actions.power_state == PIVOT_ON &&
+					strcmp(pivot_id, system_id) == 0)
+				{
+					data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
+
+					if (scheduling_start_state.active &&
+						scheduling_start_state.scheduling_idp == IDP_14 &&
+						scheduling_start_state.scheduling_id[0] != '\0')
+					{
+						delete_active_date_scheduling = true;
+						memcpy(active_date_scheduling_id,
+							   scheduling_start_state.scheduling_id,
+							   strlen(scheduling_start_state.scheduling_id));
+					}
+				}
+
 				if (global_angle != 655 && system_initial_angle != 655)
 				{
 					system_initial_angle = global_angle;
@@ -665,6 +866,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 				}
 				// act on the equipment
 				actuation_app_set_actions(new_actions, false);
+
+				if (delete_active_date_scheduling)
+				{
+					system_manager_remove_schedule_conflict(active_date_scheduling_id);
+					system_manager_reload_scheduling_runtime_internal(IDP_14, DATA_TYPE_SCHEDULING_DATE);
+				}
 
 				// time for the percentage to stabilize
 				system_rtc_percent = rtc_app_get_timestamp(false);
@@ -1321,12 +1528,6 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
-		// init scheduling
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
 		uint8_t idp = 0;
 		char str_out[200] = {};
 		char pivot_id[50] = {};
@@ -1360,15 +1561,10 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 			}
 			comm_app_send_idp_pack(str_out, comm_main_mode);
 
-			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-			data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
-
-			scheduling_start(IDP_14, &scheduling_date);
-			scheduling_start(IDP_15, &scheduling_angle);
-			scheduling_start(IDP_16, &scheduling_off_date);
-			scheduling_start(IDP_17, &scheduling_off_angle);
+			system_manager_reload_scheduling_runtime_internal(IDP_14, DATA_TYPE_SCHEDULING_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_15, DATA_TYPE_SCHEDULING_ANGLE);
+			system_manager_reload_scheduling_runtime_internal(IDP_16, DATA_TYPE_SCHEDULING_OFF_DATE);
+			system_manager_reload_scheduling_runtime_internal(IDP_17, DATA_TYPE_SCHEDULING_OFF_ANGLE);
 		}
 		else
 		{
@@ -1418,8 +1614,54 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_idp_14(scheduling, scheduling.str_author))
 		{
+			// Base timestamp used to convert the received offsets into absolute dates.
+			time_t timestamp_now = rtc_app_get_timestamp(false);
+
+			// Absolute execution window of the new date schedule being created.
+			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
+			time_t scheduling_end_date = scheduling.end_date + timestamp_now;
+
+			// Current start schedules used to resolve creation conflicts.
 			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
 			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC) ||
+						system_manager_date_scheduling_has_overlap(
+							scheduling_start_date,
+							scheduling_end_date,
+							scheduling_date[position].start_date,
+							scheduling_date[position].end_date))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
+
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 			{
@@ -1430,8 +1672,8 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 					if (idp_parser_validate_actions(scheduling.actions) == true)
 					{
 						// get_rtc
-						scheduling_date[position].start_date += rtc_app_get_timestamp(false);
-						scheduling_date[position].end_date += rtc_app_get_timestamp(false);
+						scheduling_date[position].start_date = scheduling_start_date;
+						scheduling_date[position].end_date = scheduling_end_date;
 
 						// gen Key
 						data_app_gen_scheduling_key((char *)&scheduling_date[position].scheduling_id);
@@ -1439,7 +1681,8 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 						data_app_save(DATA_TYPE_SCHEDULING_DATE, &scheduling_date, sizeof(scheduling_date));
 
-						scheduling_start(idp, scheduling_date);
+						scheduling_start(IDP_14, scheduling_date);
+						scheduling_start(IDP_15, scheduling_angle);
 
 						// send ack
 						if (comm_mode == COMM_HTTP_POST)
@@ -1556,7 +1799,6 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 	{
 		char str_out[200] = {};
 		char pivot_id[50] = {};
-		char str_author[30] = {};
 
 		pivot_scheduling_angle scheduling = {};
 		uint16_t dwp = 0;
@@ -1570,15 +1812,56 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 				{"uint16_t", &scheduling.end_angle},
 				{"uint16_t", &dwp},
 				{"uint16_t", &scheduling.actions.percentimeter},
-				{"string", str_author},
+				{"string", scheduling.str_author},
 				{NULL, NULL}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &scheduling.actions);
 
-		if (idp_parser_validate_idp_15(scheduling, str_author))
+		if (idp_parser_validate_idp_15(scheduling, scheduling.str_author))
 		{
+			// Base timestamp used to convert the received offset into an absolute date.
+			time_t timestamp_now = rtc_app_get_timestamp(false);
+
+			// Absolute start date of the new angle schedule being created.
+			time_t scheduling_start_date = scheduling.start_date + timestamp_now;
+
+			// Current start schedules used to resolve creation conflicts.
 			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
+			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_date[position].scheduling_id, "") > 0)
+				{
+					if ((scheduling_start_date <= scheduling_date[position].end_date) ||
+						system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_date[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_date[position].scheduling_id);
+					}
+				}
+			}
+
+			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
+			{
+				if (strcmp(scheduling_angle[position].scheduling_id, "") > 0)
+				{
+					if (system_manager_timestamp_within_margin(
+							scheduling_start_date,
+							scheduling_angle[position].start_date,
+							SYSTEM_SCHEDULING_CONFLICT_MARGIN_SEC))
+					{
+						system_manager_remove_schedule_conflict(scheduling_angle[position].scheduling_id);
+					}
+				}
+			}
+
+			data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
 			data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
 
 			for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
@@ -1590,7 +1873,7 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 					if (idp_parser_validate_actions(scheduling.actions) == true)
 					{
 						// get_rtc
-						scheduling_angle[position].start_date += rtc_app_get_timestamp(false);
+						scheduling_angle[position].start_date = scheduling_start_date;
 
 						// gen key
 						data_app_gen_scheduling_key((char *)&scheduling_angle[position].scheduling_id);
@@ -1598,7 +1881,8 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 						strcpy((char *)&scheduling.scheduling_id, (char *)&scheduling_angle[position].scheduling_id);
 
-						scheduling_start(idp, scheduling_angle);
+						scheduling_start(IDP_14, scheduling_date);
+						scheduling_start(IDP_15, scheduling_angle);
 
 						// send ack
 						if (comm_mode == COMM_HTTP_POST)
@@ -2501,6 +2785,14 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 {
 	if (comm_mode == COMM_HTTP_GET || comm_mode == COMM_MQTT)
 	{
+		typedef union
+		{
+			pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+			pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
+		} system_manager_scheduling_list_buffer;
+
 		uint16_t dwp = 0;
 		uint8_t scheduling_counter = 0;
 
@@ -2508,141 +2800,99 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 		char buffer_out[1500] = "";
 		char str_out[1500] = "";
 
-		uint8_t idp_14 = IDP_14;
-		char buffer_scheduling_14[100] = "";
-		char str_out_scheduling_14[100] = "";
-
-		uint8_t idp_15 = IDP_15;
-		char buffer_scheduling_15[100] = "";
-		char str_out_scheduling_15[100] = "";
-
-		uint8_t idp_16 = IDP_16;
-		char buffer_scheduling_16[100] = "";
-		char str_out_scheduling_16[100] = "";
-
-		uint8_t idp_17 = IDP_17;
-		char buffer_scheduling_17[100] = "";
-		char str_out_scheduling_17[100] = "";
-
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date);
-
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle);
-
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
-
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
+		system_manager_scheduling_list_buffer scheduling_buffer = {};
 
 		strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
 
+		data_app_load(DATA_TYPE_SCHEDULING_DATE, scheduling_buffer.scheduling_date);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			dwp = idp_parser_create_pwd(scheduling_date[position].actions);
+			uint8_t idp_14 = IDP_14;
+			dwp = idp_parser_create_pwd(scheduling_buffer.scheduling_date[position].actions);
 
 			if (dwp != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_14[] =
 					{
 						{"uint8_t", &idp_14},
-						{"string", scheduling_date[position].scheduling_id},
-						{"uint32_t", &scheduling_date[position].start_date},
-						{"uint32_t", &scheduling_date[position].end_date},
+						{"string", scheduling_buffer.scheduling_date[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].start_date},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].end_date},
 						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_date[position].actions.percentimeter},
+						{"uint16_t", &scheduling_buffer.scheduling_date[position].actions.percentimeter},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_14, arg_pairs_scheduling_14);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_14, buffer_scheduling_14, sizeof(buffer_scheduling_14)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_14))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_14, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
 		dwp = 0;
 
+		data_app_load(DATA_TYPE_SCHEDULING_ANGLE, scheduling_buffer.scheduling_angle);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			dwp = idp_parser_create_pwd(scheduling_angle[position].actions);
+			uint8_t idp_15 = IDP_15;
+			dwp = idp_parser_create_pwd(scheduling_buffer.scheduling_angle[position].actions);
 
 			if (dwp != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_15[] =
 					{
 						{"uint8_t", &idp_15},
-						{"string", scheduling_angle[position].scheduling_id},
-						{"uint32_t", &scheduling_angle[position].start_date},
-						{"uint16_t", &scheduling_angle[position].end_angle},
+						{"string", scheduling_buffer.scheduling_angle[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_angle[position].start_date},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].end_angle},
 						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_angle[position].actions.percentimeter},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].actions.percentimeter},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_15, arg_pairs_scheduling_15);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_15, buffer_scheduling_15, sizeof(buffer_scheduling_15)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_15))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_15, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, scheduling_buffer.scheduling_off_date);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if (scheduling_off_date[position].end_date != 0)
+			uint8_t idp_16 = IDP_16;
+			if (scheduling_buffer.scheduling_off_date[position].end_date != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_16[] =
 					{
 						{"uint8_t", &idp_16},
-						{"string", scheduling_off_date[position].scheduling_id},
-						{"uint32_t", &scheduling_off_date[position].end_date},
+						{"string", scheduling_buffer.scheduling_off_date[position].scheduling_id},
+						{"uint32_t", &scheduling_buffer.scheduling_off_date[position].end_date},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_16, arg_pairs_scheduling_16);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_16, buffer_scheduling_16, sizeof(buffer_scheduling_16)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_16))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_16, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
+		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, scheduling_buffer.scheduling_off_angle);
 		for (uint8_t position = 0; position < CONFIG_SCHEDULING_MAX_VALUE; position++)
 		{
-			if (strcmp(scheduling_off_angle[position].scheduling_id, "") != 0)
+			uint8_t idp_17 = IDP_17;
+			if (strcmp(scheduling_buffer.scheduling_off_angle[position].scheduling_id, "") != 0)
 			{
 				arg_pair_t arg_pairs_scheduling_17[] =
 					{
 						{"uint8_t", &idp_17},
-						{"string", scheduling_off_angle[position].scheduling_id},
-						{"uint16_t", &scheduling_off_angle[position].end_angle},
+						{"string", scheduling_buffer.scheduling_off_angle[position].scheduling_id},
+						{"uint16_t", &scheduling_buffer.scheduling_off_angle[position].end_angle},
 						{NULL, NULL}};
 
-				idp_parser_create_package(str_out_scheduling_17, arg_pairs_scheduling_17);
-				if (idp_parser_remove_hashtag_cipher(str_out_scheduling_17, buffer_scheduling_17, sizeof(buffer_scheduling_17)) != true)
+				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_17))
 				{
-					ESP_LOGW(SYSTEM_MANAGER_TAG, "Error: Insufficient output buffer or invalid pointers.");
+					scheduling_counter++;
 				}
-
-				strncat(buffer_out, buffer_scheduling_17, sizeof(buffer_out) - strlen(buffer_out) - 1);
-				strncat(buffer_out, "@", sizeof(buffer_out) - strlen(buffer_out) - 1);
-
-				scheduling_counter++;
 			}
 		}
 
@@ -2695,6 +2945,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 
 	uint16_t dwp = 0;
 	uint8_t idp = 0;
+	bool shutdown_registered = false;
 
 	arg_pair_t arg_pairs[] = {
 		{"uint8_t", &idp},
@@ -2711,6 +2962,7 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	{
 		new_actions.power_state = PIVOT_OFF;
 		system_monitoring_pivot_shutdown(TYPE_HANGS_UP_PIVOT_WITHOUT_WATER, IDP_30, "0", SYSTEM_MANAGER_TAG);
+		shutdown_registered = true;
 	}
 
 	if (new_actions.power_state == PIVOT_OFF)
@@ -2733,7 +2985,10 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		// Save old History and notify shutdown
 		if (old_actions.power_state != PIVOT_OFF)
 		{
-			system_monitoring_pivot_shutdown(TYPE_HANGS_UP_MANUAL, IDP_30, "0", SYSTEM_MANAGER_TAG);
+			if (shutdown_registered == false)
+			{
+				system_monitoring_pivot_shutdown(TYPE_HANGS_UP_MANUAL, IDP_30, "0", SYSTEM_MANAGER_TAG);
+			}
 			pivot_history old_history = {};
 			old_history.end_date = rtc_app_get_timestamp(false);
 			old_history.end_angle = global_angle;

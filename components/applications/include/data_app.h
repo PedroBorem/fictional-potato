@@ -37,6 +37,7 @@ typedef enum
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */
     DATA_TYPE_SCHEDULING_ANGLE, /**< Scheduling angle data type. */
     DATA_TYPE_SCHEDULING_OFF_ANGLE, /**< Scheduling off angle data type. */
+    DATA_TYPE_SCHEDULING_START_STATE, /**< Persistent runtime state for the active start schedule. */
     DATA_TYPE_HISTORY, /**< History data type. */
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
     DATA_TYPE_TIMESTAMP, /**< Timestamp data type. */

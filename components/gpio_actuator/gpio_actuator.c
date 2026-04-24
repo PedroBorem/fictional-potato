@@ -110,13 +110,12 @@ void actuator_read_percent(void* arg);
  */
 static void IRAM_ATTR gpio_isr_handler(void* arg)
 {
-	if(xTask_readpercent != NULL)
+	BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+
+	if (xTask_readpercent != NULL)
 	{
-		if (eTaskGetState(xTask_readpercent) == eSuspended
-		|| eTaskGetState(xTask_readpercent) == eBlocked)
-		{
-			vTaskResume(xTask_readpercent);
-		}
+		vTaskNotifyGiveFromISR(xTask_readpercent, &xHigherPriorityTaskWoken);
+		portYIELD_FROM_ISR(xHigherPriorityTaskWoken);
 	}
 }
 
@@ -197,7 +196,7 @@ esp_err_t gpio_actuator_init(const app_callback callback)
 	}
 	else
 	{
-		vTaskResume(xTask_readpercent);
+		xTaskNotifyGive(xTask_readpercent);
 	}
 
     err = gpio_install_isr_service(GPIO_ACT_INTR_FLAG_DEFAULT);
@@ -785,8 +784,7 @@ void actuator_read_percent(void* arg)
 {
 	while(1)
 	{
-		//suspend own task
-		vTaskSuspend(NULL);
+		ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
 
 		if(gpio_get_level(GPIO_ACT_PIN_PERC_IN) == gpio_act_contactor_type)
 		{

@@ -84,6 +84,16 @@ void actuation_app_set_pump(bool pump_state);
 bool actuation_app_is_pivot_off(void);
 
 /**
+ * @brief Indicates whether the pivot is currently pressurizing.
+ *
+ * This function reads the live actuator state and returns true when the
+ * pivot watering state is PIVOT_PRESSURIZING.
+ *
+ * @return true when the pivot is pressurizing, false otherwise.
+ */
+bool actuation_app_is_pivot_pressurizing(void);
+
+/**
  * @brief Shuts down the actuation application.
  *
  * This function gracefully shuts down the actuation application.
