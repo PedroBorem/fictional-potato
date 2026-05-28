@@ -26,6 +26,7 @@
 #include "data_app.h"
 #include "rf_uart.h"
 #include "rush_mode.h"
+#include "data_preprocessor.h"
 
 #include "scheduling.h"
 #include "system_monitoring.h"
@@ -227,6 +228,9 @@ void system_manager_init(void)
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date);
 	data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 	scheduling_register_callback(&system_manager_callback);
+
+	// init preprocessor
+	data_preprocessor_reset();
 
 	scheduling_start(IDP_14, scheduling_date);
 	scheduling_start(IDP_15, scheduling_angle);
@@ -743,6 +747,14 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 			actions.percentimeter = CONFIG_ACTIONS_UNDEF_VALUE;
 		}
 
+		data_preprocessor_add_status_packet(idp,
+											actions.rotation,
+											actions.watering_state,
+											actions.power_state,
+											actions.percentimeter,
+											global_angle,
+											str_date_time);
+
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
 	}
@@ -788,6 +800,11 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		if (idp_parser_validate_actions(new_actions) == true)
 		{
+			data_preprocessor_set_pending_action(new_actions.rotation,
+										new_actions.watering_state,
+										new_actions.power_state,
+										new_actions.percentimeter);
+
 			data_app_load(DATA_TYPE_ACTIONS, &old_actions);
 
 			if (new_actions.power_state == PIVOT_OFF)
@@ -3063,6 +3080,14 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 		{"uint16_t", &global_angle},
 		{"string", str_date_time},
 		{NULL, NULL}};
+
+	data_preprocessor_add_status_packet(idp,
+									new_actions.rotation,
+									new_actions.watering_state,
+									new_actions.power_state,
+									new_actions.percentimeter,
+									global_angle,
+									str_date_time);
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
 	comm_app_send_idp_pack(str_out, comm_main_mode);

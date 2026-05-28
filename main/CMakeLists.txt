@@ -5,5 +5,6 @@ idf_component_register(	SRCS
 							"system_monitoring.c"
 							"sectorization.c"
 							"scheduling.c"
+							"data_preprocessor.c"
                     	INCLUDE_DIRS
                     		"include")
