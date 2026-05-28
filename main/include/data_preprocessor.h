@@ -2,6 +2,7 @@
 #define DATA_PREPROCESSOR_H
 
 #include "esp_err.h"
+#include "project_config.h"
 
 #include <stdbool.h>
 #include <stddef.h>
@@ -20,6 +21,7 @@ extern "C" {
 #define DATA_PREPROCESSOR_DATE_MAX_LEN 32
 #define DATA_PREPROCESSOR_ACT_EMPTY_VALUE (-1.0f)
 #define DATA_PREPROCESSOR_ACTION_TARGET_IDP 0U
+#define DATA_PREPROCESSOR_FEATURE_COUNT 38
 
 /**
  * @brief Raw packet received by the firmware before preprocessing.
@@ -114,6 +116,53 @@ size_t data_preprocessor_get_packet_count(void);
  * @return true when the component has enough packets to calculate all features.
  */
 bool data_preprocessor_is_window_ready(void);
+
+/**
+ * @brief Registers a callback for preprocessor-generated IDP events.
+ *
+ * This follows the same architecture used by scheduling, rush mode and system
+ * monitoring: this module creates an IDP packet and the system manager callback
+ * routes it to the correct static IDP handler.
+ *
+ * @param callback Callback to be registered.
+ */
+void data_preprocessor_register_callback(const app_callback callback);
+
+/**
+ * @brief Calculate the preprocessed feature row for the current center packet.
+ *
+ * The validated model uses a centered 11-packet window. Therefore, when the
+ * ring buffer is full, the packet at index 5 is the row that should be sent to
+ * the model. This function does not modify the ring buffer and does not run the
+ * model; it only exposes the same feature row currently printed for debugging.
+ *
+ * @param[out] features Destination structure that receives the center row
+ * features.
+ *
+ * @return ESP_OK when the center row is available, ESP_ERR_INVALID_ARG when
+ * features is NULL, or ESP_ERR_INVALID_STATE when the 11-packet window is not
+ * ready yet.
+ */
+esp_err_t data_preprocessor_get_center_feature_row(
+    data_preprocessor_feature_row_t *features);
+
+/**
+ * @brief Fill the model input vector for the current center packet.
+ *
+ * The generated m2cgen model expects a plain double array, not the named
+ * feature structure. This function converts the current center feature row to
+ * the exact 38-value order used during XGBoost training and exported in
+ * xgboost_feature_order.h.
+ *
+ * @param[out] feature_vector Destination array with
+ * DATA_PREPROCESSOR_FEATURE_COUNT positions.
+ *
+ * @return ESP_OK when the vector is filled, ESP_ERR_INVALID_ARG when
+ * feature_vector is NULL, or ESP_ERR_INVALID_STATE when the 11-packet window is
+ * not ready yet.
+ */
+esp_err_t data_preprocessor_get_center_feature_vector(
+    double feature_vector[DATA_PREPROCESSOR_FEATURE_COUNT]);
 
 /**
  * @brief Store an action packet to be applied to the next IDP 00 status row.

@@ -7,4 +7,6 @@ idf_component_register(	SRCS
 							"scheduling.c"
 							"data_preprocessor.c"
                     	INCLUDE_DIRS
-                    		"include")
+                    		"include"
+                    	PRIV_INCLUDE_DIRS
+                    		"../components/embedded_model/include")
