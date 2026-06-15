@@ -327,10 +327,10 @@ void actuation_app_manual_call(pivot_actions current_action)
 	dwp = idp_parser_create_pwd(current_action);
 
 	arg_pair_t arg_pairs[] = {
-		{ "uint8_t", &idp },
-		{ "uint16_t", &dwp },
-		{ "uint8_t", &current_action.percentimeter },
-		{ NULL, NULL }
+		{ "uint8_t", &idp, 0 },
+		{ "uint16_t", &dwp, 0 },
+		{ "uint8_t", &current_action.percentimeter, 0 },
+		{NULL, NULL, 0}
 	};
 
 	idp_parser_create_package(str_out,arg_pairs);

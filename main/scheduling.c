@@ -352,10 +352,10 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
     // create package - send IDP 18
     idp = IDP_18;
     arg_pair_t arg_idp_18[] = {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id},
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {"string", scheduling_id, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));
@@ -368,11 +368,11 @@ static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* s
 
     arg_pair_t arg_idp_01[] =
     {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &actions.percentimeter },
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {"uint16_t", &dwp, 0},
+        {"uint16_t", &actions.percentimeter, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));
@@ -404,11 +404,11 @@ static void scheduling_request_schedule_delete(char* scheduling_id)
 
     arg_pair_t arg_idp_13[] =
     {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id_copy },
-        { "string", SCHEDULING_TAG },
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {"string", scheduling_id_copy, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));
@@ -440,10 +440,10 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
         // create package - send IDP 18
         idp = IDP_18;
         arg_pair_t arg_idp_18[] = {
-            { "uint8_t", &idp },
-            { "string", SCHEDULING_TAG },
-            { "string", scheduling_id},
-            { NULL, NULL }
+            {"uint8_t", &idp, 0},
+            {"string", SCHEDULING_TAG, 0},
+            {"string", scheduling_id, 0},
+            {NULL, NULL, 0}
         };
 
         memset(str_out, 0x00, sizeof(str_out));
@@ -458,11 +458,11 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 
     arg_pair_t arg_idp_01[] =
     {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &percent },
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {"uint16_t", &dwp, 0},
+        {"uint16_t", &percent, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));
@@ -474,11 +474,11 @@ static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_se
 
     arg_pair_t arg_idp_13[] =
     {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id },
-        { "string", SCHEDULING_TAG },
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {"string", scheduling_id, 0},
+        {"string", SCHEDULING_TAG, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));

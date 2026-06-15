@@ -304,20 +304,20 @@ static void system_manager_remove_schedule_conflict(char *scheduling_id)
 
 	arg_pair_t arg_pairs[] =
 		{
-			{"uint8_t", &idp},
-			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
-			{"string", scheduling_id_copy},
-			{"string", SYSTEM_SCHEDULING_TAG_COMMAND},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND, sizeof(SYSTEM_SCHEDULING_TAG_COMMAND)},
+			{"string", scheduling_id_copy, sizeof(scheduling_id_copy)},
+			{"string", SYSTEM_SCHEDULING_TAG_COMMAND, sizeof(SYSTEM_SCHEDULING_TAG_COMMAND)},
+			{NULL, NULL, 0}};
 
 	if (data_app_delete_scheduling(scheduling_id_copy) == ESP_OK)
 	{
 		arg_pair_t arg_pairs_out[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", scheduling_id_copy},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", scheduling_id_copy, sizeof(scheduling_id_copy)},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 		LOG_COMM(SYSTEM_MANAGER_TAG, "%s", str_out);
@@ -729,14 +729,14 @@ static void system_manager_idp_00(const char *buffer, comm_type comm_mode)
 		data_app_load(DATA_TYPE_INITIAL_ANGLE, &system_initial_angle);
 
 		arg_pair_t arg_pairs[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"uint16_t", &dwp},
-			{"uint16_t", &actions.percentimeter},
-			{"uint16_t", &system_initial_angle},
-			{"uint16_t", &global_angle},
-			{"string", str_date_time},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", system_id, sizeof(system_id)},
+			{"uint16_t", &dwp, 0},
+			{"uint16_t", &actions.percentimeter, 0},
+			{"uint16_t", &system_initial_angle, 0},
+			{"uint16_t", &global_angle, 0},
+			{"string", str_date_time, sizeof(str_date_time)},
+			{NULL, NULL, 0}};
 
 		if ((timestamp - system_rtc_percent) < 65)
 		{
@@ -775,12 +775,12 @@ static void system_manager_idp_01(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint16_t", &dwp},
-				{"uint16_t", &new_actions.percentimeter},
-				{"string", &new_actions.user},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint16_t", &dwp, 0},
+				{"uint16_t", &new_actions.percentimeter, 0},
+				{"string", new_actions.user, sizeof(new_actions.user)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &new_actions);
@@ -967,13 +967,13 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", net_config.gprs_id},
-				{"string", net_config.modem_apn},
-				{"string", net_config.wifi_ssid},
-				{"string", net_config.wifi_pass},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", net_config.gprs_id, sizeof(net_config.gprs_id)},
+				{"string", net_config.modem_apn, sizeof(net_config.modem_apn)},
+				{"string", net_config.wifi_ssid, sizeof(net_config.wifi_ssid)},
+				{"string", net_config.wifi_pass, sizeof(net_config.wifi_pass)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -1000,11 +1000,11 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 			strcpy(system_id, net_config.gprs_id);
 
 			arg_pair_t arg_pairs_3[] = {
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", net_config.gprs_id},
-				{"string", net_config.modem_apn},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, 0},
+				{"string", net_config.gprs_id, 0},
+				{"string", net_config.modem_apn, 0},
+				{NULL, NULL, 0}};
 
 			idp_parser_create_package(str_out, arg_pairs_3);
 			comm_app_send_idp_pack(str_out, COMM_MQTT);
@@ -1031,13 +1031,13 @@ static void system_manager_idp_02(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", net_config.gprs_id},
-				{"string", net_config.modem_apn},
-				{"string", net_config.wifi_ssid},
-				{"string", net_config.wifi_pass},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", net_config.gprs_id, sizeof(net_config.gprs_id)},
+				{"string", net_config.modem_apn, sizeof(net_config.modem_apn)},
+				{"string", net_config.wifi_ssid, sizeof(net_config.wifi_ssid)},
+				{"string", net_config.wifi_pass, sizeof(net_config.wifi_pass)},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -1084,15 +1084,15 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", new_config.contactor},
-				{"string", new_config.pressure},
-				{"uint16_t", &new_config.pressurization_time},
-				{"uint8_t", &new_config.on_time},
-				{"uint8_t", &new_config.off_time},
-				{"uint8_t", &new_config.read_time},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", new_config.contactor, sizeof(new_config.contactor)},
+				{"string", new_config.pressure, sizeof(new_config.pressure)},
+				{"uint16_t", &new_config.pressurization_time, 0},
+				{"uint8_t", &new_config.on_time, 0},
+				{"uint8_t", &new_config.off_time, 0},
+				{"uint8_t", &new_config.read_time, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -1132,15 +1132,15 @@ static void system_manager_idp_03(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", config.contactor},
-				{"string", config.pressure},
-				{"uint16_t", &config.pressurization_time},
-				{"uint8_t", &config.on_time},
-				{"uint8_t", &config.off_time},
-				{"uint8_t", &config.read_time},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", config.contactor, sizeof(config.contactor)},
+				{"string", config.pressure, sizeof(config.pressure)},
+				{"uint16_t", &config.pressurization_time, 0},
+				{"uint8_t", &config.on_time, 0},
+				{"uint8_t", &config.off_time, 0},
+				{"uint8_t", &config.read_time, 0},
+				{NULL, NULL, 0}};
 
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
@@ -1194,12 +1194,12 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint32_t", &start_time_hhmm},
-				{"uint32_t", &end_time_hhmm},
-				{"bool", &rush_mode_enabled},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint32_t", &start_time_hhmm, 0},
+				{"uint32_t", &end_time_hhmm, 0},
+				{"bool", &rush_mode_enabled, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -1257,12 +1257,12 @@ static void system_manager_idp_04(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", start_time_hhmm},
-				{"string", end_time_hhmm},
-				{"bool", &rush_mode.enable},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", start_time_hhmm, sizeof(start_time_hhmm)},
+				{"string", end_time_hhmm, sizeof(end_time_hhmm)},
+				{"bool", &rush_mode.enable, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -1309,18 +1309,18 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint8_t", &sector.sector_number},
-				{"uint16_t", &sector.sectors[0].start_angle},
-				{"uint16_t", &sector.sectors[0].end_angle},
-				{"uint16_t", &sector.sectors[1].start_angle},
-				{"uint16_t", &sector.sectors[1].end_angle},
-				{"uint16_t", &sector.sectors[2].start_angle},
-				{"uint16_t", &sector.sectors[2].end_angle},
-				{"uint16_t", &sector.sectors[3].start_angle},
-				{"uint16_t", &sector.sectors[3].end_angle},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint8_t", &sector.sector_number, 0},
+				{"uint16_t", &sector.sectors[0].start_angle, 0},
+				{"uint16_t", &sector.sectors[0].end_angle, 0},
+				{"uint16_t", &sector.sectors[1].start_angle, 0},
+				{"uint16_t", &sector.sectors[1].end_angle, 0},
+				{"uint16_t", &sector.sectors[2].start_angle, 0},
+				{"uint16_t", &sector.sectors[2].end_angle, 0},
+				{"uint16_t", &sector.sectors[3].start_angle, 0},
+				{"uint16_t", &sector.sectors[3].end_angle, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		if (idp_parser_validate_idp_05(sector))
@@ -1362,18 +1362,18 @@ static void system_manager_idp_05(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint8_t", &sector.sector_number},
-				{"uint16_t", &sector.sectors[0].start_angle},
-				{"uint16_t", &sector.sectors[0].end_angle},
-				{"uint16_t", &sector.sectors[1].start_angle},
-				{"uint16_t", &sector.sectors[1].end_angle},
-				{"uint16_t", &sector.sectors[2].start_angle},
-				{"uint16_t", &sector.sectors[2].end_angle},
-				{"uint16_t", &sector.sectors[3].start_angle},
-				{"uint16_t", &sector.sectors[3].end_angle},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"uint8_t", &sector.sector_number, 0},
+				{"uint16_t", &sector.sectors[0].start_angle, 0},
+				{"uint16_t", &sector.sectors[0].end_angle, 0},
+				{"uint16_t", &sector.sectors[1].start_angle, 0},
+				{"uint16_t", &sector.sectors[1].end_angle, 0},
+				{"uint16_t", &sector.sectors[2].start_angle, 0},
+				{"uint16_t", &sector.sectors[2].end_angle, 0},
+				{"uint16_t", &sector.sectors[3].start_angle, 0},
+				{"uint16_t", &sector.sectors[3].end_angle, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -1406,10 +1406,10 @@ static void system_manager_idp_06(const char *buffer, comm_type comm_mode)
 		// send GPRS module
 		idp = IDP_6;
 		arg_pair_t arg_pairs_3[] = {
-			{"uint8_t", &idp},
-			{"string", net_config.gprs_id},
-			{"string", net_config.modem_apn},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", net_config.gprs_id, sizeof(net_config.gprs_id)},
+			{"string", net_config.modem_apn, sizeof(net_config.modem_apn)},
+			{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs_3);
 		comm_app_send_idp_pack(str_out, COMM_MQTT);
@@ -1435,12 +1435,12 @@ static void system_manager_idp_07(const char *buffer, comm_type comm_mode)
 		// get angle
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"uint16_t", &global_angle},
-				{"uint16_t", &global_pressure},
-				{"time_t", &timestamp},
-				// {"string", utc},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"uint16_t", &global_angle, 0},
+				{"uint16_t", &global_pressure, 0},
+				{"time_t", &timestamp, 0},
+				// {"string", utc, sizeof(utc)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -1495,15 +1495,15 @@ static void system_manager_idp_12(const char *buffer, comm_type comm_mode)
 
 				arg_pair_t arg_pairs[] =
 					{
-						{"uint8_t", &idp},
-						{"string", system_id},
-						{"uint16_t", &load_history[position].start_angle},
-						{"uint16_t", &load_history[position].end_angle},
-						{"uint32_t", &load_history[position].start_date},
-						{"uint32_t", &load_history[position].end_date},
-						{"uint16_t", &dwp},
-						{"uint16_t", &load_history[position].actions.percentimeter},
-						{NULL, NULL}};
+						{"uint8_t", &idp, 0},
+						{"string", system_id, sizeof(system_id)},
+						{"uint16_t", &load_history[position].start_angle, 0},
+						{"uint16_t", &load_history[position].end_angle, 0},
+						{"uint32_t", &load_history[position].start_date, 0},
+						{"uint32_t", &load_history[position].end_date, 0},
+						{"uint16_t", &dwp, 0},
+						{"uint16_t", &load_history[position].actions.percentimeter, 0},
+						{NULL, NULL, 0}};
 
 				idp_parser_create_package(str_out, arg_pairs);
 
@@ -1536,11 +1536,11 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", scheduling_id},
-				{"string", str_author},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", scheduling_id, sizeof(scheduling_id)},
+				{"string", str_author, sizeof(str_author)},
+				{NULL, NULL, 0}};
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
 		esp_err_t err = data_app_delete_scheduling(scheduling_id);
@@ -1549,10 +1549,10 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
 			// send ack
 			arg_pair_t arg_pairs_2[] =
 				{
-					{"uint8_t", &idp},
-					{"string", system_id},
-					{"string", scheduling_id},
-					{NULL, NULL}};
+					{"uint8_t", &idp, 0},
+					{"string", system_id, 0},
+					{"string", scheduling_id, 0},
+					{NULL, NULL, 0}};
 			idp_parser_create_package(str_out, arg_pairs_2);
 
 			if (comm_mode == COMM_HTTP_POST)
@@ -1600,14 +1600,14 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint32_t", &scheduling.start_date},
-				{"uint32_t", &scheduling.end_date},
-				{"uint16_t", &dwp},
-				{"uint16_t", &scheduling.actions.percentimeter},
-				{"string", &scheduling.str_author},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint32_t", &scheduling.start_date, 0},
+				{"uint32_t", &scheduling.end_date, 0},
+				{"uint16_t", &dwp, 0},
+				{"uint16_t", &scheduling.actions.percentimeter, 0},
+				{"string", scheduling.str_author, sizeof(scheduling.str_author)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &scheduling.actions);
@@ -1689,14 +1689,14 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
-									{"uint8_t", &idp},
-									{"string", system_id},
-									{"string", scheduling.scheduling_id},
-									{"uint32_t", &scheduling.start_date},
-									{"uint32_t", &scheduling.end_date},
-									{"uint16_t", &dwp},
-									{"uint16_t", &scheduling.actions.percentimeter},
-									{NULL, NULL}};
+									{"uint8_t", &idp, 0},
+									{"string", system_id, 0},
+									{"string", scheduling.scheduling_id, 0},
+									{"uint32_t", &scheduling.start_date, 0},
+									{"uint32_t", &scheduling.end_date, 0},
+									{"uint16_t", &dwp, 0},
+									{"uint16_t", &scheduling.actions.percentimeter, 0},
+									{NULL, NULL, 0}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
 
@@ -1707,10 +1707,10 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
-									{"uint8_t", &idp},
-									{"string", system_id},
-									{"string", scheduling.scheduling_id},
-									{NULL, NULL}};
+									{"uint8_t", &idp, 0},
+									{"string", system_id, 0},
+									{"string", scheduling.scheduling_id, 0},
+									{NULL, NULL, 0}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
 							comm_app_send_idp_pack(str_out, comm_mode);
@@ -1765,14 +1765,14 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs[] =
 					{
-						{"uint8_t", &idp},
-						{"string", system_id},
-						{"string", scheduling_date[position].scheduling_id},
-						{"uint32_t", &scheduling_date[position].start_date},
-						{"uint32_t", &scheduling_date[position].end_date},
-						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_date[position].actions.percentimeter},
-						{NULL, NULL}};
+						{"uint8_t", &idp, 0},
+						{"string", system_id, sizeof(system_id)},
+						{"string", scheduling_date[position].scheduling_id, sizeof(scheduling_date[position].scheduling_id)},
+						{"uint32_t", &scheduling_date[position].start_date, 0},
+						{"uint32_t", &scheduling_date[position].end_date, 0},
+						{"uint16_t", &dwp, 0},
+						{"uint16_t", &scheduling_date[position].actions.percentimeter, 0},
+						{NULL, NULL, 0}};
 
 				idp_parser_create_package(str_out, arg_pairs);
 
@@ -1806,14 +1806,14 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint32_t", &scheduling.start_date},
-				{"uint16_t", &scheduling.end_angle},
-				{"uint16_t", &dwp},
-				{"uint16_t", &scheduling.actions.percentimeter},
-				{"string", scheduling.str_author},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint32_t", &scheduling.start_date, 0},
+				{"uint16_t", &scheduling.end_angle, 0},
+				{"uint16_t", &dwp, 0},
+				{"uint16_t", &scheduling.actions.percentimeter, 0},
+				{"string", scheduling.str_author, sizeof(scheduling.str_author)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		idp_parser_get_pwd(dwp, &scheduling.actions);
@@ -1889,14 +1889,14 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
-									{"uint8_t", &idp},
-									{"string", system_id},
-									{"string", scheduling.scheduling_id},
-									{"uint32_t", &scheduling.start_date},
-									{"uint16_t", &scheduling.end_angle},
-									{"uint16_t", &dwp},
-									{"uint16_t", &scheduling.actions.percentimeter},
-									{NULL, NULL}};
+									{"uint8_t", &idp, 0},
+									{"string", system_id, 0},
+									{"string", scheduling.scheduling_id, 0},
+									{"uint32_t", &scheduling.start_date, 0},
+									{"uint16_t", &scheduling.end_angle, 0},
+									{"uint16_t", &dwp, 0},
+									{"uint16_t", &scheduling.actions.percentimeter, 0},
+									{NULL, NULL, 0}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
 
@@ -1907,10 +1907,10 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 						{
 							arg_pair_t arg_pairs_2[] =
 								{
-									{"uint8_t", &idp},
-									{"string", system_id},
-									{"string", scheduling.scheduling_id},
-									{NULL, NULL}};
+									{"uint8_t", &idp, 0},
+									{"string", system_id, 0},
+									{"string", scheduling.scheduling_id, 0},
+									{NULL, NULL, 0}};
 
 							idp_parser_create_package(str_out, arg_pairs_2);
 							comm_app_send_idp_pack(str_out, comm_mode);
@@ -1965,14 +1965,14 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs[] =
 					{
-						{"uint8_t", &idp},
-						{"string", system_id},
-						{"string", scheduling_angle[position].scheduling_id},
-						{"uint32_t", &scheduling_angle[position].start_date},
-						{"uint16_t", &scheduling_angle[position].end_angle},
-						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_angle[position].actions.percentimeter},
-						{NULL, NULL}};
+						{"uint8_t", &idp, 0},
+						{"string", system_id, sizeof(system_id)},
+						{"string", scheduling_angle[position].scheduling_id, sizeof(scheduling_angle[position].scheduling_id)},
+						{"uint32_t", &scheduling_angle[position].start_date, 0},
+						{"uint16_t", &scheduling_angle[position].end_angle, 0},
+						{"uint16_t", &dwp, 0},
+						{"uint16_t", &scheduling_angle[position].actions.percentimeter, 0},
+						{NULL, NULL, 0}};
 
 				idp_parser_create_package(str_out, arg_pairs);
 
@@ -2006,11 +2006,11 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint32_t", &scheduling.end_date},
-				{"string", str_author},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint32_t", &scheduling.end_date, 0},
+				{"string", str_author, sizeof(str_author)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2040,11 +2040,11 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 					{
 						arg_pair_t arg_pairs_2[] =
 							{
-								{"uint8_t", &idp},
-								{"string", system_id},
-								{"string", scheduling_off_date[position].scheduling_id},
-								{"uint32_t", &scheduling.end_date},
-								{NULL, NULL}};
+								{"uint8_t", &idp, 0},
+								{"string", system_id, 0},
+								{"string", scheduling_off_date[position].scheduling_id, 0},
+								{"uint32_t", &scheduling.end_date, 0},
+								{NULL, NULL, 0}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
 
@@ -2055,10 +2055,10 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 					{
 						arg_pair_t arg_pairs_2[] =
 							{
-								{"uint8_t", &idp},
-								{"string", system_id},
-								{"string", scheduling_off_date[position].scheduling_id},
-								{NULL, NULL}};
+								{"uint8_t", &idp, 0},
+								{"string", system_id, 0},
+								{"string", scheduling_off_date[position].scheduling_id, 0},
+								{NULL, NULL, 0}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
 						comm_app_send_idp_pack(str_out, comm_mode);
@@ -2098,11 +2098,11 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 				{
 					arg_pair_t arg_pairs[] =
 						{
-							{"uint8_t", &idp},
-							{"string", system_id},
-							{"string", scheduling_off_date[position].scheduling_id},
-							{"uint32_t", &scheduling_off_date[position].end_date},
-							{NULL, NULL}};
+							{"uint8_t", &idp, 0},
+							{"string", system_id, sizeof(system_id)},
+							{"string", scheduling_off_date[position].scheduling_id, sizeof(scheduling_off_date[position].scheduling_id)},
+							{"uint32_t", &scheduling_off_date[position].end_date, 0},
+							{NULL, NULL, 0}};
 
 					idp_parser_create_package(str_out, arg_pairs);
 
@@ -2137,11 +2137,11 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint16_t", &scheduling.end_angle},
-				{"string", str_author},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint16_t", &scheduling.end_angle, 0},
+				{"string", str_author, sizeof(str_author)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2168,11 +2168,11 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 					{
 						arg_pair_t arg_pairs_2[] =
 							{
-								{"uint8_t", &idp},
-								{"string", system_id},
-								{"string", scheduling_off_angle[position].scheduling_id},
-								{"uint16_t", &scheduling.end_angle},
-								{NULL, NULL}};
+								{"uint8_t", &idp, 0},
+								{"string", system_id, 0},
+								{"string", scheduling_off_angle[position].scheduling_id, 0},
+								{"uint16_t", &scheduling.end_angle, 0},
+								{NULL, NULL, 0}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
 
@@ -2183,10 +2183,10 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 					{
 						arg_pair_t arg_pairs_2[] =
 							{
-								{"uint8_t", &idp},
-								{"string", system_id},
-								{"string", scheduling_off_angle[position].scheduling_id},
-								{NULL, NULL}};
+								{"uint8_t", &idp, 0},
+								{"string", system_id, 0},
+								{"string", scheduling_off_angle[position].scheduling_id, 0},
+								{NULL, NULL, 0}};
 
 						idp_parser_create_package(str_out, arg_pairs_2);
 						comm_app_send_idp_pack(str_out, comm_mode);
@@ -2219,11 +2219,11 @@ static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 		data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle);
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", scheduling_off_angle.scheduling_id},
-				{"uint16_t", &scheduling_off_angle.end_angle},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", scheduling_off_angle.scheduling_id, sizeof(scheduling_off_angle.scheduling_id)},
+				{"uint16_t", &scheduling_off_angle.end_angle, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 
@@ -2255,19 +2255,19 @@ static void system_manager_idp_18(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_get[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", scheduling_id},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", scheduling_id, sizeof(scheduling_id)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_get);
 
 		// create package - send IDP 18
 		arg_pair_t arg_send[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"string", scheduling_id},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", system_id, sizeof(system_id)},
+			{"string", scheduling_id, sizeof(scheduling_id)},
+			{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_send);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -2293,10 +2293,10 @@ static void system_manager_idp_21(const char *buffer, comm_type comm_mode)
 		// get timestamp
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"time_t", &timestamp},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"time_t", &timestamp, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		if (idp_parser_validate_idp_21(timestamp))
@@ -2348,14 +2348,14 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint16_t", &physical_config.start_angle_physical_barrier},
-				{"uint16_t", &physical_config.end_angle_physical_barrier},
-				{"bool", &physical_config.automatic_return},
-				{"bool", &physical_config.water_return},
-				{"uint8_t", &physical_config.time_leaving_barrier},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint16_t", &physical_config.start_angle_physical_barrier, 0},
+				{"uint16_t", &physical_config.end_angle_physical_barrier, 0},
+				{"bool", &physical_config.automatic_return, 0},
+				{"bool", &physical_config.water_return, 0},
+				{"uint8_t", &physical_config.time_leaving_barrier, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2398,14 +2398,14 @@ static void system_manager_idp_22(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint16_t", &physical_config.start_angle_physical_barrier},
-				{"uint16_t", &physical_config.end_angle_physical_barrier},
-				{"bool", &physical_config.automatic_return},
-				{"bool", &physical_config.water_return},
-				{"uint8_t", &physical_config.time_leaving_barrier},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"uint16_t", &physical_config.start_angle_physical_barrier, 0},
+				{"uint16_t", &physical_config.end_angle_physical_barrier, 0},
+				{"bool", &physical_config.automatic_return, 0},
+				{"bool", &physical_config.water_return, 0},
+				{"uint8_t", &physical_config.time_leaving_barrier, 0},
+				{NULL, NULL, 0}};
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -2475,15 +2475,15 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint8_t", &gps_config.sinal_lat},
-				{"string", &gps_config.latitude},
-				{"uint8_t", &gps_config.sinal_lon},
-				{"string", &gps_config.longitude},
-				{"uint16_t", &gps_config.time_payload},
-				{"uint16_t", &gps_config.offset},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"uint8_t", &gps_config.sinal_lat, 0},
+				{"string", gps_config.latitude, sizeof(gps_config.latitude)},
+				{"uint8_t", &gps_config.sinal_lon, 0},
+				{"string", gps_config.longitude, sizeof(gps_config.longitude)},
+				{"uint16_t", &gps_config.time_payload, 0},
+				{"uint16_t", &gps_config.offset, 0},
+				{NULL, NULL, 0}};
 
 		// send nvs saved config
 		idp_parser_create_package(str_out, arg_pairs);
@@ -2524,15 +2524,15 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 			arg_pair_t arg_pairs[] =
 				{
-					{"uint8_t", &idp},
-					{"string", system_id},
-					{"uint8_t", &gps_config.sinal_lat},
-					{"string", &gps_config.latitude},
-					{"uint8_t", &gps_config.sinal_lon},
-					{"string", &gps_config.longitude},
-					{"uint16_t", &gps_config.time_payload},
-					{"uint16_t", &gps_config.offset},
-					{NULL, NULL}};
+					{"uint8_t", &idp, 0},
+					{"string", system_id, sizeof(system_id)},
+					{"uint8_t", &gps_config.sinal_lat, 0},
+					{"string", gps_config.latitude, sizeof(gps_config.latitude)},
+					{"uint8_t", &gps_config.sinal_lon, 0},
+					{"string", gps_config.longitude, sizeof(gps_config.longitude)},
+					{"uint16_t", &gps_config.time_payload, 0},
+					{"uint16_t", &gps_config.offset, 0},
+					{NULL, NULL, 0}};
 
 			// send nvs saved config
 			idp_parser_create_package(str_out, arg_pairs);
@@ -2547,15 +2547,15 @@ static void system_manager_idp_23(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint8_t", &gps_config.sinal_lat},
-				{"string", &gps_config.latitude},
-				{"uint8_t", &gps_config.sinal_lon},
-				{"string", &gps_config.longitude},
-				{"uint16_t", &gps_config.time_payload},
-				{"uint16_t", &gps_config.offset},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint8_t", &gps_config.sinal_lat, 0},
+				{"string", gps_config.latitude, sizeof(gps_config.latitude)},
+				{"uint8_t", &gps_config.sinal_lon, 0},
+				{"string", gps_config.longitude, sizeof(gps_config.longitude)},
+				{"uint16_t", &gps_config.time_payload, 0},
+				{"uint16_t", &gps_config.offset, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 		if (idp_parser_validate_idp_23(gps_config))
@@ -2624,11 +2624,11 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"bool", &reboot_config.enable},
-				{"uint32_t", &reboot_config.reboot_timeout_sec},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"bool", &reboot_config.enable, 0},
+				{"uint32_t", &reboot_config.reboot_timeout_sec, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2654,11 +2654,11 @@ static void system_manager_idp_24(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"bool", &reboot_config.enable},
-				{"uint32_t", &reboot_config.reboot_timeout_sec},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"bool", &reboot_config.enable, 0},
+				{"uint32_t", &reboot_config.reboot_timeout_sec, 0},
+				{NULL, NULL, 0}};
 
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
@@ -2707,13 +2707,13 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
-				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
-				{"bool", &virtual_config.automatic_return},
-				{"bool", &virtual_config.water_return},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier, 0},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier, 0},
+				{"bool", &virtual_config.automatic_return, 0},
+				{"bool", &virtual_config.water_return, 0},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -2755,13 +2755,13 @@ static void system_manager_idp_26(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"uint16_t", &virtual_config.start_angle_virtual_barrier},
-				{"uint16_t", &virtual_config.end_angle_virtual_barrier},
-				{"bool", &virtual_config.automatic_return},
-				{"bool", &virtual_config.water_return},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"uint16_t", &virtual_config.start_angle_virtual_barrier, 0},
+				{"uint16_t", &virtual_config.end_angle_virtual_barrier, 0},
+				{"bool", &virtual_config.automatic_return, 0},
+				{"bool", &virtual_config.water_return, 0},
+				{NULL, NULL, 0}};
 		// send
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -2814,13 +2814,13 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs_scheduling_14[] =
 					{
-						{"uint8_t", &idp_14},
-						{"string", scheduling_buffer.scheduling_date[position].scheduling_id},
-						{"uint32_t", &scheduling_buffer.scheduling_date[position].start_date},
-						{"uint32_t", &scheduling_buffer.scheduling_date[position].end_date},
-						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_buffer.scheduling_date[position].actions.percentimeter},
-						{NULL, NULL}};
+						{"uint8_t", &idp_14, 0},
+						{"string", scheduling_buffer.scheduling_date[position].scheduling_id, sizeof(scheduling_buffer.scheduling_date[position].scheduling_id)},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].start_date, 0},
+						{"uint32_t", &scheduling_buffer.scheduling_date[position].end_date, 0},
+						{"uint16_t", &dwp, 0},
+						{"uint16_t", &scheduling_buffer.scheduling_date[position].actions.percentimeter, 0},
+						{NULL, NULL, 0}};
 
 				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_14))
 				{
@@ -2841,13 +2841,13 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs_scheduling_15[] =
 					{
-						{"uint8_t", &idp_15},
-						{"string", scheduling_buffer.scheduling_angle[position].scheduling_id},
-						{"uint32_t", &scheduling_buffer.scheduling_angle[position].start_date},
-						{"uint16_t", &scheduling_buffer.scheduling_angle[position].end_angle},
-						{"uint16_t", &dwp},
-						{"uint16_t", &scheduling_buffer.scheduling_angle[position].actions.percentimeter},
-						{NULL, NULL}};
+						{"uint8_t", &idp_15, 0},
+						{"string", scheduling_buffer.scheduling_angle[position].scheduling_id, sizeof(scheduling_buffer.scheduling_angle[position].scheduling_id)},
+						{"uint32_t", &scheduling_buffer.scheduling_angle[position].start_date, 0},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].end_angle, 0},
+						{"uint16_t", &dwp, 0},
+						{"uint16_t", &scheduling_buffer.scheduling_angle[position].actions.percentimeter, 0},
+						{NULL, NULL, 0}};
 
 				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_15))
 				{
@@ -2864,10 +2864,10 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs_scheduling_16[] =
 					{
-						{"uint8_t", &idp_16},
-						{"string", scheduling_buffer.scheduling_off_date[position].scheduling_id},
-						{"uint32_t", &scheduling_buffer.scheduling_off_date[position].end_date},
-						{NULL, NULL}};
+						{"uint8_t", &idp_16, 0},
+						{"string", scheduling_buffer.scheduling_off_date[position].scheduling_id, sizeof(scheduling_buffer.scheduling_off_date[position].scheduling_id)},
+						{"uint32_t", &scheduling_buffer.scheduling_off_date[position].end_date, 0},
+						{NULL, NULL, 0}};
 
 				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_16))
 				{
@@ -2884,10 +2884,10 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 			{
 				arg_pair_t arg_pairs_scheduling_17[] =
 					{
-						{"uint8_t", &idp_17},
-						{"string", scheduling_buffer.scheduling_off_angle[position].scheduling_id},
-						{"uint16_t", &scheduling_buffer.scheduling_off_angle[position].end_angle},
-						{NULL, NULL}};
+						{"uint8_t", &idp_17, 0},
+						{"string", scheduling_buffer.scheduling_off_angle[position].scheduling_id, sizeof(scheduling_buffer.scheduling_off_angle[position].scheduling_id)},
+						{"uint16_t", &scheduling_buffer.scheduling_off_angle[position].end_angle, 0},
+						{NULL, NULL, 0}};
 
 				if (system_manager_append_scheduling_payload_internal(buffer_out, sizeof(buffer_out), arg_pairs_scheduling_17))
 				{
@@ -2898,11 +2898,11 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs_idp_27[] =
 			{
-				{"uint8_t", &idp_27},
-				{"string", system_id},
-				{"uint8_t", &scheduling_counter},
-				{"string", buffer_out},
-				{NULL, NULL}};
+				{"uint8_t", &idp_27, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"uint8_t", &scheduling_counter, 0},
+				{"string", buffer_out, sizeof(buffer_out)},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs_idp_27);
 
@@ -2948,10 +2948,10 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	bool shutdown_registered = false;
 
 	arg_pair_t arg_pairs[] = {
-		{"uint8_t", &idp},
-		{"uint16_t", &dwp},
-		{"uint16_t", &new_actions.percentimeter},
-		{NULL, NULL}};
+		{"uint8_t", &idp, 0},
+		{"uint16_t", &dwp, 0},
+		{"uint16_t", &new_actions.percentimeter, 0},
+		{NULL, NULL, 0}};
 
 	idp_parser_get_packet_data(buffer, arg_pairs);
 	idp_parser_get_pwd(dwp, &new_actions);
@@ -3055,14 +3055,14 @@ static void system_manager_idp_30(const char *buffer, comm_type comm_mode)
 	rtc_app_get_str_date_time(timestamp, str_date_time);
 
 	arg_pair_t arg_pairs_ack[] = {
-		{"uint8_t", &idp},
-		{"string", system_id},
-		{"uint16_t", &dwp},
-		{"uint16_t", &new_actions.percentimeter},
-		{"uint16_t", &system_initial_angle},
-		{"uint16_t", &global_angle},
-		{"string", str_date_time},
-		{NULL, NULL}};
+		{"uint8_t", &idp, 0},
+		{"string", system_id, 0},
+		{"uint16_t", &dwp, 0},
+		{"uint16_t", &new_actions.percentimeter, 0},
+		{"uint16_t", &system_initial_angle, 0},
+		{"uint16_t", &global_angle, 0},
+		{"string", str_date_time, 0},
+		{NULL, NULL, 0}};
 
 	idp_parser_create_package(str_out, arg_pairs_ack);
 	comm_app_send_idp_pack(str_out, comm_main_mode);
@@ -3096,10 +3096,10 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", comm_config.comm_main_mode_config},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", comm_config.comm_main_mode_config, sizeof(comm_config.comm_main_mode_config)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -3139,10 +3139,10 @@ static void system_manager_idp_31(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", current_comm.comm_main_mode_config},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, sizeof(system_id)},
+				{"string", current_comm.comm_main_mode_config, sizeof(current_comm.comm_main_mode_config)},
+				{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -3164,17 +3164,17 @@ static void system_manager_idp_32(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", str_rush},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", str_rush, sizeof(str_rush)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
 		arg_pair_t arg_pairs_ack[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{"string", str_rush},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", system_id, 0},
+			{"string", str_rush, 0},
+			{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs_ack);
 		comm_app_send_idp_pack(str_out, comm_mode);
@@ -3202,10 +3202,10 @@ static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
 
 		arg_pair_t arg_pairs[] =
 			{
-				{"uint8_t", &idp},
-				{"string", pivot_id},
-				{"string", heartbeat_state},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", pivot_id, sizeof(pivot_id)},
+				{"string", heartbeat_state, sizeof(heartbeat_state)},
+				{NULL, NULL, 0}};
 
 		idp_parser_get_packet_data(buffer, arg_pairs);
 
@@ -3237,10 +3237,10 @@ static void system_manager_idp_42(const char *buffer, comm_type comm_mode)
 			}
 
 			arg_pair_t arg_pairs_ack[] = {
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", heartbeat_reply},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, 0},
+				{"string", heartbeat_reply, 0},
+				{NULL, NULL, 0}};
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
 			comm_app_send_idp_pack(str_out, comm_mode);
@@ -3273,10 +3273,10 @@ static void system_manager_idp_90(const char *buffer, comm_type comm_mode)
 		{
 			char str_out[200] = {};
 			arg_pair_t arg_pairs_ack[] = {
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{"string", CONFIG_FW_VERSION},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, 0},
+				{"string", CONFIG_FW_VERSION, 0},
+				{NULL, NULL, 0}};
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
 			comm_app_send_idp_pack(str_out, comm_mode);
@@ -3305,9 +3305,9 @@ static void system_manager_idp_91(const char *buffer, comm_type comm_mode)
 		{
 			char str_out[200] = {};
 			arg_pair_t arg_pairs_ack[] = {
-				{"uint8_t", &idp},
-				{"string", system_id},
-				{NULL, NULL}};
+				{"uint8_t", &idp, 0},
+				{"string", system_id, 0},
+				{NULL, NULL, 0}};
 
 			idp_parser_create_package(str_out, arg_pairs_ack);
 			comm_app_send_idp_pack(str_out, comm_mode);
@@ -3340,9 +3340,9 @@ static void system_manager_idp_92(const char *buffer, comm_type comm_mode)
 		}
 
 		arg_pair_t arg_pairs_ack[] = {
-			{"uint8_t", &idp},
-			{"string", system_id},
-			{NULL, NULL}};
+			{"uint8_t", &idp, 0},
+			{"string", system_id, 0},
+			{NULL, NULL, 0}};
 
 		idp_parser_create_package(str_out, arg_pairs_ack);
 		comm_app_send_idp_pack(str_out, comm_mode);

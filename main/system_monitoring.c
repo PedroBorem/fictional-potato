@@ -336,11 +336,11 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 arg_pair_t arg_idp_02[] =
                 {
-                    { "uint8_t", &idp },
-                    { "string", SYSTEM_MONITORING_TAG },
-                    { "uint16_t", &dwp },
-                    { "uint16_t", &percent_return },
-                    { NULL, NULL }
+                    {"uint8_t", &idp, 0},
+                    {"string", SYSTEM_MONITORING_TAG, 0},
+                    {"uint16_t", &dwp, 0},
+                    {"uint16_t", &percent_return, 0},
+                    {NULL, NULL, 0}
                 };
 
                 memset(str_out, 0x00, sizeof(str_out));
@@ -405,11 +405,11 @@ static void system_monitoring_automatic_return(pivot_actions pivot_actions, type
 
                 arg_pair_t arg_idp_02[] =
                 {
-                    { "uint8_t", &idp },
-                    { "string", SYSTEM_MONITORING_TAG },
-                    { "uint16_t", &dwp },
-                    { "uint16_t", &percent_return },
-                    { NULL, NULL }
+                    {"uint8_t", &idp, 0},
+                    {"string", SYSTEM_MONITORING_TAG, 0},
+                    {"uint16_t", &dwp, 0},
+                    {"uint16_t", &percent_return, 0},
+                    {NULL, NULL, 0}
                 };
 
                 memset(str_out, 0x00, sizeof(str_out));
@@ -458,11 +458,11 @@ static void system_monitoring_actuation_virtual_barrier(void)
 
     arg_pair_t arg_idp_01[] =
     {
-        { "uint8_t", &idp },
-        { "string", SYSTEM_MONITORING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &percent_off },
-        { NULL, NULL }
+        {"uint8_t", &idp, 0},
+        {"string", SYSTEM_MONITORING_TAG, 0},
+        {"uint16_t", &dwp, 0},
+        {"uint16_t", &percent_off, 0},
+        {NULL, NULL, 0}
     };
 
     memset(str_out, 0x00, sizeof(str_out));
