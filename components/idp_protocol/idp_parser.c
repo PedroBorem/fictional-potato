@@ -110,7 +110,7 @@
  * @param[in] string_in The received IDP packet string.
  * @return ESP_OK if the packet is valid, ESP_FAIL otherwise.
  */
-static bool idp_parser_check_pack(const char* string_in, char* string_out);
+static bool idp_parser_check_pack(const char* string_in, char* string_out, size_t string_out_size);
 
 /* Private methods ----------------------------------------------- */
 
@@ -123,31 +123,35 @@ static bool idp_parser_check_pack(const char* string_in, char* string_out);
  * @param[out] string_out The valid IDP packet string.
  * @return true if the packet is valid, false otherwise.
  */
-static bool idp_parser_check_pack(const char* string_in, char* string_out)
+static bool idp_parser_check_pack(const char* string_in, char* string_out, size_t string_out_size)
 {
-    bool ret = false;
-    int ch_1 = '#';
-    int ch_2 = '$';
+    if (string_in == NULL || string_out == NULL || string_out_size == 0)
+    {
+        return false;
+    }
 
-    char* ptr_1 = strchr(string_in, ch_1);
-    char* ptr_2 = strchr(string_in, ch_2);
+    string_out[0] = '\0';
 
-    if (ptr_1 != NULL && ptr_2 != NULL
-    && (strlen(ptr_1) > strlen(ptr_2)))
+    char* ptr_1 = strchr(string_in, '#');
+    char* ptr_2 = strchr(string_in, '$');
+
+    if (ptr_1 != NULL && ptr_2 != NULL && ptr_2 > ptr_1)
     {
         size_t sub_len = ptr_2 - ptr_1 + 1;
 
-        strncpy(string_out, ptr_1, sub_len);
+        if (sub_len >= string_out_size)
+        {
+            ESP_LOGE(IDP_PARSER_TAG, "package too large");
+            return false;
+        }
+
+        memcpy(string_out, ptr_1, sub_len);
         string_out[sub_len] = '\0';
-
-        ret = true;
-    }
-    else
-    {
-    	ESP_LOGE(IDP_PARSER_TAG, "invalid package");
+        return true;
     }
 
-    return ret;
+    ESP_LOGE(IDP_PARSER_TAG, "invalid package");
+    return false;
 }
 
 /* Public methods ------------------------------------------------ */
@@ -160,23 +164,29 @@ static bool idp_parser_check_pack(const char* string_in, char* string_out)
  * @param[out] string_out The extracted IDP type as a string.
  * @return The IDP type as an `idp_type` enum.
  */
-idp_type idp_parser_get(const char* string_in, char* string_out)
+idp_type idp_parser_get(const char* string_in, char* string_out, size_t string_out_size)
 {
 	idp_type idp_ret = IDP_INVALID;
-	char* str_copy = strdup(string_in);
 	char str_sub[100] = {};
 
-	if(idp_parser_check_pack(str_copy, str_sub) == true)
+    if(string_in == NULL || string_out == NULL || string_out_size == 0)
+    {
+        return idp_ret;
+    }
+
+    string_out[0] = '\0';
+
+	if(idp_parser_check_pack(string_in, str_sub, sizeof(str_sub)) == true)
 	{
-		strcpy(string_out, str_sub);
+        snprintf(string_out, string_out_size, "%s", str_sub);
 
 	    const char delimiter[] = "-";
 		char* ptr = strtok(str_sub, delimiter);
 
-	    sscanf(&ptr[1], "%d",(int*)&idp_ret);
+        if(ptr != NULL)
+	        sscanf(&ptr[1], "%d",(int*)&idp_ret);
 	}
 
-	free(str_copy);
 	return idp_ret;
 }
 
@@ -423,9 +433,14 @@ void idp_parser_get_packet_data(const char* str_arg, arg_pair_t arg_pairs[])
         } else if (strcmp(type, "int") == 0) {
             * (int *) arg_pairs[index].value = atoi(token);
         } else if (strcmp(type, "string") == 0) {
-        	uint8_t str_size = strlen(token);
-        	strncpy(arg_pairs[index].value, token, str_size);
-            ((char *)arg_pairs[index].value)[str_size] = '\0';
+            char *dst = (char *)arg_pairs[index].value;
+            size_t dst_size = arg_pairs[index].size;
+            if (dst == NULL || dst_size == 0)
+            {
+                ESP_LOGE(IDP_PARSER_TAG, "invalid string destination");
+                break;
+            }
+            snprintf(dst, dst_size, "%s", token);
         } else if (strcmp(type, "bool") == 0) {
             if (strcmp(token, "0") == 0)
             {
@@ -1063,33 +1078,33 @@ void idp_parser_build_arg_pairs_pivot_shutdown(
         }
 
         int i = 0;
-        arg_pair[i++] = (arg_pair_t){ "uint8_t", idp_28 };
-        arg_pair[i++] = (arg_pair_t){ "string", system_id };
+        arg_pair[i++] = (arg_pair_t){"uint8_t", idp_28, 0};
+        arg_pair[i++] = (arg_pair_t){"string", system_id, 0};
 
         if (is_external_agent) 
         {
-            arg_pair[i++] = (arg_pair_t){ "string", packet_reason };
+            arg_pair[i++] = (arg_pair_t){"string", packet_reason, 0};
         } 
         else 
         {
-            arg_pair[i++] = (arg_pair_t){ "string", packet_origin };
+            arg_pair[i++] = (arg_pair_t){"string", packet_origin, 0};
         }
         
-        arg_pair[i++] = (arg_pair_t){ "uint8_t", idp };
-        arg_pair[i++] = (arg_pair_t){ "string", packet_scheduling_id };
+        arg_pair[i++] = (arg_pair_t){"uint8_t", idp, 0};
+        arg_pair[i++] = (arg_pair_t){"string", packet_scheduling_id, 0};
 
         if (is_external_agent) 
         {
-            arg_pair[i++] = (arg_pair_t){ "string", packet_origin };
+            arg_pair[i++] = (arg_pair_t){"string", packet_origin, 0};
         } 
         else 
         {
-            arg_pair[i++] = (arg_pair_t){ "string", packet_reason };
+            arg_pair[i++] = (arg_pair_t){"string", packet_reason, 0};
         }
         
-        arg_pair[i++] = (arg_pair_t){ "bool", pivot_is_on_barrier };
-        arg_pair[i++] = (arg_pair_t){ "uint16_t", global_angle };
-        arg_pair[i++] = (arg_pair_t){ "string", str_date_time };
-        arg_pair[i++] = (arg_pair_t){ NULL, NULL }; 
+        arg_pair[i++] = (arg_pair_t){"bool", pivot_is_on_barrier, 0};
+        arg_pair[i++] = (arg_pair_t){"uint16_t", global_angle, 0};
+        arg_pair[i++] = (arg_pair_t){"string", str_date_time, 0};
+        arg_pair[i++] = (arg_pair_t){NULL, NULL, 0};
     }
 }

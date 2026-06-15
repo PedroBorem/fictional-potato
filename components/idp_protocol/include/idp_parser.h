@@ -19,6 +19,7 @@
 typedef struct arg_pair {
     const char* type; /**< Type of the argument. */
     void* value;      /**< Value of the argument. */
+    size_t size;      /**< Size of the argument. */
 } arg_pair_t;
 
 /**
@@ -30,7 +31,7 @@ typedef struct arg_pair {
  * @param[out] string_out The IDP type extracted from the packet.
  * @return The IDP type extracted from the packet, or IDP_INVALID if the packet is invalid.
  */
-idp_type idp_parser_get(const char* string_in, char* string_out);
+idp_type idp_parser_get(const char* string_in, char* string_out, size_t string_out_size);
 
 /**
  * @brief Checks whether a payload belongs to a specific IDP.

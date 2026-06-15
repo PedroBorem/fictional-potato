@@ -522,7 +522,7 @@ static void system_manager_callback(const char *buffer_request, comm_type comm_m
 	char str_idp[5] = {};
 	char str_pkg[100] = {};
 
-	idp_type idp_request = idp_parser_get(buffer_request, str_pkg);
+	idp_type idp_request = idp_parser_get(buffer_request, str_pkg, sizeof(str_pkg));
 	snprintf(str_idp, sizeof(str_idp), "%d", idp_request);
 
 	if (idp_request != IDP_42)
