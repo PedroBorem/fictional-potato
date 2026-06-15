@@ -9,6 +9,9 @@
 #include "FreeRTOS_defines.h"
 #include "system_manager.h"
 
+#include "esp_log.h"
+#include "esp_system.h"
+
 /**
  * @brief Main function of the application.
  *
@@ -22,6 +25,8 @@ void app_main(void)
      * effectively keeping the system_manager running.
      */
     system_manager_init();
+    ESP_LOGW("RESET", "Reset reason: %d", esp_reset_reason());
+
     while (1)
     {
         vTaskDelay(pdMS_TO_TICKS(2000));
