@@ -534,6 +534,31 @@ typedef enum
 } hangs_up_status;
 
 /**
+ * @brief Last pivot shutdown reason persisted for IDP_28 notifications.
+ *
+ * This structure stores the shutdown event data only. The current system ID is
+ * intentionally not persisted here; it is added when system_manager_idp_28()
+ * builds the IDP_28 response packet.
+ */
+typedef struct __attribute__((__packed__))
+{
+    bool valid;                 /*!< Indicates whether the stored shutdown record can be sent. */
+    uint8_t idp;                /*!< IDP that originated the shutdown event. */
+    char reason[50];            /*!< Shutdown reason string. */
+    char origin[50];            /*!< Module or external agent that originated the shutdown. */
+    char scheduling_id[50];     /*!< Scheduling identifier associated with the shutdown, or "0". */
+    bool pivot_is_on_barrier;   /*!< Indicates whether the pivot was near the physical barrier. */
+    uint16_t global_angle;      /*!< Pivot angle captured when the shutdown was registered. */
+    char str_date_time[70];     /*!< Formatted date/time captured when the shutdown was registered. */
+    bool is_external_agent;     /*!< Indicates whether the origin is an external agent. */
+} pivot_shutdown_reason;
+
+/**
+ * @brief How many payload parameters are sent in the IDP_28 shutdown reason packet.
+ */
+#define PIVOT_SHUTDOWN_REASON_VAR_COUNT (7)
+
+/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.

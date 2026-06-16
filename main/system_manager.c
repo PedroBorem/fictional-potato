@@ -127,6 +127,7 @@ static bool system_manager_date_scheduling_has_overlap(time_t start_a, time_t en
 static void system_manager_remove_schedule_conflict(char *scheduling_id);
 static void system_manager_reload_scheduling_runtime_internal(idp_type scheduling_idp, data_type_t scheduling_type);
 static bool system_manager_append_scheduling_payload_internal(char *buffer_out, size_t buffer_out_size, arg_pair_t arg_pairs[]);
+static bool system_manager_load_pivot_shutdown_reason(pivot_shutdown_reason *shutdown_data);
 
 static void system_manager_idp_00(const char *buffer, comm_type comm_mode);
 static void system_manager_idp_01(const char *buffer, comm_type comm_mode);
@@ -409,6 +410,32 @@ static bool system_manager_append_scheduling_payload_internal(char *buffer_out, 
 	strncat(buffer_out, "@", buffer_out_size - strlen(buffer_out) - 1);
 
 	return true;
+}
+
+/**
+ * @brief Loads the last persisted pivot shutdown reason.
+ *
+ * This helper reads DATA_TYPE_REASON_HANG_UP from NVS and returns true only
+ * when the stored record is marked as valid.
+ *
+ * @param[out] shutdown_data Buffer that receives the stored shutdown reason.
+ * @return true when a valid shutdown reason was loaded, false otherwise.
+ */
+static bool system_manager_load_pivot_shutdown_reason(pivot_shutdown_reason *shutdown_data)
+{
+	if (shutdown_data == NULL)
+	{
+		return false;
+	}
+
+	memset(shutdown_data, 0, sizeof(*shutdown_data));
+
+	if (data_app_load(DATA_TYPE_REASON_HANG_UP, shutdown_data) != ESP_OK)
+	{
+		return false;
+	}
+
+	return shutdown_data->valid;
 }
 
 /**
@@ -2939,18 +2966,108 @@ static void system_manager_idp_27(const char *buffer, comm_type comm_mode)
 }
 
 /**
- * @brief Handles IDP 28 requests for system actions.
+ * @brief Handles IDP 28 requests for the last pivot shutdown reason.
  *
- * This function handles system actions based on the provided parameters.
+ * This function sends the last pivot shutdown reason stored in NVS. MQTT/RF
+ * requests may use #28$ or #28-pivot_id$.
  *
  * @param buffer The input buffer containing request data.
- * @param comm_mode The communication mode (MQTT).
+ * @param comm_mode The communication mode (HTTP GET, MQTT or RF).
  */
 static void system_manager_idp_28(const char *buffer, comm_type comm_mode)
 {
-	char str_pkg_out[200] = {};
-	data_app_load(DATA_TYPE_REASON_HANG_UP, &str_pkg_out);
-	comm_app_send_idp_pack(str_pkg_out, comm_mode);
+	bool mqtt_load_pkg = false;
+	bool mqtt_save_pkg = false;
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+	uint8_t expected_delimiter_num = (PIVOT_SHUTDOWN_REASON_VAR_COUNT + 1);
+
+	if (comm_mode == COMM_MQTT || comm_mode == COMM_RF)
+	{
+		if (delimiter_num >= expected_delimiter_num)
+		{
+			mqtt_save_pkg = true;
+		}
+		else if (delimiter_num == 1 || delimiter_num == 0)
+		{
+			mqtt_load_pkg = true;
+		}
+	}
+
+	if (mqtt_save_pkg)
+	{
+		return;
+	}
+	else if (comm_mode == COMM_HTTP_GET || mqtt_load_pkg)
+	{
+		pivot_shutdown_reason shutdown_data = {};
+
+		if (!system_manager_load_pivot_shutdown_reason(&shutdown_data))
+		{
+			ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid pivot shutdown data");
+			return;
+		}
+
+		char str_pkg_out[200] = {};
+		uint8_t idp_28 = IDP_28;
+		uint8_t source_idp = shutdown_data.idp;
+		char default_reason[] = "unknown";
+		char default_origin[] = "unknown";
+		char default_scheduling_id[] = "0";
+
+		char *packet_reason = default_reason;
+		char *packet_origin = default_origin;
+		char *packet_scheduling_id = default_scheduling_id;
+		char *packet_shutdown_source = NULL;
+		char *packet_shutdown_detail = NULL;
+
+		if (shutdown_data.reason[0] != '\0')
+		{
+			packet_reason = shutdown_data.reason;
+		}
+
+		if (shutdown_data.origin[0] != '\0')
+		{
+			packet_origin = shutdown_data.origin;
+		}
+
+		if (shutdown_data.scheduling_id[0] != '\0')
+		{
+			packet_scheduling_id = shutdown_data.scheduling_id;
+		}
+
+		if (shutdown_data.is_external_agent)
+		{
+			packet_shutdown_source = packet_reason;
+			packet_shutdown_detail = packet_origin;
+		}
+		else
+		{
+			packet_shutdown_source = packet_origin;
+			packet_shutdown_detail = packet_reason;
+		}
+
+		arg_pair_t arg_pairs[] =
+		{
+			{"uint8_t", &idp_28, 0},
+			{"string", system_id, sizeof(system_id)},
+			{"string", packet_shutdown_source, 0},
+			{"uint8_t", &source_idp, 0},
+			{"string", packet_scheduling_id, 0},
+			{"string", packet_shutdown_detail, 0},
+			{"bool", &shutdown_data.pivot_is_on_barrier, 0},
+			{"uint16_t", &shutdown_data.global_angle, 0},
+			{"string", shutdown_data.str_date_time, sizeof(shutdown_data.str_date_time)},
+			{NULL, NULL, 0}
+		};
+
+		idp_parser_create_package(str_pkg_out, arg_pairs);
+		comm_app_send_idp_pack(str_pkg_out, comm_mode);
+	}
+	else
+	{
+		ESP_LOGE(SYSTEM_MANAGER_TAG, "Invalid pivot shutdown request payload >> expected {1 or 2} paramters, but receveid {%d}", (delimiter_num + 1));
+		LOG_DBG_ERROR(SYSTEM_MANAGER_TAG, buffer);
+	}
 }
 
 /**

@@ -336,6 +336,7 @@ esp_err_t data_app_init(void)
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 	const time_t default_timestamp = 0;
 	const bool default_barrier = false;
+	const pivot_shutdown_reason default_shutdown_reason = {};
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -429,6 +430,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
 		{
 			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
+		}
+		size_t shutdown_reason_size = nvs_data_get_size(DATA_REASON_HANG_UP);
+		if(shutdown_reason_size != sizeof(default_shutdown_reason))
+		{
+			data_app_save(DATA_TYPE_REASON_HANG_UP, &default_shutdown_reason, sizeof(default_shutdown_reason));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);

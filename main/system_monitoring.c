@@ -786,26 +786,23 @@ void system_monitoring_stop(void)
 }
 
 /**
- * @brief Builds and stores a pivot shutdown record and triggers an IDP #28 notification.
+ * @brief Stores a pivot shutdown record and triggers an IDP #28 notification.
  *
  * This function maps the given @p shutdown_reason to a textual tag
  * (e.g. "manual", "virtual_barrier", "rush_mode"), reads the current
- * timestamp, and assembles an IDP_28 payload with:
+ * timestamp, and stores the data used to assemble an IDP_28 payload with:
  * - shutdown reason;
- * - system ID and origin;
+ * - origin, with the current system ID added later by system_manager_idp_28();
  * - scheduling identifier (if provided);
  * - current pivot angle and barrier flag;
  * - timestamp and external-agent flag.
  *
- * The payload is stored using DATA_TYPE_REASON_HANG_UP and, after a short
- * delay, the function notifies the communication layer by calling
+ * The record is stored using DATA_TYPE_REASON_HANG_UP and then the function
+ * notifies the communication layer by calling
  * system_monitoring_callback("#28$", comm_main_mode).
  *
  * If @p shutdown_reason does not match any known cause, the function returns
  * without generating or sending any record.
- *
- * @note This function calls vTaskDelay(), so it must be executed from a
- *       FreeRTOS task context, not from an ISR.
  *
  * @param shutdown_reason Enumerated cause of the pivot shutdown.
  * @param idp             IDP value associated with this shutdown event.
@@ -816,9 +813,6 @@ void system_monitoring_stop(void)
  */
 void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *origin)
 {
-    char str_out[200] = {};
-
-    uint8_t idp_28 = IDP_28;
     time_t timestamp = 0;
     char str_date_time[70] = {};
 
@@ -933,24 +927,25 @@ void system_monitoring_pivot_shutdown(hangs_up_status shutdown_reason, idp_type 
 
     if (reason_str != NULL)
     {
-        arg_pair_t arg_pair[10]; 
-        idp_parser_build_arg_pairs_pivot_shutdown(
-            arg_pair,
-            reason_str,
-            &idp_28,
-            system_id,
-            packet_origin,
-            &idp,
-            scheduling_id,
-            &pivot_is_on_barrier,
-            &global_angle,
-            str_date_time,
-            is_external_agent
-        );
+        pivot_shutdown_reason shutdown_data = {};
+        shutdown_data.valid = true;
+        shutdown_data.idp = (uint8_t)idp;
+        shutdown_data.pivot_is_on_barrier = pivot_is_on_barrier;
+        shutdown_data.global_angle = global_angle;
+        shutdown_data.is_external_agent = is_external_agent;
 
-        idp_parser_create_package(str_out, arg_pair);   
+        snprintf(shutdown_data.reason, sizeof(shutdown_data.reason), "%s", reason_str);
+        snprintf(shutdown_data.origin,
+                 sizeof(shutdown_data.origin),
+                 "%s",
+                 (packet_origin != NULL && packet_origin[0] != '\0') ? packet_origin : "unknown");
+        snprintf(shutdown_data.scheduling_id,
+                 sizeof(shutdown_data.scheduling_id),
+                 "%s",
+                 (scheduling_id != NULL && scheduling_id[0] != '\0') ? scheduling_id : "0");
+        snprintf(shutdown_data.str_date_time, sizeof(shutdown_data.str_date_time), "%s", str_date_time);
 
-        data_app_save(DATA_TYPE_REASON_HANG_UP, &str_out, strlen(str_out));
+        data_app_save(DATA_TYPE_REASON_HANG_UP, &shutdown_data, sizeof(shutdown_data));
         
         system_monitoring_callback("#28$", comm_main_mode);
     }
