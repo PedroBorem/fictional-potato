@@ -1588,6 +1588,13 @@ static void system_manager_idp_13(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
 {
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+
+	if ((comm_mode == COMM_MQTT || comm_mode == COMM_RF) && delimiter_num == 2)
+	{
+		return;
+	}
+
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
@@ -1795,6 +1802,13 @@ static void system_manager_idp_14(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
 {
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+
+	if ((comm_mode == COMM_MQTT || comm_mode == COMM_RF) && delimiter_num == 2)
+	{
+		return;
+	}
+
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
@@ -1995,6 +2009,13 @@ static void system_manager_idp_15(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
 {
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+
+	if ((comm_mode == COMM_MQTT || comm_mode == COMM_RF) && delimiter_num == 2)
+	{
+		return;
+	}
+
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
@@ -2126,6 +2147,13 @@ static void system_manager_idp_16(const char *buffer, comm_type comm_mode)
  */
 static void system_manager_idp_17(const char *buffer, comm_type comm_mode)
 {
+	uint8_t delimiter_num = idp_parser_get_delimiter(buffer);
+
+	if ((comm_mode == COMM_MQTT || comm_mode == COMM_RF) && delimiter_num == 2)
+	{
+		return;
+	}
+
 	if (comm_mode == COMM_HTTP_POST || comm_mode == COMM_MQTT || comm_mode == COMM_RF)
 	{
 		char str_out[200] = {};
