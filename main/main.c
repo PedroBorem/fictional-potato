@@ -25,6 +25,7 @@ void app_main(void)
      * effectively keeping the system_manager running.
      */
     system_manager_init();
+    vTaskDelay(pdMS_TO_TICKS(3000));
     ESP_LOGW("RESET", "Reset reason: %d", esp_reset_reason());
 
     while (1)
