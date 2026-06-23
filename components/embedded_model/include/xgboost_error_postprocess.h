@@ -6,7 +6,7 @@
 extern "C" {
 #endif
 
-#define XGBOOST_ERROR_THRESHOLD 0.65
+#define XGBOOST_ERROR_THRESHOLD 0.47999999999999998
 
 void xgboost_model_score(double *input, double *output);
 double xgboost_predict_error_probability(double *features);
