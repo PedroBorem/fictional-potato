@@ -21,7 +21,9 @@
  *
  * This define specifies the ANSI color code for white, which can be used to customize log colors.
  */
+#ifndef LOG_COLOR_WHITE
 #define LOG_COLOR_WHITE   "37"
+#endif
 
 /**
  * @def LOG_COMM

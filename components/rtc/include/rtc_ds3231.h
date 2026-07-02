@@ -11,7 +11,6 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "driver/i2c.h"
 #include "rtc_i2c_dev.h"
 
 /**
@@ -191,7 +190,7 @@ uint8_t dec2bcd(uint8_t val);
  * @param scl_gpio The GPIO number for the I2C SCL signal.
  * @return esp_err_t An error code indicating the success or failure of the initialization.
  */
-esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio);
+esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_num_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio);
 
 /**
  * @brief Sets the time on the DS3231 RTC module.

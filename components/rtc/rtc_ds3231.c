@@ -52,7 +52,7 @@ uint8_t dec2bcd(uint8_t val)
  * @param scl_gpio GPIO number for SCL.
  * @return esp_err_t Returns ESP_OK on success, ESP_ERR_INVALID_ARG if arguments are invalid.
  */
-esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
+esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_num_t port, gpio_num_t sda_gpio, gpio_num_t scl_gpio)
 {
     CHECK_ARG(dev);
 
@@ -61,7 +61,7 @@ esp_err_t ds3231_init_desc(rtc_i2c_dev_t *dev, i2c_port_t port, gpio_num_t sda_g
     dev->sda_io_num = sda_gpio;
     dev->scl_io_num = scl_gpio;
     dev->clk_speed = I2C_FREQ_HZ;
-    return i2c_master_init(port, sda_gpio, scl_gpio);
+    return i2c_master_init(dev);
 }
 
 /**

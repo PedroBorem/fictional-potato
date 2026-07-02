@@ -9,6 +9,8 @@
 #include "rtc_ds3231.h"
 #include "esp_log.h"
 #include "log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 #include <string.h>
 #include <stdlib.h>

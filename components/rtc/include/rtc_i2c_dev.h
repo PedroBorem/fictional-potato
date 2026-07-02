@@ -8,7 +8,7 @@
 #ifndef COMPONENTS_RTC_INCLUDE_RTC_I2C_DEV_H_
 #define COMPONENTS_RTC_INCLUDE_RTC_I2C_DEV_H_
 
-#include "driver/i2c.h"
+#include "driver/i2c_master.h"
 
 /**
  * @def I2C_FREQ_HZ
@@ -27,24 +27,25 @@
  * @brief Structure representing an I2C device.
  */
 typedef struct {
-    i2c_port_t port;            // I2C port number
-    uint8_t addr;               // I2C address
-    gpio_num_t sda_io_num;      // GPIO number for I2C sda signal
-    gpio_num_t scl_io_num;      // GPIO number for I2C scl signal
-    uint32_t clk_speed;         // I2C clock frequency for master mode
+    i2c_port_num_t port;                    // I2C port number
+    uint8_t addr;                           // I2C address
+    gpio_num_t sda_io_num;                  // GPIO number for I2C sda signal
+    gpio_num_t scl_io_num;                  // GPIO number for I2C scl signal
+    uint32_t clk_speed;                     // I2C clock frequency for master mode
+    i2c_master_bus_handle_t bus_handle;     // I2C master bus handle
+    i2c_master_dev_handle_t dev_handle;     // I2C master device handle
 } rtc_i2c_dev_t;
 
 /**
- * @brief Initializes the I2C master for the specified port.
+ * @brief Initializes the I2C master bus and device handle.
  *
- * This function initializes the I2C master for the specified port with the given SDA and SCL pin numbers.
+ * This function initializes the I2C master bus and registers the device
+ * described by the given RTC I2C device structure.
  *
- * @param port The I2C port number.
- * @param sda The GPIO number for the I2C SDA signal.
- * @param scl The GPIO number for the I2C SCL signal.
+ * @param dev The pointer to the I2C device structure.
  * @return esp_err_t An error code indicating the success or failure of the initialization.
  */
-esp_err_t i2c_master_init(i2c_port_t port, int sda, int scl);
+esp_err_t i2c_master_init(rtc_i2c_dev_t *dev);
 
 /**
  * @brief Reads data from the I2C device.
