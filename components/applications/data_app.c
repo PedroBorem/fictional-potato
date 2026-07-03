@@ -158,6 +158,18 @@
 #define DATA_REASON_HANG_UP "reason_hangup"
 
 /**
+ * @def DATA_ACTUATION_ACTIONS
+ * @brief NVS access space for new-product actuation commands.
+ */
+#define DATA_ACTUATION_ACTIONS "act_actions"
+
+/**
+ * @def DATA_ACTUATION_CONFIG
+ * @brief NVS access space for new-product actuation configuration.
+ */
+#define DATA_ACTUATION_CONFIG "act_config"
+
+/**
  * @brief Clears the persisted active start scheduling state when it matches the deleted scheduling.
  * @param scheduling_start_state Loaded active start scheduling state.
  * @param scheduling_id Scheduling identifier being deleted.
@@ -300,6 +312,14 @@ esp_err_t data_app_init(void)
 			.read_time = 10
 	};
 
+	const actuation_actions default_actuation_actions = {};
+
+	const actuation_config default_actuation_config = {
+			.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
+			.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+			.status_active_level = true,
+	};
+
 	const network_config default_network = {
 			.gprs_id = "soilteste_1",
 			.modem_apn = "virtueyes.com.br",
@@ -429,6 +449,16 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
 		{
 			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
+		}
+
+		if(nvs_data_get_size(DATA_ACTUATION_ACTIONS) == 0)
+		{
+			data_app_save(DATA_TYPE_ACTUATION_ACTIONS, &default_actuation_actions, sizeof(default_actuation_actions));
+		}
+
+		if(nvs_data_get_size(DATA_ACTUATION_CONFIG) == 0)
+		{
+			data_app_save(DATA_TYPE_ACTUATION_CONFIG, &default_actuation_config, sizeof(default_actuation_config));
 		}
 
 		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -605,6 +635,16 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_COMM_MAIN_MODE, data, data_size);
 			break;
 		}
+		case DATA_TYPE_ACTUATION_ACTIONS:
+		{
+			ret = nvs_data_set(DATA_ACTUATION_ACTIONS, data, data_size);
+			break;
+		}
+		case DATA_TYPE_ACTUATION_CONFIG:
+		{
+			ret = nvs_data_set(DATA_ACTUATION_CONFIG, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -734,6 +774,16 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_COMM_MAIN_MODE:
 		{
 			ret = nvs_data_get_blob(DATA_COMM_MAIN_MODE, data);
+			break;
+		}
+		case DATA_TYPE_ACTUATION_ACTIONS:
+		{
+			ret = nvs_data_get_blob(DATA_ACTUATION_ACTIONS, data);
+			break;
+		}
+		case DATA_TYPE_ACTUATION_CONFIG:
+		{
+			ret = nvs_data_get_blob(DATA_ACTUATION_CONFIG, data);
 			break;
 		}
 		default:

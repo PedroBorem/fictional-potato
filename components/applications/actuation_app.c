@@ -1,365 +1,226 @@
 /**
  * @file actuation_app.c
- * @brief Actuation control class responsible for managing actuator actions.
+ * @brief Actuation application for four independent ON/OFF channels.
  */
 
-/* Self include */
 #include "actuation_app.h"
-#include "gpio_actuator.h"
+
 #include "data_app.h"
+#include "gpio_actuator.h"
 
 #include "FreeRTOS_defines.h"
-#include "idp_parser.h"
 #include "log.h"
 
 #include <string.h>
 
-/* Private definitions ------------------------------------------- */
-
 /**
- * @def ACTUATION_APP_TAG
  * @brief Tag used for logging within the actuation_app module.
  */
 #define ACTUATION_APP_TAG "actuation_app"
 
-/**
- * @def ACTUATION_APP_POWER_TIME
- * @brief Timeout duration for manual power configuration in milliseconds (10 seconds).
- */
-#define ACTUATION_APP_POWER_TIME 15000    // 10 sec
-
-/**
- * @def ACTUATION_APP_WATERING_TIME
- * @brief Timeout duration for manual watering configuration in milliseconds (30 seconds).
- */
-#define ACTUATION_APP_WATERING_TIME 35000 // 30 sec
-
-/**
- * @def ACTUATION_APP_ROTATION_TIME
- * @brief Timeout duration for manual rotation configuration in milliseconds (6 seconds).
- */
-#define ACTUATION_APP_ROTATION_TIME 15000  // 6 sec
-
-/**
- * @def ACTUATION_APP_PERCENTIMETER_TIME
- * @brief Timeout duration for manual percentimeter configuration in milliseconds (2 minutes).
- */
-#define ACTUATION_APP_PERCENTIMETER_TIME 120000 // 2 min
-
-/* Private variables  -------------------------------------------- */
-
-static TaskHandle_t xTask_actuation_app = NULL; /**< Handle for the actuation_app task. */
-static app_callback actuation_app_call = NULL; /**< Callback function for actuation events. */
-static hangs_up_callback actuation_app_hang_up_call = NULL; /**< Callback function for actuation hang-up events. */
-static pivot_actions actuation_config = {}; /**< Current pivot actions configuration. */
-static bool actuation_new_action = false;
-
-const pivot_actions pivot_actions_off = {
-    .power_state = PIVOT_OFF,
-    .rotation = PIVOT_CW,
-    .watering_state = PIVOT_DRY,
-    .percentimeter = 0
+static TaskHandle_t actuation_app_task_handle = NULL;
+static app_callback actuation_app_callback = NULL;
+static actuation_actions actuation_app_last_actions = {};
+static actuation_status actuation_app_last_status = {
+    .channels = {
+        ACTUATION_STATUS_UNKNOWN,
+        ACTUATION_STATUS_UNKNOWN,
+        ACTUATION_STATUS_UNKNOWN,
+        ACTUATION_STATUS_UNKNOWN,
+    },
+};
+static actuation_config actuation_app_config = {
+    .relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
+    .read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+    .status_active_level = true,
 };
 
-/* Private methods  ---------------------------------------------- */
+const actuation_actions actuation_actions_none = {};
 
-/**
- * @brief Task responsible for monitoring possible changes in equipment status.
- * @param arg [in]: Task argument (default NULL).
- */
-void actuation_app_task(void* arg);
+static bool actuation_app_command_is_valid(const actuation_actions *actions)
+{
+    if (actions == NULL)
+    {
+        return false;
+    }
 
-/**
- * @brief Perform a manual call based on the given parameters.
- * @param current_action [in]: The current pivot actions.
- */
-void actuation_app_manual_call(pivot_actions current_action);
+    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+    {
+        if (actions->channels[channel] != ACTUATION_COMMAND_NONE &&
+            actions->channels[channel] != ACTUATION_COMMAND_ON &&
+            actions->channels[channel] != ACTUATION_COMMAND_OFF)
+        {
+            return false;
+        }
+    }
 
+    return true;
+}
 
-/* Public methods ------------------------------------------------ */
-/**
- * @brief Initialize the actuation control class.
- * @param callback [in]: Callback function for actuation events.
- * @return esp_err_t: Error code indicating the success of the initialization.
- */
+static bool actuation_app_status_changed(const actuation_status *status_a, const actuation_status *status_b)
+{
+    return (memcmp(status_a, status_b, sizeof(actuation_status)) != 0);
+}
+
+static void actuation_app_log_status(const actuation_status *status)
+{
+    if (status == NULL)
+    {
+        return;
+    }
+
+    ESP_LOGI(ACTUATION_APP_TAG,
+             "Status C1=%u C2=%u C3=%u C4=%u",
+             (unsigned int)status->channels[0],
+             (unsigned int)status->channels[1],
+             (unsigned int)status->channels[2],
+             (unsigned int)status->channels[3]);
+}
+
+static uint32_t actuation_app_get_read_delay_ms(void)
+{
+    uint8_t read_time_sec = actuation_app_config.read_time_sec;
+
+    if (read_time_sec == 0)
+    {
+        read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    return (uint32_t)read_time_sec * 1000U;
+}
+
+static void actuation_app_task(void *arg)
+{
+    UNUSED(arg);
+
+    while (1)
+    {
+        actuation_status current_status = gpio_actuator_get();
+
+        if (actuation_app_status_changed(&current_status, &actuation_app_last_status))
+        {
+            actuation_app_last_status = current_status;
+            actuation_app_log_status(&actuation_app_last_status);
+
+            if (actuation_app_callback != NULL)
+            {
+                actuation_app_callback("#00$", comm_main_mode);
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(actuation_app_get_read_delay_ms()));
+    }
+}
+
 esp_err_t actuation_app_init(const app_callback callback)
 {
-	esp_err_t err = ESP_OK;
+    esp_err_t err = gpio_actuator_init();
 
-	err = gpio_actuator_init(callback);
-	if(callback != NULL && err == ESP_OK)
-	{
-		actuation_app_call = callback;
+    if (err != ESP_OK)
+    {
+        return err;
+    }
 
-		BaseType_t xReturn = xTaskCreate(&actuation_app_task,
-								ACTUATION_APP_TASK_NAME,
-								ACTUATION_APP_STACK_SIZE,
-								NULL,
-								ACTUATION_APP_TASK_PRIORITY,
-								&xTask_actuation_app);
+    actuation_app_callback = callback;
+    actuation_app_last_status = gpio_actuator_get();
+    actuation_app_log_status(&actuation_app_last_status);
 
-		if(xReturn != pdPASS || xTask_actuation_app == NULL)
-		{
-			err = ESP_FAIL;
-			ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, ACTUATION_APP_TASK_NAME);
-		}
-	}
-	else
-	{
-		ESP_LOGE(ACTUATION_APP_TAG, "%s, invalid argument", __func__);
-	}
+    if (actuation_app_task_handle == NULL)
+    {
+        BaseType_t task_ret = xTaskCreate(&actuation_app_task,
+                                          ACTUATION_APP_TASK_NAME,
+                                          ACTUATION_APP_STACK_SIZE,
+                                          NULL,
+                                          ACTUATION_APP_TASK_PRIORITY,
+                                          &actuation_app_task_handle);
 
-	return err;
+        if (task_ret != pdPASS || actuation_app_task_handle == NULL)
+        {
+            ESP_LOGE(ACTUATION_APP_TAG, "%s, failed to create task: %s", __func__, ACTUATION_APP_TASK_NAME);
+            return ESP_FAIL;
+        }
+    }
+
+    return ESP_OK;
 }
 
-/**
- * @brief Set the configuration for the actuator.
- * @param config [in]: The pivot configuration to set.
- * @return esp_err_t: Error code indicating the success of the configuration.
- */
-esp_err_t actuation_app_set_config(pivot_config config)
+esp_err_t actuation_app_set_config(actuation_config config)
 {
-	return gpio_actuator_config(config);
+    if (config.relay_pulse_time_ms == 0)
+    {
+        config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
+    }
+
+    if (config.read_time_sec == 0)
+    {
+        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    actuation_app_config = config;
+    return gpio_actuator_config(config);
 }
 
-/**
- * @brief Set the barrier leaving time for the actuator.
- * @param barrier_config [in]: Configuration structure containing the barrier leaving time settings.
- */
-void actuation_app_leaving_barrier_time(pivot_physical_config barrier_config)
+void actuation_app_set_actions(const actuation_actions actions, bool alert_change)
 {
-	set_gpio_leaving_barrier_time(barrier_config);
+    UNUSED(alert_change);
+
+    if (actuation_app_command_is_valid(&actions) != true)
+    {
+        ESP_LOGE(ACTUATION_APP_TAG, "Invalid actuation command");
+        return;
+    }
+
+    actuation_app_last_actions = actions;
+
+    if (gpio_actuator_set(actions) == ESP_OK)
+    {
+        data_app_save(DATA_TYPE_ACTUATION_ACTIONS, &actuation_app_last_actions, sizeof(actuation_app_last_actions));
+    }
 }
 
-/**
- * @brief Set the actions for the actuator.
- * @param config_in [in]: The pivot actions to set.
- * @param alert_change [in]: Flag indicating whether to alert about manual configuration.
- */
-void actuation_app_set_actions(const pivot_actions config_in, bool alert_change)
+void actuation_app_get_actions(actuation_actions *actions_out, size_t actions_size)
 {
-	memcpy(&actuation_config, &config_in, sizeof(actuation_config));
+    if (actions_out == NULL || actions_size == 0)
+    {
+        return;
+    }
 
-	if(alert_change == false)
-	{
-		gpio_actuator_set(config_in);
-		actuation_new_action = true;
-	}
-	else
-	{
-		ESP_LOGW(ACTUATION_APP_TAG,"Alert, Manual Configuration !!");
-		ESP_LOGW(ACTUATION_APP_TAG,"%d%d%d-%d", config_in.rotation, config_in.watering_state,
-		config_in.power_state, config_in.percentimeter);
-		if(config_in.power_state == PIVOT_OFF)
-		{
-			gpio_actuator_set(config_in);
-		}
-	}
+    size_t copy_size = (actions_size < sizeof(actuation_app_last_actions))
+        ? actions_size
+        : sizeof(actuation_app_last_actions);
 
-	if (eTaskGetState(xTask_actuation_app) == eSuspended
-	|| eTaskGetState(xTask_actuation_app) == eBlocked)
-	{
-		xTaskNotifyGive(xTask_actuation_app);
-	}
+    memcpy(actions_out, &actuation_app_last_actions, copy_size);
 }
 
-/**
- * @brief Get the current actions of the actuator.
- * @param config_out [out]: The buffer to store the current pivot actions.
- * @param config_size [in]: The size of the config_out buffer.
- */
-void actuation_app_get_actions(pivot_actions* config_out, size_t config_size)
+void actuation_app_get_status(actuation_status *status_out, size_t status_size)
 {
-	pivot_actions current_action = {};
+    if (status_out == NULL || status_size == 0)
+    {
+        return;
+    }
 
-	if(config_size > 0 && config_out != NULL )
-	{
-		current_action = gpio_actuator_get();
-		LOG_ACTUATION(ACTUATION_APP_TAG,"power_state %d", current_action.power_state);
-		LOG_ACTUATION(ACTUATION_APP_TAG,"rotation %d", current_action.rotation);
-		LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state %d", current_action.watering_state);
-		LOG_ACTUATION(ACTUATION_APP_TAG,"percentimeter %d", current_action.percentimeter);
+    actuation_status current_status = gpio_actuator_get();
+    size_t copy_size = (status_size < sizeof(current_status)) ? status_size : sizeof(current_status);
 
-		if(current_action.percentimeter > 100)
-		{
-			current_action.percentimeter = CONFIG_ACTIONS_UNDEF_VALUE;
-		}
-		memcpy(config_out, &current_action, config_size);
-	}
+    memcpy(status_out, &current_status, copy_size);
 }
 
-/**
- * @brief Set the state of the pump.
- * @param pump_state [in]: The state to set (true for on, false for off).
- */
-void actuation_app_set_pump(bool pump_state)
+bool actuation_app_is_all_off(void)
 {
-	if(pump_state)
-	{
-		gpio_actuator_pump_on(); //power on
-	}
-	else
-	{
-		gpio_actuator_pump_off(); //power off
-	}
+    actuation_status status = gpio_actuator_get();
+
+    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+    {
+        if (status.channels[channel] != ACTUATION_STATUS_OFF)
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
-/**
- * @brief Indicates whether the pivot is currently stopped.
- *
- * @return true when the live power state is PIVOT_OFF, false otherwise.
- */
-bool actuation_app_is_pivot_off(void)
-{
-	return (gpio_actuator_get().power_state == PIVOT_OFF);
-}
-
-/**
- * @brief Indicates whether the pivot is currently pressurizing.
- *
- * @return true when the live watering state is PIVOT_PRESSURIZING, false otherwise.
- */
-bool actuation_app_is_pivot_pressurizing(void)
-{
-	return (gpio_actuator_get().watering_state == PIVOT_PRESSURIZING);
-}
-
-/**
- * @brief Shutdown the actuation control class.
- */
 void actuation_app_shutdown(void)
 {
-	gpio_actuator_shutdown();
-}
-
-/* Private methods ----------------------------------------------- */
-/**
- * @brief 	Task responsible for monitoring possible changes in equipment status
- * @param	arg - [in]: task argument (default NULL)
- */
-void actuation_app_task(void* arg)
-{
-	ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
-
-	pivot_actions current_action = {};
-	TickType_t last_tick = xTaskGetTickCount();
-
-	while(1)
-	{
-		current_action = gpio_actuator_get();
-
-		if((current_action.power_state != actuation_config.power_state)
-		&& (current_action.watering_state != PIVOT_PRESSURIZING))
-		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_POWER_TIME)
-			{
-				LOG_ACTUATION(ACTUATION_APP_TAG,"power_state change");
-				if(current_action.power_state == PIVOT_OFF)
-				{
-					actuation_app_manual_call(current_action);
-				}
-				else
-				{
-					actuation_app_manual_call(current_action);
-				}
-
-				last_tick = xTaskGetTickCount();
-			}
-		}
-		else if((current_action.watering_state != actuation_config.watering_state)
-				&& (current_action.watering_state != PIVOT_PRESSURIZING)
-				&& (current_action.watering_state != PIVOT_UNKNOWN))
-		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_WATERING_TIME)
-			{
-				LOG_ACTUATION(ACTUATION_APP_TAG,"watering_state change");
-				if(current_action.watering_state == PIVOT_DRY)
-				{
-					actuation_app_manual_call(current_action);
-				}
-				else if(current_action.watering_state == PIVOT_WET)
-				{
-					actuation_config.watering_state = PIVOT_WET;
-					actuation_app_manual_call(current_action);
-				}
-
-				last_tick = xTaskGetTickCount();
-			}
-		}
-		else if(current_action.rotation != actuation_config.rotation 
-			&& current_action.rotation != PIVOT_UNKNOWN 
-			&& current_action.rotation != PIVOT_SUSPENDED)
-		{
-			if(pdTICKS_TO_MS(xTaskGetTickCount() - last_tick) > ACTUATION_APP_ROTATION_TIME)
-			{
-				LOG_ACTUATION(ACTUATION_APP_TAG,"rotation change");
-				last_tick = xTaskGetTickCount();
-				actuation_app_manual_call(current_action);
-			}
-		}
-		else
-		{
-			last_tick = xTaskGetTickCount();
-		}
-
-		if(actuation_new_action)
-		{
-			actuation_new_action = false;
-			last_tick = xTaskGetTickCount();
-		}
-
-		vTaskDelay(pdMS_TO_TICKS(10000));
-	}
-}
-
-/**
- * @brief Perform a manual call based on the given parameters.
- * @param current_action [in]: The current pivot actions.
- */
-void actuation_app_manual_call(pivot_actions current_action)
-{
-	// send current action
-	char str_out[200] = {};
-	uint16_t dwp = 0;
-	uint8_t idp = IDP_30;
-
-	memcpy(&actuation_config, &current_action, sizeof(actuation_config));
-	dwp = idp_parser_create_pwd(current_action);
-
-	arg_pair_t arg_pairs[] = {
-		{ "uint8_t", &idp },
-		{ "uint16_t", &dwp },
-		{ "uint8_t", &current_action.percentimeter },
-		{ NULL, NULL }
-	};
-
-	idp_parser_create_package(str_out,arg_pairs);
-	actuation_app_call(str_out, COMM_MQTT);
-
-	idp_parser_get_pwd(dwp, &current_action);
-}
-
-/**
- * @brief Updates the Rush Mode window state through the GPIO actuator.
- *
- * This function is used by the Rush Mode logic to propagate the current
- * time-window flag to the GPIO layer.
- *
- * @param in_window True when Rush Mode window is active, false otherwise.
- */
-void actuation_app_set_rush_mode_window_state(bool in_window)
-{
-    gpio_actuator_set_rush_mode_window_state(in_window);
-}
-
-/**
- * @brief Set the callback function for actuation hang-up events.
- * @param callback [in]: Callback function for actuation hang-up events.
- */
-void actuation_app_hangs_up_callback(const hangs_up_callback callback)
-{
-	if(callback != NULL)
-	{
-		actuation_app_hang_up_call = callback;
-	}
+    gpio_actuator_shutdown();
 }

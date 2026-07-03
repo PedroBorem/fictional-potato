@@ -1,9 +1,8 @@
 idf_component_register(	SRCS 
 							"main.c"
-							"rush_mode.c"
 							"system_manager.c"
-							"system_monitoring.c"
-							"sectorization.c"
-							"scheduling.c"
                     	INCLUDE_DIRS
-                    		"include")
+                    		"include"
+						REQUIRES
+							applications
+							utils)

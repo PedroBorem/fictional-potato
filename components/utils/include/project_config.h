@@ -32,6 +32,21 @@
 #define CONFIG_FW_VERSION           ("v2.9.3")
 
 /**
+ * @brief Number of controlled outputs in the new product.
+ */
+#define CONFIG_ACTUATION_CHANNEL_COUNT (4)
+
+/**
+ * @brief Default pulse duration for each ON/OFF relay command.
+ */
+#define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (1000)
+
+/**
+ * @brief Default interval, in seconds, for status monitoring.
+ */
+#define CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC (10)
+
+/**
  * @brief Maximum number of scheduling values.
  *
  * This define specifies the maximum number of scheduling values allowed in the project.
@@ -227,6 +242,58 @@ typedef struct __attribute__((__packed__))
  * How many configuration parameters in pivot_config struct.
  */
 #define PIVOT_CONFIG_VAR_COUNT  (6)
+
+/**
+ * @brief Command for one new-product actuation channel.
+ */
+typedef enum
+{
+    ACTUATION_COMMAND_NONE = 0,     /*!< No relay pulse requested. */
+    ACTUATION_COMMAND_ON = 1,       /*!< Pulse the ON relay for the channel. */
+    ACTUATION_COMMAND_OFF = 2,      /*!< Pulse the OFF relay for the channel. */
+} actuation_channel_command;
+
+/**
+ * @brief Live status read from one new-product actuation input.
+ */
+typedef enum
+{
+    ACTUATION_STATUS_OFF = 0,       /*!< Status input indicates OFF. */
+    ACTUATION_STATUS_ON = 1,        /*!< Status input indicates ON. */
+    ACTUATION_STATUS_UNKNOWN = 2,   /*!< Status is not available. */
+} actuation_channel_status;
+
+/**
+ * @brief Commands for the four ON/OFF actuation channels.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t channels[CONFIG_ACTUATION_CHANNEL_COUNT]; /*!< actuation_channel_command per channel. */
+    char user[50];                                    /*!< Origin reserved for the future communication layer. */
+} actuation_actions;
+
+/**
+ * @brief Live ON/OFF status for the four actuation channels.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint8_t channels[CONFIG_ACTUATION_CHANNEL_COUNT]; /*!< actuation_channel_status per channel. */
+} actuation_status;
+
+/**
+ * @brief Configuration for the new-product actuation layer.
+ */
+typedef struct __attribute__((__packed__))
+{
+    uint16_t relay_pulse_time_ms; /*!< Pulse duration used by each ON/OFF relay. */
+    uint8_t read_time_sec;        /*!< Periodic status read interval. */
+    bool status_active_level;     /*!< GPIO level interpreted as ON by status inputs. */
+} actuation_config;
+
+/**
+ * @brief Number of configuration fields in actuation_config.
+ */
+#define ACTUATION_CONFIG_VAR_COUNT (3)
 
 /**
  * Structure defining the reboot configuration parameters.

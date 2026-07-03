@@ -1,239 +1,103 @@
 /**
  * @file gpio_actuator.h
- * @date June 20, 2022
- * @brief Board GPIO macros and pinout definitions for the GPIO Actuator module.
-*/
+ * @brief GPIO pinout and driver API for the new four-channel actuation product.
+ */
 
 #ifndef COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_
 #define COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_
 
-/* Configuration include */
+#include "driver/gpio.h"
+#include "esp_err.h"
 #include "project_config.h"
 
-/* include components */
-#include "driver/gpio.h"
-
 /**
- * @brief Macro to enable the GPIO actuator system.
+ * @brief Relay board active level.
+ *
+ * The current relay board is active-low, matching the original hardware base.
  */
-#define GPIO_ACT_SYS_ENABLE			0
+#define GPIO_ACT_RELAY_ENABLE  0
+#define GPIO_ACT_RELAY_DISABLE 1
 
 /**
- * @brief Macro to disable the GPIO actuator system.
+ * @brief Relay pair for actuation channel 1.
  */
-#define GPIO_ACT_SYS_DISABLE		1
+#define GPIO_ACT_PIN_CHANNEL_1_ON     GPIO_NUM_13
+#define GPIO_ACT_PIN_CHANNEL_1_OFF    GPIO_NUM_12
 
 /**
- * @brief Macro defining the full cycle duration for the percentimeter (in milliseconds).
+ * @brief Relay pair for actuation channel 2.
  */
-#define GPIO_ACT_PERC_FULL_CYCLE		60000 //60 sec
+#define GPIO_ACT_PIN_CHANNEL_2_ON     GPIO_NUM_11
+#define GPIO_ACT_PIN_CHANNEL_2_OFF    GPIO_NUM_10
 
 /**
-* @brief Time duration for high logic level against the barrier (in milliseconds).
-*/
-#define HIGH_LOGIC_LEVEL_TIME_AGAINST_BARRIER	500
-
-/**
-* @brief Time duration for high logic level outside the barrier (in milliseconds).
-*/
-#define HIGH_LOGIC_LEVEL_TIME_OUTSIDE_BARRIER	1000
-
-/**
- * @brief GPIO pin number for turning the system on.
+ * @brief Relay pair for actuation channel 3.
  */
-#define GPIO_ACT_PIN_ON       		GPIO_NUM_13	/*!< Main system relay off*/
+#define GPIO_ACT_PIN_CHANNEL_3_ON     GPIO_NUM_9
+#define GPIO_ACT_PIN_CHANNEL_3_OFF    GPIO_NUM_8
 
 /**
- * @brief GPIO pin number for turning the system off.
+ * @brief Relay pair for actuation channel 4.
  */
-#define GPIO_ACT_PIN_OFF      		GPIO_NUM_12	/*!< Main system relay on*/
+#define GPIO_ACT_PIN_CHANNEL_4_ON     GPIO_NUM_16
+#define GPIO_ACT_PIN_CHANNEL_4_OFF    GPIO_NUM_35
 
 /**
- * @brief GPIO pin number for clockwise direction.
+ * @brief Status inputs for the four actuation channels.
  */
-#define GPIO_ACT_PIN_CW       		GPIO_NUM_11	/*!< Direction Clockwise*/
+#define GPIO_ACT_PIN_CHANNEL_1_STATUS GPIO_NUM_7
+#define GPIO_ACT_PIN_CHANNEL_2_STATUS GPIO_NUM_6
+#define GPIO_ACT_PIN_CHANNEL_3_STATUS GPIO_NUM_5
+#define GPIO_ACT_PIN_CHANNEL_4_STATUS GPIO_NUM_4
 
 /**
- * @brief GPIO pin number for counter-clockwise direction.
+ * @brief GPIO bitmask for all relay outputs.
  */
-#define GPIO_ACT_PIN_CCW      		GPIO_NUM_10  /*!< Direction Counter-Clockwise*/
+#define GPIO_ACT_OUTPUT_PIN_GROUP ((1ULL << GPIO_ACT_PIN_CHANNEL_1_ON)  | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_1_OFF) | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_2_ON)  | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_2_OFF) | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_3_ON)  | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_3_OFF) | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_4_ON)  | \
+                                   (1ULL << GPIO_ACT_PIN_CHANNEL_4_OFF))
 
 /**
- * @brief GPIO pin number for watering relay.
+ * @brief GPIO bitmask for all status inputs.
  */
-#define GPIO_ACT_PIN_WATERING   	GPIO_NUM_9	/*!< Watering Relay*/
+#define GPIO_ACT_INPUT_PIN_GROUP ((1ULL << GPIO_ACT_PIN_CHANNEL_1_STATUS) | \
+                                  (1ULL << GPIO_ACT_PIN_CHANNEL_2_STATUS) | \
+                                  (1ULL << GPIO_ACT_PIN_CHANNEL_3_STATUS) | \
+                                  (1ULL << GPIO_ACT_PIN_CHANNEL_4_STATUS))
 
-/**
- * @brief GPIO pin number for auxiliary system relay.
- */
-#define GPIO_ACT_PIN_AUX      		GPIO_NUM_8	/*!< System Auxiliary Relay*/
-
-/**
- * @brief GPIO pin number for auxiliary relay for percentimeter.
- */
-#define GPIO_ACT_PIN_PERC_AUX   	GPIO_NUM_16	/*!< Auxiliary Relay for Percentimeter*/
-
-/**
- * @brief GPIO pin number for percentimeter reading output.
- */
-#define GPIO_ACT_PIN_PERC_OUT   	GPIO_NUM_35	/*!< Percentimeter*/
-
-/**
- * @brief GPIO pin number for pump relay.
- */
-#define GPIO_ACT_PIN_PUMP       	GPIO_NUM_14	/*!< Pump Relay*/
-
-/**
- * @brief GPIO pin number for clockwise input.
- */
-#define GPIO_ACT_PIN_CW_IN       	GPIO_NUM_7 /*!< Clockwise Input*/
-
-/**
- * @brief GPIO pin number for counter-clockwise input.
- */
-#define GPIO_ACT_PIN_CCW_IN      	GPIO_NUM_6	/*!< Counter-Clockwise Input*/
-
-/**
- * @brief GPIO pin number for percentimeter read input.
- */
-#define GPIO_ACT_PIN_PERC_IN     	GPIO_NUM_5	/*!< Percentimeter Read Input*/
-
-/**
- * @brief GPIO pin number for water pressure reading input.
- */
-#define GPIO_ACT_PIN_PRESS       	GPIO_NUM_4 /*!< Water pressure reading*/
-
-/* Output Pins Group */
-/**
- * @brief GPIO pin bitmask for all output pins.
- */
-#define GPIO_OUTPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_ON)			\
-								| (1ULL<<GPIO_ACT_PIN_OFF)		\
-								| (1ULL<<GPIO_ACT_PIN_AUX)		\
-								| (1ULL<<GPIO_ACT_PIN_CW)		\
-								| (1ULL<<GPIO_ACT_PIN_CCW)		\
-								| (1ULL<<GPIO_ACT_PIN_WATERING)	\
-								| (1ULL<<GPIO_ACT_PIN_PERC_AUX)	\
-								| (1ULL<<GPIO_ACT_PIN_PERC_OUT)	\
-								| (1ULL<<GPIO_ACT_PIN_PUMP))	\
-
-/* Input Pins Group */
-/**
- * @brief GPIO pin bitmask for all input pins.
- */
-#define GPIO_INPUT_PIN_GROUP  ((1ULL<<GPIO_ACT_PIN_CW_IN)		\
-								| (1ULL<<GPIO_ACT_PIN_CCW_IN)	\
-								| (1ULL<<GPIO_ACT_PIN_PRESS))	\
-
-/* Interrupt Pins Group */
-/**
- * @brief GPIO pin bitmask for the percentimeter interrupt pin.
- */
-#define GPIO_INT_PERC     (1ULL<<GPIO_ACT_PIN_PERC_IN)	//Percentimeter Read Input
-
-/* Public function prototypes ------------------------------------------- */
 /**
  * @brief Initializes the GPIO actuator module.
- *
- * This function initializes the GPIO actuator module, setting up GPIO pins and configurations.
- *
- * @return
- *     - ESP_OK: Success
- *     - ESP_FAIL: Failed to initialize
  */
-esp_err_t gpio_actuator_init(const app_callback callback);
+esp_err_t gpio_actuator_init(void);
 
 /**
- * @brief Configures the GPIO actuator module with the specified configuration.
- *
- * This function configures the GPIO actuator module based on the provided configuration.
- *
- * @param config The configuration to apply
- *
- * @return
- *     - ESP_OK: Success
- *     - ESP_FAIL: Failed to configure
+ * @brief Applies actuator configuration.
  */
-esp_err_t gpio_actuator_config(pivot_config config);
+esp_err_t gpio_actuator_config(actuation_config config);
 
 /**
- * @brief Sets the pivot configuration.
- *
- * This function sets the pivot configuration for the GPIO actuator module.
- *
- * @param actions The pivot actions to set
- *
- * @return
- *     - ESP_OK: Success
- *     - ESP_FAIL: Failed to set the configuration
+ * @brief Pulses the ON/OFF relays requested by the action payload.
  */
-esp_err_t gpio_actuator_set(pivot_actions actions);
+esp_err_t gpio_actuator_set(actuation_actions actions);
 
 /**
- * @brief Sets operating time based on barrier status for GPIO actuator module.
- *
- * Adjusts GPIO actuator runtime according to barrier status,
- * optimizing performance for efficient and responsive operation.
- *
- * @param barrier_status The barrier status
- *
- * @return
- *     - ESP_OK: Operation successful
- *     - ESP_FAIL: Failed to set time duration
+ * @brief Returns the live ON/OFF status read from input GPIOs.
  */
-esp_err_t gpio_actuator_set_time_start(barrier_status barrier_status);
+actuation_status gpio_actuator_get(void);
 
 /**
- * @brief Gets the current pivot configuration.
- *
- * This function retrieves the current pivot configuration from the GPIO actuator module.
- *
- * @return The current pivot configuration
+ * @brief Copies the live ON/OFF status to an output buffer.
  */
-pivot_actions gpio_actuator_get(void);
+void gpio_actuator_get_status(actuation_status *status_out);
 
 /**
- * @brief Shuts down all relays.
- *
- * This function shuts down all relays in the GPIO actuator module.
+ * @brief De-energizes every relay output without issuing ON/OFF commands.
  */
 void gpio_actuator_shutdown(void);
-
-/**
- * @brief Turns on the pump relay.
- *
- * This function turns on the pump relay in the GPIO actuator module.
- */
-void gpio_actuator_pump_on(void);
-
-/**
- * @brief Turns off the pump relay.
- *
- * This function turns off the pump relay in the GPIO actuator module.
- */
-void gpio_actuator_pump_off(void);
-
-/**
- * @brief Turns on the pressure relay and starts pressure monitoring.
- *
- * This function turns on the pressure relay and starts pressure monitoring in the GPIO actuator module.
- */
-void gpio_actuator_pressure_on(void);
-
-/**
- * @brief Turns off the pressure relay and stops pressure monitoring.
- *
- * This function turns off the pressure relay and stops pressure monitoring in the GPIO actuator module.
- */
-void gpio_actuator_pressure_off(void);
-
-void set_gpio_leaving_barrier_time(pivot_physical_config barrier_config);
-
-/**
- * @brief Updates Rush Mode window state in the GPIO actuator.
- *
- * @param in_window True when Rush Mode window is active.
- */
-void gpio_actuator_set_rush_mode_window_state(bool in_window);
 
 #endif /* COMPONENTS_GPIO_ACTUATOR_INCLUDE_GPIO_ACTUATOR_H_ */
