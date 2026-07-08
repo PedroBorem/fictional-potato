@@ -41,7 +41,7 @@ Regras:
 | `1` | Comando de bombeamento | Adaptado | Solicita partida sequencial ou parada segura. |
 | `3` | Configuracao de atuacao | Adaptado | Configura parada, leitura ociosa, rampas, intervalos de partida e telemetria. |
 | `21` | Timestamp | Reaproveitado | Sincroniza RTC. |
-| `28` | Motivo de parada/falha | Adaptado futuro | Informa ultima falha ou parada segura. |
+| `28` | Motivo de desligamento | Adaptado | Informa o ultimo desligamento salvo em NVS e publica eventos de parada/falha/boot. |
 | `30` | Acao local/manual | Adaptado futuro | Representa comando local ou evento manual. |
 | `42` | Heartbeat modem/placa | Reaproveitado futuro | Mantem supervisao do link serial com modem. |
 | `90` | Versao de firmware | Reaproveitado | Retorna versao. |
@@ -131,6 +131,36 @@ Exemplo:
 ```
 
 `IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
+
+## IDP 28 - Informacao de Desligamento
+
+Consulta:
+
+```text
+#28-DEVICE_ID$
+```
+
+Resposta e evento:
+
+```text
+#28-DEVICE_ID-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+```
+
+Campos:
+
+| Campo | Valores esperados |
+| --- | --- |
+| `REASON` | `command_off`, `startup_fault`, `runtime_fault`, `brownout`, `boot`, `none` |
+| `ORIGIN` | `command`, `actuation_app`, `boot`, `unknown` |
+| `USER` | Usuario do comando, ou `unknown`. |
+| `PHASE` | `starting`, `running`, `stopped`, `was_commanded_on`, `boot`, `unknown`. |
+| `MOTOR` | `0` quando nao aplicavel; `1..4` quando uma leitura de motor falhou. |
+| `RESET_REASON` | `none`, `brownout`, `poweron`, `software`, `panic`, `wdt`, etc. |
+| `TIMESTAMP` | Unix timestamp vindo do RTC. |
+
+O firmware salva o pacote completo em NVS usando `DATA_TYPE_REASON_HANG_UP` / `reason_hangup`. O pacote e enviado em toda parada segura, toda falha e todo boot pelo modo principal configurado.
+
+Se o boot ocorrer com a ultima acao persistida ainda em ON, o pacote sai com `PHASE=was_commanded_on` e `RESET_REASON` real, mesmo quando o reset nao for classificado como brownout pelo ESP-IDF.
 
 ## Comunicacao MQTT, RF e HTTP
 

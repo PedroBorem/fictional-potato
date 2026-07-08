@@ -79,6 +79,12 @@ Consultar versao:
 #90-new_product$
 ```
 
+Consultar ultimo motivo de desligamento:
+
+```text
+#28-new_product$
+```
+
 Consultar configuracao de atuacao:
 
 ```text
@@ -117,6 +123,21 @@ Exemplo:
 
 ```text
 #00-new_product-RUNNING-1-1-1-1-0-1780000000$
+```
+
+Motivo de desligamento:
+
+```text
+#28-new_product-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+```
+
+Exemplos:
+
+```text
+#28-new_product-command_off-command-bancada-running-0-none-1780000100$
+#28-new_product-startup_fault-actuation_app-bancada-starting-2-none-1780000200$
+#28-new_product-runtime_fault-actuation_app-bancada-running-3-none-1780000300$
+#28-new_product-brownout-boot-bancada-was_commanded_on-0-brownout-1780000400$
 ```
 
 ## Comportamento dos Canais

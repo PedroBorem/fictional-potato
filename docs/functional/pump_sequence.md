@@ -88,12 +88,22 @@ A parada segura executa sempre a mesma rotina:
 
 Essa rotina e usada tanto para comando normal de parada quanto para falha.
 
+Apos a parada segura, o firmware monta e salva um pacote `#28` em NVS:
+
+- `command_off` para comando OFF, preservando o usuario recebido no IDP 1.
+- `startup_fault` quando a falha ocorre antes de entrar em `RUNNING`.
+- `runtime_fault` quando a falha ocorre depois da partida concluida.
+- `MOTOR=1..4` quando a falha veio de leitura de um motor especifico.
+
+O pacote `#28` tambem e publicado pelo modo principal configurado.
+
 ## Falhas
 
 Qualquer falha durante partida ou monitoramento:
 
 - Registra erro no log.
 - Executa parada segura.
+- Salva e publica o motivo via IDP 28.
 - Mantem o estado logico em `FAULT`.
 
 Uma nova solicitacao de partida pode ser aceita depois de uma falha, desde que venha um novo comando.

@@ -47,6 +47,8 @@ static app_callback actuation_app_callback = NULL;
 static actuation_actions actuation_app_last_actions = {};
 static actuation_pump_state actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
 static uint8_t actuation_app_last_fault_channel = 0;
+static uint32_t actuation_app_shutdown_sequence = 0;
+static actuation_shutdown_info actuation_app_last_shutdown_info = {};
 static TickType_t actuation_app_last_status_publish_tick = 0;
 static actuation_status actuation_app_last_status = {
     .channels = {
@@ -182,6 +184,69 @@ static bool actuation_app_actions_request_stop(const actuation_actions *actions)
 static bool actuation_app_status_changed(const actuation_status *status_a, const actuation_status *status_b)
 {
     return (memcmp(status_a, status_b, sizeof(actuation_status)) != 0);
+}
+
+static const char *actuation_app_state_to_phase(actuation_pump_state state)
+{
+    switch (state)
+    {
+        case ACTUATION_PUMP_STATE_STOPPED:
+            return "stopped";
+        case ACTUATION_PUMP_STATE_STARTING:
+            return "starting";
+        case ACTUATION_PUMP_STATE_RUNNING:
+            return "running";
+        case ACTUATION_PUMP_STATE_STOPPING:
+            return "stopping";
+        case ACTUATION_PUMP_STATE_FAULT:
+            return "fault";
+        default:
+            return "unknown";
+    }
+}
+
+static void actuation_app_record_shutdown_event(actuation_shutdown_reason reason,
+                                                uint8_t motor,
+                                                const char *user,
+                                                const char *phase)
+{
+    actuation_app_shutdown_sequence++;
+    if (actuation_app_shutdown_sequence == 0)
+    {
+        actuation_app_shutdown_sequence = 1;
+    }
+
+    actuation_app_last_shutdown_info = (actuation_shutdown_info){
+        .sequence = actuation_app_shutdown_sequence,
+        .reason = (uint8_t)reason,
+        .motor = motor,
+    };
+
+    if (user != NULL && user[0] != '\0')
+    {
+        strncpy(actuation_app_last_shutdown_info.user,
+                user,
+                sizeof(actuation_app_last_shutdown_info.user) - 1U);
+    }
+    else
+    {
+        strncpy(actuation_app_last_shutdown_info.user,
+                "unknown",
+                sizeof(actuation_app_last_shutdown_info.user) - 1U);
+    }
+
+    if (phase != NULL && phase[0] != '\0')
+    {
+        strncpy(actuation_app_last_shutdown_info.phase,
+                phase,
+                sizeof(actuation_app_last_shutdown_info.phase) - 1U);
+    }
+    else
+    {
+        strncpy(actuation_app_last_shutdown_info.phase,
+                "unknown",
+                sizeof(actuation_app_last_shutdown_info.phase) - 1U);
+    }
 }
 
 static void actuation_app_log_status(const actuation_status *status)
@@ -407,10 +472,22 @@ static void actuation_app_store_stop_actions(void)
 
 static void actuation_app_stop_pump(bool fault)
 {
+    actuation_pump_state previous_state = actuation_app_state;
+    actuation_shutdown_reason shutdown_reason = ACTUATION_SHUTDOWN_REASON_COMMAND_OFF;
+    uint8_t shutdown_motor = fault ? actuation_app_last_fault_channel : 0;
+    char shutdown_user[sizeof(actuation_app_last_actions.user)] = {};
+    char shutdown_phase[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE] = {};
+
+    strncpy(shutdown_user, actuation_app_last_actions.user, sizeof(shutdown_user) - 1U);
+    strncpy(shutdown_phase, actuation_app_state_to_phase(previous_state), sizeof(shutdown_phase) - 1U);
+
     actuation_app_state = fault ? ACTUATION_PUMP_STATE_FAULT : ACTUATION_PUMP_STATE_STOPPING;
 
     if (fault)
     {
+        shutdown_reason = (previous_state == ACTUATION_PUMP_STATE_RUNNING)
+            ? ACTUATION_SHUTDOWN_REASON_RUNTIME_FAULT
+            : ACTUATION_SHUTDOWN_REASON_STARTUP_FAULT;
         ESP_LOGE(ACTUATION_APP_TAG, "Pump fault detected. Stopping all channels");
     }
     else
@@ -422,10 +499,16 @@ static void actuation_app_stop_pump(bool fault)
     gpio_actuator_stop_all(CONFIG_PUMP_STOP_RELAY_TIME_MS);
     actuation_app_store_stop_actions();
     actuation_app_read_status();
+    actuation_app_record_shutdown_event(shutdown_reason, shutdown_motor, shutdown_user, shutdown_phase);
 
     if (fault == false)
     {
         actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
+    }
+
+    if (actuation_app_callback != NULL)
+    {
+        actuation_app_callback("#28$", comm_main_mode);
     }
 }
 
@@ -806,6 +889,20 @@ const char *actuation_app_get_state_name(void)
 uint8_t actuation_app_get_last_fault_channel(void)
 {
     return actuation_app_last_fault_channel;
+}
+
+uint32_t actuation_app_get_shutdown_info(actuation_shutdown_info *info_out, size_t info_size)
+{
+    if (info_out != NULL && info_size > 0)
+    {
+        size_t copy_size = (info_size < sizeof(actuation_app_last_shutdown_info))
+            ? info_size
+            : sizeof(actuation_app_last_shutdown_info);
+
+        memcpy(info_out, &actuation_app_last_shutdown_info, copy_size);
+    }
+
+    return actuation_app_shutdown_sequence;
 }
 
 void actuation_app_shutdown(void)

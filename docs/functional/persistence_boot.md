@@ -23,6 +23,7 @@ Ordem atual:
 | --- | --- | --- |
 | `DATA_TYPE_ACTUATION_ACTIONS` | `act_actions` | Ultimo comando aceito pela camada de atuacao. |
 | `DATA_TYPE_ACTUATION_CONFIG` | `act_config` | Configuracao da camada de atuacao. |
+| `DATA_TYPE_REASON_HANG_UP` | `reason_hangup` | Ultimo pacote `#28` de desligamento do sistema. |
 | `DATA_TYPE_COMM_MAIN_MODE` | `comm_main_mode` | Canal principal para eventos espontaneos: `RF` ou `MQTT`. |
 
 ## Configuracao Padrao
@@ -55,7 +56,6 @@ O componente `data_app` ainda cria e preserva chaves antigas de pivo, como:
 - `sector_config`
 - `gps_config`
 - `history`
-- `comm_main_mode`
 
 Essas chaves nao participam da regra atual de bombeamento. Elas foram mantidas para evitar migracao destrutiva e para servir como base caso algum recurso seja reaproveitado na segunda etapa.
 
@@ -65,3 +65,6 @@ Essas chaves nao participam da regra atual de bombeamento. Elas foram mantidas p
 - A bomba nao parte automaticamente no boot.
 - A partida depende de comando explicito.
 - O valor padrao das entradas e nivel baixo, mas o IDP 3 permite configurar nivel baixo ou alto.
+- O firmware publica o ultimo `#28` em todo boot.
+- Se `esp_reset_reason()` indicar brownout, o firmware salva e publica `#28` com `REASON=brownout`.
+- Se o boot acontecer com a ultima acao persistida ainda em ON, o firmware salva e publica `#28` com `PHASE=was_commanded_on` e o `RESET_REASON` real.

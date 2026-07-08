@@ -23,6 +23,7 @@ Responsabilidades:
 - Monitorar leituras durante partida e operacao.
 - Detectar falha quando canal esperado ON nao confirma status ON.
 - Persistir ultimo comando em NVS.
+- Registrar o ultimo evento de desligamento para publicacao do IDP 28.
 
 APIs principais:
 
@@ -30,6 +31,7 @@ APIs principais:
 - `actuation_app_set_config()`
 - `actuation_app_set_actions()`
 - `actuation_app_get_status()`
+- `actuation_app_get_shutdown_info()`
 - `actuation_app_shutdown()`
 
 ## `data_app`
@@ -42,6 +44,7 @@ Responsabilidades atuais:
 - Criar valores padrao.
 - Salvar e carregar `act_actions`.
 - Salvar e carregar `act_config`.
+- Salvar e carregar `reason_hangup`, usado pelo IDP 28.
 
 Tambem preserva tipos e dados antigos de pivo para compatibilidade e reaproveitamento futuro.
 

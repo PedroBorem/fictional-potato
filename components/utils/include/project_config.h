@@ -37,6 +37,11 @@
 #define CONFIG_ACTUATION_CHANNEL_COUNT (4)
 
 /**
+ * @brief Maximum text length for shutdown reason fields.
+ */
+#define CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE (32)
+
+/**
  * @brief Default pulse duration for each ON/OFF relay command.
  */
 #define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (10000)
@@ -349,6 +354,31 @@ typedef struct __attribute__((__packed__))
 {
     uint8_t channels[CONFIG_ACTUATION_CHANNEL_COUNT]; /*!< actuation_channel_status per channel. */
 } actuation_status;
+
+/**
+ * @brief Last shutdown reason categories for the new product.
+ */
+typedef enum
+{
+    ACTUATION_SHUTDOWN_REASON_NONE = 0,
+    ACTUATION_SHUTDOWN_REASON_COMMAND_OFF,
+    ACTUATION_SHUTDOWN_REASON_STARTUP_FAULT,
+    ACTUATION_SHUTDOWN_REASON_RUNTIME_FAULT,
+    ACTUATION_SHUTDOWN_REASON_BROWNOUT,
+    ACTUATION_SHUTDOWN_REASON_BOOT,
+} actuation_shutdown_reason;
+
+/**
+ * @brief Runtime shutdown event produced by actuation_app and persisted by system_manager.
+ */
+typedef struct
+{
+    uint32_t sequence;                                /*!< Monotonic runtime event counter. */
+    uint8_t reason;                                  /*!< actuation_shutdown_reason value. */
+    uint8_t motor;                                   /*!< Failed motor/channel, or 0 when not applicable. */
+    char user[50];                                   /*!< Command user or last known operator. */
+    char phase[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE]; /*!< Pump phase when the shutdown happened. */
+} actuation_shutdown_info;
 
 /**
  * @brief Configuration for the new-product actuation layer.

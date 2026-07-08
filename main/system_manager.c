@@ -25,8 +25,9 @@
  */
 #define SYSTEM_MANAGER_TAG "system_manager"
 #define SYSTEM_MANAGER_RX_BUFFER_SIZE (512)
-#define SYSTEM_MANAGER_PACKET_BUFFER_SIZE (220)
+#define SYSTEM_MANAGER_PACKET_BUFFER_SIZE (256)
 #define SYSTEM_MANAGER_ACTUATION_CONFIG_KEY "act_config"
+#define SYSTEM_MANAGER_SHUTDOWN_REASON_KEY "reason_hangup"
 
 uint16_t global_pressure = 0;
 uint16_t global_angle = CONFIG_ACTIONS_UNDEF_VALUE;
@@ -39,6 +40,7 @@ static char system_manager_rf_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
 static size_t system_manager_rf_rx_len = 0;
 static char system_manager_mqtt_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
 static size_t system_manager_mqtt_rx_len = 0;
+static uint32_t system_manager_saved_shutdown_sequence = 0;
 
 static void system_manager_log_status(const actuation_status *status)
 {
@@ -119,6 +121,234 @@ static void system_manager_send_comm_mode(comm_type communication)
     const char *mode = (comm_main_mode == COMM_RF) ? "RF" : "MQTT";
 
     snprintf(packet, sizeof(packet), "#31-%s-%s$", system_id, mode);
+    system_manager_send_packet(packet, communication);
+}
+
+static const char *system_manager_reset_reason_to_string(esp_reset_reason_t reset_reason)
+{
+    switch (reset_reason)
+    {
+        case ESP_RST_POWERON:
+            return "poweron";
+        case ESP_RST_EXT:
+            return "external";
+        case ESP_RST_SW:
+            return "software";
+        case ESP_RST_PANIC:
+            return "panic";
+        case ESP_RST_INT_WDT:
+            return "int_wdt";
+        case ESP_RST_TASK_WDT:
+            return "task_wdt";
+        case ESP_RST_WDT:
+            return "wdt";
+        case ESP_RST_DEEPSLEEP:
+            return "deepsleep";
+        case ESP_RST_BROWNOUT:
+            return "brownout";
+        case ESP_RST_SDIO:
+            return "sdio";
+        default:
+            return "unknown";
+    }
+}
+
+static const char *system_manager_shutdown_reason_to_string(uint8_t reason)
+{
+    switch ((actuation_shutdown_reason)reason)
+    {
+        case ACTUATION_SHUTDOWN_REASON_COMMAND_OFF:
+            return "command_off";
+        case ACTUATION_SHUTDOWN_REASON_STARTUP_FAULT:
+            return "startup_fault";
+        case ACTUATION_SHUTDOWN_REASON_RUNTIME_FAULT:
+            return "runtime_fault";
+        case ACTUATION_SHUTDOWN_REASON_BROWNOUT:
+            return "brownout";
+        case ACTUATION_SHUTDOWN_REASON_BOOT:
+            return "boot";
+        case ACTUATION_SHUTDOWN_REASON_NONE:
+        default:
+            return "none";
+    }
+}
+
+static const char *system_manager_shutdown_origin_to_string(uint8_t reason)
+{
+    switch ((actuation_shutdown_reason)reason)
+    {
+        case ACTUATION_SHUTDOWN_REASON_COMMAND_OFF:
+            return "command";
+        case ACTUATION_SHUTDOWN_REASON_STARTUP_FAULT:
+        case ACTUATION_SHUTDOWN_REASON_RUNTIME_FAULT:
+            return "actuation_app";
+        case ACTUATION_SHUTDOWN_REASON_BROWNOUT:
+        case ACTUATION_SHUTDOWN_REASON_BOOT:
+            return "boot";
+        case ACTUATION_SHUTDOWN_REASON_NONE:
+        default:
+            return "unknown";
+    }
+}
+
+static void system_manager_sanitize_packet_field(char *out,
+                                                 size_t out_size,
+                                                 const char *in,
+                                                 const char *fallback)
+{
+    const char *source = (in != NULL && in[0] != '\0') ? in : fallback;
+    size_t out_index = 0;
+
+    if (out == NULL || out_size == 0)
+    {
+        return;
+    }
+
+    if (source == NULL || source[0] == '\0')
+    {
+        source = "unknown";
+    }
+
+    for (size_t in_index = 0; source[in_index] != '\0' && out_index < (out_size - 1U); in_index++)
+    {
+        char value = source[in_index];
+
+        if (value == '-' || value == '#' || value == '$' || value == '\r' || value == '\n' || value == ' ')
+        {
+            value = '_';
+        }
+
+        out[out_index++] = value;
+    }
+
+    out[out_index] = '\0';
+}
+
+static void system_manager_build_shutdown_packet(char *packet,
+                                                 size_t packet_size,
+                                                 uint8_t reason,
+                                                 const char *user,
+                                                 const char *phase,
+                                                 uint8_t motor,
+                                                 const char *reset_reason)
+{
+    char safe_device[sizeof(system_id)] = {};
+    char safe_user[50] = {};
+    char safe_phase[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE] = {};
+    time_t timestamp = rtc_app_get_timestamp(false);
+
+    if (packet == NULL || packet_size == 0)
+    {
+        return;
+    }
+
+    system_manager_sanitize_packet_field(safe_device, sizeof(safe_device), system_id, "new_product");
+    system_manager_sanitize_packet_field(safe_user, sizeof(safe_user), user, "unknown");
+    system_manager_sanitize_packet_field(safe_phase, sizeof(safe_phase), phase, "unknown");
+
+    snprintf(packet,
+             packet_size,
+             "#28-%s-%s-%s-%s-%s-%u-%s-%lld$",
+             safe_device,
+             system_manager_shutdown_reason_to_string(reason),
+             system_manager_shutdown_origin_to_string(reason),
+             safe_user,
+             safe_phase,
+             (unsigned int)motor,
+             (reset_reason != NULL && reset_reason[0] != '\0') ? reset_reason : "none",
+             (long long)timestamp);
+}
+
+static void system_manager_save_shutdown_packet(const char *packet)
+{
+    if (packet == NULL || packet[0] == '\0')
+    {
+        return;
+    }
+
+    data_app_save(DATA_TYPE_REASON_HANG_UP, packet, strlen(packet) + 1U);
+}
+
+static bool system_manager_load_shutdown_packet(char *packet, size_t packet_size)
+{
+    size_t stored_size = 0;
+
+    if (packet == NULL || packet_size == 0)
+    {
+        return false;
+    }
+
+    memset(packet, 0, packet_size);
+    stored_size = data_app_get_data_size(SYSTEM_MANAGER_SHUTDOWN_REASON_KEY);
+
+    if (stored_size == 0 || stored_size >= packet_size)
+    {
+        return false;
+    }
+
+    if (data_app_load(DATA_TYPE_REASON_HANG_UP, packet) != ESP_OK)
+    {
+        packet[0] = '\0';
+        return false;
+    }
+
+    packet[packet_size - 1U] = '\0';
+    return (strncmp(packet, "#28-", 4) == 0);
+}
+
+static void system_manager_record_shutdown_info(const actuation_shutdown_info *info,
+                                                const char *reset_reason)
+{
+    char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+
+    if (info == NULL)
+    {
+        return;
+    }
+
+    system_manager_build_shutdown_packet(packet,
+                                         sizeof(packet),
+                                         info->reason,
+                                         info->user,
+                                         info->phase,
+                                         info->motor,
+                                         reset_reason);
+    system_manager_save_shutdown_packet(packet);
+}
+
+static void system_manager_record_pending_shutdown_event(void)
+{
+    actuation_shutdown_info info = {};
+    uint32_t sequence = actuation_app_get_shutdown_info(&info, sizeof(info));
+
+    if (sequence == 0 || sequence == system_manager_saved_shutdown_sequence)
+    {
+        return;
+    }
+
+    system_manager_record_shutdown_info(&info, "none");
+    system_manager_saved_shutdown_sequence = sequence;
+}
+
+static void system_manager_send_shutdown_reason(comm_type communication)
+{
+    char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+
+    system_manager_record_pending_shutdown_event();
+
+    if (system_manager_load_shutdown_packet(packet, sizeof(packet)) == false)
+    {
+        actuation_shutdown_info info = {
+            .reason = ACTUATION_SHUTDOWN_REASON_NONE,
+            .motor = 0,
+        };
+
+        strncpy(info.user, "unknown", sizeof(info.user) - 1U);
+        strncpy(info.phase, "unknown", sizeof(info.phase) - 1U);
+        system_manager_record_shutdown_info(&info, "none");
+        system_manager_load_shutdown_packet(packet, sizeof(packet));
+    }
+
     system_manager_send_packet(packet, communication);
 }
 
@@ -397,6 +627,34 @@ static void system_manager_handle_idp_21(const char *packet, comm_type communica
     system_manager_send_packet(response, communication);
 }
 
+static void system_manager_handle_idp_28(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count > 1)
+    {
+        system_manager_send_error("idp_28_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+
+    if (system_manager_device_matches(device_id) == false)
+    {
+        return;
+    }
+
+    system_manager_send_shutdown_reason(communication);
+}
+
 static void system_manager_handle_idp_31(const char *packet, comm_type communication)
 {
     uint8_t idp = 0;
@@ -484,6 +742,9 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
             break;
         case IDP_21:
             system_manager_handle_idp_21(packet, communication);
+            break;
+        case IDP_28:
+            system_manager_handle_idp_28(packet, communication);
             break;
         case IDP_31:
             system_manager_handle_idp_31(packet, communication);
@@ -599,6 +860,70 @@ static void system_manager_comm_callback(const char *buffer_request, comm_type c
     }
 }
 
+static bool system_manager_actions_request_start(const actuation_actions *actions)
+{
+    if (actions == NULL)
+    {
+        return false;
+    }
+
+    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+    {
+        if (actions->channels[channel] == ACTUATION_COMMAND_ON)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static void system_manager_publish_boot_shutdown_reason(void)
+{
+    esp_reset_reason_t reset_reason = esp_reset_reason();
+    actuation_actions actions = {};
+    bool actions_loaded = (data_app_load(DATA_TYPE_ACTUATION_ACTIONS, &actions) == ESP_OK);
+    bool was_commanded_on = actions_loaded && system_manager_actions_request_start(&actions);
+
+    if (reset_reason == ESP_RST_BROWNOUT || was_commanded_on)
+    {
+        actuation_shutdown_info info = {
+            .reason = (reset_reason == ESP_RST_BROWNOUT)
+                ? ACTUATION_SHUTDOWN_REASON_BROWNOUT
+                : ACTUATION_SHUTDOWN_REASON_BOOT,
+            .motor = 0,
+        };
+
+        if (actions_loaded && actions.user[0] != '\0')
+        {
+            strncpy(info.user, actions.user, sizeof(info.user) - 1U);
+        }
+        else
+        {
+            strncpy(info.user, "unknown", sizeof(info.user) - 1U);
+        }
+
+        strncpy(info.phase,
+                was_commanded_on ? "was_commanded_on" : "boot",
+                sizeof(info.phase) - 1U);
+
+        system_manager_record_shutdown_info(&info, system_manager_reset_reason_to_string(reset_reason));
+    }
+    else if (data_app_get_data_size(SYSTEM_MANAGER_SHUTDOWN_REASON_KEY) == 0)
+    {
+        actuation_shutdown_info info = {
+            .reason = ACTUATION_SHUTDOWN_REASON_BOOT,
+            .motor = 0,
+        };
+
+        strncpy(info.user, "unknown", sizeof(info.user) - 1U);
+        strncpy(info.phase, "boot", sizeof(info.phase) - 1U);
+        system_manager_record_shutdown_info(&info, system_manager_reset_reason_to_string(reset_reason));
+    }
+
+    system_manager_send_shutdown_reason(comm_main_mode);
+}
+
 /**
  * @brief Initializes only the local services required by the new product.
  *
@@ -630,6 +955,7 @@ void system_manager_init(void)
     ESP_ERROR_CHECK(actuation_app_init(system_manager_comm_callback));
     ESP_ERROR_CHECK(comm_app_init(system_manager_comm_callback));
     system_manager_comm_ready = true;
+    system_manager_publish_boot_shutdown_reason();
 
     actuation_status status = {};
     actuation_app_get_status(&status, sizeof(status));

@@ -122,6 +122,39 @@ Ordem dos campos temporais por motor: `RAMP1-STAGE1-RAMP2-STAGE2-RAMP3-STAGE3-RA
 
 `IDLE_READ_SEC` nao e o mesmo timer de `STATUS_00_MIN`. Eles podem receber valores equivalentes por decisao de configuracao, mas possuem responsabilidades diferentes.
 
+### IDP 28 - Informacao de Desligamento
+
+```text
+#28-DEVICE_ID-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+```
+
+Consulta:
+
+```text
+#28-DEVICE_ID$
+```
+
+Uso esperado:
+
+- Retornar o ultimo desligamento salvo em NVS.
+- Publicar evento quando houver comando de parada.
+- Publicar evento quando houver falha durante partida ou operacao.
+- Publicar evento em todo boot; se o reset foi brownout, o motivo salvo passa a ser `brownout`.
+- Publicar evento de boot com `PHASE=was_commanded_on` quando a ultima acao persistida ainda era ON.
+
+Motivos implementados:
+
+| `REASON` | Uso |
+| --- | --- |
+| `command_off` | Parada por comando OFF, com `USER` do IDP 1. |
+| `startup_fault` | Falha antes de entrar em `RUNNING`. |
+| `runtime_fault` | Falha apos partida concluida. |
+| `brownout` | Boot apos reset por brownout. |
+| `boot` | Primeiro boot sem motivo anterior salvo. |
+| `none` | Sem motivo conhecido. |
+
+Se uma falha for de leitura de motor, `MOTOR` informa o canal `1..4`.
+
 ### IDP 31 - Modo Principal de Comunicacao
 
 ```text
@@ -134,17 +167,6 @@ Valores:
 - `MQTT`
 
 Neste firmware, `MQTT` significa caminho serial via GPRS UART. RF e o padrao.
-
-### IDP 28 - Ultima Falha
-
-```text
-#28-DEVICE_ID-LAST_FAULT-CHANNEL-TIMESTAMP$
-```
-
-Uso esperado futuro:
-
-- Diagnostico de parada por falha de leitura.
-- Historico resumido para nuvem/app.
 
 ## Canais
 

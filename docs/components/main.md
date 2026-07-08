@@ -28,7 +28,10 @@ Inicializa somente os servicos necessarios ao novo produto:
 5. Aplicacao de atuacao.
 6. Comunicacao serial RF/GPRS.
 7. Parser IDP.
-8. Leitura inicial de status.
+8. Publicacao do ultimo motivo de desligamento via IDP 28.
+9. Leitura inicial de status.
+
+O `system_manager` tambem monta, salva e responde o IDP 28 usando a chave NVS `reason_hangup`.
 
 Nao inicializa:
 

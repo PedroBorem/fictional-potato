@@ -100,6 +100,14 @@ Regra:
 
 O IDP 3 atual separa a cadencia interna de leitura quando parado, em segundos, do envio periodico de status, em minutos. Tambem configura individualmente a rampa da softstarter e o intervalo posterior de cada motor.
 
+### `IDP 28` - Informacao de Desligamento
+
+```text
+#28-DEVICE_ID-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+```
+
+O pacote e salvo em `DATA_TYPE_REASON_HANG_UP` / `reason_hangup`, responde consulta `#28-DEVICE_ID$` e tambem e publicado em parada, falha e boot.
+
 ## Situacao no Codigo
 
 - `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
