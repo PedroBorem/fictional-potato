@@ -79,10 +79,16 @@ Consultar versao:
 #90-new_product$
 ```
 
-Configurar atuacao ativa em nivel baixo:
+Consultar configuracao de atuacao:
 
 ```text
-#03-new_product-10000-10-0$
+#03-new_product$
+```
+
+Configurar atuacao, intervalos de partida `10-30-30` e envio periodico de `#00$` a cada 60 segundos:
+
+```text
+#03-new_product-10000-10-0-10-30-30-60$
 ```
 
 ## Respostas Esperadas

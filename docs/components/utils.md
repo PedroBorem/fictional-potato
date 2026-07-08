@@ -31,6 +31,8 @@ Constantes principais do bombeamento:
 | `CONFIG_PUMP_STAGE_2_DELAY_MS` | `30000` | Espera depois do canal 2. |
 | `CONFIG_PUMP_STAGE_3_DELAY_MS` | `30000` | Espera depois do canal 3. |
 | `CONFIG_PUMP_MONITOR_INTERVAL_MS` | `500` | Intervalo de monitoramento em operacao. |
+| `CONFIG_PUMP_STAGE_LOG_INTERVAL_MS` | `10000` | Intervalo de log detalhado do timer de partida. |
+| `CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS` | `1000` | Intervalo do heartbeat `......` durante partida. |
 | `CONFIG_PUMP_STOP_RELAY_TIME_MS` | `10000` | Tempo dos relés OFF na parada. |
 
 ## `FreeRTOS_defines.h`

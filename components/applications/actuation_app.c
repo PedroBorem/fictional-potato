@@ -47,6 +47,7 @@ static app_callback actuation_app_callback = NULL;
 static actuation_actions actuation_app_last_actions = {};
 static actuation_pump_state actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
 static uint8_t actuation_app_last_fault_channel = 0;
+static TickType_t actuation_app_last_status_publish_tick = 0;
 static actuation_status actuation_app_last_status = {
     .channels = {
         ACTUATION_STATUS_UNKNOWN,
@@ -59,6 +60,10 @@ static actuation_config actuation_app_config = {
     .relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
     .read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
     .status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+    .stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+    .stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+    .stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
+    .status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
 };
 
 const actuation_actions actuation_actions_none = {};
@@ -71,6 +76,46 @@ static uint32_t actuation_app_min_u32(uint32_t value_a, uint32_t value_b)
 static uint32_t actuation_app_ms_to_sec_round_up(uint32_t value_ms)
 {
     return (value_ms + 999U) / 1000U;
+}
+
+static actuation_config actuation_app_sanitize_config(actuation_config config)
+{
+    if (config.relay_pulse_time_ms == 0)
+    {
+        config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
+    }
+
+    if (config.read_time_sec == 0)
+    {
+        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    if (config.stage_1_delay_sec == 0)
+    {
+        config.stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U;
+    }
+
+    if (config.stage_2_delay_sec == 0)
+    {
+        config.stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U;
+    }
+
+    if (config.stage_3_delay_sec == 0)
+    {
+        config.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
+    }
+
+    if (config.status_publish_time_sec == 0)
+    {
+        config.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    return config;
+}
+
+static uint32_t actuation_app_sec_to_ms_u32(uint16_t value_sec)
+{
+    return (uint32_t)value_sec * 1000U;
 }
 
 static bool actuation_app_command_is_valid(const actuation_actions *actions)
@@ -170,17 +215,46 @@ static void actuation_app_log_timer_progress(const char *stage_name,
              (unsigned int)status.channels[3]);
 }
 
-static void actuation_app_log_running_monitor(uint32_t runtime_ms)
+static void actuation_app_log_timer_heartbeat(const char *stage_name,
+                                              uint32_t elapsed_ms,
+                                              uint32_t wait_ms)
 {
-    actuation_status status = gpio_actuator_get();
-
     ESP_LOGI(ACTUATION_APP_TAG,
-             "Running monitor: %lu s elapsed, status C1=%u C2=%u C3=%u C4=%u",
-             (unsigned long)actuation_app_ms_to_sec_round_up(runtime_ms),
-             (unsigned int)status.channels[0],
-             (unsigned int)status.channels[1],
-             (unsigned int)status.channels[2],
-             (unsigned int)status.channels[3]);
+             "%s timer heartbeat ...... %lu/%lu s",
+             stage_name,
+             (unsigned long)actuation_app_ms_to_sec_round_up(elapsed_ms),
+             (unsigned long)actuation_app_ms_to_sec_round_up(wait_ms));
+}
+
+static uint32_t actuation_app_get_status_publish_delay_ms(void)
+{
+    uint16_t publish_time_sec = actuation_app_config.status_publish_time_sec;
+
+    if (publish_time_sec == 0)
+    {
+        publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    return (uint32_t)publish_time_sec * 1000U;
+}
+
+static void actuation_app_publish_status(bool force)
+{
+    TickType_t now_tick = xTaskGetTickCount();
+    TickType_t publish_delay_ticks = pdMS_TO_TICKS(actuation_app_get_status_publish_delay_ms());
+
+    if (actuation_app_callback == NULL)
+    {
+        return;
+    }
+
+    if (force ||
+        actuation_app_last_status_publish_tick == 0 ||
+        (now_tick - actuation_app_last_status_publish_tick) >= publish_delay_ticks)
+    {
+        actuation_app_last_status_publish_tick = now_tick;
+        actuation_app_callback("#00$", comm_main_mode);
+    }
 }
 
 static actuation_status actuation_app_read_status(void)
@@ -192,10 +266,7 @@ static actuation_status actuation_app_read_status(void)
         actuation_app_last_status = current_status;
         actuation_app_log_status(&actuation_app_last_status);
 
-        if (actuation_app_callback != NULL)
-        {
-            actuation_app_callback("#00$", comm_main_mode);
-        }
+        actuation_app_publish_status(true);
     }
 
     return current_status;
@@ -204,13 +275,16 @@ static actuation_status actuation_app_read_status(void)
 static uint32_t actuation_app_get_read_delay_ms(void)
 {
     uint8_t read_time_sec = actuation_app_config.read_time_sec;
+    uint32_t read_delay_ms = 0;
+    uint32_t publish_delay_ms = actuation_app_get_status_publish_delay_ms();
 
     if (read_time_sec == 0)
     {
         read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
     }
 
-    return (uint32_t)read_time_sec * 1000U;
+    read_delay_ms = (uint32_t)read_time_sec * 1000U;
+    return actuation_app_min_u32(read_delay_ms, publish_delay_ms);
 }
 
 static bool actuation_app_stop_command_pending(void)
@@ -255,6 +329,7 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
 {
     uint32_t elapsed_ms = 0;
     uint32_t next_log_ms = CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
+    uint32_t next_heartbeat_ms = CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
 
     while (elapsed_ms < wait_ms)
     {
@@ -276,6 +351,20 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
 
         vTaskDelay(pdMS_TO_TICKS(step_ms));
         elapsed_ms += step_ms;
+        actuation_app_publish_status(false);
+
+        if (log_progress &&
+            stage_name != NULL &&
+            elapsed_ms >= next_heartbeat_ms &&
+            elapsed_ms < wait_ms)
+        {
+            actuation_app_log_timer_heartbeat(stage_name, elapsed_ms, wait_ms);
+
+            while (next_heartbeat_ms <= elapsed_ms)
+            {
+                next_heartbeat_ms += CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
+            }
+        }
 
         if (log_progress &&
             stage_name != NULL &&
@@ -394,20 +483,38 @@ static void actuation_app_start_pump_sequence(void)
     }
 
     ESP_LOGI(ACTUATION_APP_TAG, "Pump start sequence requested");
+    ESP_LOGI(ACTUATION_APP_TAG,
+             "Pump timers: stage1=%u s stage2=%u s stage3=%u s periodic_status=%u s",
+             (unsigned int)actuation_app_config.stage_1_delay_sec,
+             (unsigned int)actuation_app_config.stage_2_delay_sec,
+             (unsigned int)actuation_app_config.stage_3_delay_sec,
+             (unsigned int)actuation_app_config.status_publish_time_sec);
     actuation_app_last_fault_channel = 0;
     actuation_app_state = ACTUATION_PUMP_STATE_STARTING;
 
-    if (actuation_app_start_channel_and_validate(0, CONFIG_PUMP_STAGE_1_DELAY_MS, 0, 1, "Stage 1/4") == false)
+    if (actuation_app_start_channel_and_validate(0,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.stage_1_delay_sec),
+                                                 0,
+                                                 1,
+                                                 "Stage 1/4") == false)
     {
         return;
     }
 
-    if (actuation_app_start_channel_and_validate(1, CONFIG_PUMP_STAGE_2_DELAY_MS, 1, 2, "Stage 2/4") == false)
+    if (actuation_app_start_channel_and_validate(1,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.stage_2_delay_sec),
+                                                 1,
+                                                 2,
+                                                 "Stage 2/4") == false)
     {
         return;
     }
 
-    if (actuation_app_start_channel_and_validate(2, CONFIG_PUMP_STAGE_3_DELAY_MS, 2, 3, "Stage 3/4") == false)
+    if (actuation_app_start_channel_and_validate(2,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.stage_3_delay_sec),
+                                                 2,
+                                                 3,
+                                                 "Stage 3/4") == false)
     {
         return;
     }
@@ -434,11 +541,11 @@ static void actuation_app_start_pump_sequence(void)
 
     actuation_app_state = ACTUATION_PUMP_STATE_RUNNING;
     ESP_LOGI(ACTUATION_APP_TAG, "Stage 4/4: validation OK for all channels");
-    ESP_LOGI(ACTUATION_APP_TAG, "Pump running: monitoring all channels every %lu ms",
-             (unsigned long)CONFIG_PUMP_MONITOR_INTERVAL_MS);
-
-    uint32_t running_elapsed_ms = 0;
-    uint32_t running_next_log_ms = CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
+    ESP_LOGI(ACTUATION_APP_TAG,
+             "Pump running: monitoring all channels every %lu ms and publishing #00 every %u s",
+             (unsigned long)CONFIG_PUMP_MONITOR_INTERVAL_MS,
+             (unsigned int)actuation_app_config.status_publish_time_sec);
+    actuation_app_publish_status(true);
 
     while (actuation_app_state == ACTUATION_PUMP_STATE_RUNNING)
     {
@@ -449,17 +556,6 @@ static void actuation_app_start_pump_sequence(void)
                                                false)) == false)
         {
             return;
-        }
-
-        running_elapsed_ms += CONFIG_PUMP_MONITOR_INTERVAL_MS;
-        if (running_elapsed_ms >= running_next_log_ms)
-        {
-            actuation_app_log_running_monitor(running_elapsed_ms);
-
-            while (running_next_log_ms <= running_elapsed_ms)
-            {
-                running_next_log_ms += CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
-            }
         }
     }
 }
@@ -487,6 +583,7 @@ static void actuation_app_task(void *arg)
         else
         {
             actuation_app_read_status();
+            actuation_app_publish_status(false);
         }
     }
 }
@@ -535,18 +632,18 @@ esp_err_t actuation_app_init(const app_callback callback)
 
 esp_err_t actuation_app_set_config(actuation_config config)
 {
-    if (config.relay_pulse_time_ms == 0)
-    {
-        config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
-    }
+    actuation_app_config = actuation_app_sanitize_config(config);
+    ESP_LOGI(ACTUATION_APP_TAG,
+             "Actuation config: off_relay_ms=%u read=%u s active_level=%u stage1=%u s stage2=%u s stage3=%u s publish=%u s",
+             (unsigned int)actuation_app_config.relay_pulse_time_ms,
+             (unsigned int)actuation_app_config.read_time_sec,
+             (unsigned int)(actuation_app_config.status_active_level ? 1 : 0),
+             (unsigned int)actuation_app_config.stage_1_delay_sec,
+             (unsigned int)actuation_app_config.stage_2_delay_sec,
+             (unsigned int)actuation_app_config.stage_3_delay_sec,
+             (unsigned int)actuation_app_config.status_publish_time_sec);
 
-    if (config.read_time_sec == 0)
-    {
-        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
-    }
-
-    actuation_app_config = config;
-    return gpio_actuator_config(config);
+    return gpio_actuator_config(actuation_app_config);
 }
 
 void actuation_app_set_actions(const actuation_actions actions, bool alert_change)

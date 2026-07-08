@@ -121,6 +121,60 @@ static void system_manager_send_comm_mode(comm_type communication)
     system_manager_send_packet(packet, communication);
 }
 
+static bool system_manager_sanitize_actuation_config(actuation_config *config)
+{
+    bool changed = false;
+
+    if (config == NULL)
+    {
+        return false;
+    }
+
+    if (config->relay_pulse_time_ms == 0)
+    {
+        config->relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
+        changed = true;
+    }
+
+    if (config->read_time_sec == 0)
+    {
+        config->read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        changed = true;
+    }
+
+    if (config->status_active_level != CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL)
+    {
+        config->status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
+        changed = true;
+    }
+
+    if (config->stage_1_delay_sec == 0)
+    {
+        config->stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U;
+        changed = true;
+    }
+
+    if (config->stage_2_delay_sec == 0)
+    {
+        config->stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U;
+        changed = true;
+    }
+
+    if (config->stage_3_delay_sec == 0)
+    {
+        config->stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
+        changed = true;
+    }
+
+    if (config->status_publish_time_sec == 0)
+    {
+        config->status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        changed = true;
+    }
+
+    return changed;
+}
+
 static void system_manager_load_comm_mode(void)
 {
     pivot_comm_main_mode_config config = {};
@@ -216,10 +270,16 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
         {"uint16_t", &config.relay_pulse_time_ms},
         {"uint8_t", &config.read_time_sec},
         {"uint8_t", &status_active_level},
+        {"uint16_t", &config.stage_1_delay_sec},
+        {"uint16_t", &config.stage_2_delay_sec},
+        {"uint16_t", &config.stage_3_delay_sec},
+        {"uint16_t", &config.status_publish_time_sec},
         {NULL, NULL},
     };
 
-    if (idp_parser_get_delimiter(packet) < 4)
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    if (delimiter_count != 0 && delimiter_count != 1 && delimiter_count < 4)
     {
         system_manager_send_error("idp_3_invalid_format", communication);
         return;
@@ -232,23 +292,43 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
         return;
     }
 
-    if (config.relay_pulse_time_ms == 0 || config.read_time_sec == 0 || status_active_level > 1)
+    if (delimiter_count >= 4)
     {
-        system_manager_send_error("idp_3_invalid_config", communication);
-        return;
-    }
+        if (config.relay_pulse_time_ms == 0 || config.read_time_sec == 0 || status_active_level > 1)
+        {
+            system_manager_send_error("idp_3_invalid_config", communication);
+            return;
+        }
 
-    config.status_active_level = (status_active_level != 0);
-    actuation_app_set_config(config);
-    data_app_save(DATA_TYPE_ACTUATION_CONFIG, &config, sizeof(config));
+        config.status_active_level = (status_active_level != 0);
+        system_manager_sanitize_actuation_config(&config);
+        actuation_app_set_config(config);
+        data_app_save(DATA_TYPE_ACTUATION_CONFIG, &config, sizeof(config));
+    }
+    else
+    {
+        if (data_app_load(DATA_TYPE_ACTUATION_CONFIG, &config) != ESP_OK)
+        {
+            config = (actuation_config){};
+        }
+
+        if (system_manager_sanitize_actuation_config(&config))
+        {
+            data_app_save(DATA_TYPE_ACTUATION_CONFIG, &config, sizeof(config));
+        }
+    }
 
     snprintf(response,
              sizeof(response),
-             "#03-%s-%u-%u-%u$",
+             "#03-%s-%u-%u-%u-%u-%u-%u-%u$",
              system_id,
              (unsigned int)config.relay_pulse_time_ms,
              (unsigned int)config.read_time_sec,
-             (unsigned int)(config.status_active_level ? 1 : 0));
+             (unsigned int)(config.status_active_level ? 1 : 0),
+             (unsigned int)config.stage_1_delay_sec,
+             (unsigned int)config.stage_2_delay_sec,
+             (unsigned int)config.stage_3_delay_sec,
+             (unsigned int)config.status_publish_time_sec);
     system_manager_send_packet(response, communication);
 }
 
@@ -500,17 +580,10 @@ void system_manager_init(void)
 
     if (data_app_load(DATA_TYPE_ACTUATION_CONFIG, &config) != ESP_OK)
     {
-        config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
-        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
-        config.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
         config_changed = true;
     }
 
-    if (config.status_active_level != CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL)
-    {
-        config.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
-        config_changed = true;
-    }
+    config_changed |= system_manager_sanitize_actuation_config(&config);
 
     if (config_changed)
     {

@@ -98,21 +98,35 @@ Exemplos:
 
 ## IDP 3 - Configuracao de Atuacao
 
-Formato recomendado:
+Consulta:
 
 ```text
-#03-DEVICE_ID-RELAY_PULSE_MS-READ_TIME_SEC-STATUS_ACTIVE_LEVEL$
+#03-DEVICE_ID$
+```
+
+Configuracao:
+
+```text
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-STAGE1_SEC-STAGE2_SEC-STAGE3_SEC-STATUS_00_SEC$
 ```
 
 Campos:
 
 | Campo | Descricao |
 | --- | --- |
-| `RELAY_PULSE_MS` | Tempo usado para relés OFF/parada. Padrao atual: `10000`. |
-| `READ_TIME_SEC` | Intervalo de leitura periodica quando parado. Padrao atual: `10`. |
+| `OFF_RELAY_MS` | Tempo usado para relés OFF/parada. Padrao atual: `10000`. |
+| `IDLE_READ_SEC` | Intervalo de leitura quando parado. Padrao atual: `10`. |
 | `STATUS_ACTIVE_LEVEL` | `0 = entrada ativa em nivel baixo`; `1 = entrada ativa em nivel alto`. Padrao atual: `0`. |
+| `STAGE1_SEC` | Espera apos ligar canal 1. Padrao atual: `10`. |
+| `STAGE2_SEC` | Espera apos ligar canal 2. Padrao atual: `30`. |
+| `STAGE3_SEC` | Espera apos ligar canal 3. Padrao atual: `30`. |
+| `STATUS_00_SEC` | Intervalo de envio periodico do `#00$`. Padrao atual: `10`. |
 
-Observacao: a partida da bomba usa tempos fixos de sequencia definidos em `project_config.h`: 10s, 30s, 30s.
+Exemplo:
+
+```text
+#03-new_product-10000-10-0-10-30-30-60$
+```
 
 ## Comunicacao MQTT, RF e HTTP
 

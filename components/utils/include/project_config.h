@@ -77,6 +77,11 @@
 #define CONFIG_PUMP_STAGE_LOG_INTERVAL_MS (10000)
 
 /**
+ * @brief Interval used to log pump stage heartbeat dots.
+ */
+#define CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS (1000)
+
+/**
  * @brief Duration used to energize all OFF relays during shutdown.
  */
 #define CONFIG_PUMP_STOP_RELAY_TIME_MS (10000)
@@ -320,15 +325,19 @@ typedef struct __attribute__((__packed__))
  */
 typedef struct __attribute__((__packed__))
 {
-    uint16_t relay_pulse_time_ms; /*!< Pulse duration used by each ON/OFF relay. */
-    uint8_t read_time_sec;        /*!< Periodic status read interval. */
-    bool status_active_level;     /*!< GPIO level interpreted as ON by status inputs. */
+    uint16_t relay_pulse_time_ms;     /*!< Pulse duration used by OFF relays during stop. */
+    uint8_t read_time_sec;            /*!< Periodic status read interval while stopped. */
+    bool status_active_level;         /*!< GPIO level interpreted as ON by status inputs. */
+    uint16_t stage_1_delay_sec;       /*!< Delay after channel 1 ON relay is enabled. */
+    uint16_t stage_2_delay_sec;       /*!< Delay after channel 2 ON relay is enabled. */
+    uint16_t stage_3_delay_sec;       /*!< Delay after channel 3 ON relay is enabled. */
+    uint16_t status_publish_time_sec; /*!< Periodic #00 status publish interval. */
 } actuation_config;
 
 /**
  * @brief Number of configuration fields in actuation_config.
  */
-#define ACTUATION_CONFIG_VAR_COUNT (3)
+#define ACTUATION_CONFIG_VAR_COUNT (7)
 
 /**
  * Structure defining the reboot configuration parameters.

@@ -92,8 +92,16 @@ Mesmo existindo 4 campos de comando, a regra de negocio e global: qualquer `1` l
 
 ### IDP 3 - Configuracao
 
+Consulta:
+
 ```text
-#03-DEVICE_ID-RELAY_PULSE_MS-READ_TIME_SEC-STATUS_ACTIVE_LEVEL$
+#03-DEVICE_ID$
+```
+
+Configuracao:
+
+```text
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-STAGE1_SEC-STAGE2_SEC-STAGE3_SEC-STATUS_00_SEC$
 ```
 
 Uso esperado:
@@ -101,6 +109,13 @@ Uso esperado:
 - Ajustar parametros de atuacao.
 - Persistir `act_config` em NVS.
 - Reaplicar configuracao no `gpio_actuator`.
+- Configurar intervalos de partida e envio periodico de `#00$`.
+
+Exemplo:
+
+```text
+#03-new_product-10000-10-0-10-30-30-60$
+```
 
 ### IDP 31 - Modo Principal de Comunicacao
 

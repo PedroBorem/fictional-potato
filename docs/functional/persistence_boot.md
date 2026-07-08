@@ -32,7 +32,13 @@ Ordem atual:
 | `relay_pulse_time_ms` | `10000` |
 | `read_time_sec` | `10` |
 | `status_active_level` | `false`, equivalente a nivel baixo |
+| `stage_1_delay_sec` | `10` |
+| `stage_2_delay_sec` | `30` |
+| `stage_3_delay_sec` | `30` |
+| `status_publish_time_sec` | `10` |
 | `comm_main_mode` | `RF` |
+
+Se a NVS tiver uma versao antiga de `act_config`, os novos campos de timer sao completados automaticamente no boot e salvos novamente.
 
 ## Dados Legados
 

@@ -318,6 +318,10 @@ esp_err_t data_app_init(void)
 			.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
 			.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
 			.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+			.stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+			.stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+			.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
+			.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
 	};
 
 	const network_config default_network = {

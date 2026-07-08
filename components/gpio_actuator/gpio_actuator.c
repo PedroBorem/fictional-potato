@@ -38,6 +38,10 @@ static actuation_config gpio_act_config = {
     .relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
     .read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
     .status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+    .stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+    .stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+    .stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
+    .status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
 };
 
 static uint16_t gpio_act_get_pulse_time_ms(void)
@@ -132,6 +136,26 @@ esp_err_t gpio_actuator_config(actuation_config config)
     if (config.read_time_sec == 0)
     {
         config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+    }
+
+    if (config.stage_1_delay_sec == 0)
+    {
+        config.stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U;
+    }
+
+    if (config.stage_2_delay_sec == 0)
+    {
+        config.stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U;
+    }
+
+    if (config.stage_3_delay_sec == 0)
+    {
+        config.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
+    }
+
+    if (config.status_publish_time_sec == 0)
+    {
+        config.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
     }
 
     gpio_act_config = config;
