@@ -149,7 +149,7 @@ void comm_app_wifi_reloader(void)
     ESP_LOGW(COMM_APP_TAG, "Wi-Fi reload ignored: HTTP/Wi-Fi is disabled in this firmware stage");
 }
 
-esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
+esp_err_t comm_app_set_main_mode_config(comm_main_mode_config config)
 {
 	if(strcmp(config.comm_main_mode_config, "RF") == 0)
 	{

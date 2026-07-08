@@ -34,6 +34,16 @@ esp_err_t nvs_data_init(void);
 esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length);
 
 /**
+ * @brief Removes a blob from its NVS namespace.
+ *
+ * Missing namespaces or keys are treated as an already completed removal.
+ *
+ * @param label_name Namespace and key name used by the blob.
+ * @return esp_err_t ESP_OK when removed or already absent.
+ */
+esp_err_t nvs_data_erase(const char *label_name);
+
+/**
  * @brief Gets the size of the NVS data.
  *
  * This function retrieves the size of the NVS data under the specified label and key.

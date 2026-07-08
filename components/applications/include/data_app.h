@@ -25,28 +25,16 @@
  */
 typedef enum
 {
-    DATA_TYPE_ACTIONS = 0, /**< Actions data type. */
-    DATA_TYPE_PIVOT_CONFIG, /**< Pivot configuration data type. */
-    DATA_TYPE_NETWORK_CONFIG, /**< Network configuration data type. */
+    DATA_TYPE_NETWORK_CONFIG = 0, /**< Network configuration data type. */
     DATA_TYPE_RUSH_MODE_CONFIG, /**< Rush mode configuration data type. */
     DATA_TYPE_RUSH_MODE_STATE, /**< Rush mode runtime state data type. */
-    DATA_TYPE_SECTOR_CONFIG, /**< Sector configuration data type. */
-    DATA_TYPE_GPS_CONFIG, /**< GPS configuration data type. */
     DATA_TYPE_REBOOT_CONFIG, /**< Reboot configuration data type. */
     DATA_TYPE_SCHEDULING_DATE, /**< Scheduling date data type. */
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */
-    DATA_TYPE_SCHEDULING_ANGLE, /**< Scheduling angle data type. */
-    DATA_TYPE_SCHEDULING_OFF_ANGLE, /**< Scheduling off angle data type. */
     DATA_TYPE_SCHEDULING_START_STATE, /**< Persistent runtime state for the active start schedule. */
     DATA_TYPE_HISTORY, /**< History data type. */
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
-    DATA_TYPE_TIMESTAMP, /**< Timestamp data type. */
-    DATA_TYPE_BARRIER_STATUS,  /**< Barrier status data. */
-    DATA_TYPE_VIRTUAL_BARRIER, /**< Virtual Barrier configuration */
-    DATA_TYPE_PHYSICAL_BARRIER, /**< Physical Barrier configuration */
-    DATA_TYPE_INITIAL_ANGLE, /**< Initial angle data type. */
-    DATA_TYPE_MANUAL_COUNTER, /**< Manual counter */
-    DATA_TYPE_REASON_HANG_UP, /**<Reason why the pivot turned off  */
+    DATA_TYPE_REASON_HANG_UP, /**< Last system shutdown reason. */
     DATA_TYPE_COMM_MAIN_MODE, /**< Communication Principal Mode data type. */
     DATA_TYPE_ACTUATION_ACTIONS, /**< New-product actuation command data type. */
     DATA_TYPE_ACTUATION_CONFIG, /**< New-product actuation configuration data type. */

@@ -45,8 +45,9 @@ Responsabilidades atuais:
 - Salvar e carregar `act_actions`.
 - Salvar e carregar `act_config`.
 - Salvar e carregar `reason_hangup`, usado pelo IDP 28.
+- Remover de forma idempotente as chaves NVS descartadas do produto antigo.
 
-Tambem preserva tipos e dados antigos de pivo para compatibilidade e reaproveitamento futuro.
+Continuam reservados, sem uso no fluxo atual: configuracao de rede, reboot, rush mode, agenda por data e historico.
 
 ## `rtc_app`
 

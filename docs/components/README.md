@@ -23,11 +23,12 @@
 
 ## Codigo Legado Fora do Build
 
-Arquivos antigos de regra de pivo permanecem em `main/`, mas `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
+Arquivos congelados permanecem em `main/`, mas `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
 
 Arquivos legados:
 
 - `rush_mode.c`
 - `scheduling.c`
-- `sectorization.c`
 - `system_monitoring.c`
+
+`sectorization.c` e `include/sectorization.h` foram removidos junto com a regra por setor/angulo.

@@ -22,21 +22,6 @@
  */
 
 /**
- * @brief Name of the main sectorization task.
- */
-#define SECTORIZATION_TASK_NAME            	"sectorization task"
-
-/**
- * @brief Stack size of the main sectorization task.
- */
-#define SECTORIZATION_TASK_SIZE      		(configMINIMAL_STACK_SIZE * 4)
-
-/**
- * @brief Priority of the main sectorization task.
- */
-#define SECTORIZATION_TASK_PRIORITY     	(tskIDLE_PRIORITY + 4)
-
-/**
  * @brief Name of the main peak hours task.
  */
 #define MAIN_APP_TASK_2_NAME            	"peak hours task"

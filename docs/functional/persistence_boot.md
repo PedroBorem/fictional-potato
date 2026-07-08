@@ -46,18 +46,28 @@ Ordem atual:
 
 Se a NVS tiver uma versao antiga de `act_config`, o firmware detecta a diferenca de tamanho, aplica a configuracao padrao completa e salva novamente.
 
-## Dados Legados
+## Dados Reservados
 
-O componente `data_app` ainda cria e preserva chaves antigas de pivo, como:
+Permanecem criados/preservados para adaptacao futura:
 
-- `action`
-- `pivot_config`
-- `rush_config`
-- `sector_config`
-- `gps_config`
-- `history`
+- `net_config`: IDPs 2 e 6 e comunicacao GPRS/MQTT real.
+- `rush_config` e `rush_state`: codigo congelado, fora do build.
+- `reboot_config`: futuro reaproveitamento do IDP 24.
+- `s_date`, `s_off_date` e `s_start_state`: futuro agendamento por horario.
+- `history`: futuro IDP 12.
 
-Essas chaves nao participam da regra atual de bombeamento. Elas foram mantidas para evitar migracao destrutiva e para servir como base caso algum recurso seja reaproveitado na segunda etapa.
+## Limpeza da NVS Antiga
+
+No boot, `data_app` remove de forma idempotente:
+
+- `action` e `pivot_config`;
+- `sector_config` e `gps_config`;
+- `s_angle` e `s_off_angle`;
+- `timestamp`;
+- `status_barrier`, `virtual_barrier` e `phy_barrier`;
+- `initial_angle` e `manual_counter`.
+
+Essas chaves nao sao mais criadas, carregadas nem salvas pelo firmware.
 
 ## Comportamento Seguro no Boot
 

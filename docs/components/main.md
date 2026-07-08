@@ -39,17 +39,13 @@ Nao inicializa:
 - Wi-Fi.
 - Regras de pivo.
 
-## Globais Legadas
+## Estado Global
 
-Algumas variaveis globais permanecem para compatibilidade com headers e codigo legado:
+- `global_pressure`: preservado, ainda sem uso na regra nova.
+- `comm_main_mode`: canal principal de eventos espontaneos.
+- `system_id`: identificador do equipamento nos pacotes IDP.
 
-- `global_pressure`
-- `global_angle`
-- `comm_main_mode`
-- `system_id`
-- `counter_reading_panel_off`
-
-Elas nao definem a regra principal do bombeamento nesta fase.
+Os globais de angulo e contador manual do pivo foram removidos.
 
 ## Arquivos Legados em `main/`
 
@@ -57,5 +53,6 @@ Elas nao definem a regra principal do bombeamento nesta fase.
 | --- | --- |
 | `rush_mode.c` | Legado de pivo, fora do build. |
 | `scheduling.c` | Legado de agendas de pivo, fora do build. |
-| `sectorization.c` | Legado de setores por angulo, fora do build. |
 | `system_monitoring.c` | Legado de monitoramento/heartbeat, fora do build. |
+
+`sectorization.c` e seu header foram removidos.

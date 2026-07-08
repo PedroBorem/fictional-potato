@@ -30,10 +30,8 @@
 #define SYSTEM_MANAGER_SHUTDOWN_REASON_KEY "reason_hangup"
 
 uint16_t global_pressure = 0;
-uint16_t global_angle = CONFIG_ACTIONS_UNDEF_VALUE;
 comm_type comm_main_mode = COMM_RF;
 char system_id[50] = "new_product";
-uint32_t counter_reading_panel_off = NO_MANUAL_READING;
 
 static bool system_manager_comm_ready = false;
 static char system_manager_rf_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
@@ -419,7 +417,7 @@ static bool system_manager_load_actuation_config(actuation_config *config)
 
 static void system_manager_load_comm_mode(void)
 {
-    pivot_comm_main_mode_config config = {};
+    comm_main_mode_config config = {};
     bool config_changed = false;
 
     if (data_app_load(DATA_TYPE_COMM_MAIN_MODE, &config) != ESP_OK ||
@@ -659,7 +657,7 @@ static void system_manager_handle_idp_31(const char *packet, comm_type communica
 {
     uint8_t idp = 0;
     char device_id[50] = {};
-    pivot_comm_main_mode_config config = {};
+    comm_main_mode_config config = {};
 
     arg_pair_t args[] = {
         {"uint8_t", &idp},

@@ -15,9 +15,10 @@ Contem:
 - Versao de firmware.
 - Constantes do novo produto.
 - Tipos de atuacao.
-- Tipos legados de pivo.
 - Enumeracoes IDP e comunicacao.
 - Estruturas persistidas.
+
+Foram removidas as estruturas compartilhadas de configuracao de pivo, setor, GPS, barreiras e agendamento por angulo. Alguns tipos antigos continuam temporariamente declarados apenas porque `rush_mode.c`, `scheduling.c`, `system_monitoring.c` e os formatos reservados de historico/agendamento por data ainda aguardam decisao.
 
 Constantes principais do bombeamento:
 

@@ -117,4 +117,4 @@ O pacote e salvo em `DATA_TYPE_REASON_HANG_UP` / `reason_hangup`, responde consu
 - `wifi_app` e `http_server` continuam excluidos no `CMakeLists.txt` raiz.
 - Os dados NVS novos sao `act_actions` e `act_config`.
 - O modo principal de comunicacao fica em `comm_main_mode`, com `RF` como padrao.
-- Os dados antigos de pivo continuam preservados para evitar migracao destrutiva.
+- As chaves NVS descartadas de pivo sao apagadas no boot; `rush_config`, `rush_state`, `history`, rede, reboot e agenda por data permanecem reservados.

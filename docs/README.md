@@ -10,7 +10,8 @@ Esta pasta descreve o firmware atual da Placa de Controle de Bombeamento.
 4. [Teste serial de bancada](functional/serial_bench_test.md)
 5. [Persistencia e boot](functional/persistence_boot.md)
 6. [Levantamento de IDPs](new_product_idp_migration.md)
-7. [Componentes](components/README.md)
+7. [Limpeza do legado e pendencias](legacy_cleanup.md)
+8. [Componentes](components/README.md)
 
 ## Escopo Atual
 

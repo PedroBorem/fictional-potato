@@ -13,7 +13,8 @@ O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 
 - Comunicacao serial: RF UART e GPRS UART ativas.
 - Modo principal de comunicacao: RF por padrao.
 - HTTP/app/Wi-Fi: desabilitados nesta etapa do firmware.
-- Regra de pivo, rush mode, setor, barreira, GPS e agenda por angulo: legado preservado no repositorio, mas fora do build atual.
+- Regras de setor, barreira, GPS, pluviometro, percentimetro e agenda por angulo: removidas do firmware.
+- `rush_mode.c`, `scheduling.c` e `system_monitoring.c`: preservados fora do build para decisao futura.
 
 ## Pinagem de Acionamento
 
@@ -30,14 +31,11 @@ Os relés da placa atual sao ativos em nivel baixo. As entradas de status tambem
 
 Ao receber um comando de liga, a aplicacao executa:
 
-1. Liga o relay ON do canal 1 e aguarda 10 segundos.
-2. Valida a leitura do canal 1.
-3. Liga o relay ON do canal 2 e aguarda 30 segundos monitorando os canais ja ativos.
-4. Valida as leituras dos canais 1 e 2.
-5. Liga o relay ON do canal 3 e aguarda 30 segundos monitorando os canais ja ativos.
-6. Valida as leituras dos canais 1, 2 e 3.
-7. Liga o relay ON do canal 4.
-8. Valida as 4 leituras e entra em monitoramento continuo.
+1. Liga o relay ON do canal 1, aguarda a rampa configurada e valida a leitura 1.
+2. Aguarda o intervalo configurado do estágio 1 monitorando o canal 1.
+3. Repete rampa, validacao e intervalo para os canais 2 e 3.
+4. Liga o canal 4, aguarda sua rampa e intervalo configurados.
+5. Valida as 4 leituras e entra em monitoramento continuo.
 
 Se qualquer leitura esperada falhar, a rotina desliga todos os relés ON e aciona todos os relés OFF por 10 segundos.
 
@@ -69,6 +67,7 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - [Teste serial de bancada](docs/functional/serial_bench_test.md)
 - [Persistencia e boot](docs/functional/persistence_boot.md)
 - [Levantamento de IDPs](docs/new_product_idp_migration.md)
+- [Inventario de limpeza e pendencias](docs/legacy_cleanup.md)
 - [Documentacao por componente](docs/components/README.md)
 
 ## Componentes Ativos no Build Atual

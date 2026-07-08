@@ -89,6 +89,40 @@ esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length)
 	return err;
 }
 
+esp_err_t nvs_data_erase(const char *label_name)
+{
+	esp_err_t err;
+	nvs_handle_t handle = (nvs_handle_t)NULL;
+
+	if (label_name == NULL)
+	{
+		return ESP_ERR_INVALID_ARG;
+	}
+
+	err = nvs_open(label_name, NVS_READWRITE, &handle);
+	if (err == ESP_ERR_NVS_NOT_FOUND)
+	{
+		return ESP_OK;
+	}
+	if (err != ESP_OK)
+	{
+		return err;
+	}
+
+	err = nvs_erase_key(handle, label_name);
+	if (err == ESP_OK)
+	{
+		err = nvs_commit(handle);
+	}
+	else if (err == ESP_ERR_NVS_NOT_FOUND)
+	{
+		err = ESP_OK;
+	}
+
+	nvs_close(handle);
+	return err;
+}
+
 /**
  * @brief Gets the size of the NVS data.
  *

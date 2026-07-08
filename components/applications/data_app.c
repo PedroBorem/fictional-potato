@@ -24,18 +24,6 @@
 #define DATA_APP_TAG "data_app"
 
 /**
- * @def DATA_ACTION
- * @brief NVS access space for action data.
- */
-#define DATA_ACTION "action"
-
-/**
- * @def DATA_PIVOT_CONFIG
- * @brief NVS access space for pivot configuration data.
- */
-#define DATA_PIVOT_CONFIG "pivot_config"
-
-/**
  * @def DATA_NETWORK_CONFIG
  * @brief NVS access space for network configuration data.
  */
@@ -52,18 +40,6 @@
  * @brief NVS access space for Rush Mode runtime state data.
  */
 #define DATA_RUSH_MODE_STATE "rush_state"
-
-/**
- * @def DATA_SECTOR_CONFIG
- * @brief NVS access space for sector configuration data.
- */
-#define DATA_SECTOR_CONFIG "sector_config"
-
-/**
- * @def DATA_GPS_CONFIG
- * @brief NVS access space for gps configuration data.
- */
-#define DATA_GPS_CONFIG "gps_config"
 
 /**
  * @def DATA_REBOOT_CONFIG
@@ -85,18 +61,6 @@
 #define DATA_SCHEDULING_OFF_DATE "s_off_date"
 
 /**
- * @def DATA_SCHEDULING_ANGLE
- * @brief NVS access space for scheduling angle data.
- */
-#define DATA_SCHEDULING_ANGLE "s_angle"
-
-/**
- * @def DATA_SCHEDULING_OFF_ANGLE
- * @brief NVS access space for scheduling off angle data.
- */
-#define DATA_SCHEDULING_OFF_ANGLE "s_off_angle"
-
-/**
  * @def DATA_SCHEDULING_START_STATE
  * @brief NVS access space for the active start schedule state.
  */
@@ -109,43 +73,6 @@
 #define DATA_HISTORY "history"
 
 /**
- * @def DATA_TIMESTAMP
- * @brief NVS access space for timestamp data.
- */
-#define DATA_TIMESTAMP "timestamp"
-
-/**
- * @def DATA_BARRIER
- * @brief NVS access space for barrier status data.
- */
-
-#define DATA_STATUS_BARRIER	"status_barrier"
-
-/**
- * @def DATA_VIRTUAL_BARRIER
- * @brief NVS access space for virtual barrier data.
- */
-#define DATA_VIRTUAL_BARRIER "virtual_barrier"
-
-/**
- * @def DATA_PHYSICS_BARRIER
- * @brief NVS access space for physical barrier data.
- */
-#define DATA_PHYSICAL_BARRIER "phy_barrier"
-
-/**
- * @def DATA_INITIAL_ANGLE
- * @brief NVS access space for initial angle data
-*/
-#define DATA_INITIAL_ANGLE	"initial_angle"
-
-/**
- * @def DATA_MANUAL_COUNTER
- * @brief NVS access space for manual counter
- */
-#define DATA_MANUAL_COUNTER "manual_counter"
-
-/**
  * @def DATA_COMM_MAIN_MODE
  * @brief NVS access space for Communication Principal Mode
  */
@@ -153,7 +80,7 @@
 
 /**
  * @def DATA_REASON_HANG_UP
- * @brief NVS access space for reason why the pivot turned off  
+ * @brief NVS access space for the last system shutdown reason.
  */
 #define DATA_REASON_HANG_UP "reason_hangup"
 
@@ -168,6 +95,35 @@
  * @brief NVS access space for new-product actuation configuration.
  */
 #define DATA_ACTUATION_CONFIG "act_config"
+
+static void data_app_remove_discarded_pivot_data(void)
+{
+	static const char *const discarded_keys[] = {
+		"action",
+		"pivot_config",
+		"sector_config",
+		"gps_config",
+		"s_angle",
+		"s_off_angle",
+		"timestamp",
+		"status_barrier",
+		"virtual_barrier",
+		"phy_barrier",
+		"initial_angle",
+		"manual_counter",
+	};
+
+	for (size_t index = 0; index < sizeof(discarded_keys) / sizeof(discarded_keys[0]); index++)
+	{
+		esp_err_t err = nvs_data_erase(discarded_keys[index]);
+		if (err != ESP_OK)
+		{
+			ESP_LOGW(DATA_APP_TAG, "failed to remove discarded NVS key %s: %s",
+					 discarded_keys[index],
+					 esp_err_to_name(err));
+		}
+	}
+}
 
 /**
  * @brief Clears the persisted active start scheduling state when it matches the deleted scheduling.
@@ -213,8 +169,6 @@ static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type
 	{
 		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
 		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
-		pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE];
-		pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE];
 	} data_app_scheduling_buffer;
 
 	data_app_scheduling_buffer scheduling_buffer = {};
@@ -235,18 +189,6 @@ static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type
 		{
 			scheduling_data = scheduling_buffer.scheduling_off_date;
 			scheduling_data_size = sizeof(scheduling_buffer.scheduling_off_date);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_ANGLE:
-		{
-			scheduling_data = scheduling_buffer.scheduling_angle;
-			scheduling_data_size = sizeof(scheduling_buffer.scheduling_angle);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
-		{
-			scheduling_data = scheduling_buffer.scheduling_off_angle;
-			scheduling_data_size = sizeof(scheduling_buffer.scheduling_off_angle);
 			break;
 		}
 		default:
@@ -296,22 +238,6 @@ esp_err_t data_app_init(void)
 {
 	esp_err_t err = ESP_FAIL;
 
-	const pivot_actions default_action = {
-			.power_state = PIVOT_OFF,
-			.rotation = PIVOT_CCW,
-			.watering_state = PIVOT_DRY,
-			.percentimeter = 0,
-	};
-
-	const pivot_config default_config = {
-			.contactor = "NA",
-			.pressure = "NA",
-			.pressurization_time = 300,
-			.on_time = 1,
-			.off_time = 2,
-			.read_time = 10
-	};
-
 	const actuation_actions default_actuation_actions = {};
 
 	const actuation_config default_actuation_config = {
@@ -341,43 +267,21 @@ esp_err_t data_app_init(void)
 			.reboot_timeout_sec = 3600, 	//1 hours in sec
 	};
 
-	const pivot_physical_config default_phy_barrier = {
-			.start_angle_physical_barrier = 0,
-			.end_angle_physical_barrier = 0,
-			.automatic_return = 0, 
-			.water_return = 0,
-			.time_leaving_barrier = 3,
-	};
-
-	const pivot_comm_main_mode_config default_comm_main_mode = {
+	const comm_main_mode_config default_comm_main_mode = {
 			.comm_main_mode_config = "RF",
 	};
 
-	const gps_config gps_config = {};
 	const rush_mode_config default_rush_mode = {};
 	const rush_mode_saved_state default_rush_mode_state = {};
-	const sector_config default_sector = {};
 	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_angle default_scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_off_angle default_scheduling_off_angle = {};
 	const pivot_scheduling_start_state default_scheduling_start_state = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
-	const time_t default_timestamp = 0;
-	const bool default_barrier = false;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
 	{
-		if(nvs_data_get_size(DATA_ACTION) == 0)
-		{
-			data_app_save(DATA_TYPE_ACTIONS, &default_action, sizeof(default_action));
-		}
-
-		if(nvs_data_get_size(DATA_PIVOT_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_PIVOT_CONFIG, &default_config, sizeof(default_config));
-		}
+		data_app_remove_discarded_pivot_data();
 
 		if(nvs_data_get_size(DATA_NETWORK_CONFIG) == 0)
 		{
@@ -392,16 +296,6 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_RUSH_MODE_STATE) == 0)
 		{
 			data_app_save(DATA_TYPE_RUSH_MODE_STATE, &default_rush_mode_state, sizeof(default_rush_mode_state));
-		}
-
-		if(nvs_data_get_size(DATA_SECTOR_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_SECTOR_CONFIG, &default_sector, sizeof(default_sector));
-		}
-
-		if(nvs_data_get_size(DATA_GPS_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_GPS_CONFIG, &gps_config, sizeof(gps_config));
 		}
 
 		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
@@ -419,16 +313,6 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &default_scheduling_off_date, sizeof(default_scheduling_off_date));
 		}
 
-		if(nvs_data_get_size(DATA_SCHEDULING_ANGLE) == 0)
-		{
-			data_app_save(DATA_TYPE_SCHEDULING_ANGLE, &default_scheduling_angle, sizeof(default_scheduling_angle));
-		}
-
-		if(nvs_data_get_size(DATA_SCHEDULING_OFF_ANGLE) == 0)
-		{
-			data_app_save(DATA_TYPE_SCHEDULING_OFF_ANGLE, &default_scheduling_off_angle, sizeof(default_scheduling_off_angle));
-		}
-
 		if(nvs_data_get_size(DATA_SCHEDULING_START_STATE) == 0)
 		{
 			data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &default_scheduling_start_state, sizeof(default_scheduling_start_state));
@@ -439,22 +323,6 @@ esp_err_t data_app_init(void)
 			nvs_data_set(DATA_HISTORY, &default_history, sizeof(default_history));
 		}
 
-		if(nvs_data_get_size(DATA_TIMESTAMP) == 0)
-		{
-			data_app_save(DATA_TYPE_TIMESTAMP, &default_timestamp, sizeof(default_timestamp));
-		}
-		if(nvs_data_get_size(DATA_STATUS_BARRIER) == 0)
-		{
-			data_app_save(DATA_TYPE_BARRIER_STATUS, &default_barrier, sizeof(default_barrier));
-		}
-		if(nvs_data_get_size(DATA_VIRTUAL_BARRIER) == 0)
-		{
-			data_app_save(DATA_TYPE_VIRTUAL_BARRIER, &default_barrier, sizeof(default_barrier));
-		}
-		if(nvs_data_get_size(DATA_PHYSICAL_BARRIER) == 0)
-		{
-			data_app_save(DATA_TYPE_PHYSICAL_BARRIER, &default_phy_barrier, sizeof(default_phy_barrier));
-		}
 		if(nvs_data_get_size(DATA_COMM_MAIN_MODE) == 0)
 		{
 			data_app_save(DATA_TYPE_COMM_MAIN_MODE, &default_comm_main_mode, sizeof(default_comm_main_mode));
@@ -494,16 +362,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 
 	switch(data_type)
 	{
-		case DATA_TYPE_ACTIONS:
-		{
-			ret = nvs_data_set(DATA_ACTION, data, data_size);
-			break;
-		}
-		case DATA_TYPE_PIVOT_CONFIG:
-		{
-			ret = nvs_data_set(DATA_PIVOT_CONFIG, data, data_size);
-			break;
-		}
 		case DATA_TYPE_NETWORK_CONFIG:
 		{
 			ret = nvs_data_set(DATA_NETWORK_CONFIG, data, data_size);
@@ -519,16 +377,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_RUSH_MODE_STATE, data, data_size);
 			break;
 		}
-		case DATA_TYPE_SECTOR_CONFIG:
-		{
-			ret = nvs_data_set(DATA_SECTOR_CONFIG, data, data_size);
-			break;
-		}
-		case DATA_TYPE_GPS_CONFIG:
-		{
-			ret = nvs_data_set(DATA_GPS_CONFIG, data, data_size);
-			break;
-		}
 		case DATA_TYPE_REBOOT_CONFIG:
 		{
 			ret = nvs_data_set(DATA_REBOOT_CONFIG, data, data_size);
@@ -542,16 +390,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_SCHEDULING_OFF_DATE:
 		{
 			ret = nvs_data_set(DATA_SCHEDULING_OFF_DATE, data, data_size);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_ANGLE:
-		{
-			ret = nvs_data_set(DATA_SCHEDULING_ANGLE, data, data_size);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
-		{
-			ret = nvs_data_set(DATA_SCHEDULING_OFF_ANGLE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_SCHEDULING_START_STATE:
@@ -604,36 +442,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = ESP_OK;
 			break;
 		}
-		case DATA_TYPE_TIMESTAMP:
-		{
-			ret = nvs_data_set(DATA_TIMESTAMP, data, data_size);
-			break;
-		}
-		case DATA_TYPE_BARRIER_STATUS:
-		{
-			ret = nvs_data_set(DATA_STATUS_BARRIER, data, data_size);
-			break;
-		}
-		case DATA_TYPE_VIRTUAL_BARRIER:
-		{
-			ret = nvs_data_set(DATA_VIRTUAL_BARRIER, data, data_size);
-			break;
-		}
-		case DATA_TYPE_PHYSICAL_BARRIER:
-		{
-			ret = nvs_data_set(DATA_PHYSICAL_BARRIER, data, data_size);
-			break;
-		}
-		case DATA_TYPE_INITIAL_ANGLE:
-		{
-			ret = nvs_data_set(DATA_INITIAL_ANGLE, data, data_size);
-			break;
-		}
-		case DATA_TYPE_MANUAL_COUNTER:
-		{
-			ret = nvs_data_set(DATA_MANUAL_COUNTER, data, data_size);
-			break;
-		}
 		case DATA_TYPE_REASON_HANG_UP:
 		{
 			ret = nvs_data_set(DATA_REASON_HANG_UP, data, data_size);
@@ -675,16 +483,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 
 	switch(data_type)
 	{
-		case DATA_TYPE_ACTIONS:
-		{
-			ret = nvs_data_get_blob(DATA_ACTION, data);
-			break;
-		}
-		case DATA_TYPE_PIVOT_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_PIVOT_CONFIG, data);
-			break;
-		}
 		case DATA_TYPE_NETWORK_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_NETWORK_CONFIG, data);
@@ -698,16 +496,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_RUSH_MODE_STATE:
 		{
 			ret = nvs_data_get_blob(DATA_RUSH_MODE_STATE, data);
-			break;
-		}
-		case DATA_TYPE_SECTOR_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_SECTOR_CONFIG, data);
-			break;
-		}
-		case DATA_TYPE_GPS_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_GPS_CONFIG, data);
 			break;
 		}
 		case DATA_TYPE_REBOOT_CONFIG:
@@ -725,16 +513,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_DATE, data);
 			break;
 		}
-		case DATA_TYPE_SCHEDULING_ANGLE:
-		{
-			ret = nvs_data_get_blob(DATA_SCHEDULING_ANGLE, data);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_OFF_ANGLE:
-		{
-			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_ANGLE, data);
-			break;
-		}
 		case DATA_TYPE_SCHEDULING_START_STATE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_START_STATE, data);
@@ -743,36 +521,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_HISTORY:
 		{
 			ret = nvs_data_get_blob(DATA_HISTORY, data);
-			break;
-		}
-		case DATA_TYPE_TIMESTAMP:
-		{
-			ret = nvs_data_get_blob(DATA_TIMESTAMP, data);
-			break;
-		}
-		case DATA_TYPE_BARRIER_STATUS:
-		{
-			ret = nvs_data_get_blob(DATA_STATUS_BARRIER, data);
-			break;
-		}
-		case DATA_TYPE_VIRTUAL_BARRIER:
-		{
-			ret = nvs_data_get_blob(DATA_VIRTUAL_BARRIER, data);
-			break;
-		}
-		case DATA_TYPE_PHYSICAL_BARRIER:
-		{
-			ret = nvs_data_get_blob(DATA_PHYSICAL_BARRIER, data);
-			break;
-		}
-		case DATA_TYPE_INITIAL_ANGLE:
-		{
-			ret = nvs_data_get_blob(DATA_INITIAL_ANGLE, data);
-			break;
-		}
-		case DATA_TYPE_MANUAL_COUNTER:
-		{
-			ret = nvs_data_get_blob(DATA_MANUAL_COUNTER, data);
 			break;
 		}
 		case DATA_TYPE_REASON_HANG_UP:
@@ -841,38 +589,6 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 											  sizeof(pivot_scheduling_off_date),
 											  false,
 											  "date",
-											  scheduling_id,
-											  &scheduling_start_state);
-	if (ret == ESP_OK)
-	{
-		return ret;
-	}
-
-	if (ret != ESP_ERR_NOT_FOUND)
-	{
-		return ret;
-	}
-
-	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_ANGLE,
-											  sizeof(pivot_scheduling_angle),
-											  true,
-											  "angle",
-											  scheduling_id,
-											  &scheduling_start_state);
-	if (ret == ESP_OK)
-	{
-		return ret;
-	}
-
-	if (ret != ESP_ERR_NOT_FOUND)
-	{
-		return ret;
-	}
-
-	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_OFF_ANGLE,
-											  sizeof(pivot_scheduling_off_angle),
-											  false,
-											  "angle",
 											  scheduling_id,
 											  &scheduling_start_state);
 	if (ret == ESP_OK)

@@ -138,14 +138,6 @@
 #define CONFIG_HISTORY_MAX_VALUE        (20)
 
 /**
- * @brief Maximum number of sectors.
- *
- * This define specifies the maximum number of sectors allowed in the project.
- * It can be used to define the size of arrays or data structures related to sectors.
- */
-#define CONFIG_SECTORS_MAX_VALUE        (04)
-
-/**
  * @brief Undefined value for actions.
  */
 #define CONFIG_ACTIONS_UNDEF_VALUE      (655)
@@ -284,39 +276,6 @@ typedef struct __attribute__((__packed__))
     uint16_t percentimeter;   /*!< Percentage value from 0 to 100 */
     char user[50];
 } pivot_actions;
-
-/**
- * @brief Configuration angles.
- *
- * Structure defining the configuration angles.
- */
-typedef struct
-{
-    uint16_t start_angle;   /*!< Start angle of the configuration */
-    uint16_t end_angle;     /*!< End angle of the configuration */
-} pivot_sectors;
-
-/**
- * @brief Configuration parameters.
- *
- * Structure defining the configuration parameters.
- */
-typedef struct __attribute__((__packed__))
-{
-    char contactor[50];             /*!< Contactor type */ //todo: usar isso nas classes
-    char pressure[50];              /*!< Pressure switch type *///todo usar isso nas classes
-    uint16_t pressurization_time;   /*!< Pressurization time */
-    uint8_t on_time;                /*!< On time */
-    uint8_t off_time;               /*!< Off time */
-    uint8_t read_time;              /*!< Read time */
-} pivot_config;
-
-/**
- * @brief Configuration parameters.
- *
- * How many configuration parameters in pivot_config struct.
- */
-#define PIVOT_CONFIG_VAR_COUNT  (6)
 
 /**
  * @brief Command for one new-product actuation channel.
@@ -479,102 +438,20 @@ typedef struct __attribute__((__packed__))
 
 /**
  * @brief Configuration parameters.
- *
- * Structure defining the sectors configuration parameters.
- */
-typedef struct __attribute__((__packed__)) //todo: alterar as classes para esse padrão
-{
-    uint8_t sector_number;  //todo olhar isso na implementação
-    pivot_sectors sectors[CONFIG_SECTORS_MAX_VALUE];   /*!< Array of pivot sectors */
-} sector_config;
-
-/**
- * @brief Configuration parameters.
- *
- * How many configuration parameters in sector_config struct. sector_number = 0 -> 1 parametro.
- */
-#define SECTOR_CONFIG_VAR_COUNT   (1)
-/**
- * @brief GPS Configuration parameters.
- *
- * Structure defining the GPS Configuration parameters.
- */
-typedef struct __attribute__((__packed__))
-{
-    uint8_t sinal_lat;
-    char latitude[30];
-    uint8_t sinal_lon;
-    char longitude[30];
-    uint16_t time_payload;
-    uint16_t offset;
-
-} gps_config;
-
-/**
- * @brief GPS Configuration parameters.
- *
- * How many configuration parameters in gps_config struct.
- */
-#define GPS_CONFIG_VAR_COUNT    (6)
-
-/**
- * @brief Configuration parameters.
- *
- * Structure defining the Virtual Barrier parameters.
- */
-typedef struct __attribute__((__packed__))
-{
-    uint16_t start_angle_virtual_barrier;   /*!< Start angle of the configuration of the virtual barrier*/
-    uint16_t end_angle_virtual_barrier;     /*!< End angle of the configuration of the virtual barrier*/
-    bool automatic_return;
-    bool water_return;
-} pivot_virtual_config;
-
-/**
- * @brief Configuration parameters.
- *
- * How many configuration parameters in pivot_virtual_config struct.
- */
-#define PIVOT_VIRTUAL_CONFIG_VAR_COUNT   (4)
-
-
-/**
- * @brief Configuration parameters.
- *
- * Structure defining the Physical Barrier parameters.
- */
-typedef struct __attribute__((__packed__))
-{
-    uint16_t start_angle_physical_barrier;  /*!< Start angle of the configuration */
-    uint16_t end_angle_physical_barrier;    /*!< End angle of the configuration */
-    bool automatic_return;
-    bool water_return;
-    uint8_t time_leaving_barrier;
-} pivot_physical_config;
-
-/**
- * @brief Configuration parameters.
- *
- * How many configuration parameters in pivot_physical_config struct.
- */
-#define PIVOT_PHYSICAL_BARRIER_CONFIG_VAR_COUNT   (5)
-
-/**
- * @brief Configuration parameters.
  * 
  * Defines the principal communication mode of the system for periodic comm.
  */
 typedef struct __attribute__((__packed__))
 {
     char comm_main_mode_config[50];
-}pivot_comm_main_mode_config;
+} comm_main_mode_config;
 
 /**
  * @brief Configuration parameters.
  *
- * How many configuration parameters in pivot_comm_main_mode_config struct.
+ * How many configuration parameters in comm_main_mode_config struct.
  */
-#define PIVOT_COMM_MAIN_MODE_CONFIG_VAR_COUNT   (1)
+#define COMM_MAIN_MODE_CONFIG_VAR_COUNT   (1)
 
 /**
  * @brief Scheduling date parameters.
@@ -602,27 +479,6 @@ typedef struct __attribute__((__packed__))
 
 
 /**
- * @brief Scheduling angle parameters.
- *
- * Structure defining the scheduling parameters based on angle.
- */
-typedef struct __attribute__((__packed__))
-{
-    char scheduling_id[30];         /*!< Scheduling ID */
-    time_t start_date;              /*!< Start date */
-    uint16_t end_angle;             /*!< End angle */
-    pivot_actions actions;          /*!< Pivot actions */
-    char str_author[50];
-} pivot_scheduling_angle;
-
-typedef struct __attribute__((__packed__))
-{
-    char scheduling_id[30];         /*!< Scheduling ID */
-    uint16_t end_angle;             /*!< End angle */
-    char str_author[50];
-} pivot_scheduling_off_angle;
-
-/**
  * @brief Persistent runtime state for the single active start schedule.
  */
 typedef struct __attribute__((__packed__))
@@ -647,34 +503,6 @@ typedef struct __attribute__((__packed__))
     time_t end_date;                /*!< End date */
 } pivot_history;
 
-
-/**
- * @brief Indicates which type the barrier
- * 
- * This macro is used to represent which type of barrier is being used
- * 
- */
-typedef enum
-{
-    VIRTUAL_BARRIER = 0,
-    PHYSICAL_BARRIER,
-} type_barrier;
-
-/**
- * @brief Indicates that the pivot is outside the barrier.
- *
- * This macro is used to represent the state where the pivot is outside/inside the barrier.
- *
- */
-typedef enum 
-{
-    PIVOT_OUTSIDE_THE_BARRIER = 0,
-    PIVOT_IN_THE_BARRIER,
-    PIVOT_LEAVING_THE_BARRIER,
-    PIVOT_LEAVING_THE_VIRTUAL_BARRIER,
-    PIVOT_IN_THE_VIRTUAL_BARRIER,
-    PIVOT_OUTSIDE_THE_VIRTUAL_BARRIER,
-} barrier_status;
 
 /**
  * @brief Indicates that the pivot is outside the barrier.
@@ -722,17 +550,10 @@ typedef void (*app_callback)(const char* buffer_request, comm_type communication
 
 typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *author);
 
-/**
- * @brief Global angle variable.
- */
-extern uint16_t global_angle;
-
 /** @var system_id
  *  @brief Local variable for the system ID.
  */
 extern char system_id[50];
-
-extern uint32_t counter_reading_panel_off;
 
 /**
  * @brief Global comm_main_mode variable.
