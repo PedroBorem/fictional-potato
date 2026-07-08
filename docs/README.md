@@ -1,0 +1,39 @@
+# Documentacao do Projeto
+
+Esta pasta descreve o firmware atual da Placa de Controle de Bombeamento.
+
+## Leitura Recomendada
+
+1. [Hardware e pinagem](functional/hardware.md)
+2. [Sequencia de bombeamento](functional/pump_sequence.md)
+3. [Comunicacao e padrao IDP](functional/communication_idp.md)
+4. [Persistencia e boot](functional/persistence_boot.md)
+5. [Levantamento de IDPs](new_product_idp_migration.md)
+6. [Componentes](components/README.md)
+
+## Escopo Atual
+
+O firmware atual inicializa apenas os servicos necessarios para o controle local:
+
+- RTC DS3231.
+- NVS.
+- Driver de GPIO dos relés e entradas.
+- Aplicacao de atuacao com sequencia de bombeamento.
+
+HTTP, MQTT, Wi-Fi, RF e parser IDP permanecem documentados para reaproveitamento, mas nao sao inicializados nesta fase.
+
+## Convencao de Status
+
+| Valor | Significado |
+| --- | --- |
+| `0` | OFF |
+| `1` | ON |
+| `2` | UNKNOWN |
+
+## Convencao de Comando
+
+| Valor | Significado |
+| --- | --- |
+| `0` | NONE |
+| `1` | ON / START |
+| `2` | OFF / STOP |

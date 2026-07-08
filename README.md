@@ -1,57 +1,88 @@
-### :warning: Aviso Importante :warning:
+# Placa de Controle de Bombeamento
 
-**ATENÇÃO:** Este código está programado para funcionar até 9 de maio de 2040. Após essa data, pode ser necessário atualizar o código para garantir seu funcionamento correto.
+Firmware ESP-IDF para a nova placa de controle de bombeamento de agua. Este projeto usa a base do antigo firmware de placa de controle, mas a regra de negocio atual nao e mais de pivo.
 
-Certifique-se de revisar e adaptar o código conforme necessário para futuras datas além de 2040.
+O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 entradas digitais de status.
 
+## Estado Atual
 
-# _Sample project_
+- Produto: controle de bombeamento com partida sequencial.
+- Hardware alvo: ESP32-S3.
+- ESP-IDF: v6.0.2.
+- Flash configurada: 16MB.
+- Comunicacao HTTP/app/MQTT/RF: desabilitada nesta etapa do firmware.
+- Regra de pivo, rush mode, setor, barreira, GPS e agenda por angulo: legado preservado no repositorio, mas fora do build atual.
 
-(See the README.md file in the upper level 'examples' directory for more information about examples.)
+## Pinagem de Acionamento
 
-This is the simplest buildable example. The example is used by command `idf.py create-project`
-that copies the project to user specified path and set it's name. For more information follow the [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project)
+| Canal | Relay ON | Relay OFF | Entrada de status |
+| --- | --- | --- | --- |
+| 1 | `GPIO_NUM_13` | `GPIO_NUM_12` | `GPIO_NUM_7` |
+| 2 | `GPIO_NUM_11` | `GPIO_NUM_10` | `GPIO_NUM_6` |
+| 3 | `GPIO_NUM_9` | `GPIO_NUM_8` | `GPIO_NUM_5` |
+| 4 | `GPIO_NUM_16` | `GPIO_NUM_35` | `GPIO_NUM_4` |
 
+Os relés da placa atual sao ativos em nivel baixo. As entradas de status tambem sao interpretadas como ON quando estao em nivel baixo.
 
+## Funcionamento de Bombeamento
 
-## How to use example
-We encourage the users to use the example as a template for the new projects.
-A recommended way is to follow the instructions on a [docs page](https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#start-a-new-project).
+Ao receber um comando de liga, a aplicacao executa:
 
-## Example folder contents
+1. Liga o relay ON do canal 1 e aguarda 10 segundos.
+2. Valida a leitura do canal 1.
+3. Liga o relay ON do canal 2 e aguarda 30 segundos monitorando os canais ja ativos.
+4. Valida as leituras dos canais 1 e 2.
+5. Liga o relay ON do canal 3 e aguarda 30 segundos monitorando os canais ja ativos.
+6. Valida as leituras dos canais 1, 2 e 3.
+7. Liga o relay ON do canal 4.
+8. Valida as 4 leituras e entra em monitoramento continuo.
 
-The project **sample_project** contains one source file in C language [main.c](main/main.c). The file is located in folder [main](main).
+Se qualquer leitura esperada falhar, a rotina desliga todos os relés ON e aciona todos os relés OFF por 10 segundos.
 
-ESP-IDF projects are built using CMake. The project build configuration is contained in `CMakeLists.txt`
-files that provide set of directives and instructions describing the project's source files and targets
-(executable, library, or both). 
+Mais detalhes: [Sequencia de Bombeamento](docs/functional/pump_sequence.md).
 
-Below is short explanation of remaining files in the project folder.
+## Build
 
-```
-├── CMakeLists.txt
-├── main
-│   ├── CMakeLists.txt
-│   └── main.c
-└── README.md                  This is the file you are currently reading
-```
-Additionally, the sample project contains Makefile and component.mk files, used for the legacy Make based build system. 
-They are not used or needed when building with CMake and idf.py.
+Use o ESP-IDF v6.0.2:
 
-## ESP IDF
-
-Esp idf version [v4.4.1](https://docs.espressif.com/projects/esp-idf/en/v4.4.1/esp32/get-started/index.html)
-eclipse [plugin](https://github.com/espressif/idf-eclipse-plugin)
-
-## Compilation
-```
-rm -rf build
-get_idf
+```sh
+export IDF_PATH="$HOME/.espressif/v6.0.2/esp-idf"
+source "$IDF_PATH/export.sh"
 idf.py set-target esp32s3
-idf.py all
+idf.py build
 ```
 
-## Flash
+Flash e monitor:
+
+```sh
+idf.py -p /dev/cu.usbmodem1101 flash monitor
 ```
-idf.py flash monitor
-```
+
+## Estrutura da Documentacao
+
+- [Indice da documentacao](docs/README.md)
+- [Hardware e pinagem](docs/functional/hardware.md)
+- [Sequencia de bombeamento](docs/functional/pump_sequence.md)
+- [Comunicacao e padrao IDP](docs/functional/communication_idp.md)
+- [Persistencia e boot](docs/functional/persistence_boot.md)
+- [Levantamento de IDPs](docs/new_product_idp_migration.md)
+- [Documentacao por componente](docs/components/README.md)
+
+## Componentes Ativos no Build Atual
+
+- `main`
+- `applications`
+- `gpio_actuator`
+- `nvs_data`
+- `rtc`
+- `utils`
+
+## Componentes Preservados para a Segunda Etapa
+
+- `gprs`
+- `rf_module`
+- `wifi_app`
+- `http_server`
+- `idp_protocol`
+
+Esses componentes permanecem no repositorio para reaproveitamento, mas estao excluidos do firmware atual em `CMakeLists.txt`.

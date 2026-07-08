@@ -317,7 +317,7 @@ esp_err_t data_app_init(void)
 	const actuation_config default_actuation_config = {
 			.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
 			.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
-			.status_active_level = true,
+			.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
 	};
 
 	const network_config default_network = {

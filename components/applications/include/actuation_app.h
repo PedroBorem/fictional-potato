@@ -25,7 +25,10 @@ esp_err_t actuation_app_init(const app_callback callback);
 esp_err_t actuation_app_set_config(actuation_config config);
 
 /**
- * @brief Pulses ON/OFF relay pairs according to the provided command payload.
+ * @brief Requests pump start or stop according to the provided command payload.
+ *
+ * Any ON command starts the sequenced pumping logic. Any OFF command requests
+ * the safety stop routine.
  */
 void actuation_app_set_actions(const actuation_actions actions, bool alert_change);
 

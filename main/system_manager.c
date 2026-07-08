@@ -51,11 +51,24 @@ void system_manager_init(void)
     ESP_ERROR_CHECK(data_app_init());
 
     actuation_config config = {};
+    bool config_changed = false;
+
     if (data_app_load(DATA_TYPE_ACTUATION_CONFIG, &config) != ESP_OK)
     {
         config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
         config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
-        config.status_active_level = true;
+        config.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
+        config_changed = true;
+    }
+
+    if (config.status_active_level != CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL)
+    {
+        config.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
+        config_changed = true;
+    }
+
+    if (config_changed)
+    {
         data_app_save(DATA_TYPE_ACTUATION_CONFIG, &config, sizeof(config));
     }
 

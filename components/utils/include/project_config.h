@@ -39,12 +39,42 @@
 /**
  * @brief Default pulse duration for each ON/OFF relay command.
  */
-#define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (1000)
+#define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (10000)
 
 /**
  * @brief Default interval, in seconds, for status monitoring.
  */
 #define CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC (10)
+
+/**
+ * @brief Default GPIO level interpreted as ON by status inputs.
+ */
+#define CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL (false)
+
+/**
+ * @brief Pump startup delay after channel 1 relay is enabled.
+ */
+#define CONFIG_PUMP_STAGE_1_DELAY_MS (10000)
+
+/**
+ * @brief Pump startup delay after channel 2 relay is enabled.
+ */
+#define CONFIG_PUMP_STAGE_2_DELAY_MS (30000)
+
+/**
+ * @brief Pump startup delay after channel 3 relay is enabled.
+ */
+#define CONFIG_PUMP_STAGE_3_DELAY_MS (30000)
+
+/**
+ * @brief Pump runtime status monitoring interval.
+ */
+#define CONFIG_PUMP_MONITOR_INTERVAL_MS (500)
+
+/**
+ * @brief Duration used to energize all OFF relays during shutdown.
+ */
+#define CONFIG_PUMP_STOP_RELAY_TIME_MS (10000)
 
 /**
  * @brief Maximum number of scheduling values.

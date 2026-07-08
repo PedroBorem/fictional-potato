@@ -1,0 +1,33 @@
+# Documentacao por Componente
+
+## Componentes Ativos
+
+| Componente | Documento | Situacao |
+| --- | --- | --- |
+| `main` | [main.md](main.md) | Ativo |
+| `applications` | [applications.md](applications.md) | Ativo parcialmente |
+| `gpio_actuator` | [gpio_actuator.md](gpio_actuator.md) | Ativo |
+| `nvs_data` | [nvs_data.md](nvs_data.md) | Ativo |
+| `rtc` | [rtc.md](rtc.md) | Ativo |
+| `utils` | [utils.md](utils.md) | Ativo |
+
+## Componentes Inativos no Build Atual
+
+| Componente | Documento | Motivo |
+| --- | --- | --- |
+| `gprs` | [gprs.md](gprs.md) | Comunicacao externa desabilitada nesta fase. |
+| `rf_module` | [rf_module.md](rf_module.md) | Comunicacao externa desabilitada nesta fase. |
+| `wifi_app` | [wifi_app.md](wifi_app.md) | HTTP/app local desabilitado nesta fase. |
+| `http_server` | [http_server.md](http_server.md) | HTTP/app local desabilitado nesta fase. |
+| `idp_protocol` | [idp_protocol.md](idp_protocol.md) | Parser preservado para segunda etapa. |
+
+## Codigo Legado Fora do Build
+
+Arquivos antigos de regra de pivo permanecem em `main/`, mas `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
+
+Arquivos legados:
+
+- `rush_mode.c`
+- `scheduling.c`
+- `sectorization.c`
+- `system_monitoring.c`
