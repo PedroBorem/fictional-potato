@@ -2,7 +2,7 @@
 
 ## Escopo
 
-O firmware deixou de inicializar a regra de negocio de pivo. Nesta fase tambem nao inicializa HTTP/app, Wi-Fi, GPRS, RF nem parser IDP.
+O firmware deixou de inicializar a regra de negocio de pivo. Nesta fase inicializa RF UART, GPRS UART e parser IDP. HTTP/app e Wi-Fi continuam fora do build.
 
 Este documento classifica os IDPs que podem ser reaproveitados, os que precisam ser adaptados e os que devem ser inutilizados para o produto de bombeamento.
 
@@ -38,12 +38,12 @@ Falha:
 | `6` | Identificacao/configuracao de modem | Manter se o modem continuar usando o mesmo fluxo de identificacao. |
 | `21` | Sincronizacao de timestamp | Aproveitar para RTC, logs e eventos. |
 | `24` | Reboot automatico | Aproveitar como configuracao geral da placa. |
-| `31` | Modo principal de comunicacao | Aproveitar se a nova fase alternar MQTT/RF. |
+| `31` | Modo principal de comunicacao | Aproveitado para alternar eventos espontaneos entre `RF` e `MQTT` via GPRS UART. |
 | `42` | Heartbeat modem/placa | Aproveitar se o modem continuar por UART. |
 | `90` | Versao de firmware | Aproveitar sem mudanca conceitual. |
 | `91` | Reset da placa | Aproveitar sem mudanca conceitual. |
 | `92` | Reset do modem / ACK generico | Aproveitar se o modem continuar no hardware final. |
-| `99` | Erro tecnico em referencias legadas | Pode ser reaproveitado para falhas internas, mas precisa ser reincluido no enum atual se entrar na segunda etapa. |
+| `99` | Erro tecnico em referencias legadas | Usado como resposta textual de erro no callback atual, mesmo sem enum dedicado. |
 
 ## IDPs que Devem ser Adaptados
 
@@ -101,9 +101,10 @@ Regra:
 ## Situacao no Codigo
 
 - `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
-- `system_manager.c` inicializa RTC, NVS e atuacao local.
-- `components/applications/CMakeLists.txt` compila `rtc_app.c`, `data_app.c` e `actuation_app.c`.
-- `comm_app.c` nao entra no build atual.
-- `gprs`, `rf_module`, `wifi_app`, `http_server` e `idp_protocol` estao excluidos no `CMakeLists.txt` raiz.
+- `system_manager.c` inicializa RTC, NVS, atuacao local, comunicacao serial e handlers IDP.
+- `components/applications/CMakeLists.txt` compila `rtc_app.c`, `data_app.c`, `actuation_app.c` e `comm_app.c`.
+- `gprs`, `rf_module` e `idp_protocol` entram no build atual.
+- `wifi_app` e `http_server` continuam excluidos no `CMakeLists.txt` raiz.
 - Os dados NVS novos sao `act_actions` e `act_config`.
+- O modo principal de comunicacao fica em `comm_main_mode`, com `RF` como padrao.
 - Os dados antigos de pivo continuam preservados para evitar migracao destrutiva.

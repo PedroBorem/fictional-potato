@@ -50,9 +50,24 @@ Regras:
    - Valida os 4 canais.
    - Entra em `RUNNING`.
 
+## Logs de Operacao
+
+Ao receber comando de partida, o monitor serial registra:
+
+- Comando START recebido e usuario de origem.
+- Inicio da sequencia.
+- Etapa atual: `Stage 1/4`, `Stage 2/4`, `Stage 3/4` ou `Stage 4/4`.
+- Relay ON acionado em cada etapa.
+- Progresso dos temporizadores a cada `CONFIG_PUMP_STAGE_LOG_INTERVAL_MS`, hoje `10000 ms`.
+- Status das leituras durante o progresso do timer.
+- Validacao OK de cada etapa.
+- Falha de canal, quando alguma leitura esperada nao confirma ON.
+
 ## Monitoramento em Operacao
 
 Quando a bomba esta em `RUNNING`, a aplicacao valida as 4 leituras a cada `CONFIG_PUMP_MONITOR_INTERVAL_MS`.
+
+O monitor serial tambem registra um status periodico a cada `CONFIG_PUMP_STAGE_LOG_INTERVAL_MS`, hoje `10000 ms`.
 
 Falha de leitura significa: canal que deveria estar ON retornou status diferente de `ACTUATION_STATUS_ON`.
 

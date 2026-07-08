@@ -2,9 +2,7 @@
 
 ## Situacao
 
-Inativo no build atual.
-
-Esta listado em `EXCLUDE_COMPONENTS` no `CMakeLists.txt` raiz.
+Ativo no build atual.
 
 ## Funcao Preservada
 
@@ -19,7 +17,7 @@ Comunicar a placa por UART com modulo RF/LoraMesh.
 | RX | `GPIO_NUM_1` |
 | Baud rate | `9600` |
 
-## Fluxo Esperado Quando Reativado
+## Fluxo Atual
 
 1. Recebe bytes pela UART RF.
 2. Filtra caracteres invalidos.
@@ -28,4 +26,4 @@ Comunicar a placa por UART com modulo RF/LoraMesh.
 
 ## Observacao
 
-RF pode ser reaproveitado como canal secundario de comandos/status, desde que use os IDPs novos de bombeamento e nao os campos antigos de pivo.
+RF e o canal principal padrao para eventos espontaneos do produto.

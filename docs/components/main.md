@@ -24,14 +24,15 @@ Inicializa somente os servicos necessarios ao novo produto:
 1. RTC.
 2. NVS/data app.
 3. Configuracao de atuacao.
-4. Aplicacao de atuacao.
-5. Leitura inicial de status.
+4. Modo principal de comunicacao.
+5. Aplicacao de atuacao.
+6. Comunicacao serial RF/GPRS.
+7. Parser IDP.
+8. Leitura inicial de status.
 
 Nao inicializa:
 
 - Comunicacao HTTP/app.
-- GPRS/MQTT.
-- RF.
 - Wi-Fi.
 - Regras de pivo.
 

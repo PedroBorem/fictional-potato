@@ -2,18 +2,19 @@
 
 ## Status de Implementacao
 
-A comunicacao esta intencionalmente fora do firmware atual. O produto local ja funciona com a nova regra de bombeamento, mas HTTP/app, MQTT e RF serao trabalhados em uma segunda etapa.
+A comunicacao serial esta ativa no firmware atual. O produto aceita IDPs por RF UART e GPRS UART. HTTP/app e Wi-Fi permanecem fora desta etapa.
 
 Atualmente:
 
-- `comm_app.c` nao e compilado.
-- `gprs`, `rf_module`, `wifi_app`, `http_server` e `idp_protocol` estao em `EXCLUDE_COMPONENTS`.
-- O parser IDP antigo permanece no repositorio para reaproveitamento.
+- `comm_app.c` e compilado.
+- `gprs`, `rf_module` e `idp_protocol` sao compilados.
+- `wifi_app` e `http_server` estao em `EXCLUDE_COMPONENTS`.
+- RF e o modo principal padrao.
 
-## Arquitetura Esperada para a Segunda Etapa
+## Arquitetura Atual
 
 ```text
-HTTP/MQTT/RF
+GPRS UART / RF UART
     |
 comm_app
     |
@@ -70,6 +71,12 @@ Uso esperado:
 - Publicacao apos mudanca de leitura.
 - Publicacao apos partida, parada ou falha.
 
+Exemplo:
+
+```text
+#00-new_product$
+```
+
 ### IDP 1 - Comando
 
 ```text
@@ -78,8 +85,8 @@ Uso esperado:
 
 Uso esperado:
 
-- `#01-bomba_1-1-0-0-0-app$` inicia partida sequencial.
-- `#01-bomba_1-0-0-0-2-app$` solicita parada segura.
+- `#01-new_product-1-0-0-0-app$` inicia partida sequencial.
+- `#01-new_product-0-0-0-2-app$` solicita parada segura.
 
 Mesmo existindo 4 campos de comando, a regra de negocio e global: qualquer `1` liga a bomba completa e qualquer `2` para tudo.
 
@@ -95,6 +102,19 @@ Uso esperado:
 - Persistir `act_config` em NVS.
 - Reaplicar configuracao no `gpio_actuator`.
 
+### IDP 31 - Modo Principal de Comunicacao
+
+```text
+#31-DEVICE_ID-MODE$
+```
+
+Valores:
+
+- `RF`
+- `MQTT`
+
+Neste firmware, `MQTT` significa caminho serial via GPRS UART. RF e o padrao.
+
 ### IDP 28 - Ultima Falha
 
 ```text
@@ -106,7 +126,7 @@ Uso esperado futuro:
 - Diagnostico de parada por falha de leitura.
 - Historico resumido para nuvem/app.
 
-## Canais Futuros
+## Canais
 
 ### MQTT via modem
 
@@ -118,7 +138,7 @@ O componente `rf_module` recebe pacotes pela UART RF e entrega para callback com
 
 ### HTTP local
 
-O componente `http_server` recebe payloads HTTP e entrega para callback como `COMM_HTTP_GET` ou `COMM_HTTP_POST`.
+HTTP local esta fora do build atual.
 
 ## Regras de Integracao
 

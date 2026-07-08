@@ -19,14 +19,15 @@
 #include "esp_err.h"
 
 /**
- * @brief Initializes all communication modules.
+ * @brief Initializes the serial communication modules.
  * @param callback [in]: Function used with return to the main application class.
  * @return
  *  - ESP_OK: Success
  *  - ESP_FAIL: Fail
  * 
- * This function initializes all communication modules and registers a callback
- * function to be used in the main application class.
+ * This function initializes RF UART and GPRS UART and registers a callback
+ * function to be used in the main application class. HTTP and Wi-Fi are not
+ * initialized in the current firmware stage.
  */
 esp_err_t comm_app_init(const app_callback callback);
 

@@ -10,16 +10,16 @@
 | `nvs_data` | [nvs_data.md](nvs_data.md) | Ativo |
 | `rtc` | [rtc.md](rtc.md) | Ativo |
 | `utils` | [utils.md](utils.md) | Ativo |
+| `gprs` | [gprs.md](gprs.md) | Ativo |
+| `rf_module` | [rf_module.md](rf_module.md) | Ativo |
+| `idp_protocol` | [idp_protocol.md](idp_protocol.md) | Ativo |
 
 ## Componentes Inativos no Build Atual
 
 | Componente | Documento | Motivo |
 | --- | --- | --- |
-| `gprs` | [gprs.md](gprs.md) | Comunicacao externa desabilitada nesta fase. |
-| `rf_module` | [rf_module.md](rf_module.md) | Comunicacao externa desabilitada nesta fase. |
 | `wifi_app` | [wifi_app.md](wifi_app.md) | HTTP/app local desabilitado nesta fase. |
 | `http_server` | [http_server.md](http_server.md) | HTTP/app local desabilitado nesta fase. |
-| `idp_protocol` | [idp_protocol.md](idp_protocol.md) | Parser preservado para segunda etapa. |
 
 ## Codigo Legado Fora do Build
 

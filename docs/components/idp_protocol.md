@@ -2,13 +2,11 @@
 
 ## Situacao
 
-Inativo no build atual.
-
-Esta listado em `EXCLUDE_COMPONENTS` no `CMakeLists.txt` raiz.
+Ativo no build atual.
 
 ## Funcao Preservada
 
-Parser e gerador de pacotes IDP.
+Parser e gerador de pacotes IDP. O firmware atual usa o parser para identificar e extrair os IDPs de bombeamento no `system_manager`.
 
 ## Funcoes Reaproveitaveis
 

@@ -5,4 +5,5 @@ idf_component_register(	SRCS
                     		"include"
 						REQUIRES
 							applications
-							utils)
+							utils
+							idp_protocol)

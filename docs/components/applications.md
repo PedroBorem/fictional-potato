@@ -9,8 +9,7 @@ Ativo parcialmente.
 - `rtc_app.c`
 - `data_app.c`
 - `actuation_app.c`
-
-`comm_app.c` fica preservado no repositorio, mas nao entra no build atual.
+- `comm_app.c`
 
 ## `actuation_app`
 
@@ -59,12 +58,13 @@ Responsabilidades:
 
 ## `comm_app`
 
-Inativo no build atual.
+Ativo no build atual.
 
-Quando reativado, devera ser a fachada entre os canais de comunicacao e a aplicacao:
+E a fachada entre os canais de comunicacao serial e a aplicacao:
 
-- MQTT via `gprs`.
+- MQTT via `gprs`, representado por GPRS UART.
 - RF via `rf_module`.
-- HTTP local via `http_server`.
 
-Regra para a segunda etapa: `comm_app` nao deve controlar GPIO diretamente. Deve converter pacotes IDP para chamadas em `actuation_app`.
+HTTP local via `http_server` permanece fora do build.
+
+Regra: `comm_app` nao controla GPIO diretamente. Ele entrega pacotes recebidos ao callback do `system_manager`, que decide qual IDP executar.

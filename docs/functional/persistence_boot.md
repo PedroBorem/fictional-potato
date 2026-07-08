@@ -12,8 +12,10 @@ Ordem atual:
 4. Se nao existir configuracao, cria valores padrao.
 5. Migra o nivel ativo de status para o padrao atual, nivel baixo.
 6. Aplica configuracao de atuacao.
-7. Inicializa GPIO e tarefa de atuacao.
-8. Le e registra o status inicial dos 4 canais.
+7. Carrega modo principal de comunicacao; RF e o padrao.
+8. Inicializa GPIO e tarefa de atuacao.
+9. Inicializa RF UART, GPRS UART e parser IDP.
+10. Le e registra o status inicial dos 4 canais.
 
 ## Dados Novos do Produto
 
@@ -21,6 +23,7 @@ Ordem atual:
 | --- | --- | --- |
 | `DATA_TYPE_ACTUATION_ACTIONS` | `act_actions` | Ultimo comando aceito pela camada de atuacao. |
 | `DATA_TYPE_ACTUATION_CONFIG` | `act_config` | Configuracao da camada de atuacao. |
+| `DATA_TYPE_COMM_MAIN_MODE` | `comm_main_mode` | Canal principal para eventos espontaneos: `RF` ou `MQTT`. |
 
 ## Configuracao Padrao
 
@@ -29,6 +32,7 @@ Ordem atual:
 | `relay_pulse_time_ms` | `10000` |
 | `read_time_sec` | `10` |
 | `status_active_level` | `false`, equivalente a nivel baixo |
+| `comm_main_mode` | `RF` |
 
 ## Dados Legados
 

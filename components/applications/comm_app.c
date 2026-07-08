@@ -11,10 +11,10 @@
 #include "idp_parser.h"
 #include "rf_uart.h"
 
-#include "wifi_app.h"
-#include "http_api.h"
-
 #include "log.h"
+
+#include <stdlib.h>
+#include <string.h>
 
 /* Private definitions ------------------------------------------- */
 
@@ -56,14 +56,29 @@ esp_err_t comm_app_init(const app_callback callback)
 {
     esp_err_t err = ESP_OK;
 
-    err &= rf_uart_init(callback);
-    err &= gprs_uart_init(callback);
+    if (callback == NULL)
+    {
+        ESP_LOGE(COMM_APP_TAG, "%s, invalid callback", __func__);
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    err = rf_uart_init(callback);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "%s, failed to initialize RF UART: %d", __func__, err);
+        return err;
+    }
+
+    err = gprs_uart_init(callback);
+    if (err != ESP_OK)
+    {
+        ESP_LOGE(COMM_APP_TAG, "%s, failed to initialize GPRS UART: %d", __func__, err);
+        return err;
+    }
+
     gprs_uart_register_raw_log_callback(comm_app_hide_raw_log_callback);
 
-    err &= http_server_register_callback(callback);
-
-    err &= wifi_app_init();
-    err &= http_server_init();
+    ESP_LOGI(COMM_APP_TAG, "Serial communication initialized: RF and GPRS UART");
 
     return err;
 }
@@ -81,15 +96,12 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
     char* str_copy = strdup(idp_pack);
     bool hide_raw_log = comm_app_hide_raw_log_callback(str_copy);
 
-    if (communication == COMM_HTTP_POST || communication == COMM_HTTP_GET)
+    if (str_copy == NULL)
     {
-        http_server_send_resp(str_copy);
-        if (!hide_raw_log)
-        {
-            LOG_COMM(COMM_APP_TAG, "HTTP - send %s", str_copy);
-        }
+        return;
     }
-    else if (communication == COMM_MQTT)
+
+    if (communication == COMM_MQTT)
     {
         gprs_uart_send_event(str_copy, strlen(str_copy));
         if (!hide_raw_log)
@@ -107,6 +119,10 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
         }
 
     }
+    else
+    {
+        ESP_LOGW(COMM_APP_TAG, "Unsupported communication target: %d", communication);
+    }
 
     free(str_copy);
 }
@@ -120,7 +136,9 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
  */
 void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
 {
-    wifi_app_set_config(wifi_ssid, wifi_pass);
+    UNUSED(wifi_ssid);
+    UNUSED(wifi_pass);
+    ESP_LOGW(COMM_APP_TAG, "Wi-Fi configuration ignored: HTTP/Wi-Fi is disabled in this firmware stage");
 }
 
 /**
@@ -128,24 +146,24 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
  */
 void comm_app_wifi_reloader(void)
 {
-	wifi_reloader();
+    ESP_LOGW(COMM_APP_TAG, "Wi-Fi reload ignored: HTTP/Wi-Fi is disabled in this firmware stage");
 }
 
 esp_err_t comm_app_set_main_mode_config(pivot_comm_main_mode_config config)
 {
-    esp_err_t err = ESP_FAIL;
-    /* configuration variables */
 	if(strcmp(config.comm_main_mode_config, "RF") == 0)
 	{
 		comm_main_mode = COMM_RF;
-        err = ESP_OK;
-        return err;
+        return ESP_OK;
+	}
+	else if(strcmp(config.comm_main_mode_config, "MQTT") == 0)
+	{
+        comm_main_mode = COMM_MQTT;
+        return ESP_OK;
 	}
 	else
 	{
-        comm_main_mode = COMM_MQTT;
 		ESP_LOGE(COMM_APP_TAG,"Invalid Comm Mode type configuration");
-		LOG_DBG_ERROR(COMM_APP_TAG, "Invalid_comm_mode_type");
-		return err;
+		return ESP_ERR_INVALID_ARG;
 	}
 }

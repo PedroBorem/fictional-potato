@@ -48,6 +48,16 @@ void actuation_app_get_status(actuation_status *status_out, size_t status_size);
 bool actuation_app_is_all_off(void);
 
 /**
+ * @brief Returns the current pump state name.
+ */
+const char *actuation_app_get_state_name(void);
+
+/**
+ * @brief Returns the last channel that failed validation, or 0 when there is no recorded fault.
+ */
+uint8_t actuation_app_get_last_fault_channel(void);
+
+/**
  * @brief De-energizes every relay output without issuing ON/OFF commands.
  */
 void actuation_app_shutdown(void);

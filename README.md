@@ -10,7 +10,9 @@ O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 
 - Hardware alvo: ESP32-S3.
 - ESP-IDF: v6.0.2.
 - Flash configurada: 16MB.
-- Comunicacao HTTP/app/MQTT/RF: desabilitada nesta etapa do firmware.
+- Comunicacao serial: RF UART e GPRS UART ativas.
+- Modo principal de comunicacao: RF por padrao.
+- HTTP/app/Wi-Fi: desabilitados nesta etapa do firmware.
 - Regra de pivo, rush mode, setor, barreira, GPS e agenda por angulo: legado preservado no repositorio, mas fora do build atual.
 
 ## Pinagem de Acionamento
@@ -64,6 +66,7 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - [Hardware e pinagem](docs/functional/hardware.md)
 - [Sequencia de bombeamento](docs/functional/pump_sequence.md)
 - [Comunicacao e padrao IDP](docs/functional/communication_idp.md)
+- [Teste serial de bancada](docs/functional/serial_bench_test.md)
 - [Persistencia e boot](docs/functional/persistence_boot.md)
 - [Levantamento de IDPs](docs/new_product_idp_migration.md)
 - [Documentacao por componente](docs/components/README.md)
@@ -76,13 +79,13 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - `nvs_data`
 - `rtc`
 - `utils`
+- `gprs`
+- `rf_module`
+- `idp_protocol`
 
 ## Componentes Preservados para a Segunda Etapa
 
-- `gprs`
-- `rf_module`
 - `wifi_app`
 - `http_server`
-- `idp_protocol`
 
-Esses componentes permanecem no repositorio para reaproveitamento, mas estao excluidos do firmware atual em `CMakeLists.txt`.
+Wi-Fi e HTTP permanecem no repositorio para reaproveitamento, mas estao excluidos do firmware atual em `CMakeLists.txt`.

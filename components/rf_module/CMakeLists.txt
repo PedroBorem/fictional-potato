@@ -2,5 +2,8 @@ idf_component_register(	SRCS
 							"rf_uart.c"
 						INCLUDE_DIRS 
                    			"include"
-                   		PRIV_REQUIRES main utils )
+						REQUIRES
+							utils
+							esp_driver_uart
+							esp_driver_gpio )
                    		

@@ -4,13 +4,15 @@ Este documento substitui a referencia antiga de comunicacao do pivo para o novo 
 
 ## Situacao Atual
 
-Na imagem atual do firmware, a comunicacao externa esta desabilitada:
+Na imagem atual do firmware, a comunicacao serial esta ativa:
 
-- `comm_app.c` nao entra no build do componente `applications`.
-- `gprs`, `rf_module`, `wifi_app`, `http_server` e `idp_protocol` estao excluidos no `CMakeLists.txt` raiz.
-- O funcionamento local do bombeamento esta ativo e independente de HTTP, MQTT ou RF.
+- `comm_app.c` entra no build.
+- `gprs`, `rf_module` e `idp_protocol` entram no build.
+- `wifi_app` e `http_server` continuam excluidos.
+- RF e GPRS aceitam comandos IDP.
+- RF e o modo principal padrao.
 
-O contrato abaixo define o padrao esperado para a segunda etapa, quando a comunicacao for reativada.
+Neste firmware, `MQTT` representa o caminho serial pelo modem/GPRS UART. A placa nao conecta diretamente em broker MQTT.
 
 ## Envelope IDP
 
@@ -90,8 +92,8 @@ Regra do produto:
 Exemplos:
 
 ```text
-#01-bomba_1-1-0-0-0-operador$
-#01-bomba_1-0-0-0-2-operador$
+#01-new_product-1-0-0-0-operador$
+#01-new_product-0-0-0-2-operador$
 ```
 
 ## IDP 3 - Configuracao de Atuacao
@@ -114,15 +116,35 @@ Observacao: a partida da bomba usa tempos fixos de sequencia definidos em `proje
 
 ## Comunicacao MQTT, RF e HTTP
 
-Esses canais estao fora do build atual. Quando forem reativados, o padrao esperado e:
+RF e GPRS UART estao ativos. HTTP permanece fora do build atual.
 
 | Canal | Componente | Papel esperado |
 | --- | --- | --- |
-| MQTT via modem | `gprs` + `comm_app` | Receber pacotes IDP do modem e enviar respostas/eventos para a nuvem. |
+| MQTT via modem | `gprs` + `comm_app` | Receber pacotes IDP por UART do modem e enviar respostas/eventos. |
 | RF | `rf_module` + `comm_app` | Receber/enviar pacotes IDP brutos por UART RF. |
-| HTTP local | `wifi_app` + `http_server` + `comm_app` | Expor API local para configuracao e comandos durante instalacao/manutencao. |
+| HTTP local | `wifi_app` + `http_server` + `comm_app` | Fora do build atual. |
 
-Enquanto a segunda etapa nao for implementada, comandos de partida/parada devem entrar diretamente pela camada de aplicacao, chamando `actuation_app_set_actions()`.
+Respostas de comando voltam pela UART que recebeu o pacote. Eventos espontaneos, como mudanca de status, usam o modo principal salvo em NVS. O padrao de fabrica e `RF`.
+
+## IDP 31 - Modo Principal
+
+Consulta:
+
+```text
+#31-new_product$
+```
+
+Configurar RF:
+
+```text
+#31-new_product-RF$
+```
+
+Configurar GPRS/MQTT:
+
+```text
+#31-new_product-MQTT$
+```
 
 ## IDPs Removidos da Regra Principal
 

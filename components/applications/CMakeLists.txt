@@ -2,6 +2,7 @@ idf_component_register(SRCS
 						"rtc_app.c"
 						"data_app.c"
 						"actuation_app.c"
+						"comm_app.c"
                     INCLUDE_DIRS
                     	"include"
 					REQUIRES
@@ -10,4 +11,7 @@ idf_component_register(SRCS
 						nvs_data
                     	rtc
 						gpio_actuator
+						gprs
+						rf_module
+						idp_protocol
 )

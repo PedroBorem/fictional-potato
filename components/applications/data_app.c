@@ -341,7 +341,7 @@ esp_err_t data_app_init(void)
 	};
 
 	const pivot_comm_main_mode_config default_comm_main_mode = {
-			.comm_main_mode_config = "MQTT",
+			.comm_main_mode_config = "RF",
 	};
 
 	const gps_config gps_config = {};

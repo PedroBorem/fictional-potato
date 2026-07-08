@@ -45,4 +45,4 @@ No firmware atual, a task relevante nova e:
 
 Define macros de log.
 
-Observacao: `LOG_DBG_ERROR` ainda tenta enviar erro por `gprs_uart_send_event()` como simbolo fraco. Como GPRS esta fora do build atual, esse caminho nao deve ser usado como comunicacao principal nesta fase.
+Observacao: `LOG_DBG_ERROR` ainda tenta enviar erro por `gprs_uart_send_event()` como simbolo fraco. O fluxo principal novo responde erros pelo callback do `system_manager` usando pacote `#99-...$`.

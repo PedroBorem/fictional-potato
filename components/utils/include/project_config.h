@@ -72,6 +72,11 @@
 #define CONFIG_PUMP_MONITOR_INTERVAL_MS (500)
 
 /**
+ * @brief Interval used to log pump stage timer progress.
+ */
+#define CONFIG_PUMP_STAGE_LOG_INTERVAL_MS (10000)
+
+/**
  * @brief Duration used to energize all OFF relays during shutdown.
  */
 #define CONFIG_PUMP_STOP_RELAY_TIME_MS (10000)

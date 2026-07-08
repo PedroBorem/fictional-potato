@@ -12,7 +12,9 @@
 #include "FreeRTOS_defines.h"
 #include "log.h"
 
+#include <stdlib.h>
 #include <string.h>
+#include <strings.h>
 
 /* Private definitions ------------------------------------------- */
 /**
@@ -244,14 +246,17 @@ static void gprs_uart_event_task(void* arg)
 
                     buff_in[aux] = '\0';
 
-                    if (!gprs_uart_hide_raw_log(buff_in))
+                    if (aux > 0 && !gprs_uart_hide_raw_log(buff_in))
                     {
                         LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
                     }
 
                     // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
 
-                    gprs_callback(buff_in, COMM_MQTT);
+                    if (aux > 0 && gprs_callback != NULL)
+                    {
+                        gprs_callback(buff_in, COMM_MQTT);
+                    }
                     free(buff_in);
                 }
                 break;

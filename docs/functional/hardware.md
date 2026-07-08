@@ -57,12 +57,11 @@ O RTC externo DS3231 usa I2C:
 | SDA | `GPIO_NUM_36` |
 | SCL | `GPIO_NUM_37` |
 
-## Comunicacao Preservada para Futuro
+## Comunicacao Serial
 
 | Canal | Componente | UART/GPIO |
 | --- | --- | --- |
 | Modem/GPRS | `gprs` | `UART_NUM_1`, TX `GPIO_NUM_17`, RX `GPIO_NUM_18`, 115200 bps |
 | RF | `rf_module` | `UART_NUM_2`, TX `GPIO_NUM_2`, RX `GPIO_NUM_1`, 9600 bps |
-| Wi-Fi local | `wifi_app` | SoftAP, IP padrao `192.168.0.1` |
 
-Esses canais nao entram no build atual.
+RF e GPRS UART entram no build atual. Wi-Fi local permanece fora do build.

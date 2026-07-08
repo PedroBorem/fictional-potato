@@ -7,9 +7,10 @@ Esta pasta descreve o firmware atual da Placa de Controle de Bombeamento.
 1. [Hardware e pinagem](functional/hardware.md)
 2. [Sequencia de bombeamento](functional/pump_sequence.md)
 3. [Comunicacao e padrao IDP](functional/communication_idp.md)
-4. [Persistencia e boot](functional/persistence_boot.md)
-5. [Levantamento de IDPs](new_product_idp_migration.md)
-6. [Componentes](components/README.md)
+4. [Teste serial de bancada](functional/serial_bench_test.md)
+5. [Persistencia e boot](functional/persistence_boot.md)
+6. [Levantamento de IDPs](new_product_idp_migration.md)
+7. [Componentes](components/README.md)
 
 ## Escopo Atual
 
@@ -19,8 +20,10 @@ O firmware atual inicializa apenas os servicos necessarios para o controle local
 - NVS.
 - Driver de GPIO dos relés e entradas.
 - Aplicacao de atuacao com sequencia de bombeamento.
+- Comunicacao serial RF UART e GPRS UART.
+- Parser IDP.
 
-HTTP, MQTT, Wi-Fi, RF e parser IDP permanecem documentados para reaproveitamento, mas nao sao inicializados nesta fase.
+HTTP e Wi-Fi permanecem documentados para reaproveitamento, mas nao sao inicializados nesta fase.
 
 ## Convencao de Status
 
