@@ -39,7 +39,7 @@ Regras:
 | --- | --- | --- | --- |
 | `0` | Status de bombeamento | Adaptado | Retorna snapshot dos 4 status digitais e estado logico da bomba. |
 | `1` | Comando de bombeamento | Adaptado | Solicita partida sequencial ou parada segura. |
-| `3` | Configuracao de atuacao | Adaptado | Configura tempo de pulso/parada, intervalo de leitura e nivel ativo das entradas. |
+| `3` | Configuracao de atuacao | Adaptado | Configura parada, leitura ociosa, rampas, intervalos de partida e telemetria. |
 | `21` | Timestamp | Reaproveitado | Sincroniza RTC. |
 | `28` | Motivo de parada/falha | Adaptado futuro | Informa ultima falha ou parada segura. |
 | `30` | Acao local/manual | Adaptado futuro | Representa comando local ou evento manual. |
@@ -107,7 +107,7 @@ Consulta:
 Configuracao:
 
 ```text
-#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-STAGE1_SEC-STAGE2_SEC-STAGE3_SEC-STATUS_00_SEC$
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-RAMP1_SEC-STAGE1_SEC-RAMP2_SEC-STAGE2_SEC-RAMP3_SEC-STAGE3_SEC-RAMP4_SEC-STAGE4_SEC-STATUS_00_MIN$
 ```
 
 Campos:
@@ -115,18 +115,22 @@ Campos:
 | Campo | Descricao |
 | --- | --- |
 | `OFF_RELAY_MS` | Tempo usado para relés OFF/parada. Padrao atual: `10000`. |
-| `IDLE_READ_SEC` | Intervalo de leitura quando parado. Padrao atual: `10`. |
+| `IDLE_READ_SEC` | Cadencia interna de leitura quando parado, em segundos. Padrao atual: `10`. |
 | `STATUS_ACTIVE_LEVEL` | `0 = entrada ativa em nivel baixo`; `1 = entrada ativa em nivel alto`. Padrao atual: `0`. |
-| `STAGE1_SEC` | Espera apos ligar canal 1. Padrao atual: `10`. |
-| `STAGE2_SEC` | Espera apos ligar canal 2. Padrao atual: `30`. |
-| `STAGE3_SEC` | Espera apos ligar canal 3. Padrao atual: `30`. |
-| `STATUS_00_SEC` | Intervalo de envio periodico do `#00$`. Padrao atual: `10`. |
+| `RAMP1_SEC..RAMP4_SEC` | Tempo de rampa da softstarter de cada motor. Padrao atual: `0`. |
+| `STAGE1_SEC` | Intervalo apos a rampa do canal 1. Padrao atual: `10`. |
+| `STAGE2_SEC` | Intervalo apos a rampa do canal 2. Padrao atual: `30`. |
+| `STAGE3_SEC` | Intervalo apos a rampa do canal 3. Padrao atual: `30`. |
+| `STAGE4_SEC` | Intervalo apos a rampa do canal 4, antes de `RUNNING`. Padrao atual: `0`. |
+| `STATUS_00_MIN` | Intervalo de envio periodico do `#00$`, em minutos. Padrao atual: `1`. |
 
 Exemplo:
 
 ```text
-#03-new_product-10000-10-0-10-30-30-60$
+#03-new_product-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
+
+`IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
 
 ## Comunicacao MQTT, RF e HTTP
 

@@ -42,9 +42,14 @@
 #define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (10000)
 
 /**
- * @brief Default interval, in seconds, for status monitoring.
+ * @brief Default interval, in seconds, for idle status monitoring.
  */
-#define CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC (10)
+#define CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC (10)
+
+/**
+ * @brief Default interval, in minutes, for periodic #00 status publish.
+ */
+#define CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN (1)
 
 /**
  * @brief Default GPIO level interpreted as ON by status inputs.
@@ -65,6 +70,31 @@
  * @brief Pump startup delay after channel 3 relay is enabled.
  */
 #define CONFIG_PUMP_STAGE_3_DELAY_MS (30000)
+
+/**
+ * @brief Default motor ramp after channel 1 relay is enabled.
+ */
+#define CONFIG_PUMP_RAMP_1_DELAY_MS (0)
+
+/**
+ * @brief Default motor ramp after channel 2 relay is enabled.
+ */
+#define CONFIG_PUMP_RAMP_2_DELAY_MS (0)
+
+/**
+ * @brief Default motor ramp after channel 3 relay is enabled.
+ */
+#define CONFIG_PUMP_RAMP_3_DELAY_MS (0)
+
+/**
+ * @brief Default motor ramp after channel 4 relay is enabled.
+ */
+#define CONFIG_PUMP_RAMP_4_DELAY_MS (0)
+
+/**
+ * @brief Pump stabilization delay after channel 4 relay is enabled.
+ */
+#define CONFIG_PUMP_STAGE_4_DELAY_MS (0)
 
 /**
  * @brief Pump runtime status monitoring interval.
@@ -326,18 +356,23 @@ typedef struct __attribute__((__packed__))
 typedef struct __attribute__((__packed__))
 {
     uint16_t relay_pulse_time_ms;     /*!< Pulse duration used by OFF relays during stop. */
-    uint8_t read_time_sec;            /*!< Periodic status read interval while stopped. */
+    uint16_t idle_read_time_sec;      /*!< Internal status read cadence while stopped. */
     bool status_active_level;         /*!< GPIO level interpreted as ON by status inputs. */
+    uint16_t ramp_1_delay_sec;        /*!< Motor ramp delay after channel 1 ON relay is enabled. */
     uint16_t stage_1_delay_sec;       /*!< Delay after channel 1 ON relay is enabled. */
+    uint16_t ramp_2_delay_sec;        /*!< Motor ramp delay after channel 2 ON relay is enabled. */
     uint16_t stage_2_delay_sec;       /*!< Delay after channel 2 ON relay is enabled. */
+    uint16_t ramp_3_delay_sec;        /*!< Motor ramp delay after channel 3 ON relay is enabled. */
     uint16_t stage_3_delay_sec;       /*!< Delay after channel 3 ON relay is enabled. */
-    uint16_t status_publish_time_sec; /*!< Periodic #00 status publish interval. */
+    uint16_t ramp_4_delay_sec;        /*!< Motor ramp delay after channel 4 ON relay is enabled. */
+    uint16_t stage_4_delay_sec;       /*!< Delay after channel 4 ON relay is enabled. */
+    uint16_t status_publish_time_min; /*!< Periodic #00 publish interval, independent from idle reads. */
 } actuation_config;
 
 /**
  * @brief Number of configuration fields in actuation_config.
  */
-#define ACTUATION_CONFIG_VAR_COUNT (7)
+#define ACTUATION_CONFIG_VAR_COUNT (12)
 
 /**
  * Structure defining the reboot configuration parameters.

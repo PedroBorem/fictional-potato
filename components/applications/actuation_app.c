@@ -58,12 +58,17 @@ static actuation_status actuation_app_last_status = {
 };
 static actuation_config actuation_app_config = {
     .relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
-    .read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+    .idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC,
     .status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+    .ramp_1_delay_sec = CONFIG_PUMP_RAMP_1_DELAY_MS / 1000U,
     .stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+    .ramp_2_delay_sec = CONFIG_PUMP_RAMP_2_DELAY_MS / 1000U,
     .stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+    .ramp_3_delay_sec = CONFIG_PUMP_RAMP_3_DELAY_MS / 1000U,
     .stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
-    .status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+    .ramp_4_delay_sec = CONFIG_PUMP_RAMP_4_DELAY_MS / 1000U,
+    .stage_4_delay_sec = CONFIG_PUMP_STAGE_4_DELAY_MS / 1000U,
+    .status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN,
 };
 
 const actuation_actions actuation_actions_none = {};
@@ -85,9 +90,9 @@ static actuation_config actuation_app_sanitize_config(actuation_config config)
         config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
     }
 
-    if (config.read_time_sec == 0)
+    if (config.idle_read_time_sec == 0)
     {
-        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        config.idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC;
     }
 
     if (config.stage_1_delay_sec == 0)
@@ -105,9 +110,9 @@ static actuation_config actuation_app_sanitize_config(actuation_config config)
         config.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
     }
 
-    if (config.status_publish_time_sec == 0)
+    if (config.status_publish_time_min == 0)
     {
-        config.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        config.status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN;
     }
 
     return config;
@@ -228,14 +233,14 @@ static void actuation_app_log_timer_heartbeat(const char *stage_name,
 
 static uint32_t actuation_app_get_status_publish_delay_ms(void)
 {
-    uint16_t publish_time_sec = actuation_app_config.status_publish_time_sec;
+    uint16_t publish_time_min = actuation_app_config.status_publish_time_min;
 
-    if (publish_time_sec == 0)
+    if (publish_time_min == 0)
     {
-        publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN;
     }
 
-    return (uint32_t)publish_time_sec * 1000U;
+    return (uint32_t)publish_time_min * 60U * 1000U;
 }
 
 static void actuation_app_publish_status(bool force)
@@ -274,13 +279,13 @@ static actuation_status actuation_app_read_status(void)
 
 static uint32_t actuation_app_get_read_delay_ms(void)
 {
-    uint8_t read_time_sec = actuation_app_config.read_time_sec;
+    uint16_t read_time_sec = actuation_app_config.idle_read_time_sec;
     uint32_t read_delay_ms = 0;
     uint32_t publish_delay_ms = actuation_app_get_status_publish_delay_ms();
 
     if (read_time_sec == 0)
     {
-        read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC;
     }
 
     read_delay_ms = (uint32_t)read_time_sec * 1000U;
@@ -435,29 +440,32 @@ static bool actuation_app_handle_sequence_result(actuation_sequence_result resul
     return false;
 }
 
-static bool actuation_app_start_channel_and_validate(uint8_t channel,
-                                                    uint32_t wait_ms,
-                                                    uint8_t monitored_count,
-                                                    uint8_t validate_count,
-                                                    const char *stage_name)
+static bool actuation_app_wait_phase_and_validate(const char *phase_name,
+                                                 uint32_t wait_ms,
+                                                 uint8_t monitored_count,
+                                                 uint8_t validate_count)
 {
-    ESP_LOGI(ACTUATION_APP_TAG,
-             "%s: enabling channel %u ON relay, waiting %lu s, then validating first %u channel(s)",
-             stage_name,
-             (unsigned int)(channel + 1),
-             (unsigned long)actuation_app_ms_to_sec_round_up(wait_ms),
-             (unsigned int)validate_count);
-
-    if (gpio_actuator_enable_on_relay(channel) != ESP_OK)
+    if (wait_ms > 0)
     {
-        actuation_app_stop_pump(true);
-        return false;
+        ESP_LOGI(ACTUATION_APP_TAG,
+                 "%s: waiting %lu s, monitoring first %u channel(s), then validating first %u channel(s)",
+                 phase_name,
+                 (unsigned long)actuation_app_ms_to_sec_round_up(wait_ms),
+                 (unsigned int)monitored_count,
+                 (unsigned int)validate_count);
+
+        if (actuation_app_handle_sequence_result(
+                actuation_app_wait_and_monitor(wait_ms, monitored_count, phase_name, true)) == false)
+        {
+            return false;
+        }
     }
-
-    if (actuation_app_handle_sequence_result(
-            actuation_app_wait_and_monitor(wait_ms, monitored_count, stage_name, true)) == false)
+    else
     {
-        return false;
+        ESP_LOGI(ACTUATION_APP_TAG,
+                 "%s: no wait configured, validating first %u channel(s)",
+                 phase_name,
+                 (unsigned int)validate_count);
     }
 
     if (actuation_app_handle_sequence_result(actuation_app_validate_channels(validate_count)) == false)
@@ -467,10 +475,41 @@ static bool actuation_app_start_channel_and_validate(uint8_t channel,
 
     ESP_LOGI(ACTUATION_APP_TAG,
              "%s: validation OK for first %u channel(s)",
-             stage_name,
+             phase_name,
              (unsigned int)validate_count);
 
     return true;
+}
+
+static bool actuation_app_start_channel_and_validate(uint8_t channel,
+                                                    uint32_t ramp_ms,
+                                                    uint32_t stage_ms,
+                                                    uint8_t previous_count,
+                                                    uint8_t enabled_count,
+                                                    const char *stage_name)
+{
+    char ramp_name[40] = {};
+    char interval_name[40] = {};
+
+    ESP_LOGI(ACTUATION_APP_TAG,
+             "%s: enabling channel %u ON relay",
+             stage_name,
+             (unsigned int)(channel + 1));
+
+    if (gpio_actuator_enable_on_relay(channel) != ESP_OK)
+    {
+        actuation_app_stop_pump(true);
+        return false;
+    }
+
+    snprintf(ramp_name, sizeof(ramp_name), "%s ramp", stage_name);
+    if (actuation_app_wait_phase_and_validate(ramp_name, ramp_ms, previous_count, enabled_count) == false)
+    {
+        return false;
+    }
+
+    snprintf(interval_name, sizeof(interval_name), "%s interval", stage_name);
+    return actuation_app_wait_phase_and_validate(interval_name, stage_ms, enabled_count, enabled_count);
 }
 
 static void actuation_app_start_pump_sequence(void)
@@ -484,15 +523,21 @@ static void actuation_app_start_pump_sequence(void)
 
     ESP_LOGI(ACTUATION_APP_TAG, "Pump start sequence requested");
     ESP_LOGI(ACTUATION_APP_TAG,
-             "Pump timers: stage1=%u s stage2=%u s stage3=%u s periodic_status=%u s",
+             "Pump timers: ramp1=%u s stage1=%u s ramp2=%u s stage2=%u s ramp3=%u s stage3=%u s ramp4=%u s stage4=%u s periodic_status=%u min",
+             (unsigned int)actuation_app_config.ramp_1_delay_sec,
              (unsigned int)actuation_app_config.stage_1_delay_sec,
+             (unsigned int)actuation_app_config.ramp_2_delay_sec,
              (unsigned int)actuation_app_config.stage_2_delay_sec,
+             (unsigned int)actuation_app_config.ramp_3_delay_sec,
              (unsigned int)actuation_app_config.stage_3_delay_sec,
-             (unsigned int)actuation_app_config.status_publish_time_sec);
+             (unsigned int)actuation_app_config.ramp_4_delay_sec,
+             (unsigned int)actuation_app_config.stage_4_delay_sec,
+             (unsigned int)actuation_app_config.status_publish_time_min);
     actuation_app_last_fault_channel = 0;
     actuation_app_state = ACTUATION_PUMP_STATE_STARTING;
 
     if (actuation_app_start_channel_and_validate(0,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.ramp_1_delay_sec),
                                                  actuation_app_sec_to_ms_u32(actuation_app_config.stage_1_delay_sec),
                                                  0,
                                                  1,
@@ -502,6 +547,7 @@ static void actuation_app_start_pump_sequence(void)
     }
 
     if (actuation_app_start_channel_and_validate(1,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.ramp_2_delay_sec),
                                                  actuation_app_sec_to_ms_u32(actuation_app_config.stage_2_delay_sec),
                                                  1,
                                                  2,
@@ -511,6 +557,7 @@ static void actuation_app_start_pump_sequence(void)
     }
 
     if (actuation_app_start_channel_and_validate(2,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.ramp_3_delay_sec),
                                                  actuation_app_sec_to_ms_u32(actuation_app_config.stage_3_delay_sec),
                                                  2,
                                                  3,
@@ -519,22 +566,12 @@ static void actuation_app_start_pump_sequence(void)
         return;
     }
 
-    ESP_LOGI(ACTUATION_APP_TAG,
-             "Stage 4/4: enabling channel 4 ON relay and validating all channels");
-
-    if (gpio_actuator_enable_on_relay(3) != ESP_OK)
-    {
-        actuation_app_stop_pump(true);
-        return;
-    }
-
-    if (actuation_app_handle_sequence_result(
-            actuation_app_wait_and_monitor(CONFIG_PUMP_MONITOR_INTERVAL_MS, 3, "Stage 4/4", false)) == false)
-    {
-        return;
-    }
-
-    if (actuation_app_handle_sequence_result(actuation_app_validate_channels(CONFIG_ACTUATION_CHANNEL_COUNT)) == false)
+    if (actuation_app_start_channel_and_validate(3,
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.ramp_4_delay_sec),
+                                                 actuation_app_sec_to_ms_u32(actuation_app_config.stage_4_delay_sec),
+                                                 3,
+                                                 4,
+                                                 "Stage 4/4") == false)
     {
         return;
     }
@@ -544,7 +581,7 @@ static void actuation_app_start_pump_sequence(void)
     ESP_LOGI(ACTUATION_APP_TAG,
              "Pump running: monitoring all channels every %lu ms and publishing #00 every %u s",
              (unsigned long)CONFIG_PUMP_MONITOR_INTERVAL_MS,
-             (unsigned int)actuation_app_config.status_publish_time_sec);
+             (unsigned int)(actuation_app_config.status_publish_time_min * 60U));
     actuation_app_publish_status(true);
 
     while (actuation_app_state == ACTUATION_PUMP_STATE_RUNNING)
@@ -634,14 +671,19 @@ esp_err_t actuation_app_set_config(actuation_config config)
 {
     actuation_app_config = actuation_app_sanitize_config(config);
     ESP_LOGI(ACTUATION_APP_TAG,
-             "Actuation config: off_relay_ms=%u read=%u s active_level=%u stage1=%u s stage2=%u s stage3=%u s publish=%u s",
+             "Actuation config: off_relay_ms=%u idle_read=%u s active_level=%u ramp1=%u s stage1=%u s ramp2=%u s stage2=%u s ramp3=%u s stage3=%u s ramp4=%u s stage4=%u s publish=%u min",
              (unsigned int)actuation_app_config.relay_pulse_time_ms,
-             (unsigned int)actuation_app_config.read_time_sec,
+             (unsigned int)actuation_app_config.idle_read_time_sec,
              (unsigned int)(actuation_app_config.status_active_level ? 1 : 0),
+             (unsigned int)actuation_app_config.ramp_1_delay_sec,
              (unsigned int)actuation_app_config.stage_1_delay_sec,
+             (unsigned int)actuation_app_config.ramp_2_delay_sec,
              (unsigned int)actuation_app_config.stage_2_delay_sec,
+             (unsigned int)actuation_app_config.ramp_3_delay_sec,
              (unsigned int)actuation_app_config.stage_3_delay_sec,
-             (unsigned int)actuation_app_config.status_publish_time_sec);
+             (unsigned int)actuation_app_config.ramp_4_delay_sec,
+             (unsigned int)actuation_app_config.stage_4_delay_sec,
+             (unsigned int)actuation_app_config.status_publish_time_min);
 
     return gpio_actuator_config(actuation_app_config);
 }

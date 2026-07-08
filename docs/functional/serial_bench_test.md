@@ -85,11 +85,19 @@ Consultar configuracao de atuacao:
 #03-new_product$
 ```
 
-Configurar atuacao, intervalos de partida `10-30-30` e envio periodico de `#00$` a cada 60 segundos:
+Configurar rampas de `5 s`, intervalos de partida `10-30-30-0` e envio periodico de `#00$` a cada 1 minuto:
 
 ```text
-#03-new_product-10000-10-0-10-30-30-60$
+#03-new_product-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
+
+Formato:
+
+```text
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-RAMP1_SEC-STAGE1_SEC-RAMP2_SEC-STAGE2_SEC-RAMP3_SEC-STAGE3_SEC-RAMP4_SEC-STAGE4_SEC-STATUS_00_MIN$
+```
+
+`IDLE_READ_SEC` e a cadencia interna de leitura quando parado. `STATUS_00_MIN` e o intervalo independente de envio do pacote de status.
 
 ## Respostas Esperadas
 

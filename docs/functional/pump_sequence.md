@@ -29,26 +29,30 @@ Regras:
 
 1. `Canal 1 ON`
    - Liga o relay ON do canal 1.
-   - Aguarda `stage_1_delay_sec`, padrao `10 s`.
-   - Valida se leitura do canal 1 esta ON.
+   - Aguarda `ramp_1_delay_sec`, monitorando somente canais anteriores.
+   - Ao final da rampa, valida se a leitura do canal 1 esta ON.
+   - Aguarda `stage_1_delay_sec`, padrao `10 s`, monitorando o canal 1.
 
 2. `Canal 2 ON`
    - Liga o relay ON do canal 2.
-   - Aguarda `stage_2_delay_sec`, padrao `30 s`.
-   - Durante a espera, monitora canal 1.
-   - Ao final, valida canais 1 e 2.
+   - Aguarda `ramp_2_delay_sec`, monitorando o canal 1.
+   - Ao final da rampa, valida canais 1 e 2.
+   - Aguarda `stage_2_delay_sec`, padrao `30 s`, monitorando canais 1 e 2.
 
 3. `Canal 3 ON`
    - Liga o relay ON do canal 3.
-   - Aguarda `stage_3_delay_sec`, padrao `30 s`.
-   - Durante a espera, monitora canais 1 e 2.
-   - Ao final, valida canais 1, 2 e 3.
+   - Aguarda `ramp_3_delay_sec`, monitorando canais 1 e 2.
+   - Ao final da rampa, valida canais 1, 2 e 3.
+   - Aguarda `stage_3_delay_sec`, padrao `30 s`, monitorando canais 1, 2 e 3.
 
 4. `Canal 4 ON`
    - Liga o relay ON do canal 4.
-   - Aguarda um ciclo de monitoramento, hoje `CONFIG_PUMP_MONITOR_INTERVAL_MS = 500 ms`.
-   - Valida os 4 canais.
+   - Aguarda `ramp_4_delay_sec`, monitorando canais 1, 2 e 3.
+   - Ao final da rampa, valida os 4 canais.
+   - Aguarda `stage_4_delay_sec`, monitorando os 4 canais.
    - Entra em `RUNNING`.
+
+Durante a rampa do motor recem-ligado, sua leitura e validada somente ao final. Isso permite que a softstarter alcance o estado de pleno funcionamento sem gerar falha prematura.
 
 ## Logs de Operacao
 
@@ -68,7 +72,7 @@ Ao receber comando de partida, o monitor serial registra:
 
 Quando a bomba esta em `RUNNING`, a aplicacao valida as 4 leituras a cada `CONFIG_PUMP_MONITOR_INTERVAL_MS`.
 
-Depois que a bomba entra em `RUNNING`, o log serial diminui. O acompanhamento periodico principal passa a ser o envio de `#00$` no intervalo configurado por `status_publish_time_sec`.
+Depois que a bomba entra em `RUNNING`, o log serial diminui. O acompanhamento periodico principal passa a ser o envio de `#00$` no intervalo configurado por `status_publish_time_min`.
 
 Falha de leitura significa: canal que deveria estar ON retornou status diferente de `ACTUATION_STATUS_ON`.
 

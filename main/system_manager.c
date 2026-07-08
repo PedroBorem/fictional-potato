@@ -26,6 +26,7 @@
 #define SYSTEM_MANAGER_TAG "system_manager"
 #define SYSTEM_MANAGER_RX_BUFFER_SIZE (512)
 #define SYSTEM_MANAGER_PACKET_BUFFER_SIZE (220)
+#define SYSTEM_MANAGER_ACTUATION_CONFIG_KEY "act_config"
 
 uint16_t global_pressure = 0;
 uint16_t global_angle = CONFIG_ACTIONS_UNDEF_VALUE;
@@ -136,15 +137,9 @@ static bool system_manager_sanitize_actuation_config(actuation_config *config)
         changed = true;
     }
 
-    if (config->read_time_sec == 0)
+    if (config->idle_read_time_sec == 0)
     {
-        config->read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
-        changed = true;
-    }
-
-    if (config->status_active_level != CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL)
-    {
-        config->status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL;
+        config->idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC;
         changed = true;
     }
 
@@ -166,13 +161,30 @@ static bool system_manager_sanitize_actuation_config(actuation_config *config)
         changed = true;
     }
 
-    if (config->status_publish_time_sec == 0)
+    if (config->status_publish_time_min == 0)
     {
-        config->status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        config->status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN;
         changed = true;
     }
 
     return changed;
+}
+
+static bool system_manager_load_actuation_config(actuation_config *config)
+{
+    if (config == NULL)
+    {
+        return false;
+    }
+
+    *config = (actuation_config){};
+
+    if (data_app_get_data_size(SYSTEM_MANAGER_ACTUATION_CONFIG_KEY) != sizeof(*config))
+    {
+        return false;
+    }
+
+    return (data_app_load(DATA_TYPE_ACTUATION_CONFIG, config) == ESP_OK);
 }
 
 static void system_manager_load_comm_mode(void)
@@ -261,40 +273,59 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
     uint8_t idp = 0;
     char device_id[50] = {};
     actuation_config config = {};
-    char response[120] = {};
+    char response[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
     uint8_t status_active_level = 0;
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
 
-    arg_pair_t args[] = {
+    arg_pair_t full_args[] = {
         {"uint8_t", &idp},
         {"string", device_id},
         {"uint16_t", &config.relay_pulse_time_ms},
-        {"uint8_t", &config.read_time_sec},
+        {"uint16_t", &config.idle_read_time_sec},
         {"uint8_t", &status_active_level},
+        {"uint16_t", &config.ramp_1_delay_sec},
         {"uint16_t", &config.stage_1_delay_sec},
+        {"uint16_t", &config.ramp_2_delay_sec},
         {"uint16_t", &config.stage_2_delay_sec},
+        {"uint16_t", &config.ramp_3_delay_sec},
         {"uint16_t", &config.stage_3_delay_sec},
-        {"uint16_t", &config.status_publish_time_sec},
+        {"uint16_t", &config.ramp_4_delay_sec},
+        {"uint16_t", &config.stage_4_delay_sec},
+        {"uint16_t", &config.status_publish_time_min},
         {NULL, NULL},
     };
 
-    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+    arg_pair_t legacy_args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {"uint16_t", &config.relay_pulse_time_ms},
+        {"uint16_t", &config.idle_read_time_sec},
+        {"uint8_t", &status_active_level},
+        {NULL, NULL},
+    };
 
-    if (delimiter_count != 0 && delimiter_count != 1 && delimiter_count < 4)
+    if (delimiter_count != 0 &&
+        delimiter_count != 1 &&
+        delimiter_count != 4 &&
+        delimiter_count != 13)
     {
         system_manager_send_error("idp_3_invalid_format", communication);
         return;
     }
 
-    idp_parser_get_packet_data(packet, args);
+    idp_parser_get_packet_data(packet, (delimiter_count == 13) ? full_args : legacy_args);
 
     if (system_manager_device_matches(device_id) == false)
     {
         return;
     }
 
-    if (delimiter_count >= 4)
+    if (delimiter_count == 4 || delimiter_count == 13)
     {
-        if (config.relay_pulse_time_ms == 0 || config.read_time_sec == 0 || status_active_level > 1)
+        if (config.relay_pulse_time_ms == 0 ||
+            config.idle_read_time_sec == 0 ||
+            status_active_level > 1 ||
+            (delimiter_count == 13 && config.status_publish_time_min == 0))
         {
             system_manager_send_error("idp_3_invalid_config", communication);
             return;
@@ -307,7 +338,7 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
     }
     else
     {
-        if (data_app_load(DATA_TYPE_ACTUATION_CONFIG, &config) != ESP_OK)
+        if (system_manager_load_actuation_config(&config) == false)
         {
             config = (actuation_config){};
         }
@@ -320,15 +351,20 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
 
     snprintf(response,
              sizeof(response),
-             "#03-%s-%u-%u-%u-%u-%u-%u-%u$",
+             "#03-%s-%u-%u-%u-%u-%u-%u-%u-%u-%u-%u-%u-%u$",
              system_id,
              (unsigned int)config.relay_pulse_time_ms,
-             (unsigned int)config.read_time_sec,
+             (unsigned int)config.idle_read_time_sec,
              (unsigned int)(config.status_active_level ? 1 : 0),
+             (unsigned int)config.ramp_1_delay_sec,
              (unsigned int)config.stage_1_delay_sec,
+             (unsigned int)config.ramp_2_delay_sec,
              (unsigned int)config.stage_2_delay_sec,
+             (unsigned int)config.ramp_3_delay_sec,
              (unsigned int)config.stage_3_delay_sec,
-             (unsigned int)config.status_publish_time_sec);
+             (unsigned int)config.ramp_4_delay_sec,
+             (unsigned int)config.stage_4_delay_sec,
+             (unsigned int)config.status_publish_time_min);
     system_manager_send_packet(response, communication);
 }
 
@@ -578,7 +614,7 @@ void system_manager_init(void)
     actuation_config config = {};
     bool config_changed = false;
 
-    if (data_app_load(DATA_TYPE_ACTUATION_CONFIG, &config) != ESP_OK)
+    if (system_manager_load_actuation_config(&config) == false)
     {
         config_changed = true;
     }

@@ -95,8 +95,10 @@ Regra:
 ### `IDP 3` - Configuracao
 
 ```text
-#03-DEVICE_ID-RELAY_PULSE_MS-READ_TIME_SEC-STATUS_ACTIVE_LEVEL$
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-RAMP1_SEC-STAGE1_SEC-RAMP2_SEC-STAGE2_SEC-RAMP3_SEC-STAGE3_SEC-RAMP4_SEC-STAGE4_SEC-STATUS_00_MIN$
 ```
+
+O IDP 3 atual separa a cadencia interna de leitura quando parado, em segundos, do envio periodico de status, em minutos. Tambem configura individualmente a rampa da softstarter e o intervalo posterior de cada motor.
 
 ## Situacao no Codigo
 

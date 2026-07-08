@@ -316,12 +316,17 @@ esp_err_t data_app_init(void)
 
 	const actuation_config default_actuation_config = {
 			.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
-			.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+			.idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC,
 			.status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+			.ramp_1_delay_sec = CONFIG_PUMP_RAMP_1_DELAY_MS / 1000U,
 			.stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+			.ramp_2_delay_sec = CONFIG_PUMP_RAMP_2_DELAY_MS / 1000U,
 			.stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+			.ramp_3_delay_sec = CONFIG_PUMP_RAMP_3_DELAY_MS / 1000U,
 			.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
-			.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+			.ramp_4_delay_sec = CONFIG_PUMP_RAMP_4_DELAY_MS / 1000U,
+			.stage_4_delay_sec = CONFIG_PUMP_STAGE_4_DELAY_MS / 1000U,
+			.status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN,
 	};
 
 	const network_config default_network = {

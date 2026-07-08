@@ -36,12 +36,17 @@ static const gpio_num_t gpio_act_status_pins[CONFIG_ACTUATION_CHANNEL_COUNT] = {
 
 static actuation_config gpio_act_config = {
     .relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS,
-    .read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+    .idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC,
     .status_active_level = CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL,
+    .ramp_1_delay_sec = CONFIG_PUMP_RAMP_1_DELAY_MS / 1000U,
     .stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U,
+    .ramp_2_delay_sec = CONFIG_PUMP_RAMP_2_DELAY_MS / 1000U,
     .stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U,
+    .ramp_3_delay_sec = CONFIG_PUMP_RAMP_3_DELAY_MS / 1000U,
     .stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U,
-    .status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC,
+    .ramp_4_delay_sec = CONFIG_PUMP_RAMP_4_DELAY_MS / 1000U,
+    .stage_4_delay_sec = CONFIG_PUMP_STAGE_4_DELAY_MS / 1000U,
+    .status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN,
 };
 
 static uint16_t gpio_act_get_pulse_time_ms(void)
@@ -133,9 +138,9 @@ esp_err_t gpio_actuator_config(actuation_config config)
         config.relay_pulse_time_ms = CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
     }
 
-    if (config.read_time_sec == 0)
+    if (config.idle_read_time_sec == 0)
     {
-        config.read_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        config.idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC;
     }
 
     if (config.stage_1_delay_sec == 0)
@@ -153,9 +158,9 @@ esp_err_t gpio_actuator_config(actuation_config config)
         config.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
     }
 
-    if (config.status_publish_time_sec == 0)
+    if (config.status_publish_time_min == 0)
     {
-        config.status_publish_time_sec = CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC;
+        config.status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN;
     }
 
     gpio_act_config = config;

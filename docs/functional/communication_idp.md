@@ -101,7 +101,7 @@ Consulta:
 Configuracao:
 
 ```text
-#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-STAGE1_SEC-STAGE2_SEC-STAGE3_SEC-STATUS_00_SEC$
+#03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-RAMP1_SEC-STAGE1_SEC-RAMP2_SEC-STAGE2_SEC-RAMP3_SEC-STAGE3_SEC-RAMP4_SEC-STAGE4_SEC-STATUS_00_MIN$
 ```
 
 Uso esperado:
@@ -109,13 +109,18 @@ Uso esperado:
 - Ajustar parametros de atuacao.
 - Persistir `act_config` em NVS.
 - Reaplicar configuracao no `gpio_actuator`.
-- Configurar intervalos de partida e envio periodico de `#00$`.
+- Configurar rampas da softstarter, intervalos de partida e envio periodico de `#00$`.
+- Manter a leitura interna ociosa em segundos e a telemetria em minutos.
 
 Exemplo:
 
 ```text
-#03-new_product-10000-10-0-10-30-30-60$
+#03-new_product-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
+
+Ordem dos campos temporais por motor: `RAMP1-STAGE1-RAMP2-STAGE2-RAMP3-STAGE3-RAMP4-STAGE4`.
+
+`IDLE_READ_SEC` nao e o mesmo timer de `STATUS_00_MIN`. Eles podem receber valores equivalentes por decisao de configuracao, mas possuem responsabilidades diferentes.
 
 ### IDP 31 - Modo Principal de Comunicacao
 

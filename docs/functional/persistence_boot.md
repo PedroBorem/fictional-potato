@@ -10,7 +10,7 @@ Ordem atual:
 2. Inicializa NVS via `data_app_init()`.
 3. Carrega `act_config` da NVS.
 4. Se nao existir configuracao, cria valores padrao.
-5. Migra o nivel ativo de status para o padrao atual, nivel baixo.
+5. Migra `act_config` quando o tamanho persistido nao corresponde ao formato atual.
 6. Aplica configuracao de atuacao.
 7. Carrega modo principal de comunicacao; RF e o padrao.
 8. Inicializa GPIO e tarefa de atuacao.
@@ -30,15 +30,20 @@ Ordem atual:
 | Campo | Valor atual |
 | --- | --- |
 | `relay_pulse_time_ms` | `10000` |
-| `read_time_sec` | `10` |
+| `idle_read_time_sec` | `10` |
 | `status_active_level` | `false`, equivalente a nivel baixo |
+| `ramp_1_delay_sec` | `0` |
 | `stage_1_delay_sec` | `10` |
+| `ramp_2_delay_sec` | `0` |
 | `stage_2_delay_sec` | `30` |
+| `ramp_3_delay_sec` | `0` |
 | `stage_3_delay_sec` | `30` |
-| `status_publish_time_sec` | `10` |
+| `ramp_4_delay_sec` | `0` |
+| `stage_4_delay_sec` | `0` |
+| `status_publish_time_min` | `1` |
 | `comm_main_mode` | `RF` |
 
-Se a NVS tiver uma versao antiga de `act_config`, os novos campos de timer sao completados automaticamente no boot e salvos novamente.
+Se a NVS tiver uma versao antiga de `act_config`, o firmware detecta a diferenca de tamanho, aplica a configuracao padrao completa e salva novamente.
 
 ## Dados Legados
 
@@ -59,4 +64,4 @@ Essas chaves nao participam da regra atual de bombeamento. Elas foram mantidas p
 - Todos os relés sao desenergizados na inicializacao do `gpio_actuator`.
 - A bomba nao parte automaticamente no boot.
 - A partida depende de comando explicito.
-- Se uma configuracao antiga tiver entrada ativa em nivel alto, o `system_manager` corrige para nivel baixo e salva novamente.
+- O valor padrao das entradas e nivel baixo, mas o IDP 3 permite configurar nivel baixo ou alto.

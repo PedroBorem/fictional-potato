@@ -25,11 +25,17 @@ Constantes principais do bombeamento:
 | --- | --- | --- |
 | `CONFIG_ACTUATION_CHANNEL_COUNT` | `4` | Numero de canais. |
 | `CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS` | `10000` | Tempo padrao para relés OFF/parada. |
-| `CONFIG_ACTUATION_DEFAULT_READ_TIME_SEC` | `10` | Intervalo de leitura quando parado. |
+| `CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC` | `10` | Cadencia interna de leitura quando parado. |
+| `CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN` | `1` | Intervalo de envio periodico do `#00$`, em minutos. |
 | `CONFIG_ACTUATION_DEFAULT_STATUS_ACTIVE_LEVEL` | `false` | Entrada ativa em nivel baixo. |
+| `CONFIG_PUMP_RAMP_1_DELAY_MS` | `0` | Rampa padrao do motor 1. |
 | `CONFIG_PUMP_STAGE_1_DELAY_MS` | `10000` | Espera depois do canal 1. |
+| `CONFIG_PUMP_RAMP_2_DELAY_MS` | `0` | Rampa padrao do motor 2. |
 | `CONFIG_PUMP_STAGE_2_DELAY_MS` | `30000` | Espera depois do canal 2. |
+| `CONFIG_PUMP_RAMP_3_DELAY_MS` | `0` | Rampa padrao do motor 3. |
 | `CONFIG_PUMP_STAGE_3_DELAY_MS` | `30000` | Espera depois do canal 3. |
+| `CONFIG_PUMP_RAMP_4_DELAY_MS` | `0` | Rampa padrao do motor 4. |
+| `CONFIG_PUMP_STAGE_4_DELAY_MS` | `0` | Espera depois do canal 4. |
 | `CONFIG_PUMP_MONITOR_INTERVAL_MS` | `500` | Intervalo de monitoramento em operacao. |
 | `CONFIG_PUMP_STAGE_LOG_INTERVAL_MS` | `10000` | Intervalo de log detalhado do timer de partida. |
 | `CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS` | `1000` | Intervalo do heartbeat `......` durante partida. |
