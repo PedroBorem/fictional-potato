@@ -114,13 +114,13 @@ esp_err_t rf_uart_init(const app_callback callback)
                 rf_callback = callback;
             } else {
                 err = ESP_ERR_INVALID_ARG;
-                ESP_LOGE(RF_UART_TAG, "%s, invalid argument", __func__);
+                LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, invalid argument", __func__);
             }
         } else {
-            ESP_LOGE(RF_UART_TAG, "%s, failed to configure UART pin", __func__);
+            LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, failed to configure UART pin", __func__);
         }
     } else {
-        ESP_LOGE(RF_UART_TAG, "%s, failed to install UART driver", __func__);
+        LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, failed to install UART driver", __func__);
     }
 
     return err;
@@ -138,7 +138,7 @@ esp_err_t rf_uart_send_event(const char* event, size_t event_size)
     esp_err_t err = ESP_FAIL;
 
     if (uart_write_bytes(RF_UART_NUM, event, event_size) != -1) {
-        LOG_COMM(RF_UART_TAG, "OK");
+        LOG_UART_RF(RF_UART_TAG, "TX OK");
         err = ESP_OK;
     }
 
@@ -169,7 +169,7 @@ static void rf_uart_event_task(void* arg)
                         int aux = 0;
 
                         if (buff_in == NULL) {
-                            ESP_LOGE(RF_UART_TAG, "%s, failed to allocate UART input buffer", __func__);
+                            LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, failed to allocate UART input buffer", __func__);
                             uart_flush_input(RF_UART_NUM);
                             xQueueReset(rf_uart_queue);
                             break;
@@ -188,11 +188,9 @@ static void rf_uart_event_task(void* arg)
 
                         buff_in[aux] = '\0';
 
-                        // LOG_COMM(RF_UART_TAG, "data : %s", (char*)buff_in);
-
                         if (aux > 0)
                         {
-                            LOG_COMM(RF_UART_TAG, "event size : %d", event.size);
+                            LOG_UART_RF(RF_UART_TAG, "RX event size: %d", event.size);
                         }
 
                         if (aux > 0 && rf_callback != NULL)
@@ -205,7 +203,7 @@ static void rf_uart_event_task(void* arg)
                 }
                 case UART_FIFO_OVF: {
                     // Event of HW FIFO overflow detected.
-                    ESP_LOGW(RF_UART_TAG, "hw fifo overflow");
+                    LOG_WARNING(RF_UART_TAG, "UART_RF", "hw fifo overflow");
                     uart_flush_input(RF_UART_NUM);
                     xQueueReset(rf_uart_queue);
 
@@ -213,7 +211,7 @@ static void rf_uart_event_task(void* arg)
                 }
                 case UART_BUFFER_FULL: {
                     // Event of UART ring buffer full.
-                    ESP_LOGW(RF_UART_TAG, "ring buffer full");
+                    LOG_WARNING(RF_UART_TAG, "UART_RF", "ring buffer full");
                     uart_flush_input(RF_UART_NUM);
                     xQueueReset(rf_uart_queue);
 
@@ -221,31 +219,31 @@ static void rf_uart_event_task(void* arg)
                 }
                 case UART_BREAK: {
                     // Event of UART RX break detected.
-                    ESP_LOGD(RF_UART_TAG, "UART RX break");
+                    LOG_DEBUG(RF_UART_TAG, "UART_RF", "UART RX break");
 
                     break;
                 }
                 case UART_PARITY_ERR: {
                     // Event of UART parity check error.
-                    ESP_LOGE(RF_UART_TAG, "%s, UART parity error", __func__);
+                    LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, UART parity error", __func__);
 
                     break;
                 }
                 case UART_FRAME_ERR: {
                     // Event of UART frame error.
-                    ESP_LOGE(RF_UART_TAG, "%s, UART frame error", __func__);
+                    LOG_ERROR(RF_UART_TAG, "UART_RF", "%s, UART frame error", __func__);
 
                     break;
                 }
                 case UART_PATTERN_DET: {
                     // Event of UART frame error.
-                    ESP_LOGW(RF_UART_TAG, "%s, UART pattern", __func__);
+                    LOG_WARNING(RF_UART_TAG, "UART_RF", "%s, UART pattern", __func__);
 
                     break;
                 }
                 default: {
                     // Others
-                    ESP_LOGW(RF_UART_TAG, "UART event type: %d", event.type);
+                    LOG_WARNING(RF_UART_TAG, "UART_RF", "UART event type: %d", event.type);
 
                     break;
                 }

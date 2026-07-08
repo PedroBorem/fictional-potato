@@ -58,27 +58,27 @@ esp_err_t comm_app_init(const app_callback callback)
 
     if (callback == NULL)
     {
-        ESP_LOGE(COMM_APP_TAG, "%s, invalid callback", __func__);
+        LOG_ERROR(COMM_APP_TAG, "COMM", "%s, invalid callback", __func__);
         return ESP_ERR_INVALID_ARG;
     }
 
     err = rf_uart_init(callback);
     if (err != ESP_OK)
     {
-        ESP_LOGE(COMM_APP_TAG, "%s, failed to initialize RF UART: %d", __func__, err);
+        LOG_ERROR(COMM_APP_TAG, "UART_RF", "%s, failed to initialize RF UART: %d", __func__, err);
         return err;
     }
 
     err = gprs_uart_init(callback);
     if (err != ESP_OK)
     {
-        ESP_LOGE(COMM_APP_TAG, "%s, failed to initialize GPRS UART: %d", __func__, err);
+        LOG_ERROR(COMM_APP_TAG, "UART_GPRS", "%s, failed to initialize GPRS UART: %d", __func__, err);
         return err;
     }
 
     gprs_uart_register_raw_log_callback(comm_app_hide_raw_log_callback);
 
-    ESP_LOGI(COMM_APP_TAG, "Serial communication initialized: RF and GPRS UART");
+    LOG_SUCCESS(COMM_APP_TAG, "COMM", "Serial communication initialized: RF and GPRS UART");
 
     return err;
 }
@@ -106,7 +106,7 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
         gprs_uart_send_event(str_copy, strlen(str_copy));
         if (!hide_raw_log)
         {
-            LOG_COMM(COMM_APP_TAG, "MQTT - send %s", str_copy);
+            LOG_UART_GPRS(COMM_APP_TAG, "TX %s", str_copy);
         }
 
     }
@@ -115,13 +115,13 @@ void comm_app_send_idp_pack(const char* idp_pack, comm_type communication)
         rf_uart_send_event(str_copy, strlen(str_copy));
         if (!hide_raw_log)
         {
-            LOG_COMM(COMM_APP_TAG, "RF - send %s", str_copy);
+            LOG_UART_RF(COMM_APP_TAG, "TX %s", str_copy);
         }
 
     }
     else
     {
-        ESP_LOGW(COMM_APP_TAG, "Unsupported communication target: %d", communication);
+        LOG_WARNING(COMM_APP_TAG, "COMM", "Unsupported communication target: %d", communication);
     }
 
     free(str_copy);
@@ -138,7 +138,7 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
 {
     UNUSED(wifi_ssid);
     UNUSED(wifi_pass);
-    ESP_LOGW(COMM_APP_TAG, "Wi-Fi configuration ignored: HTTP/Wi-Fi is disabled in this firmware stage");
+    LOG_WARNING(COMM_APP_TAG, "COMM", "Wi-Fi configuration ignored: HTTP/Wi-Fi is disabled in this firmware stage");
 }
 
 /**
@@ -146,7 +146,7 @@ void comm_app_wifi_config(char* wifi_ssid, char* wifi_pass)
  */
 void comm_app_wifi_reloader(void)
 {
-    ESP_LOGW(COMM_APP_TAG, "Wi-Fi reload ignored: HTTP/Wi-Fi is disabled in this firmware stage");
+    LOG_WARNING(COMM_APP_TAG, "COMM", "Wi-Fi reload ignored: HTTP/Wi-Fi is disabled in this firmware stage");
 }
 
 esp_err_t comm_app_set_main_mode_config(comm_main_mode_config config)
@@ -163,7 +163,7 @@ esp_err_t comm_app_set_main_mode_config(comm_main_mode_config config)
 	}
 	else
 	{
-		ESP_LOGE(COMM_APP_TAG,"Invalid Comm Mode type configuration");
+		LOG_ERROR(COMM_APP_TAG, "COMM", "Invalid Comm Mode type configuration");
 		return ESP_ERR_INVALID_ARG;
 	}
 }

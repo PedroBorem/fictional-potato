@@ -79,22 +79,22 @@
 /**
  * @brief Default motor ramp after channel 1 relay is enabled.
  */
-#define CONFIG_PUMP_RAMP_1_DELAY_MS (0)
+#define CONFIG_PUMP_RAMP_1_DELAY_MS (5000)
 
 /**
  * @brief Default motor ramp after channel 2 relay is enabled.
  */
-#define CONFIG_PUMP_RAMP_2_DELAY_MS (0)
+#define CONFIG_PUMP_RAMP_2_DELAY_MS (5000)
 
 /**
  * @brief Default motor ramp after channel 3 relay is enabled.
  */
-#define CONFIG_PUMP_RAMP_3_DELAY_MS (0)
+#define CONFIG_PUMP_RAMP_3_DELAY_MS (5000)
 
 /**
  * @brief Default motor ramp after channel 4 relay is enabled.
  */
-#define CONFIG_PUMP_RAMP_4_DELAY_MS (0)
+#define CONFIG_PUMP_RAMP_4_DELAY_MS (5000)
 
 /**
  * @brief Pump stabilization delay after channel 4 relay is enabled.

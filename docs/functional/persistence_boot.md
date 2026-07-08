@@ -33,18 +33,20 @@ Ordem atual:
 | `relay_pulse_time_ms` | `10000` |
 | `idle_read_time_sec` | `10` |
 | `status_active_level` | `false`, equivalente a nivel baixo |
-| `ramp_1_delay_sec` | `0` |
+| `ramp_1_delay_sec` | `5` |
 | `stage_1_delay_sec` | `10` |
-| `ramp_2_delay_sec` | `0` |
+| `ramp_2_delay_sec` | `5` |
 | `stage_2_delay_sec` | `30` |
-| `ramp_3_delay_sec` | `0` |
+| `ramp_3_delay_sec` | `5` |
 | `stage_3_delay_sec` | `30` |
-| `ramp_4_delay_sec` | `0` |
+| `ramp_4_delay_sec` | `5` |
 | `stage_4_delay_sec` | `0` |
 | `status_publish_time_min` | `1` |
 | `comm_main_mode` | `RF` |
 
 Se a NVS tiver uma versao antiga de `act_config`, o firmware detecta a diferenca de tamanho, aplica a configuracao padrao completa e salva novamente.
+
+Rampas persistidas ou recebidas com valor `0` sao normalizadas para `5 s`. Isso impede validacao instantanea da entrada de status antes da estabilizacao do motor/optoacoplador.
 
 ## Dados Reservados
 

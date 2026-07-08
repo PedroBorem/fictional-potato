@@ -9,7 +9,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "esp_log.h"
+#include "log.h"
 
 /**
  * @def RTC_I2C_DEV_TAG
@@ -60,7 +60,7 @@ esp_err_t i2c_master_init(rtc_i2c_dev_t *dev)
 
         if (res != ESP_OK)
         {
-            ESP_LOGE(RTC_I2C_DEV_TAG, "Could not initialize I2C bus %d: %d", dev->port, res);
+            LOG_ERROR(RTC_I2C_DEV_TAG, "RTC", "Could not initialize I2C bus %d: %d", dev->port, res);
             return res;
         }
     }
@@ -74,7 +74,7 @@ esp_err_t i2c_master_init(rtc_i2c_dev_t *dev)
     esp_err_t res = i2c_master_bus_add_device(dev->bus_handle, &dev_config, &dev->dev_handle);
     if (res != ESP_OK)
     {
-        ESP_LOGE(RTC_I2C_DEV_TAG, "Could not add I2C device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+        LOG_ERROR(RTC_I2C_DEV_TAG, "RTC", "Could not add I2C device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     return res;
@@ -110,7 +110,7 @@ esp_err_t i2c_dev_read(const rtc_i2c_dev_t *dev, const void *out_data, size_t ou
     }
     if (res != ESP_OK)
     {
-        ESP_LOGE(RTC_I2C_DEV_TAG, "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+        LOG_ERROR(RTC_I2C_DEV_TAG, "RTC", "Could not read from device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     return res;
@@ -158,7 +158,7 @@ esp_err_t i2c_dev_write(const rtc_i2c_dev_t *dev, const void *out_reg, size_t ou
 
     if (res != ESP_OK)
     {
-        ESP_LOGE(RTC_I2C_DEV_TAG, "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
+        LOG_ERROR(RTC_I2C_DEV_TAG, "RTC", "Could not write to device [0x%02x at %d]: %d", dev->addr, dev->port, res);
     }
 
     return res;

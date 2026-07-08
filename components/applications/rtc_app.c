@@ -94,19 +94,19 @@ bool rtc_app_set_timestamp(time_t timestamp)
 
 		if (ds3231_set_time(&dev, &time) != ESP_OK)
 		{
-			ESP_LOGE(RTC_APP_TAG, "Could not set time.");
+			LOG_ERROR(RTC_APP_TAG, "RTC", "Could not set time");
 			LOG_DBG_ERROR(RTC_APP_TAG, "set_hw_rtc_error");
 		}
 		else
 		{
 			rtc_app_timestamp_ctrl = timestamp;
 			ret = true;
-			ESP_LOGI(RTC_APP_TAG, "Set initial date time done (%lld)", timestamp);
+			LOG_SUCCESS(RTC_APP_TAG, "RTC", "Set initial date time done (%lld)", timestamp);
 		}
 	}
 	else
 	{
-		ESP_LOGE(RTC_APP_TAG, "(%s), Set invalid timestamp (%lld)",__func__, timestamp);
+		LOG_ERROR(RTC_APP_TAG, "RTC", "(%s), set invalid timestamp (%lld)", __func__, timestamp);
 		LOG_DBG_ERROR(RTC_APP_TAG, "set_invalid_timestamp");
 		vTaskDelay(pdMS_TO_TICKS(2000));
 		char buffer[20];
@@ -132,7 +132,7 @@ time_t rtc_app_get_timestamp(bool rtc_show_dt)
 
 	if (ds3231_get_time(&dev, &rtcinfo) != ESP_OK)
 	{
-		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+		LOG_ERROR(RTC_APP_TAG, "RTC", "Could not get time");
 	}
 	else
 	{
@@ -168,11 +168,11 @@ void rtc_app_get_date_time(struct tm* rtcinfo)
 {
 	if(rtcinfo == NULL)
 	{
-		ESP_LOGE(RTC_APP_TAG, "pointers is null");
+		LOG_ERROR(RTC_APP_TAG, "RTC", "pointers are null");
 	}
 	else if (ds3231_get_time(&dev, rtcinfo) != ESP_OK)
 	{
-		ESP_LOGE(RTC_APP_TAG, "Could not get time.");
+		LOG_ERROR(RTC_APP_TAG, "RTC", "Could not get time");
 		LOG_DBG_ERROR(RTC_APP_TAG, "get_hw_rtc_error");
 	}
 }
@@ -194,8 +194,8 @@ void rtc_show_date_time(time_t timestamp_now, uint8_t time_z)
 	tminfo = *localtime ( &rawtime );
 
 	strftime(time_str, sizeof(time_str), "%d/%m/%Y %H:%M:%S", &tminfo);
-	ESP_LOGI(RTC_APP_TAG, "Timestamp %lld", timestamp_now);
-	ESP_LOGI(RTC_APP_TAG, "Date time [%s] GMT (%d)", time_str, time_z);
+	LOG_DEFAULT(RTC_APP_TAG, "RTC", "Timestamp %lld", timestamp_now);
+	LOG_DEFAULT(RTC_APP_TAG, "RTC", "Date time [%s] GMT (%d)", time_str, time_z);
 }
 
 /**

@@ -118,9 +118,11 @@ static void data_app_remove_discarded_pivot_data(void)
 		esp_err_t err = nvs_data_erase(discarded_keys[index]);
 		if (err != ESP_OK)
 		{
-			ESP_LOGW(DATA_APP_TAG, "failed to remove discarded NVS key %s: %s",
-					 discarded_keys[index],
-					 esp_err_to_name(err));
+			LOG_WARNING(DATA_APP_TAG,
+						"NVS",
+						"failed to remove discarded NVS key %s: %s",
+						discarded_keys[index],
+						esp_err_to_name(err));
 		}
 	}
 }
@@ -209,7 +211,7 @@ static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type
 
 		if (strcmp(current_scheduling_id, scheduling_id) == 0)
 		{
-			ESP_LOGW(DATA_APP_TAG, "deleting schedule %s id : %s", scheduling_log_type, current_scheduling_id);
+			LOG_WARNING(DATA_APP_TAG, "NVS", "deleting schedule %s id: %s", scheduling_log_type, current_scheduling_id);
 			memset((uint8_t *)scheduling_data + (position * scheduling_item_size), 0x00, scheduling_item_size);
 
 			if (clear_active_start_state)
@@ -338,11 +340,11 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_ACTUATION_CONFIG, &default_actuation_config, sizeof(default_actuation_config));
 		}
 
-		ESP_LOGI( DATA_APP_TAG, "%s, data application started successfully", __func__);
+		LOG_NVS(DATA_APP_TAG, "%s, data application started successfully", __func__);
 	}
 	else
 	{
-		ESP_LOGE( DATA_APP_TAG, "%s, failed to start data application", __func__);
+		LOG_ERROR(DATA_APP_TAG, "NVS", "%s, failed to start data application", __func__);
 		LOG_DBG_ERROR(DATA_APP_TAG, "memory_error");
 	}
 

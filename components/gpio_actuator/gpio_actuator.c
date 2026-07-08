@@ -107,7 +107,7 @@ esp_err_t gpio_actuator_init(void)
     esp_err_t err = gpio_config(&io_conf_out);
     if (err != ESP_OK)
     {
-        ESP_LOGE(GPIO_ACT_TAG, "%s, failed to configure relay outputs: %d", __func__, err);
+        LOG_ERROR(GPIO_ACT_TAG, "GPIO", "%s, failed to configure relay outputs: %d", __func__, err);
         return err;
     }
 
@@ -123,11 +123,11 @@ esp_err_t gpio_actuator_init(void)
     err = gpio_config(&io_conf_in);
     if (err != ESP_OK)
     {
-        ESP_LOGE(GPIO_ACT_TAG, "%s, failed to configure status inputs: %d", __func__, err);
+        LOG_ERROR(GPIO_ACT_TAG, "GPIO", "%s, failed to configure status inputs: %d", __func__, err);
         return err;
     }
 
-    ESP_LOGI(GPIO_ACT_TAG, "GPIO actuator initialized with 4 ON/OFF channels");
+    LOG_SUCCESS(GPIO_ACT_TAG, "GPIO", "GPIO actuator initialized with 4 ON/OFF channels");
     return ESP_OK;
 }
 
@@ -143,9 +143,19 @@ esp_err_t gpio_actuator_config(actuation_config config)
         config.idle_read_time_sec = CONFIG_ACTUATION_DEFAULT_IDLE_READ_TIME_SEC;
     }
 
+    if (config.ramp_1_delay_sec == 0)
+    {
+        config.ramp_1_delay_sec = CONFIG_PUMP_RAMP_1_DELAY_MS / 1000U;
+    }
+
     if (config.stage_1_delay_sec == 0)
     {
         config.stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U;
+    }
+
+    if (config.ramp_2_delay_sec == 0)
+    {
+        config.ramp_2_delay_sec = CONFIG_PUMP_RAMP_2_DELAY_MS / 1000U;
     }
 
     if (config.stage_2_delay_sec == 0)
@@ -153,9 +163,19 @@ esp_err_t gpio_actuator_config(actuation_config config)
         config.stage_2_delay_sec = CONFIG_PUMP_STAGE_2_DELAY_MS / 1000U;
     }
 
+    if (config.ramp_3_delay_sec == 0)
+    {
+        config.ramp_3_delay_sec = CONFIG_PUMP_RAMP_3_DELAY_MS / 1000U;
+    }
+
     if (config.stage_3_delay_sec == 0)
     {
         config.stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
+    }
+
+    if (config.ramp_4_delay_sec == 0)
+    {
+        config.ramp_4_delay_sec = CONFIG_PUMP_RAMP_4_DELAY_MS / 1000U;
     }
 
     if (config.status_publish_time_min == 0)
@@ -177,14 +197,14 @@ esp_err_t gpio_actuator_set(actuation_actions actions)
             {
                 gpio_set_level(gpio_act_off_pins[channel], GPIO_ACT_RELAY_DISABLE);
                 gpio_set_level(gpio_act_on_pins[channel], GPIO_ACT_RELAY_ENABLE);
-                ESP_LOGI(GPIO_ACT_TAG, "Channel %u ON relay enabled", (unsigned int)(channel + 1));
+                LOG_PROCESSING(GPIO_ACT_TAG, "Channel %u ON relay enabled", (unsigned int)(channel + 1));
                 break;
             }
 
             case ACTUATION_COMMAND_OFF:
             {
                 gpio_set_level(gpio_act_on_pins[channel], GPIO_ACT_RELAY_DISABLE);
-                ESP_LOGI(GPIO_ACT_TAG, "Channel %u OFF pulse", (unsigned int)(channel + 1));
+                LOG_PROCESSING(GPIO_ACT_TAG, "Channel %u OFF pulse", (unsigned int)(channel + 1));
                 gpio_act_pulse_relay(gpio_act_off_pins[channel]);
                 break;
             }
@@ -210,7 +230,7 @@ esp_err_t gpio_actuator_enable_on_relay(uint8_t channel)
     gpio_set_level(gpio_act_off_pins[channel], GPIO_ACT_RELAY_DISABLE);
     gpio_set_level(gpio_act_on_pins[channel], GPIO_ACT_RELAY_ENABLE);
 
-    ESP_LOGI(GPIO_ACT_TAG, "Channel %u ON relay enabled", (unsigned int)(channel + 1));
+    LOG_PROCESSING(GPIO_ACT_TAG, "Channel %u ON relay enabled", (unsigned int)(channel + 1));
     return ESP_OK;
 }
 

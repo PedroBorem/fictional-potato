@@ -47,12 +47,13 @@ static void system_manager_log_status(const actuation_status *status)
         return;
     }
 
-    ESP_LOGI(SYSTEM_MANAGER_TAG,
-             "Actuation status: C1=%u C2=%u C3=%u C4=%u",
-             (unsigned int)status->channels[0],
-             (unsigned int)status->channels[1],
-             (unsigned int)status->channels[2],
-             (unsigned int)status->channels[3]);
+    LOG_DEFAULT(SYSTEM_MANAGER_TAG,
+                "STATUS",
+                "Actuation status: C1=%u C2=%u C3=%u C4=%u",
+                (unsigned int)status->channels[0],
+                (unsigned int)status->channels[1],
+                (unsigned int)status->channels[2],
+                (unsigned int)status->channels[3]);
 }
 
 static bool system_manager_device_matches(const char *device_id)
@@ -371,9 +372,21 @@ static bool system_manager_sanitize_actuation_config(actuation_config *config)
         changed = true;
     }
 
+    if (config->ramp_1_delay_sec == 0)
+    {
+        config->ramp_1_delay_sec = CONFIG_PUMP_RAMP_1_DELAY_MS / 1000U;
+        changed = true;
+    }
+
     if (config->stage_1_delay_sec == 0)
     {
         config->stage_1_delay_sec = CONFIG_PUMP_STAGE_1_DELAY_MS / 1000U;
+        changed = true;
+    }
+
+    if (config->ramp_2_delay_sec == 0)
+    {
+        config->ramp_2_delay_sec = CONFIG_PUMP_RAMP_2_DELAY_MS / 1000U;
         changed = true;
     }
 
@@ -383,9 +396,21 @@ static bool system_manager_sanitize_actuation_config(actuation_config *config)
         changed = true;
     }
 
+    if (config->ramp_3_delay_sec == 0)
+    {
+        config->ramp_3_delay_sec = CONFIG_PUMP_RAMP_3_DELAY_MS / 1000U;
+        changed = true;
+    }
+
     if (config->stage_3_delay_sec == 0)
     {
         config->stage_3_delay_sec = CONFIG_PUMP_STAGE_3_DELAY_MS / 1000U;
+        changed = true;
+    }
+
+    if (config->ramp_4_delay_sec == 0)
+    {
+        config->ramp_4_delay_sec = CONFIG_PUMP_RAMP_4_DELAY_MS / 1000U;
         changed = true;
     }
 
@@ -725,7 +750,18 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
 
     idp = idp_parser_get(packet_in, packet);
 
-    ESP_LOGI(SYSTEM_MANAGER_TAG, "RX %s", packet);
+    if (communication == COMM_MQTT)
+    {
+        LOG_UART_GPRS(SYSTEM_MANAGER_TAG, "RX %s", packet);
+    }
+    else if (communication == COMM_RF)
+    {
+        LOG_UART_RF(SYSTEM_MANAGER_TAG, "RX %s", packet);
+    }
+    else
+    {
+        LOG_DEFAULT(SYSTEM_MANAGER_TAG, "COMM", "RX %s", packet);
+    }
 
     switch (idp)
     {
@@ -959,5 +995,7 @@ void system_manager_init(void)
     actuation_app_get_status(&status, sizeof(status));
     system_manager_log_status(&status);
 
-    ESP_LOGI(SYSTEM_MANAGER_TAG, "New product initialized: 4 relay pairs and 4 ON/OFF status inputs");
+    LOG_SUCCESS(SYSTEM_MANAGER_TAG,
+                "SYSTEM",
+                "New product initialized: 4 relay pairs and 4 ON/OFF status inputs");
 }

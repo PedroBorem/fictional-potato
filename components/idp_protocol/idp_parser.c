@@ -73,7 +73,7 @@ static bool idp_parser_check_pack(const char* string_in, char* string_out)
     }
     else
     {
-    	ESP_LOGE(IDP_PARSER_TAG, "invalid package");
+        LOG_ERROR(IDP_PARSER_TAG, "IDP", "invalid package");
     }
 
     return ret;

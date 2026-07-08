@@ -142,17 +142,17 @@ esp_err_t gprs_uart_init(const app_callback callback)
             else
             {
                 err = ESP_ERR_INVALID_ARG;
-                ESP_LOGE(GPRS_UART_TAG, "%s, invalid argument", __func__);
+                LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, invalid argument", __func__);
             }
         }
         else
         {
-            ESP_LOGE(GPRS_UART_TAG, "%s, failed to configure UART pin", __func__);
+            LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, failed to configure UART pin", __func__);
         }
     }
     else
     {
-        ESP_LOGE(GPRS_UART_TAG, "%s, failed to install UART driver", __func__);
+        LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, failed to install UART driver", __func__);
     }
 
     return err;
@@ -188,7 +188,7 @@ esp_err_t gprs_uart_send_event(const char* event, size_t event_size)
     {
         if (!gprs_uart_hide_raw_log(event))
         {
-            LOG_COMM(GPRS_UART_TAG, "OK");
+            LOG_UART_GPRS(GPRS_UART_TAG, "TX OK");
         }
         err = ESP_OK;
     }
@@ -224,7 +224,7 @@ static void gprs_uart_event_task(void* arg)
 
                     if (buff_in == NULL)
                     {
-                        ESP_LOGE(GPRS_UART_TAG, "%s, failed to allocate UART input buffer", __func__);
+                        LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, failed to allocate UART input buffer", __func__);
                         uart_flush_input(GPRS_UART_NUM);
                         xQueueReset(gprs_uart_queue);
                         break;
@@ -248,10 +248,8 @@ static void gprs_uart_event_task(void* arg)
 
                     if (aux > 0 && !gprs_uart_hide_raw_log(buff_in))
                     {
-                        LOG_COMM(GPRS_UART_TAG, "event size : %d", event.size);
+                        LOG_UART_GPRS(GPRS_UART_TAG, "RX event size: %d", event.size);
                     }
-
-                    // LOG_COMM(GPRS_UART_TAG, "data : %s", (char*)buff_in);
 
                     if (aux > 0 && gprs_callback != NULL)
                     {
@@ -264,7 +262,7 @@ static void gprs_uart_event_task(void* arg)
             case UART_FIFO_OVF:
             {
                 // Event of HW FIFO overflow detected
-                ESP_LOGW(GPRS_UART_TAG, "hw fifo overflow");
+                LOG_WARNING(GPRS_UART_TAG, "UART_GPRS", "hw fifo overflow");
                 uart_flush_input(GPRS_UART_NUM);
                 xQueueReset(gprs_uart_queue);
 
@@ -273,7 +271,7 @@ static void gprs_uart_event_task(void* arg)
             case UART_BUFFER_FULL:
             {
                 // Event of UART ring buffer full
-                ESP_LOGW(GPRS_UART_TAG, "ring buffer full");
+                LOG_WARNING(GPRS_UART_TAG, "UART_GPRS", "ring buffer full");
                 uart_flush_input(GPRS_UART_NUM);
                 xQueueReset(gprs_uart_queue);
 
@@ -282,35 +280,35 @@ static void gprs_uart_event_task(void* arg)
             case UART_BREAK:
             {
                 // Event of UART RX break detected
-                LOG_COMM(GPRS_UART_TAG, "UART RX break");
+                LOG_UART_GPRS(GPRS_UART_TAG, "UART RX break");
 
                 break;
             }
             case UART_PARITY_ERR:
             {
                 // Event of UART parity check error
-                ESP_LOGE(GPRS_UART_TAG, "%s, UART parity error", __func__);
+                LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, UART parity error", __func__);
 
                 break;
             }
             case UART_FRAME_ERR:
             {
                 // Event of UART frame error
-                ESP_LOGE(GPRS_UART_TAG, "%s, UART frame error", __func__);
+                LOG_ERROR(GPRS_UART_TAG, "UART_GPRS", "%s, UART frame error", __func__);
 
                 break;
             }
             case UART_PATTERN_DET:
             {
                 // Event of UART frame error
-                ESP_LOGW(GPRS_UART_TAG, "%s, UART pattern", __func__);
+                LOG_WARNING(GPRS_UART_TAG, "UART_GPRS", "%s, UART pattern", __func__);
 
                 break;
             }
             default:
             {
                 // Others
-                ESP_LOGW(GPRS_UART_TAG, "UART event type: %d", event.type);
+                LOG_WARNING(GPRS_UART_TAG, "UART_GPRS", "UART event type: %d", event.type);
 
                 break;
             }

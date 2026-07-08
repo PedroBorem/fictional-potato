@@ -117,7 +117,7 @@ Campos:
 | `OFF_RELAY_MS` | Tempo usado para relés OFF/parada. Padrao atual: `10000`. |
 | `IDLE_READ_SEC` | Cadencia interna de leitura quando parado, em segundos. Padrao atual: `10`. |
 | `STATUS_ACTIVE_LEVEL` | `0 = entrada ativa em nivel baixo`; `1 = entrada ativa em nivel alto`. Padrao atual: `0`. |
-| `RAMP1_SEC..RAMP4_SEC` | Tempo de rampa da softstarter de cada motor. Padrao atual: `0`. |
+| `RAMP1_SEC..RAMP4_SEC` | Tempo de rampa da softstarter de cada motor. Padrao atual e minimo seguro para `0`: `5`. |
 | `STAGE1_SEC` | Intervalo apos a rampa do canal 1. Padrao atual: `10`. |
 | `STAGE2_SEC` | Intervalo apos a rampa do canal 2. Padrao atual: `30`. |
 | `STAGE3_SEC` | Intervalo apos a rampa do canal 3. Padrao atual: `30`. |

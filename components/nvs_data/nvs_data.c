@@ -12,9 +12,9 @@
 /* NVS include */
 #include "nvs_flash.h"
 #include "nvs.h"
+#include "log.h"
 
 /* common lib */
-#include "esp_log.h"
 #include "string.h"
 
 /* Private definitions ------------------------------------------- */
@@ -67,7 +67,7 @@ esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length)
 	err = nvs_open(label_name, NVS_READWRITE, &handle);
 	if ((err != ESP_OK) || (handle == (nvs_handle_t)NULL))
 	{
-		ESP_LOGE(NVS_DATA_TAG, "%s,failed to open label : %s", __func__, label_name);
+		LOG_ERROR(NVS_DATA_TAG, "NVS", "%s, failed to open label: %s", __func__, label_name);
 		err = ESP_FAIL;
 	}
 	else if (err == ESP_OK)
@@ -76,11 +76,11 @@ esp_err_t nvs_data_set(const char* label_name, const void* value, size_t length)
 		if (err == ESP_OK)
 		{
 			err = nvs_commit(handle);
-			ESP_LOGI(NVS_DATA_TAG, "%s, Saved successfully (%p)", __func__, value);
+			LOG_NVS(NVS_DATA_TAG, "%s, saved successfully (%p)", __func__, value);
 		}
 		else
 		{
-			ESP_LOGE(NVS_DATA_TAG, "%s,failed to save (%p)", __func__, value);
+			LOG_ERROR(NVS_DATA_TAG, "NVS", "%s, failed to save (%p)", __func__, value);
 		}
 	}
 
@@ -181,18 +181,18 @@ esp_err_t nvs_data_get_blob(const char* label_name, uint8_t* out_value)
 			}
 			else
 			{
-				ESP_LOGE(NVS_DATA_TAG, "%s,failed to get configuration", __func__);
+					LOG_ERROR(NVS_DATA_TAG, "NVS", "%s, failed to get configuration", __func__);
 			}
 			free(run_time);
 		}
 		else
 		{
-			ESP_LOGE(NVS_DATA_TAG, "%s, failed to get configuration, invalid length (%s)", __func__, label_name);
+			LOG_ERROR(NVS_DATA_TAG, "NVS", "%s, failed to get configuration, invalid length (%s)", __func__, label_name);
 		}
 	}
 	else
 	{
-		ESP_LOGE(NVS_DATA_TAG, "%s,failed to open label : %s", __func__, label_name);
+		LOG_ERROR(NVS_DATA_TAG, "NVS", "%s, failed to open label: %s", __func__, label_name);
 	}
 
 	nvs_close(handle);
