@@ -45,9 +45,10 @@ Responsabilidades atuais:
 - Salvar e carregar `act_actions`.
 - Salvar e carregar `act_config`.
 - Salvar e carregar `reason_hangup`, usado pelo IDP 28.
+- Salvar e carregar `s_date` e `s_off_date`, usados pelos IDPs 14 e 16.
 - Remover de forma idempotente as chaves NVS descartadas do produto antigo.
 
-Continuam reservados, sem uso no fluxo atual: configuracao de rede, reboot, rush mode, agenda por data e historico.
+Continuam reservados, sem uso no fluxo atual: configuracao de rede, rush mode e historico. As antigas chaves `reboot_config` e `s_start_state` sao removidas no boot.
 
 ## `rtc_app`
 
@@ -66,9 +67,11 @@ Ativo no build atual.
 
 E a fachada entre os canais de comunicacao serial e a aplicacao:
 
-- MQTT via `gprs`, representado por GPRS UART.
+- ESP de conectividade via `gprs`, representado internamente como `COMM_MQTT`.
 - RF via `rf_module`.
 
 HTTP local via `http_server` permanece fora do build.
 
 Regra: `comm_app` nao controla GPIO diretamente. Ele entrega pacotes recebidos ao callback do `system_manager`, que decide qual IDP executar.
+
+O broker MQTT e seus topicos sao responsabilidade do outro ESP32. Nesta placa, `gprs` e somente um transporte UART de pacotes IDP.

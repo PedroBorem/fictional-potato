@@ -2,45 +2,51 @@
 
 ## Removido
 
-- Regra e arquivos de setorizacao por angulo.
-- Estruturas compartilhadas de configuracao de pivo, setor, GPS e barreiras.
-- Estruturas de agendamento por angulo.
-- Validadores IDP de actions do pivo, percentimetro, sentido, setor, GPS, barreiras e agenda por angulo.
-- Construtor antigo do IDP 28 baseado em angulo e barreira.
-- Globais `global_angle` e `counter_reading_panel_off`.
-- Criacao, leitura e escrita das chaves NVS descartadas.
-- Dados antigos dessas chaves, apagados de forma idempotente no boot.
+- Regras e estruturas de pivo, setor, angulo, GPS e barreiras.
+- Agendamentos por angulo.
+- IDP 24 e configuracao de reboot automatico.
+- IDP 92 e expectativa de reset fisico de modem.
+- Chaves NVS `reboot_config` e `s_start_state`.
+- Dados NVS antigos de pivo, apagados de forma idempotente no boot.
 
-IDPs sem funcao no novo produto continuam sem handler e respondem `#99-DEVICE_ID-unsupported_idp$`.
+IDPs removidos ou ainda sem funcao respondem `#99-DEVICE_ID-unsupported_idp$`.
+
+## Operacional
+
+| Frente | Situacao |
+| --- | --- |
+| Bombeamento | Partida sequencial, rampas, validacao, monitoramento e parada segura. |
+| UART RF | Recebe e envia IDPs via modulo LoraMesh; canal principal padrao. |
+| UART GPRS | Recebe e envia IDPs via ESP de conectividade. |
+| IDP 42 | Heartbeat com `PING`/`PONG`, intervalo de 30 s e timeout de 90 s. |
+| IDPs 13, 14, 16 e 18 | Exclusao, partida/parada por data, apenas parada por data e eventos. |
+| NVS de agenda | `s_date` e `s_off_date` persistem as agendas novas. |
+
+O timeout do IDP 42 apenas gera warning. Nao existe controle eletrico de reset ou alimentacao do ESP de conectividade nesta placa.
 
 ## Mantido Sem Adaptacao
 
 - `wifi_app` e `http_server`, fora do build.
 - `main/rush_mode.c`, fora do build.
-- `main/scheduling.c`, fora do build; apenas agenda por horario podera ser reaproveitada.
-- `main/system_monitoring.c`, fora do build.
 - NVS `rush_config`, `rush_state` e `history`.
-- Configuracao reservada de rede, reboot e agenda por data.
-- IDP 24, reservado para reboot automatico geral.
+- NVS `net_config`, preservada por compatibilidade.
 
 ## Pendente de Definicao ou Adaptacao
 
 | Frente | Situacao |
 | --- | --- |
-| GPRS/MQTT real | Definir modem, protocolo, broker, topicos, autenticacao, ACK e retry. |
-| IDPs 2 e 6 | Redesenhar configuracao de rede/modem. |
-| IDP 12 | Criar historico de comandos, partidas, paradas e falhas. |
-| IDP 24 | Adaptar reboot automatico geral ao novo produto. |
+| IDPs 2 e 6 | Definir somente se a placa precisar configurar o ESP de conectividade pela UART. |
+| Contrato do ESP de conectividade | Definir no outro firmware broker, topicos, autenticacao, QoS, ACK e retry. |
+| IDP 12 | Criar historico de comandos, agendas, partidas, paradas e falhas. |
 | IDP 30 | Definir comando/evento manual local. |
-| IDP 42 | Implementar heartbeat entre modem e placa. |
-| IDP 92 | Executar reset fisico/real do modem. |
-| Agenda por horario | Redesenhar actions e persistencia sem campos de pivo. |
+| Rush mode | Discutir se existe regra equivalente no produto de bombeamento. |
+| Wi-Fi/HTTP local | Decidir se voltam ao produto antes de adaptar os componentes preservados. |
 
 ## Ordem Recomendada
 
-1. Validar em bancada partida, rampas, falhas, parada e IDPs operacionais.
-2. Definir e implementar heartbeat e reset real do modem.
-3. Fechar o contrato GPRS/MQTT e adaptar IDPs 2 e 6.
-4. Adaptar agenda por horario e IDP 24.
-5. Implementar historico IDP 12 e comando local IDP 30.
-6. Reavaliar `rush_mode.c`, `scheduling.c` e `system_monitoring.c`; adaptar apenas as partes aprovadas e apagar o restante.
+1. Validar em bancada heartbeat e agendas com atrasos curtos.
+2. Validar persistencia e comportamento de agendas depois de reboot.
+3. Fechar no firmware de conectividade o encaminhamento transparente dos IDPs e o contrato MQTT.
+4. Decidir o contrato dos IDPs 2 e 6 entre as duas placas.
+5. Definir historico IDP 12 e comando local IDP 30.
+6. Discutir rush mode e remover o arquivo se a regra nao fizer sentido.

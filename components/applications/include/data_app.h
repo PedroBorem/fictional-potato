@@ -28,10 +28,8 @@ typedef enum
     DATA_TYPE_NETWORK_CONFIG = 0, /**< Network configuration data type. */
     DATA_TYPE_RUSH_MODE_CONFIG, /**< Rush mode configuration data type. */
     DATA_TYPE_RUSH_MODE_STATE, /**< Rush mode runtime state data type. */
-    DATA_TYPE_REBOOT_CONFIG, /**< Reboot configuration data type. */
     DATA_TYPE_SCHEDULING_DATE, /**< Scheduling date data type. */
     DATA_TYPE_SCHEDULING_OFF_DATE, /**< Scheduling off date data type. */
-    DATA_TYPE_SCHEDULING_START_STATE, /**< Persistent runtime state for the active start schedule. */
     DATA_TYPE_HISTORY, /**< History data type. */
     DATA_TYPE_OLD_HISTORY, /**< Old history data type. */
     DATA_TYPE_REASON_HANG_UP, /**< Last system shutdown reason. */

@@ -10,6 +10,7 @@ Atualmente:
 - `gprs`, `rf_module` e `idp_protocol` sao compilados.
 - `wifi_app` e `http_server` estao em `EXCLUDE_COMPONENTS`.
 - RF e o modo principal padrao.
+- O ESP32-S3 nao acessa broker MQTT e nao controla reset ou alimentacao do ESP de conectividade.
 
 ## Arquitetura Atual
 
@@ -155,6 +156,29 @@ Motivos implementados:
 
 Se uma falha for de leitura de motor, `MOTOR` informa o canal `1..4`.
 
+### IDPs 13, 14, 16 e 18 - Agendamentos
+
+```text
+#14-DEVICE_ID-START_TIME-END_TIME-USER$
+#16-DEVICE_ID-END_TIME-USER$
+#13-DEVICE_ID-SCHEDULE_ID-USER$
+#18-DEVICE_ID-SOURCE_IDP-SCHEDULE_ID-EVENT-USER-TIMESTAMP$
+```
+
+IDP 14 agenda a partida sequencial completa e sua parada. IDP 16 agenda apenas a parada segura. IDP 13 exclui uma agenda e IDP 18 publica os eventos `STARTED`, `STOPPED` e `EXPIRED`.
+
+Datas podem ser Unix timestamp ou atraso em segundos. O contrato completo esta em [Agendamentos por Data](scheduling.md).
+
+### IDP 42 - Heartbeat
+
+```text
+#42-DEVICE_ID-PING$
+#42-DEVICE_ID-PONG$
+#42-DEVICE_ID$
+```
+
+A placa envia `PING` a cada 30 segundos somente na GPRS UART e considera timeout apos 90 segundos sem `PING` ou `PONG`. O timeout gera log, mas nao reinicia nenhum equipamento.
+
 ### IDP 31 - Modo Principal de Comunicacao
 
 ```text
@@ -170,9 +194,9 @@ Neste firmware, `MQTT` significa caminho serial via GPRS UART. RF e o padrao.
 
 ## Canais
 
-### MQTT via modem
+### MQTT via ESP de conectividade
 
-O componente `gprs` recebe pacotes pela UART do modem e entrega para callback como `COMM_MQTT`.
+O componente `gprs` recebe pacotes IDP pela UART do ESP de conectividade e entrega para callback como `COMM_MQTT`. O nome representa a origem/destino do transporte; MQTT, broker e topicos nao existem neste firmware.
 
 ### RF
 
@@ -189,3 +213,6 @@ HTTP local esta fora do build atual.
 - Todo status deve sair de `actuation_app_get_status()`.
 - O IDP deve representar a regra nova de bombeamento, sem campos de angulo, percentimetro, setor, barreira ou sentido de giro.
 - Em caso de comando simultaneo de ligar e desligar, desligar tem prioridade.
+- Respostas voltam pelo canal de origem; eventos espontaneos usam o canal principal configurado no IDP 31.
+- IDPs 2 e 6 aguardam contrato entre os dois firmwares.
+- IDPs 24 e 92 nao existem no novo produto e respondem `unsupported_idp`.

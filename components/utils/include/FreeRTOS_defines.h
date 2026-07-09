@@ -172,32 +172,17 @@
 #define WIFI_APP_TASK_PRIORITY			(tskIDLE_PRIORITY + 8)
 
 /**
- * @brief Name of the system monitoring task.
+ * @brief Name of the connectivity heartbeat monitoring task.
  */
-#define SYSTEM_MONITORING_TASK_NAME		"monitoring task"
+#define SYSTEM_MONITORING_HEARTBEAT_TASK_NAME     "connectivity heartbeat"
 
 /**
- * @brief Stack size of the system monitoring task.
- */
-#define SYSTEM_MONITORING_TASK_SIZE		(configMINIMAL_STACK_SIZE * 6)
-
-/**
- * @brief Priority of the system monitoring task.
- */
-#define SYSTEM_MONITORING_TASK_PRIORITY	(tskIDLE_PRIORITY + 2)
-
-/**
- * @brief Name of the modem heartbeat monitoring task.
- */
-#define SYSTEM_MONITORING_HEARTBEAT_TASK_NAME     "monitoring heartbeat task"
-
-/**
- * @brief Stack size of the modem heartbeat monitoring task.
+ * @brief Stack size of the connectivity heartbeat monitoring task.
  */
 #define SYSTEM_MONITORING_HEARTBEAT_TASK_SIZE     (configMINIMAL_STACK_SIZE * 4)
 
 /**
- * @brief Priority of the modem heartbeat monitoring task.
+ * @brief Priority of the connectivity heartbeat monitoring task.
  */
 #define SYSTEM_MONITORING_HEARTBEAT_TASK_PRIORITY (tskIDLE_PRIORITY + 1)
 

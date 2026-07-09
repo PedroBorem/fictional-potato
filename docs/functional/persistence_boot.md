@@ -15,7 +15,9 @@ Ordem atual:
 7. Carrega modo principal de comunicacao; RF e o padrao.
 8. Inicializa GPIO e tarefa de atuacao.
 9. Inicializa RF UART, GPRS UART e parser IDP.
-10. Le e registra o status inicial dos 4 canais.
+10. Carrega agendas IDP 14 e IDP 16 e inicia o agendador.
+11. Inicia o heartbeat IDP 42 na GPRS UART.
+12. Le e registra o status inicial dos 4 canais.
 
 ## Dados Novos do Produto
 
@@ -25,6 +27,8 @@ Ordem atual:
 | `DATA_TYPE_ACTUATION_CONFIG` | `act_config` | Configuracao da camada de atuacao. |
 | `DATA_TYPE_REASON_HANG_UP` | `reason_hangup` | Ultimo pacote `#28` de desligamento do sistema. |
 | `DATA_TYPE_COMM_MAIN_MODE` | `comm_main_mode` | Canal principal para eventos espontaneos: `RF` ou `MQTT`. |
+| `DATA_TYPE_SCHEDULING_DATE` | `s_date` | Ate 10 agendas de partida e parada IDP 14. |
+| `DATA_TYPE_SCHEDULING_OFF_DATE` | `s_off_date` | Ate 10 agendas somente de parada IDP 16. |
 
 ## Configuracao Padrao
 
@@ -52,11 +56,11 @@ Rampas persistidas ou recebidas com valor `0` sao normalizadas para `5 s`. Isso 
 
 Permanecem criados/preservados para adaptacao futura:
 
-- `net_config`: IDPs 2 e 6 e comunicacao GPRS/MQTT real.
+- `net_config`: compatibilidade para um futuro contrato dos IDPs 2 e 6 com o ESP de conectividade.
 - `rush_config` e `rush_state`: codigo congelado, fora do build.
-- `reboot_config`: futuro reaproveitamento do IDP 24.
-- `s_date`, `s_off_date` e `s_start_state`: futuro agendamento por horario.
 - `history`: futuro IDP 12.
+
+`net_config` ainda e preservado por compatibilidade, mas o ESP de conectividade e o responsavel por broker, topicos e credenciais MQTT. IDPs 2 e 6 ainda nao possuem contrato novo nesta placa.
 
 ## Limpeza da NVS Antiga
 
@@ -68,14 +72,16 @@ No boot, `data_app` remove de forma idempotente:
 - `timestamp`;
 - `status_barrier`, `virtual_barrier` e `phy_barrier`;
 - `initial_angle` e `manual_counter`.
+- `reboot_config` e `s_start_state`.
 
 Essas chaves nao sao mais criadas, carregadas nem salvas pelo firmware.
 
 ## Comportamento Seguro no Boot
 
 - Todos os relés sao desenergizados na inicializacao do `gpio_actuator`.
-- A bomba nao parte automaticamente no boot.
-- A partida depende de comando explicito.
+- Uma agenda IDP 14 ja iniciada nao religa a bomba depois de reboot; ela preserva somente sua parada final.
+- Uma agenda futura ainda pendente pode iniciar automaticamente quando sua data chegar.
+- Uma partida vencida ha mais de 30 minutos expira sem ligar a bomba.
 - O valor padrao das entradas e nivel baixo, mas o IDP 3 permite configurar nivel baixo ou alto.
 - O firmware publica o ultimo `#28` em todo boot.
 - Se `esp_reset_reason()` indicar brownout, o firmware salva e publica `#28` com `REASON=brownout`.

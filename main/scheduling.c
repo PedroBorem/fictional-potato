@@ -1,1003 +1,490 @@
 /**
  * @file scheduling.c
- * @brief Implementation of the Scheduling module.
- * @author soil-dev
- * @date 31 de jul. de 2023
+ * @brief Date-based start/stop scheduling for the pump product.
  */
 
 #include "scheduling.h"
-#include "FreeRTOS_defines.h"
-#include "log.h"
+
 #include "actuation_app.h"
 #include "data_app.h"
-#include "comm_app.h"
+#include "FreeRTOS_defines.h"
+#include "log.h"
 #include "rtc_app.h"
-#include "idp_parser.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+
 #include <string.h>
-#include <stdbool.h>
 
 #define SCHEDULING_TAG "scheduling"
+#define SCHEDULING_POLL_INTERVAL_MS (1000U)
 
-/**
- * @brief Task handle for Scheduling IDP 14.
- */
-static TaskHandle_t xTask_scheduling_idp_14 = NULL;
-
-/**
- * @brief Task handle for Scheduling IDP 15.
- */
-static TaskHandle_t xTask_scheduling_idp_15 = NULL;
-
-/**
- * @brief Task handle for Scheduling IDP 16.
- */
-static TaskHandle_t xTask_scheduling_idp_16 = NULL;
-
-/**
- * @brief Task handle for Scheduling IDP 17.
- */
-static TaskHandle_t xTask_scheduling_idp_17 = NULL;
-
-/**
- * @brief Array to store current scheduling dates.
- */
-static pivot_scheduling_date scheduling_date_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Array to store current scheduling off dates.
- */
-static pivot_scheduling_off_date scheduling_off_date_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Array to store current scheduling angles.
- */
-static pivot_scheduling_angle scheduling_angle_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Structure to store the current scheduling off angle.
- */
-static pivot_scheduling_off_angle scheduling_off_angle_current[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Array to store the status of scheduling dates.
- */
-static bool scheduling_date_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Array to store the status of scheduling angles.
- */
-static bool scheduling_angle_status[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-/**
- * @brief Persistent runtime state of the single active start schedule.
- */
-static pivot_scheduling_start_state scheduling_start_state = {};
-
-/**
- * @brief End-angle stabilization deadline for the active IDP 15 schedule.
- */
-static time_t scheduling_angle_end_guard_until = 0;
-
-/**
- * @brief Scheduling identifier protected by the current IDP 15 guard window.
- */
-static char scheduling_angle_end_guard_id[30] = {};
-
-/**
- * @brief Synchronizes access to the shared runtime scheduling state.
- */
-static portMUX_TYPE s_scheduling_mux = portMUX_INITIALIZER_UNLOCKED;
-
-/**
- * @brief Pointer to the current angle.
- */
-static uint16_t* scheduling_current_angle = &global_angle;
-
-/**
- * @brief Callback function for scheduling events.
- */
-static app_callback scheduling_callback = NULL;
-
-/**
- * @brief Initializes the scheduling module.
- * @param callback The callback function for scheduling events.
- */
-static hangs_up_callback scheduling_hang_up_call = NULL;
-
-/**
- * @brief Stores the runtime state for IDP 14 scheduling atomically.
- *
- * @param scheduling_date Runtime array for date schedules.
- * @param scheduling_status Runtime execution flags for date schedules.
- * @param start_state Persisted active start schedule state mirrored in RAM.
- */
-static void scheduling_store_runtime_date_internal(
-    const pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
-    const pivot_scheduling_start_state *start_state);
-
-/**
- * @brief Stores the runtime state for IDP 15 scheduling atomically.
- *
- * @param scheduling_angle Runtime array for angle schedules.
- * @param scheduling_status Runtime execution flags for angle schedules.
- * @param start_state Persisted active start schedule state mirrored in RAM.
- */
-static void scheduling_store_runtime_angle_internal(
-    const pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE],
-    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
-    const pivot_scheduling_start_state *start_state);
-
-/**
- * @brief Stores the runtime state for IDP 16 scheduling atomically.
- *
- * @param scheduling_off_date Runtime array for date shutdown schedules.
- */
-static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE]);
-
-/**
- * @brief Stores the runtime state for IDP 17 scheduling atomically.
- *
- * @param scheduling_off_angle Runtime array for angle shutdown schedules.
- */
-static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE]);
-
-/**
- * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
- *
- * @param scheduling_id Scheduling identifier currently protected.
- * @param current_time Current timestamp used as the guard base.
- */
-static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time);
-
-/**
- * @brief Clears the IDP 15 end-angle stabilization guard.
- *
- * @param scheduling_id Scheduling identifier to be cleared from the guard state.
- */
-static void scheduling_angle_guard_clear_internal(const char *scheduling_id);
-
-/**
- * @brief Activates the scheduling at the specified position.
- * @param scheduling_idp The scheduling IDP type that is starting.
- * @param position The position of the scheduling date or angle in the array.
- * @param scheduling_id The ID of the scheduling.
- * @param actions The pivot actions to be performed.
- */
-static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* scheduling_id, pivot_actions actions);
-
-/**
- * @brief Requests a schedule removal using the normal IDP 13 flow.
- * @param scheduling_id The scheduling ID to be removed.
- */
-static void scheduling_request_schedule_delete(char* scheduling_id);
-
-/**
- * @brief Deactivates the scheduling with the specified ID.
- * @param scheduling_id The ID of the scheduling to be deactivated.
- * @param shceduling_type The type of the scheduling (IDP)
- * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
- */
-static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server);
-
-/**
- * @brief Task for processing scheduling events with IDP 14.
- * @param arg Task argument (not used).
- */
-static void scheduling_task_idp_14(void* arg);
-
-/**
- * @brief Task for processing scheduling events with IDP 15.
- * @param arg Task argument (not used).
- */
-static void scheduling_task_idp_15(void* arg);
-
-/**
- * @brief Task for processing scheduling events with IDP 16.
- * @param arg Task argument (not used).
- */
-static void scheduling_task_idp_16(void* arg);
-
-/**
- * @brief Task for processing scheduling events with IDP 17.
- * @param arg Task argument (not used).
- */
-static void scheduling_task_idp_17(void* arg);
-
-/**
- * @brief Stores the runtime state for IDP 14 scheduling atomically.
- *
- * @param scheduling_date Runtime array for date schedules.
- * @param scheduling_status Runtime execution flags for date schedules.
- * @param start_state Persisted active start schedule state mirrored in RAM.
- */
-static void scheduling_store_runtime_date_internal(
-    const pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE],
-    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
-    const pivot_scheduling_start_state *start_state)
+typedef enum
 {
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    memcpy(scheduling_date_current, scheduling_date, sizeof(scheduling_date_current));
-    memcpy(scheduling_date_status, scheduling_status, sizeof(scheduling_date_status));
-    memcpy(&scheduling_start_state, start_state, sizeof(scheduling_start_state));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
+    SCHEDULING_ACTION_NONE = 0,
+    SCHEDULING_ACTION_START,
+    SCHEDULING_ACTION_STOP,
+    SCHEDULING_ACTION_EXPIRED,
+} scheduling_action_type;
+
+typedef struct
+{
+    scheduling_action_type type;
+    idp_type idp;
+    char scheduling_id[50];
+    char user[50];
+} scheduling_pending_action;
+
+static pump_scheduling_date scheduling_dates[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static pump_scheduling_off_date scheduling_off_dates[CONFIG_SCHEDULING_MAX_VALUE] = {};
+static SemaphoreHandle_t scheduling_mutex = NULL;
+static TaskHandle_t scheduling_task_handle = NULL;
+static scheduling_event_callback scheduling_callback = NULL;
+
+static bool scheduling_has_id(const char *scheduling_id)
+{
+    return (scheduling_id != NULL && scheduling_id[0] != '\0');
 }
 
-/**
- * @brief Stores the runtime state for IDP 15 scheduling atomically.
- *
- * @param scheduling_angle Runtime array for angle schedules.
- * @param scheduling_status Runtime execution flags for angle schedules.
- * @param start_state Persisted active start schedule state mirrored in RAM.
- */
-static void scheduling_store_runtime_angle_internal(
-    const pivot_scheduling_angle scheduling_angle[CONFIG_SCHEDULING_MAX_VALUE],
-    const bool scheduling_status[CONFIG_SCHEDULING_MAX_VALUE],
-    const pivot_scheduling_start_state *start_state)
+static void scheduling_copy_text(char *destination,
+                                 size_t destination_size,
+                                 const char *source,
+                                 const char *fallback)
 {
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    memcpy(scheduling_angle_current, scheduling_angle, sizeof(scheduling_angle_current));
-    memcpy(scheduling_angle_status, scheduling_status, sizeof(scheduling_angle_status));
-    memcpy(&scheduling_start_state, start_state, sizeof(scheduling_start_state));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
-}
+    const char *value = (source != NULL && source[0] != '\0') ? source : fallback;
 
-/**
- * @brief Stores the runtime state for IDP 16 scheduling atomically.
- *
- * @param scheduling_off_date Runtime array for date shutdown schedules.
- */
-static void scheduling_store_runtime_off_date_internal(const pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE])
-{
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    memcpy(scheduling_off_date_current, scheduling_off_date, sizeof(scheduling_off_date_current));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
-}
-
-/**
- * @brief Stores the runtime state for IDP 17 scheduling atomically.
- *
- * @param scheduling_off_angle Runtime array for angle shutdown schedules.
- */
-static void scheduling_store_runtime_off_angle_internal(const pivot_scheduling_off_angle scheduling_off_angle[CONFIG_SCHEDULING_MAX_VALUE])
-{
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    memcpy(scheduling_off_angle_current, scheduling_off_angle, sizeof(scheduling_off_angle_current));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
-}
-
-/**
- * @brief Arms the IDP 15 end-angle stabilization guard for 5 minutes.
- *
- * @param scheduling_id Scheduling identifier currently protected.
- * @param current_time Current timestamp used as the guard base.
- */
-static void scheduling_angle_guard_start_internal(const char *scheduling_id, time_t current_time)
-{
-    if (scheduling_id == NULL || scheduling_id[0] == '\0')
+    if (destination == NULL || destination_size == 0)
     {
         return;
     }
 
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    scheduling_angle_end_guard_until = current_time + 300;
-    memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
-    memcpy(scheduling_angle_end_guard_id, scheduling_id, strlen(scheduling_id));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
+    memset(destination, 0, destination_size);
+    if (value != NULL)
+    {
+        strncpy(destination, value, destination_size - 1U);
+    }
 }
 
-/**
- * @brief Clears the IDP 15 end-angle stabilization guard.
- *
- * @param scheduling_id Scheduling identifier to be cleared from the guard state.
- */
-static void scheduling_angle_guard_clear_internal(const char *scheduling_id)
+static bool scheduling_windows_overlap(time_t start_a,
+                                       time_t end_a,
+                                       time_t start_b,
+                                       time_t end_b)
 {
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    if (scheduling_id == NULL ||
-        scheduling_id[0] == '\0' ||
-        strcmp(scheduling_angle_end_guard_id, scheduling_id) == 0)
-    {
-        scheduling_angle_end_guard_until = 0;
-        memset(scheduling_angle_end_guard_id, 0x00, sizeof(scheduling_angle_end_guard_id));
-    }
-    taskEXIT_CRITICAL(&s_scheduling_mux);
+    return (start_a < end_b && start_b < end_a);
 }
 
-/**
- * @brief Activates the scheduling at the specified position.
- * @param scheduling_idp The scheduling IDP type that is starting.
- * @param position The position of the scheduling date or angle in the array.
- * @param scheduling_id The ID of the scheduling.
- * @param actions The pivot actions to be performed.
- */
-static void scheduling_active(idp_type scheduling_idp, uint8_t position, char* scheduling_id, pivot_actions actions)
+static void scheduling_issue_command(const scheduling_pending_action *pending)
 {
-    uint8_t idp = IDP_INVALID;
-    uint16_t dwp = 0;
-    char str_out[50] = {};
-    esp_err_t ret = ESP_FAIL;
-    pivot_scheduling_start_state scheduling_start_state_local = {};
+    actuation_actions actions = {};
+    const char *event = "UNKNOWN";
 
-    if (scheduling_callback == NULL)
-    {
-        ESP_LOGE(SCHEDULING_TAG, "invalid callback");
-        return;
-    }
-
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    if (scheduling_idp == IDP_14)
-    {
-        scheduling_date_status[position] = true;
-    }
-    else if (scheduling_idp == IDP_15)
-    {
-        scheduling_angle_status[position] = true;
-    }
-
-    scheduling_start_state_local.active = true;
-    scheduling_start_state_local.scheduling_idp = scheduling_idp;
-    memset(scheduling_start_state_local.scheduling_id, 0x00, sizeof(scheduling_start_state_local.scheduling_id));
-    memcpy(scheduling_start_state_local.scheduling_id, scheduling_id, strlen(scheduling_id));
-    memcpy(&scheduling_start_state, &scheduling_start_state_local, sizeof(scheduling_start_state));
-    taskEXIT_CRITICAL(&s_scheduling_mux);
-
-    ret = data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
-
-    if (ret != ESP_OK)
-    {
-        ESP_LOGE(SCHEDULING_TAG, "failed to persist active start state for schedule id : %s", scheduling_id);
-    }
-
-    // create package - send IDP 18
-    idp = IDP_18;
-    arg_pair_t arg_idp_18[] = {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id},
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_18);
-    scheduling_callback(str_out, COMM_MQTT);
-
-    // act on the equipment - send IDP 01
-    idp = IDP_1;
-    dwp = idp_parser_create_pwd(actions);
-
-    arg_pair_t arg_idp_01[] =
-    {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &actions.percentimeter },
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_01);
-    scheduling_callback(str_out, COMM_MQTT);
-
-    // log debug
-    rtc_app_get_timestamp(true);
-    ESP_LOGW(SCHEDULING_TAG, "processing schedule id : %s (%s)",
-            scheduling_id, __func__);
-}
-
-/**
- * @brief Requests a schedule removal using the normal IDP 13 flow.
- * @param scheduling_id The scheduling ID to be removed.
- */
-static void scheduling_request_schedule_delete(char* scheduling_id)
-{
-    uint8_t idp = IDP_13;
-    char str_out[50] = {};
-    char scheduling_id_copy[50] = {};
-
-    if (scheduling_callback == NULL || scheduling_id == NULL || scheduling_id[0] == '\0')
+    if (pending == NULL || pending->type == SCHEDULING_ACTION_NONE)
     {
         return;
     }
 
-    memcpy(scheduling_id_copy, scheduling_id, strlen(scheduling_id));
+    scheduling_copy_text(actions.user,
+                         sizeof(actions.user),
+                         pending->user,
+                         "scheduling");
 
-    arg_pair_t arg_idp_13[] =
+    if (pending->type == SCHEDULING_ACTION_START)
     {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id_copy },
-        { "string", SCHEDULING_TAG },
-        { NULL, NULL }
-    };
+        actions.channels[0] = ACTUATION_COMMAND_ON;
+        event = "STARTED";
+        LOG_PROCESSING(SCHEDULING_TAG,
+                       "Executing start schedule %s",
+                       pending->scheduling_id);
+        actuation_app_set_actions(actions, true);
+    }
+    else if (pending->type == SCHEDULING_ACTION_STOP)
+    {
+        for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+        {
+            actions.channels[channel] = ACTUATION_COMMAND_OFF;
+        }
 
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_13);
-    scheduling_callback(str_out, COMM_MQTT);
+        event = "STOPPED";
+        LOG_PROCESSING(SCHEDULING_TAG,
+                       "Executing stop schedule %s",
+                       pending->scheduling_id);
+        actuation_app_set_actions(actions, true);
+    }
+    else
+    {
+        event = "EXPIRED";
+        LOG_WARNING(SCHEDULING_TAG,
+                    "SCHEDULING",
+                    "Schedule %s expired without execution",
+                    pending->scheduling_id);
+    }
+
+    if (scheduling_callback != NULL)
+    {
+        scheduling_callback(pending->idp,
+                            pending->scheduling_id,
+                            event,
+                            pending->user);
+    }
 }
 
-/**
- * @brief Deactivates the scheduling with the specified ID.
- * @param scheduling_id The ID of the scheduling to be deactivated.
- * @param scheduling_notify_server Flag to indicate whether to notify the server about deactivation.
- */
-static void scheduling_deactivate(char* scheduling_id, bool scheduling_notify_server)
+static void scheduling_scan(time_t now)
 {
-    uint8_t idp = IDP_INVALID;
-    uint16_t dwp = 0;
-    char str_out[50] = {};
-    bool clear_start_state = false;
-    pivot_scheduling_start_state scheduling_start_state_clear = {};
+    scheduling_pending_action pending[CONFIG_SCHEDULING_MAX_VALUE * 2U] = {};
+    size_t pending_count = 0;
+    bool dates_changed = false;
+    bool off_dates_changed = false;
 
-    if (scheduling_callback == NULL)
+    if (scheduling_mutex == NULL ||
+        xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
     {
-        ESP_LOGE(SCHEDULING_TAG, "invalid callback");
         return;
     }
 
-    if (scheduling_notify_server == true)
+    for (size_t index = 0; index < CONFIG_SCHEDULING_MAX_VALUE; index++)
     {
-        // create package - send IDP 18
-        idp = IDP_18;
-        arg_pair_t arg_idp_18[] = {
-            { "uint8_t", &idp },
-            { "string", SCHEDULING_TAG },
-            { "string", scheduling_id},
-            { NULL, NULL }
-        };
+        pump_scheduling_date *schedule = &scheduling_dates[index];
 
-        memset(str_out, 0x00, sizeof(str_out));
-        idp_parser_create_package(str_out, arg_idp_18);
-        scheduling_callback(str_out, COMM_MQTT);
-    }
-
-    // act on the equipment - send IDP 01
-    idp = IDP_1;
-    dwp = idp_parser_create_pwd(pivot_actions_off);
-    uint16_t percent = 0;
-
-    arg_pair_t arg_idp_01[] =
-    {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "uint16_t", &dwp },
-        { "uint16_t", &percent },
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_01);
-    scheduling_callback(str_out, COMM_MQTT);
-
-    // delete SCHEDULING - send IDP 13
-    idp = IDP_13;
-
-    arg_pair_t arg_idp_13[] =
-    {
-        { "uint8_t", &idp },
-        { "string", SCHEDULING_TAG },
-        { "string", scheduling_id },
-        { "string", SCHEDULING_TAG },
-        { NULL, NULL }
-    };
-
-    memset(str_out, 0x00, sizeof(str_out));
-    idp_parser_create_package(str_out, arg_idp_13);
-    scheduling_callback(str_out, COMM_MQTT);
-
-    taskENTER_CRITICAL(&s_scheduling_mux);
-    if (scheduling_start_state.active &&
-        strcmp(scheduling_start_state.scheduling_id, scheduling_id) == 0)
-    {
-        memcpy(&scheduling_start_state, &scheduling_start_state_clear, sizeof(scheduling_start_state));
-        clear_start_state = true;
-    }
-    taskEXIT_CRITICAL(&s_scheduling_mux);
-
-    if (clear_start_state)
-    {
-        data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
-    }
-
-    scheduling_angle_guard_clear_internal(scheduling_id);
-
-    // log debug
-    rtc_app_get_timestamp(true);
-    ESP_LOGW(SCHEDULING_TAG, "End schedule by date id : %s (%s)",
-            scheduling_id, __func__);
-}
-
-/**
- * @brief Task for processing scheduling events with IDP 14.
- */
-static void scheduling_task_idp_14(void* arg)
-{
-    time_t scheduling_timestamp_now = 0;
-    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
-    pivot_scheduling_date scheduling_date = {};
-    pivot_scheduling_start_state scheduling_start_state_local = {};
-    bool scheduling_date_status_local = false;
-
-    while (1)
-    {
-        scheduling_timestamp_now = rtc_app_get_timestamp(false);
-
-        for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
+        if (!scheduling_has_id(schedule->scheduling_id))
         {
-            taskENTER_CRITICAL(&s_scheduling_mux);
-            memcpy(&scheduling_date, &scheduling_date_current[date_position], sizeof(scheduling_date));
-            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
-            scheduling_date_status_local = scheduling_date_status[date_position];
-            taskEXIT_CRITICAL(&s_scheduling_mux);
-
-            if (strcmp(scheduling_date.scheduling_id, "") > 0)
-            {
-                if (!scheduling_date_status_local &&
-                    !scheduling_start_state_local.active &&
-                    (scheduling_timestamp_now >= scheduling_date.start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_date.start_date) + date_offset))
-                {
-                    scheduling_active(IDP_14,
-                                      date_position,
-                                      scheduling_date.scheduling_id,
-                                      scheduling_date.actions);
-                }
-                else if (scheduling_date_status_local &&
-                         (scheduling_timestamp_now >= scheduling_date.end_date) &&
-                         (scheduling_timestamp_now <= (scheduling_date.end_date + date_offset)))
-                {
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_14, IDP_14,
-                                            scheduling_date.scheduling_id,
-                                            scheduling_date.str_author);
-                    taskENTER_CRITICAL(&s_scheduling_mux);
-                    scheduling_date_status[date_position] = false;
-                    taskEXIT_CRITICAL(&s_scheduling_mux);
-                    scheduling_deactivate(scheduling_date.scheduling_id, false);
-                }
-            }
+            continue;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 segundos
-    }
-}
-
-
-/**
- * @brief Task for processing scheduling events with IDP 15.
- */
-static void scheduling_task_idp_15(void* arg)
-{
-    const uint16_t angle_off_set = 3;
-    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
-    time_t scheduling_timestamp_now = 0;
-    time_t scheduling_angle_end_guard_until_local = 0;
-    pivot_scheduling_angle scheduling_angle = {};
-    pivot_scheduling_start_state scheduling_start_state_local = {};
-    char scheduling_angle_end_guard_id_local[30] = {};
-    bool scheduling_angle_status_local = false;
-
-    while (1)
-    {
-        scheduling_timestamp_now = rtc_app_get_timestamp(false);
-
-        for (uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
+        if (now >= schedule->end_date)
         {
-            taskENTER_CRITICAL(&s_scheduling_mux);
-            memcpy(&scheduling_angle, &scheduling_angle_current[angle_position], sizeof(scheduling_angle));
-            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
-            scheduling_angle_status_local = scheduling_angle_status[angle_position];
-            scheduling_angle_end_guard_until_local = scheduling_angle_end_guard_until;
-            memcpy(scheduling_angle_end_guard_id_local,
-                   scheduling_angle_end_guard_id,
-                   sizeof(scheduling_angle_end_guard_id_local));
-            taskEXIT_CRITICAL(&s_scheduling_mux);
-
-            if (strcmp(scheduling_angle.scheduling_id, "") > 0)
-            {
-                if (!scheduling_angle_status_local &&
-                    !scheduling_start_state_local.active &&
-                    (scheduling_timestamp_now >= scheduling_angle.start_date) &&
-                    (scheduling_timestamp_now <= (scheduling_angle.start_date) + date_offset))
-                {
-                    scheduling_active(IDP_15,
-                                      angle_position,
-                                      scheduling_angle.scheduling_id,
-                                      scheduling_angle.actions);
-
-                    if (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set
-                        && *scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set)
-                    {
-                        scheduling_angle_guard_start_internal(scheduling_angle.scheduling_id, scheduling_timestamp_now);
-                    }
-                }
-
-                else if (scheduling_angle_status_local &&
-                         (*scheduling_current_angle >= scheduling_angle.end_angle - angle_off_set) &&
-                         (*scheduling_current_angle <= scheduling_angle.end_angle + angle_off_set))
-                {
-                    bool scheduling_angle_guard_active = false;
-
-                    if (strcmp(scheduling_angle_end_guard_id_local, scheduling_angle.scheduling_id) == 0 &&
-                        scheduling_timestamp_now < scheduling_angle_end_guard_until_local)
-                    {
-                        scheduling_angle_guard_active = true;
-                    }
-
-                    if (!scheduling_angle_guard_active)
-                    {
-                        scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_15, IDP_15,
-                                                scheduling_angle.scheduling_id,
-                                                scheduling_angle.str_author);
-                        taskENTER_CRITICAL(&s_scheduling_mux);
-                        scheduling_angle_status[angle_position] = false;
-                        taskEXIT_CRITICAL(&s_scheduling_mux);
-                        scheduling_deactivate(scheduling_angle.scheduling_id, false);
-                    }
-                }
-            }
+            scheduling_pending_action *action = &pending[pending_count++];
+            action->type = schedule->started ? SCHEDULING_ACTION_STOP : SCHEDULING_ACTION_EXPIRED;
+            action->idp = IDP_14;
+            scheduling_copy_text(action->scheduling_id,
+                                 sizeof(action->scheduling_id),
+                                 schedule->scheduling_id,
+                                 "unknown");
+            scheduling_copy_text(action->user,
+                                 sizeof(action->user),
+                                 schedule->user,
+                                 "scheduling");
+            memset(schedule, 0, sizeof(*schedule));
+            dates_changed = true;
+            continue;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000));
-    }
-}
-
-/**
- * @brief Task for processing scheduling events with IDP 16.
- */
-static void scheduling_task_idp_16(void* arg)
-{
-    time_t scheduling_timestamp_now = 0;
-    const time_t date_offset = TIMESTAMP_OFFSET_SCHEDULING;
-    char active_scheduling_id[50] = {};
-    pivot_scheduling_off_date scheduling_off_date = {};
-    pivot_scheduling_start_state scheduling_start_state_local = {};
-
-    while (1)
-    {
-        scheduling_timestamp_now = rtc_app_get_timestamp(false);
-
-        for (uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
+        if (!schedule->started && now >= schedule->start_date)
         {
-            taskENTER_CRITICAL(&s_scheduling_mux);
-            memcpy(&scheduling_off_date, &scheduling_off_date_current[date_position], sizeof(scheduling_off_date));
-            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
-            taskEXIT_CRITICAL(&s_scheduling_mux);
+            scheduling_pending_action *action = &pending[pending_count++];
+            action->type = ((now - schedule->start_date) <= CONFIG_SCHEDULING_START_GRACE_SEC)
+                ? SCHEDULING_ACTION_START
+                : SCHEDULING_ACTION_EXPIRED;
+            action->idp = IDP_14;
+            scheduling_copy_text(action->scheduling_id,
+                                 sizeof(action->scheduling_id),
+                                 schedule->scheduling_id,
+                                 "unknown");
+            scheduling_copy_text(action->user,
+                                 sizeof(action->user),
+                                 schedule->user,
+                                 "scheduling");
 
-            if(strcmp(scheduling_off_date.scheduling_id, "") > 0)
+            if (action->type == SCHEDULING_ACTION_START)
             {
-                if (scheduling_off_date.end_date != 0)
-                {
-                    if ((scheduling_timestamp_now >= scheduling_off_date.end_date) &&
-                        (scheduling_timestamp_now <= (scheduling_off_date.end_date + date_offset)))
-                    {
-                        if (scheduling_start_state_local.active)
-                        {
-                            memcpy(active_scheduling_id, scheduling_start_state_local.scheduling_id, strlen(scheduling_start_state_local.scheduling_id));
-                            scheduling_request_schedule_delete(active_scheduling_id);
-                            memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
-                        }
-
-                        scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_16, IDP_16,
-                                                scheduling_off_date.scheduling_id,
-                                                scheduling_off_date.str_author);
-                        scheduling_deactivate(scheduling_off_date.scheduling_id, true);
-                    }
-                }
+                schedule->started = true;
             }
+            else
+            {
+                memset(schedule, 0, sizeof(*schedule));
+            }
+            dates_changed = true;
+        }
+    }
+
+    for (size_t index = 0; index < CONFIG_SCHEDULING_MAX_VALUE; index++)
+    {
+        pump_scheduling_off_date *schedule = &scheduling_off_dates[index];
+
+        if (!scheduling_has_id(schedule->scheduling_id) || now < schedule->end_date)
+        {
+            continue;
         }
 
-        vTaskDelay(pdMS_TO_TICKS(5000));
+        scheduling_pending_action *action = &pending[pending_count++];
+        action->type = SCHEDULING_ACTION_STOP;
+        action->idp = IDP_16;
+        scheduling_copy_text(action->scheduling_id,
+                             sizeof(action->scheduling_id),
+                             schedule->scheduling_id,
+                             "unknown");
+        scheduling_copy_text(action->user,
+                             sizeof(action->user),
+                             schedule->user,
+                             "scheduling");
+        memset(schedule, 0, sizeof(*schedule));
+        off_dates_changed = true;
+    }
+
+    if (dates_changed)
+    {
+        data_app_save(DATA_TYPE_SCHEDULING_DATE,
+                      scheduling_dates,
+                      sizeof(scheduling_dates));
+    }
+
+    if (off_dates_changed)
+    {
+        data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE,
+                      scheduling_off_dates,
+                      sizeof(scheduling_off_dates));
+    }
+
+    xSemaphoreGive(scheduling_mutex);
+
+    for (size_t index = 0; index < pending_count; index++)
+    {
+        scheduling_issue_command(&pending[index]);
     }
 }
 
-/**
- * @brief Task for processing scheduling events with IDP 17.
- */
-static void scheduling_task_idp_17(void* arg)
+static void scheduling_task(void *arg)
 {
-    const uint8_t angle_off_set = 5;
-    char active_scheduling_id[50] = {};
-    pivot_scheduling_off_angle scheduling_off_angle = {};
-    pivot_scheduling_start_state scheduling_start_state_local = {};
+    UNUSED(arg);
 
-    while (1)
+    while (true)
     {
-        for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
+        scheduling_scan(rtc_app_get_timestamp(false));
+        vTaskDelay(pdMS_TO_TICKS(SCHEDULING_POLL_INTERVAL_MS));
+    }
+}
+
+esp_err_t scheduling_init(scheduling_event_callback callback)
+{
+    if (scheduling_mutex == NULL)
+    {
+        scheduling_mutex = xSemaphoreCreateMutex();
+        if (scheduling_mutex == NULL)
         {
-            taskENTER_CRITICAL(&s_scheduling_mux);
-            memcpy(&scheduling_off_angle, &scheduling_off_angle_current[angle_position], sizeof(scheduling_off_angle));
-            memcpy(&scheduling_start_state_local, &scheduling_start_state, sizeof(scheduling_start_state_local));
-            taskEXIT_CRITICAL(&s_scheduling_mux);
-
-            if(strcmp(scheduling_off_angle.scheduling_id, "") > 0)
-            {
-                if (*scheduling_current_angle > (scheduling_off_angle.end_angle - angle_off_set)
-                    && *scheduling_current_angle < (scheduling_off_angle.end_angle + angle_off_set))
-                {
-                    if (scheduling_start_state_local.active)
-                    {
-                        memcpy(active_scheduling_id, scheduling_start_state_local.scheduling_id, strlen(scheduling_start_state_local.scheduling_id));
-                        scheduling_request_schedule_delete(active_scheduling_id);
-                        memset(active_scheduling_id, 0x00, sizeof(active_scheduling_id));
-                    }
-
-                    scheduling_hang_up_call(TYPE_HANGS_UP_SCHEDULE_17, IDP_17, scheduling_off_angle.scheduling_id, scheduling_off_angle.str_author);
-                    scheduling_deactivate(scheduling_off_angle.scheduling_id, true);
-                }
-            }
+            return ESP_ERR_NO_MEM;
         }
- 
-        vTaskDelay(pdMS_TO_TICKS(5000)); // 5 seconds
     }
-}
 
-/**
- * @brief Starts a scheduling task based on the provided IDP and data.
- *
- * This function initiates a scheduling task based on the given IDP (InterDevice Protocol) and the associated data.
- * The task is selected according to the IDP, and the data is used to configure and execute the task.
- *
- * @param scheduling_idp The InterDevice Protocol identifier for scheduling.
- * @param scheduling_data Pointer to the data structure associated with the scheduling task.
- *
- * @note The function checks for null values in the scheduling_data parameter and logs an error if found.
- */
-void scheduling_start(idp_type scheduling_idp, void* scheduling_data)
-{
-	if(scheduling_data == NULL)
-	{
-		ESP_LOGE(SCHEDULING_TAG, "Scheduling parameter is NULL");
-		return;
-	}
+    scheduling_callback = callback;
 
-	// Runtime context used to reconcile persisted start schedules after reboot.
-	time_t scheduling_timestamp_now = rtc_app_get_timestamp(false);
-    bool pivot_is_off = actuation_app_is_pivot_off();
-    bool pivot_is_pressurizing = actuation_app_is_pivot_pressurizing();
-    pivot_scheduling_start_state scheduling_start_state_local = {};
-    data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
-
-	switch (scheduling_idp)
-	{
-		case IDP_14:
-		{
-			// Indicates whether the persisted active start state matches a loaded IDP 14.
-            bool active_schedule_found = false;
-            bool scheduling_date_status_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-            pivot_scheduling_date scheduling_date_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			memcpy(scheduling_date_local, scheduling_data, sizeof(scheduling_date_local));
-
-			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
-			{
-				if(strcmp(scheduling_date_local[date_position].scheduling_id,"") > 0)
-				{
-					if(scheduling_timestamp_now > scheduling_date_local[date_position].end_date)
-					{
-						data_app_delete_scheduling(scheduling_date_local[date_position].scheduling_id);
-						data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_local);
-                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
-					}
-                    else if (scheduling_start_state_local.active &&
-                             scheduling_start_state_local.scheduling_idp == IDP_14 &&
-                             strcmp(scheduling_start_state_local.scheduling_id, scheduling_date_local[date_position].scheduling_id) == 0)
-                    {
-                        active_schedule_found = true;
-
-                        if (pivot_is_off && !pivot_is_pressurizing)
-                        {
-							ESP_LOGW(SCHEDULING_TAG,
-									"Clearing interrupted schedule date id : %s",
-									scheduling_date_local[date_position].scheduling_id);
-							data_app_delete_scheduling(scheduling_date_local[date_position].scheduling_id);
-							data_app_load(DATA_TYPE_SCHEDULING_DATE, &scheduling_date_local);
-                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
-                        }
-                        else
-                        {
-                            scheduling_date_status_local[date_position] = true;
-                        }
-                    }
-				}
-			}
-
-            if (scheduling_start_state_local.active &&
-                scheduling_start_state_local.scheduling_idp == IDP_14 &&
-                !active_schedule_found)
-            {
-                memset(&scheduling_start_state_local, 0x00, sizeof(scheduling_start_state_local));
-                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
-            }
-
-            scheduling_store_runtime_date_internal(
-                scheduling_date_local,
-                scheduling_date_status_local,
-                &scheduling_start_state_local);
-
-			if(xTask_scheduling_idp_14 == NULL)
-			{
-				xTaskCreate(&scheduling_task_idp_14,
-						"task_idp_14",
-						SCHEDULING_TASK_SIZE,
-						NULL,
-						SCHEDULING_TASK_PRIORITY,
-						&xTask_scheduling_idp_14);
-			}
-
-			break;
-		}
-		case IDP_15:
-		{
-			// Indicates whether the persisted active start state matches a loaded IDP 15.
-            bool active_schedule_found = false;
-            bool scheduling_angle_status_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-            pivot_scheduling_angle scheduling_angle_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			memcpy(scheduling_angle_local, scheduling_data, sizeof(scheduling_angle_local));
-
-			for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
-			{
-				if(strcmp(scheduling_angle_local[angle_position].scheduling_id,"") > 0)
-				{
-                    if((scheduling_timestamp_now > scheduling_angle_local[angle_position].start_date)
-                    && (scheduling_timestamp_now - scheduling_angle_local[angle_position].start_date) > 3600
-                    && !scheduling_start_state_local.active)
-                    {
-                        scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
-						data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
-						data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
-                        data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
-                    }
-                    else if (scheduling_start_state_local.active &&
-                             scheduling_start_state_local.scheduling_idp == IDP_15 &&
-                             strcmp(scheduling_start_state_local.scheduling_id, scheduling_angle_local[angle_position].scheduling_id) == 0)
-                    {
-                        active_schedule_found = true;
-
-                        if (pivot_is_off && !pivot_is_pressurizing)
-                        {
-							ESP_LOGW(SCHEDULING_TAG,
-									"Clearing interrupted schedule angle id : %s",
-									scheduling_angle_local[angle_position].scheduling_id);
-                            scheduling_angle_guard_clear_internal(scheduling_angle_local[angle_position].scheduling_id);
-							data_app_delete_scheduling(scheduling_angle_local[angle_position].scheduling_id);
-							data_app_load(DATA_TYPE_SCHEDULING_ANGLE, &scheduling_angle_local);
-                            data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local);
-                        }
-                        else
-                        {
-                            scheduling_angle_status_local[angle_position] = true;
-                        }
-                    }
-				}
-			}
-
-            if (scheduling_start_state_local.active &&
-                scheduling_start_state_local.scheduling_idp == IDP_15 &&
-                !active_schedule_found)
-            {
-                scheduling_angle_guard_clear_internal(scheduling_start_state_local.scheduling_id);
-                memset(&scheduling_start_state_local, 0x00, sizeof(scheduling_start_state_local));
-                data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_local, sizeof(scheduling_start_state_local));
-            }
-
-            scheduling_store_runtime_angle_internal(
-                scheduling_angle_local,
-                scheduling_angle_status_local,
-                &scheduling_start_state_local);
-
-			if(xTask_scheduling_idp_15 == NULL)
-			{
-				xTaskCreate(&scheduling_task_idp_15,
-						"task_idp_15",
-						SCHEDULING_TASK_SIZE,
-						NULL,
-						SCHEDULING_TASK_PRIORITY,
-						&xTask_scheduling_idp_15);
-			}
-
-			break;
-		}
-		case IDP_16:
-		{
-            pivot_scheduling_off_date scheduling_off_date_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-			memcpy(scheduling_off_date_local, scheduling_data, sizeof(scheduling_off_date_local));
-
-			for(uint8_t date_position = 0; date_position < CONFIG_SCHEDULING_MAX_VALUE; date_position++)
-			{
-				if(scheduling_timestamp_now > scheduling_off_date_local[date_position].end_date
-				&& strcmp(scheduling_off_date_local[date_position].scheduling_id,"") > 0)
-				{
-					data_app_delete_scheduling(scheduling_off_date_local[date_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, &scheduling_off_date_local);
-				}
-			}
-
-            scheduling_store_runtime_off_date_internal(scheduling_off_date_local);
-
-			if(xTask_scheduling_idp_16 == NULL)
-			{
-				xTaskCreate(&scheduling_task_idp_16,
-						"task_idp_16",
-						SCHEDULING_TASK_SIZE,
-						NULL,
-						SCHEDULING_TASK_PRIORITY,
-						&xTask_scheduling_idp_16);
-			}
-
-			break;
-		}
-		case IDP_17:
-		{
-            uint8_t angle_offset = 5;
-            pivot_scheduling_off_angle scheduling_off_angle_local[CONFIG_SCHEDULING_MAX_VALUE] = {};
-
-			memcpy(scheduling_off_angle_local, scheduling_data, sizeof(scheduling_off_angle_local));
-
-            for(uint8_t angle_position = 0; angle_position < CONFIG_SCHEDULING_MAX_VALUE; angle_position++)
-			{
-				if((*scheduling_current_angle + angle_offset > scheduling_off_angle_local[angle_position].end_angle
-                && *scheduling_current_angle - angle_offset < scheduling_off_angle_local[angle_position].end_angle)
-				&& strcmp(scheduling_off_angle_local[angle_position].scheduling_id,"") > 0)
-				{
-					data_app_delete_scheduling(scheduling_off_angle_local[angle_position].scheduling_id);
-					data_app_load(DATA_TYPE_SCHEDULING_OFF_ANGLE, &scheduling_off_angle_local);
-				}
-			}
-
-            scheduling_store_runtime_off_angle_internal(scheduling_off_angle_local);
-
-			if(xTask_scheduling_idp_17 == NULL)
-			{
-				xTaskCreate(&scheduling_task_idp_17,
-						"task_idp_17",
-						SCHEDULING_TASK_SIZE,
-						NULL,
-						SCHEDULING_TASK_PRIORITY,
-						&xTask_scheduling_idp_17);
-			}
-
-			break;
-		}
-		default:
-		{
-			ESP_LOGE(SCHEDULING_TAG, "invalid scheduling idp %s", __func__);
-			LOG_DBG_ERROR(SCHEDULING_TAG, "invalid_scheduling_idp");
-			break;
-		}
-	}
-}
-
-/**
- * @brief Registers a callback function for scheduling events.
- *
- * This function allows the registration of a callback function that will be invoked for scheduling events.
- * The callback function is used to communicate with other modules or external systems.
- *
- * @param callback The callback function to be registered.
- *
- * @note The function checks for null values in the callback parameter.
- */
-void scheduling_register_callback(const app_callback callback)
-{
-	if(callback != NULL)
-	{
-		scheduling_callback = callback;
-	}
-}
-
-/**
- * @brief Registers a callback function for scheduling hang up events.
- *
- * This function allows the registration of a callback that will be invoked when scheduling hang up events occur.
- * The callback is used to notify other modules or external systems about these events.
- *
- * @param callback The hang up callback function to be registered.
- *
- * @note The function checks that the callback parameter is not NULL.
- */
-void scheduling_hangs_up_callback(const hangs_up_callback callback)
-{
-    if(callback != NULL)
+    if (data_app_load(DATA_TYPE_SCHEDULING_DATE, scheduling_dates) != ESP_OK)
     {
-        scheduling_hang_up_call = callback;
+        memset(scheduling_dates, 0, sizeof(scheduling_dates));
     }
+
+    if (data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, scheduling_off_dates) != ESP_OK)
+    {
+        memset(scheduling_off_dates, 0, sizeof(scheduling_off_dates));
+    }
+
+    if (scheduling_task_handle == NULL)
+    {
+        BaseType_t result = xTaskCreate(scheduling_task,
+                                        SCHEDULING_TASK_NAME,
+                                        SCHEDULING_TASK_SIZE,
+                                        NULL,
+                                        SCHEDULING_TASK_PRIORITY,
+                                        &scheduling_task_handle);
+        if (result != pdPASS)
+        {
+            scheduling_task_handle = NULL;
+            return ESP_ERR_NO_MEM;
+        }
+    }
+
+    LOG_SUCCESS(SCHEDULING_TAG,
+                "SCHEDULING",
+                "Date scheduling initialized: IDP 14 and IDP 16");
+    return ESP_OK;
+}
+
+esp_err_t scheduling_add_date(time_t start_date,
+                              time_t end_date,
+                              const char *user,
+                              char *scheduling_id_out,
+                              size_t scheduling_id_out_size)
+{
+    size_t free_position = CONFIG_SCHEDULING_MAX_VALUE;
+
+    if (start_date <= 0 || end_date <= start_date ||
+        scheduling_id_out == NULL || scheduling_id_out_size == 0)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (scheduling_mutex == NULL ||
+        xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    for (size_t index = 0; index < CONFIG_SCHEDULING_MAX_VALUE; index++)
+    {
+        if (!scheduling_has_id(scheduling_dates[index].scheduling_id))
+        {
+            if (free_position == CONFIG_SCHEDULING_MAX_VALUE)
+            {
+                free_position = index;
+            }
+            continue;
+        }
+
+        if (scheduling_windows_overlap(start_date,
+                                       end_date,
+                                       scheduling_dates[index].start_date,
+                                       scheduling_dates[index].end_date))
+        {
+            xSemaphoreGive(scheduling_mutex);
+            return ESP_ERR_INVALID_STATE;
+        }
+    }
+
+    if (free_position == CONFIG_SCHEDULING_MAX_VALUE)
+    {
+        xSemaphoreGive(scheduling_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+
+    pump_scheduling_date *schedule = &scheduling_dates[free_position];
+    memset(schedule, 0, sizeof(*schedule));
+    data_app_gen_scheduling_key(schedule->scheduling_id);
+    schedule->start_date = start_date;
+    schedule->end_date = end_date;
+    scheduling_copy_text(schedule->user, sizeof(schedule->user), user, "scheduling");
+
+    esp_err_t result = data_app_save(DATA_TYPE_SCHEDULING_DATE,
+                                     scheduling_dates,
+                                     sizeof(scheduling_dates));
+    if (result == ESP_OK)
+    {
+        scheduling_copy_text(scheduling_id_out,
+                             scheduling_id_out_size,
+                             schedule->scheduling_id,
+                             "");
+    }
+
+    xSemaphoreGive(scheduling_mutex);
+    return result;
+}
+
+esp_err_t scheduling_add_off_date(time_t end_date,
+                                  const char *user,
+                                  char *scheduling_id_out,
+                                  size_t scheduling_id_out_size)
+{
+    size_t free_position = CONFIG_SCHEDULING_MAX_VALUE;
+
+    if (end_date <= 0 || scheduling_id_out == NULL || scheduling_id_out_size == 0)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (scheduling_mutex == NULL ||
+        xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    for (size_t index = 0; index < CONFIG_SCHEDULING_MAX_VALUE; index++)
+    {
+        if (!scheduling_has_id(scheduling_off_dates[index].scheduling_id))
+        {
+            free_position = index;
+            break;
+        }
+    }
+
+    if (free_position == CONFIG_SCHEDULING_MAX_VALUE)
+    {
+        xSemaphoreGive(scheduling_mutex);
+        return ESP_ERR_NO_MEM;
+    }
+
+    pump_scheduling_off_date *schedule = &scheduling_off_dates[free_position];
+    memset(schedule, 0, sizeof(*schedule));
+    data_app_gen_scheduling_key(schedule->scheduling_id);
+    schedule->end_date = end_date;
+    scheduling_copy_text(schedule->user, sizeof(schedule->user), user, "scheduling");
+
+    esp_err_t result = data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE,
+                                     scheduling_off_dates,
+                                     sizeof(scheduling_off_dates));
+    if (result == ESP_OK)
+    {
+        scheduling_copy_text(scheduling_id_out,
+                             scheduling_id_out_size,
+                             schedule->scheduling_id,
+                             "");
+    }
+
+    xSemaphoreGive(scheduling_mutex);
+    return result;
+}
+
+esp_err_t scheduling_delete(const char *scheduling_id)
+{
+    esp_err_t result;
+
+    if (!scheduling_has_id(scheduling_id))
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    if (scheduling_mutex == NULL ||
+        xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
+    {
+        return ESP_ERR_INVALID_STATE;
+    }
+
+    result = data_app_delete_scheduling((char *)scheduling_id);
+    if (result == ESP_OK)
+    {
+        data_app_load(DATA_TYPE_SCHEDULING_DATE, scheduling_dates);
+        data_app_load(DATA_TYPE_SCHEDULING_OFF_DATE, scheduling_off_dates);
+    }
+
+    xSemaphoreGive(scheduling_mutex);
+    return result;
+}
+
+size_t scheduling_get_dates(pump_scheduling_date *schedules_out, size_t schedules_count)
+{
+    size_t copy_count = (schedules_count < CONFIG_SCHEDULING_MAX_VALUE)
+        ? schedules_count
+        : CONFIG_SCHEDULING_MAX_VALUE;
+
+    if (schedules_out == NULL || scheduling_mutex == NULL)
+    {
+        return 0;
+    }
+
+    if (xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
+    {
+        return 0;
+    }
+
+    memcpy(schedules_out, scheduling_dates, copy_count * sizeof(*schedules_out));
+    xSemaphoreGive(scheduling_mutex);
+    return copy_count;
+}
+
+size_t scheduling_get_off_dates(pump_scheduling_off_date *schedules_out, size_t schedules_count)
+{
+    size_t copy_count = (schedules_count < CONFIG_SCHEDULING_MAX_VALUE)
+        ? schedules_count
+        : CONFIG_SCHEDULING_MAX_VALUE;
+
+    if (schedules_out == NULL || scheduling_mutex == NULL)
+    {
+        return 0;
+    }
+
+    if (xSemaphoreTake(scheduling_mutex, portMAX_DELAY) != pdTRUE)
+    {
+        return 0;
+    }
+
+    memcpy(schedules_out, scheduling_off_dates, copy_count * sizeof(*schedules_out));
+    xSemaphoreGive(scheduling_mutex);
+    return copy_count;
 }

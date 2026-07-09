@@ -1,50 +1,35 @@
 /**
  * @file scheduling.h
- * @brief Header file for scheduling functionality.
- * @author soil-dev
- * @date 31 de jul. de 2023
+ * @brief Date-based pump scheduling.
  */
 
 #ifndef MAIN_INCLUDE_SCHEDULING_H_
 #define MAIN_INCLUDE_SCHEDULING_H_
 
+#include "esp_err.h"
 #include "project_config.h"
 
-/**
- * @brief Starts a scheduling task based on the provided IDP and data.
- *
- * This function initiates a scheduling task based on the given IDP (InterDevice Protocol) and the associated data.
- * The task is selected according to the IDP, and the data is used to configure and execute the task.
- *
- * @param scheduling_idp The InterDevice Protocol identifier for scheduling.
- * @param scheduling_data Pointer to the data structure associated with the scheduling task.
- *
- * @note The function checks for null values in the scheduling_data parameter and logs an error if found.
- */
-void scheduling_start(idp_type scheduling_idp, void* scheduling_data);
+typedef void (*scheduling_event_callback)(idp_type scheduling_idp,
+                                          const char *scheduling_id,
+                                          const char *event,
+                                          const char *user);
 
-/**
- * @brief Registers a callback function for scheduling events.
- *
- * This function allows the registration of a callback function that will be invoked for scheduling events.
- * The callback function is used to communicate with other modules or external systems.
- *
- * @param callback The callback function to be registered.
- *
- * @note The function checks for null values in the callback parameter.
- */
-void scheduling_register_callback(const app_callback callback);
+esp_err_t scheduling_init(scheduling_event_callback callback);
 
-/**
- * @brief Registers a callback function for scheduling hang up events.
- *
- * This function registers a callback that will be invoked when scheduling hang up events occur.
- * The callback is used to notify other modules or external systems about these events.
- *
- * @param callback The hang up callback function to be registered.
- *
- * @note The function checks if the callback parameter is not NULL.
- */
-void scheduling_hangs_up_callback(const hangs_up_callback callback);
+esp_err_t scheduling_add_date(time_t start_date,
+                              time_t end_date,
+                              const char *user,
+                              char *scheduling_id_out,
+                              size_t scheduling_id_out_size);
+
+esp_err_t scheduling_add_off_date(time_t end_date,
+                                  const char *user,
+                                  char *scheduling_id_out,
+                                  size_t scheduling_id_out_size);
+
+esp_err_t scheduling_delete(const char *scheduling_id);
+
+size_t scheduling_get_dates(pump_scheduling_date *schedules_out, size_t schedules_count);
+size_t scheduling_get_off_dates(pump_scheduling_off_date *schedules_out, size_t schedules_count);
 
 #endif /* MAIN_INCLUDE_SCHEDULING_H_ */

@@ -40,13 +40,16 @@ Regras:
 | `0` | Status de bombeamento | Adaptado | Retorna snapshot dos 4 status digitais e estado logico da bomba. |
 | `1` | Comando de bombeamento | Adaptado | Solicita partida sequencial ou parada segura. |
 | `3` | Configuracao de atuacao | Adaptado | Configura parada, leitura ociosa, rampas, intervalos de partida e telemetria. |
+| `13` | Exclusao de agenda | Adaptado | Exclui uma agenda por identificador. |
+| `14` | Liga/desliga por data | Adaptado | Agenda partida e parada usando data absoluta ou atraso em segundos. |
+| `16` | Apenas desliga por data | Adaptado | Agenda somente uma parada segura. |
+| `18` | Evento de agenda | Adaptado | Publica partida, parada ou expiracao de agenda. |
 | `21` | Timestamp | Reaproveitado | Sincroniza RTC. |
 | `28` | Motivo de desligamento | Adaptado | Informa o ultimo desligamento salvo em NVS e publica eventos de parada/falha/boot. |
 | `30` | Acao local/manual | Adaptado futuro | Representa comando local ou evento manual. |
-| `42` | Heartbeat modem/placa | Reaproveitado futuro | Mantem supervisao do link serial com modem. |
+| `42` | Heartbeat de conectividade | Adaptado | Supervisiona o ESP de conectividade pela GPRS UART. |
 | `90` | Versao de firmware | Reaproveitado | Retorna versao. |
 | `91` | Reset da placa | Reaproveitado | Reinicia ESP32-S3. |
-| `92` | Reset do modem / ACK generico | Reaproveitado futuro | Mantem compatibilidade com modem externo. |
 
 ## IDP 0 - Status
 
@@ -132,6 +135,41 @@ Exemplo:
 
 `IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
 
+## IDPs 13, 14, 16 e 18 - Agendamentos
+
+Criar partida e parada por data:
+
+```text
+#14-DEVICE_ID-START_TIME-END_TIME-USER$
+```
+
+Criar somente parada por data:
+
+```text
+#16-DEVICE_ID-END_TIME-USER$
+```
+
+Consultar:
+
+```text
+#14-DEVICE_ID$
+#16-DEVICE_ID$
+```
+
+Excluir pelo identificador retornado na criacao:
+
+```text
+#13-DEVICE_ID-SCHEDULE_ID-USER$
+```
+
+Evento espontaneo:
+
+```text
+#18-DEVICE_ID-SOURCE_IDP-SCHEDULE_ID-EVENT-USER-TIMESTAMP$
+```
+
+Os campos de data aceitam Unix timestamp absoluto ou, para valores abaixo de `1000000000`, atraso em segundos a partir do RTC atual. Consulte [Agendamentos por Data](docs/functional/scheduling.md) para respostas e regras de boot.
+
 ## IDP 28 - Informacao de Desligamento
 
 Consulta:
@@ -162,17 +200,41 @@ O firmware salva o pacote completo em NVS usando `DATA_TYPE_REASON_HANG_UP` / `r
 
 Se o boot ocorrer com a ultima acao persistida ainda em ON, o pacote sai com `PHASE=was_commanded_on` e `RESET_REASON` real, mesmo quando o reset nao for classificado como brownout pelo ESP-IDF.
 
+## IDP 42 - Heartbeat de Conectividade
+
+O ESP32-S3 envia a cada 30 segundos pela GPRS UART:
+
+```text
+#42-DEVICE_ID-PING$
+```
+
+O ESP de conectividade deve responder:
+
+```text
+#42-DEVICE_ID-PONG$
+```
+
+Consulta do estado visto pela placa:
+
+```text
+#42-DEVICE_ID$
+```
+
+A resposta e `#42-DEVICE_ID-ALIVE$` ou `#42-DEVICE_ID-NO_HEARTBEAT$`. A ausencia de resposta por 90 segundos gera warning, sem reset fisico: esta placa nao controla alimentacao nem reset do ESP de conectividade.
+
 ## Comunicacao MQTT, RF e HTTP
 
 RF e GPRS UART estao ativos. HTTP permanece fora do build atual.
 
 | Canal | Componente | Papel esperado |
 | --- | --- | --- |
-| MQTT via modem | `gprs` + `comm_app` | Receber pacotes IDP por UART do modem e enviar respostas/eventos. |
+| MQTT via ESP de conectividade | `gprs` + `comm_app` | Receber pacotes IDP pela GPRS UART e enviar respostas/eventos. |
 | RF | `rf_module` + `comm_app` | Receber/enviar pacotes IDP brutos por UART RF. |
 | HTTP local | `wifi_app` + `http_server` + `comm_app` | Fora do build atual. |
 
 Respostas de comando voltam pela UART que recebeu o pacote. Eventos espontaneos, como mudanca de status, usam o modo principal salvo em NVS. O padrao de fabrica e `RF`.
+
+Broker, topicos, autenticacao, QoS, ACK e retry pertencem ao firmware do ESP de conectividade. IDPs 2 e 6 permanecem sem handler nesta placa ate existir um contrato de configuracao entre os dois firmwares. IDPs 24 e 92 foram removidos e respondem como nao suportados.
 
 ## IDP 31 - Modo Principal
 

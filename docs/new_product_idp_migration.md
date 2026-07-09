@@ -2,9 +2,9 @@
 
 ## Escopo
 
-O firmware deixou de inicializar a regra de negocio de pivo. Nesta fase inicializa RF UART, GPRS UART e parser IDP. HTTP/app e Wi-Fi continuam fora do build.
+O firmware controla quatro motores de bombeamento e nao inicializa nenhuma regra de pivo. RF UART e GPRS UART transportam pacotes IDP; HTTP e Wi-Fi continuam fora do build.
 
-Este documento classifica os IDPs que podem ser reaproveitados, os que precisam ser adaptados e os que devem ser inutilizados para o produto de bombeamento.
+Na GPRS UART, o equipamento remoto e outro ESP32. Ele cuida da conectividade, broker e topicos MQTT. Esta placa apenas recebe e envia IDPs brutos.
 
 ## Produto Atual
 
@@ -15,106 +15,70 @@ Este documento classifica os IDPs que podem ser reaproveitados, os que precisam 
 | 3 | `GPIO_NUM_9` | `GPIO_NUM_8` | `GPIO_NUM_5` |
 | 4 | `GPIO_NUM_16` | `GPIO_NUM_35` | `GPIO_NUM_4` |
 
-## Funcionamento Principal
+Cada motor possui rampa de estabilizacao e intervalo posterior configuraveis pelo IDP 3. Uma falha durante partida ou operacao desliga todos os relés ON e pulsa os relés OFF.
 
-Comando de liga:
+## IDPs Operacionais
 
-1. Liga canal 1, espera 10s e valida leitura 1.
-2. Liga canal 2, espera 30s e valida leituras 1 e 2.
-3. Liga canal 3, espera 30s e valida leituras 1, 2 e 3.
-4. Liga canal 4 e passa a monitorar as 4 leituras.
-
-Falha:
-
-- Desliga todos os relés ON.
-- Aciona todos os relés OFF por 10s.
-- Registra estado de falha na aplicacao.
-
-## IDPs que Podem ser Aproveitados
-
-| IDP | Uso antigo | Como aproveitar |
+| IDP | Situacao | Uso no produto |
 | --- | --- | --- |
-| `2` | Configuracao de rede da placa | Manter para fase de comunicacao se Wi-Fi/GPRS continuarem no produto. |
-| `6` | Identificacao/configuracao de modem | Manter se o modem continuar usando o mesmo fluxo de identificacao. |
-| `21` | Sincronizacao de timestamp | Aproveitar para RTC, logs e eventos. |
-| `24` | Reboot automatico | Aproveitar como configuracao geral da placa. |
-| `31` | Modo principal de comunicacao | Aproveitado para alternar eventos espontaneos entre `RF` e `MQTT` via GPRS UART. |
-| `42` | Heartbeat modem/placa | Aproveitar se o modem continuar por UART. |
-| `90` | Versao de firmware | Aproveitar sem mudanca conceitual. |
-| `91` | Reset da placa | Aproveitar sem mudanca conceitual. |
-| `92` | Reset do modem / ACK generico | Aproveitar se o modem continuar no hardware final. |
-| `99` | Erro tecnico em referencias legadas | Usado como resposta textual de erro no callback atual, mesmo sem enum dedicado. |
+| `0` | Adaptado | Snapshot do bombeamento e das quatro leituras. |
+| `1` | Adaptado | Partida sequencial ou parada segura. |
+| `3` | Adaptado | Rampas, intervalos, leitura, nivel ativo e telemetria. |
+| `13` | Adaptado | Exclui agenda pelo identificador. |
+| `14` | Adaptado | Agenda partida e parada por data. |
+| `16` | Adaptado | Agenda somente parada por data. |
+| `18` | Adaptado | Publica evento de execucao da agenda. |
+| `21` | Reaproveitado | Sincroniza o RTC. |
+| `28` | Adaptado | Retem e publica motivo de desligamento. |
+| `31` | Reaproveitado | Seleciona RF ou GPRS UART para eventos espontaneos. |
+| `42` | Adaptado | Heartbeat com o ESP de conectividade pela GPRS UART. |
+| `90` | Reaproveitado | Retorna versao do firmware. |
+| `91` | Reaproveitado | Reinicia este ESP32-S3. |
 
-## IDPs que Devem ser Adaptados
+## IDPs Pendentes
 
-| IDP | Uso antigo | Adaptacao recomendada |
-| --- | --- | --- |
-| `0` | Leitura do estado atual do pivo | Virar snapshot do bombeamento: estado, 4 status, ultima falha e timestamp. |
-| `1` | Escrita das actions do pivo | Virar comando de partida/parada do bombeamento. |
-| `3` | Configuracao geral do pivo | Virar configuracao de atuacao: tempo de parada, intervalo de leitura e nivel ativo. |
-| `12` | Historico do pivo | Adaptar apenas se o produto precisar de historico de comandos/falhas. |
-| `13` a `18` | Agendamentos por data/angulo | Adaptar somente se houver agenda de ligar/desligar bomba por horario; remover angulo. |
-| `27` | Dump de agendamentos | Adaptar junto com novos agendamentos, se existirem. |
-| `28` | Motivo de desligamento do pivo | Adaptar para motivo de parada/falha de bombeamento. |
-| `30` | Acao manual/local do pivo | Adaptar para comando local ou evento manual do bombeamento. |
+| IDP | Decisao pendente |
+| --- | --- |
+| `2` e `6` | Definir se configurarao o ESP de conectividade e qual sera o contrato UART. |
+| `12` | Criar historico do novo produto. |
+| `30` | Definir comando ou evento manual/local. |
 
-## IDPs Inutilizados para Este Produto
+O protocolo MQTT, incluindo topicos, credenciais, QoS, ACK e retry, sera definido no firmware do ESP de conectividade.
+
+## IDPs Removidos ou Inutilizados
 
 | IDP | Motivo |
 | --- | --- |
-| `4` | Rush mode e janela ECO sao regra de pivo. |
-| `5` | Setorizacao por angulo nao existe no bombeamento atual. |
-| `7` | Angulo, pressao e GPS do pivo nao fazem parte dos 4 acionamentos ON/OFF. |
-| `22` | Barreira fisica do pivo nao existe no novo produto. |
-| `23` | GPS/centro do pivo nao faz parte do produto atual. |
-| `26` | Barreira virtual do pivo nao existe no novo produto. |
-| `32` | Evento de rush mode deixa de existir. |
-| `34`, `40`, `41` | Pluviometro nao faz parte do escopo atual. |
-| `69` | Suite de teste de hardware nao faz parte da regra principal. |
+| `4` e `32` | Rush mode antigo nao foi adaptado; decisao futura. |
+| `5`, `7`, `15`, `17`, `22`, `23`, `26` e `27` | Dependiam de angulo, setor, GPS ou barreiras. |
+| `24` | Reboot automatico foi removido por decisao de produto. |
+| `34`, `40` e `41` | Pluviometro nao faz parte do produto. |
+| `69` | Suite antiga de teste nao faz parte da regra principal. |
+| `92` | Nao existe reset fisico do ESP de conectividade nesta placa. |
 
-## Padrao de Payload Recomendado
-
-### `IDP 0` - Status
+## Contratos Principais
 
 ```text
 #00-DEVICE_ID-PUMP_STATE-C1-C2-C3-C4-LAST_FAULT-TIMESTAMP$
-```
-
-### `IDP 1` - Comando
-
-```text
 #01-DEVICE_ID-CMD_C1-CMD_C2-CMD_C3-CMD_C4-USER$
-```
-
-Regra:
-
-- Qualquer `CMD_Cx = 1` inicia a sequencia completa.
-- Qualquer `CMD_Cx = 2` solicita parada segura.
-- Parada tem prioridade sobre partida.
-
-### `IDP 3` - Configuracao
-
-```text
 #03-DEVICE_ID-OFF_RELAY_MS-IDLE_READ_SEC-STATUS_ACTIVE_LEVEL-RAMP1_SEC-STAGE1_SEC-RAMP2_SEC-STAGE2_SEC-RAMP3_SEC-STAGE3_SEC-RAMP4_SEC-STAGE4_SEC-STATUS_00_MIN$
-```
-
-O IDP 3 atual separa a cadencia interna de leitura quando parado, em segundos, do envio periodico de status, em minutos. Tambem configura individualmente a rampa da softstarter e o intervalo posterior de cada motor.
-
-### `IDP 28` - Informacao de Desligamento
-
-```text
+#13-DEVICE_ID-SCHEDULE_ID-USER$
+#14-DEVICE_ID-START_TIME-END_TIME-USER$
+#16-DEVICE_ID-END_TIME-USER$
+#18-DEVICE_ID-SOURCE_IDP-SCHEDULE_ID-EVENT-USER-TIMESTAMP$
 #28-DEVICE_ID-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+#42-DEVICE_ID-PING$
+#42-DEVICE_ID-PONG$
 ```
 
-O pacote e salvo em `DATA_TYPE_REASON_HANG_UP` / `reason_hangup`, responde consulta `#28-DEVICE_ID$` e tambem e publicado em parada, falha e boot.
+Detalhes: [Protocolo de Comunicacao](../comm_protocol.md) e [Agendamentos por Data](functional/scheduling.md).
 
 ## Situacao no Codigo
 
-- `main/CMakeLists.txt` compila apenas `main.c` e `system_manager.c`.
-- `system_manager.c` inicializa RTC, NVS, atuacao local, comunicacao serial e handlers IDP.
+- `main/CMakeLists.txt` compila `main.c`, `system_manager.c`, `scheduling.c` e `system_monitoring.c`.
+- `system_manager.c` integra RTC, NVS, atuacao, duas UARTs, IDPs, agenda e heartbeat.
 - `components/applications/CMakeLists.txt` compila `rtc_app.c`, `data_app.c`, `actuation_app.c` e `comm_app.c`.
 - `gprs`, `rf_module` e `idp_protocol` entram no build atual.
-- `wifi_app` e `http_server` continuam excluidos no `CMakeLists.txt` raiz.
-- Os dados NVS novos sao `act_actions` e `act_config`.
-- O modo principal de comunicacao fica em `comm_main_mode`, com `RF` como padrao.
-- As chaves NVS descartadas de pivo sao apagadas no boot; `rush_config`, `rush_state`, `history`, rede, reboot e agenda por data permanecem reservados.
+- `wifi_app` e `http_server` continuam excluidos.
+- RF e o modo principal padrao.
+- Agendas ficam em `s_date` e `s_off_date`; o ultimo desligamento fica em `reason_hangup`.

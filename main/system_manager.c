@@ -13,6 +13,8 @@
 #include "log.h"
 #include "project_config.h"
 #include "rtc_app.h"
+#include "scheduling.h"
+#include "system_monitoring.h"
 
 #include "esp_err.h"
 #include "esp_system.h"
@@ -28,6 +30,7 @@
 #define SYSTEM_MANAGER_PACKET_BUFFER_SIZE (256)
 #define SYSTEM_MANAGER_ACTUATION_CONFIG_KEY "act_config"
 #define SYSTEM_MANAGER_SHUTDOWN_REASON_KEY "reason_hangup"
+#define SYSTEM_MANAGER_UNIX_TIMESTAMP_THRESHOLD (1000000000LL)
 
 uint16_t global_pressure = 0;
 comm_type comm_main_mode = COMM_RF;
@@ -466,6 +469,66 @@ static void system_manager_load_comm_mode(void)
     }
 }
 
+static time_t system_manager_resolve_schedule_time(time_t value, time_t now)
+{
+    if (value >= SYSTEM_MANAGER_UNIX_TIMESTAMP_THRESHOLD)
+    {
+        return value;
+    }
+
+    return now + value;
+}
+
+static void system_manager_send_schedule_error(esp_err_t error,
+                                               const char *idp_error,
+                                               comm_type communication)
+{
+    if (error == ESP_ERR_INVALID_STATE)
+    {
+        system_manager_send_error("schedule_conflict", communication);
+    }
+    else if (error == ESP_ERR_NO_MEM)
+    {
+        system_manager_send_error("schedule_full", communication);
+    }
+    else
+    {
+        system_manager_send_error(idp_error, communication);
+    }
+}
+
+static void system_manager_schedule_event_callback(idp_type scheduling_idp,
+                                                   const char *scheduling_id,
+                                                   const char *event,
+                                                   const char *user)
+{
+    char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+    char safe_user[50] = {};
+    time_t timestamp = rtc_app_get_timestamp(false);
+
+    system_manager_sanitize_packet_field(safe_user,
+                                         sizeof(safe_user),
+                                         user,
+                                         "scheduling");
+
+    snprintf(packet,
+             sizeof(packet),
+             "#18-%s-%u-%s-%s-%s-%lld$",
+             system_id,
+             (unsigned int)scheduling_idp,
+             (scheduling_id != NULL && scheduling_id[0] != '\0') ? scheduling_id : "unknown",
+             (event != NULL && event[0] != '\0') ? event : "UNKNOWN",
+             safe_user,
+             (long long)timestamp);
+    system_manager_send_packet(packet, comm_main_mode);
+}
+
+static void system_manager_monitoring_send_callback(const char *packet,
+                                                    comm_type communication)
+{
+    system_manager_send_packet(packet, communication);
+}
+
 static void system_manager_handle_idp_0(const char *packet, comm_type communication)
 {
     UNUSED(packet);
@@ -621,6 +684,244 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
     system_manager_send_packet(response, communication);
 }
 
+static void system_manager_handle_idp_13(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    char scheduling_id[50] = {};
+    char user[50] = {};
+    char response[140] = {};
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {"string", scheduling_id},
+        {"string", user},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count != 2 && delimiter_count != 3)
+    {
+        system_manager_send_error("idp_13_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    if (!system_manager_device_matches(device_id))
+    {
+        return;
+    }
+
+    esp_err_t result = scheduling_delete(scheduling_id);
+    if (result != ESP_OK)
+    {
+        system_manager_send_schedule_error(result,
+                                           "schedule_not_found",
+                                           communication);
+        return;
+    }
+
+    snprintf(response,
+             sizeof(response),
+             "#13-%s-%s-DELETED$",
+             system_id,
+             scheduling_id);
+    system_manager_send_packet(response, communication);
+}
+
+static void system_manager_handle_idp_14(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    char user[50] = {};
+    char response[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+    time_t start_value = 0;
+    time_t end_value = 0;
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {"time_t", &start_value},
+        {"time_t", &end_value},
+        {"string", user},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count != 0 && delimiter_count != 1 && delimiter_count != 4)
+    {
+        system_manager_send_error("idp_14_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    if (!system_manager_device_matches(device_id))
+    {
+        return;
+    }
+
+    if (delimiter_count == 4)
+    {
+        time_t now = rtc_app_get_timestamp(false);
+        time_t start_date = system_manager_resolve_schedule_time(start_value, now);
+        time_t end_date = system_manager_resolve_schedule_time(end_value, now);
+        char scheduling_id[50] = {};
+
+        if (start_value <= 0 || end_value <= 0 ||
+            start_date <= now || end_date <= start_date ||
+            user[0] == '\0')
+        {
+            system_manager_send_error("idp_14_invalid_schedule", communication);
+            return;
+        }
+
+        esp_err_t result = scheduling_add_date(start_date,
+                                               end_date,
+                                               user,
+                                               scheduling_id,
+                                               sizeof(scheduling_id));
+        if (result != ESP_OK)
+        {
+            system_manager_send_schedule_error(result,
+                                               "idp_14_invalid_schedule",
+                                               communication);
+            return;
+        }
+
+        snprintf(response,
+                 sizeof(response),
+                 "#14-%s-%s-ACCEPTED$",
+                 system_id,
+                 scheduling_id);
+        system_manager_send_packet(response, communication);
+        return;
+    }
+
+    pump_scheduling_date schedules[CONFIG_SCHEDULING_MAX_VALUE] = {};
+    size_t schedules_count = scheduling_get_dates(schedules,
+                                                  CONFIG_SCHEDULING_MAX_VALUE);
+    bool found = false;
+
+    for (size_t index = 0; index < schedules_count; index++)
+    {
+        if (schedules[index].scheduling_id[0] == '\0')
+        {
+            continue;
+        }
+
+        snprintf(response,
+                 sizeof(response),
+                 "#14-%s-%s-%lld-%lld-%u-%s$",
+                 system_id,
+                 schedules[index].scheduling_id,
+                 (long long)schedules[index].start_date,
+                 (long long)schedules[index].end_date,
+                 schedules[index].started ? 1U : 0U,
+                 schedules[index].user);
+        system_manager_send_packet(response, communication);
+        found = true;
+    }
+
+    if (!found)
+    {
+        snprintf(response, sizeof(response), "#14-%s-NONE$", system_id);
+        system_manager_send_packet(response, communication);
+    }
+}
+
+static void system_manager_handle_idp_16(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    char user[50] = {};
+    char response[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+    time_t end_value = 0;
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {"time_t", &end_value},
+        {"string", user},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count != 0 && delimiter_count != 1 && delimiter_count != 3)
+    {
+        system_manager_send_error("idp_16_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    if (!system_manager_device_matches(device_id))
+    {
+        return;
+    }
+
+    if (delimiter_count == 3)
+    {
+        time_t now = rtc_app_get_timestamp(false);
+        time_t end_date = system_manager_resolve_schedule_time(end_value, now);
+        char scheduling_id[50] = {};
+
+        if (end_value <= 0 || end_date <= now || user[0] == '\0')
+        {
+            system_manager_send_error("idp_16_invalid_schedule", communication);
+            return;
+        }
+
+        esp_err_t result = scheduling_add_off_date(end_date,
+                                                   user,
+                                                   scheduling_id,
+                                                   sizeof(scheduling_id));
+        if (result != ESP_OK)
+        {
+            system_manager_send_schedule_error(result,
+                                               "idp_16_invalid_schedule",
+                                               communication);
+            return;
+        }
+
+        snprintf(response,
+                 sizeof(response),
+                 "#16-%s-%s-ACCEPTED$",
+                 system_id,
+                 scheduling_id);
+        system_manager_send_packet(response, communication);
+        return;
+    }
+
+    pump_scheduling_off_date schedules[CONFIG_SCHEDULING_MAX_VALUE] = {};
+    size_t schedules_count = scheduling_get_off_dates(schedules,
+                                                      CONFIG_SCHEDULING_MAX_VALUE);
+    bool found = false;
+
+    for (size_t index = 0; index < schedules_count; index++)
+    {
+        if (schedules[index].scheduling_id[0] == '\0')
+        {
+            continue;
+        }
+
+        snprintf(response,
+                 sizeof(response),
+                 "#16-%s-%s-%lld-%s$",
+                 system_id,
+                 schedules[index].scheduling_id,
+                 (long long)schedules[index].end_date,
+                 schedules[index].user);
+        system_manager_send_packet(response, communication);
+        found = true;
+    }
+
+    if (!found)
+    {
+        snprintf(response, sizeof(response), "#16-%s-NONE$", system_id);
+        system_manager_send_packet(response, communication);
+    }
+}
+
 static void system_manager_handle_idp_21(const char *packet, comm_type communication)
 {
     uint8_t idp = 0;
@@ -712,6 +1013,67 @@ static void system_manager_handle_idp_31(const char *packet, comm_type communica
     system_manager_send_comm_mode(communication);
 }
 
+static void system_manager_handle_idp_42(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    char heartbeat_state[20] = {};
+    char response[100] = {};
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {"string", heartbeat_state},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count > 2)
+    {
+        system_manager_send_error("idp_42_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    if (!system_manager_device_matches(device_id))
+    {
+        return;
+    }
+
+    if (heartbeat_state[0] == '\0')
+    {
+        snprintf(response,
+                 sizeof(response),
+                 "#42-%s-%s$",
+                 system_id,
+                 system_monitoring_connectivity_alive() ? "ALIVE" : "NO_HEARTBEAT");
+        system_manager_send_packet(response, communication);
+        return;
+    }
+
+    if (strcmp(heartbeat_state, "PING") == 0)
+    {
+        if (communication == COMM_MQTT)
+        {
+            system_monitoring_heartbeat_feed("PING");
+        }
+
+        snprintf(response, sizeof(response), "#42-%s-PONG$", system_id);
+        system_manager_send_packet(response, communication);
+    }
+    else if (strcmp(heartbeat_state, "PONG") == 0)
+    {
+        if (communication == COMM_MQTT)
+        {
+            system_monitoring_heartbeat_feed("PONG");
+        }
+    }
+    else
+    {
+        system_manager_send_error("idp_42_invalid_state", communication);
+    }
+}
+
 static void system_manager_handle_idp_90(comm_type communication)
 {
     char packet[100] = {};
@@ -728,14 +1090,6 @@ static void system_manager_handle_idp_91(comm_type communication)
     system_manager_send_packet(packet, communication);
     vTaskDelay(pdMS_TO_TICKS(200));
     esp_restart();
-}
-
-static void system_manager_handle_idp_92(comm_type communication)
-{
-    char packet[80] = {};
-
-    snprintf(packet, sizeof(packet), "#92-%s$", system_id);
-    system_manager_send_packet(packet, communication);
 }
 
 static void system_manager_process_packet(const char *packet_in, comm_type communication)
@@ -774,6 +1128,15 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
         case IDP_3:
             system_manager_handle_idp_3(packet, communication);
             break;
+        case IDP_13:
+            system_manager_handle_idp_13(packet, communication);
+            break;
+        case IDP_14:
+            system_manager_handle_idp_14(packet, communication);
+            break;
+        case IDP_16:
+            system_manager_handle_idp_16(packet, communication);
+            break;
         case IDP_21:
             system_manager_handle_idp_21(packet, communication);
             break;
@@ -783,14 +1146,14 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
         case IDP_31:
             system_manager_handle_idp_31(packet, communication);
             break;
+        case IDP_42:
+            system_manager_handle_idp_42(packet, communication);
+            break;
         case IDP_90:
             system_manager_handle_idp_90(communication);
             break;
         case IDP_91:
             system_manager_handle_idp_91(communication);
-            break;
-        case IDP_92:
-            system_manager_handle_idp_92(communication);
             break;
         default:
             system_manager_send_error("unsupported_idp", communication);
@@ -989,6 +1352,8 @@ void system_manager_init(void)
     ESP_ERROR_CHECK(actuation_app_init(system_manager_comm_callback));
     ESP_ERROR_CHECK(comm_app_init(system_manager_comm_callback));
     system_manager_comm_ready = true;
+    ESP_ERROR_CHECK(scheduling_init(system_manager_schedule_event_callback));
+    ESP_ERROR_CHECK(system_monitoring_init(system_manager_monitoring_send_callback));
     system_manager_publish_boot_shutdown_reason();
 
     actuation_status status = {};
@@ -997,5 +1362,5 @@ void system_manager_init(void)
 
     LOG_SUCCESS(SYSTEM_MANAGER_TAG,
                 "SYSTEM",
-                "New product initialized: 4 relay pairs and 4 ON/OFF status inputs");
+                "New product initialized: actuation, date scheduling and UART heartbeat active");
 }

@@ -42,13 +42,6 @@
 #define DATA_RUSH_MODE_STATE "rush_state"
 
 /**
- * @def DATA_REBOOT_CONFIG
- * @brief NVS access space for reboot configuration data.
- */
-#define DATA_REBOOT_CONFIG "reboot_config"
-
-
-/**
  * @def DATA_SCHEDULING_DATE
  * @brief NVS access space for scheduling date data.
  */
@@ -59,12 +52,6 @@
  * @brief NVS access space for scheduling off date data.
  */
 #define DATA_SCHEDULING_OFF_DATE "s_off_date"
-
-/**
- * @def DATA_SCHEDULING_START_STATE
- * @brief NVS access space for the active start schedule state.
- */
-#define DATA_SCHEDULING_START_STATE "s_start_state"
 
 /**
  * @def DATA_HISTORY
@@ -111,6 +98,8 @@ static void data_app_remove_discarded_pivot_data(void)
 		"phy_barrier",
 		"initial_angle",
 		"manual_counter",
+		"reboot_config",
+		"s_start_state",
 	};
 
 	for (size_t index = 0; index < sizeof(discarded_keys) / sizeof(discarded_keys[0]); index++)
@@ -128,56 +117,28 @@ static void data_app_remove_discarded_pivot_data(void)
 }
 
 /**
- * @brief Clears the persisted active start scheduling state when it matches the deleted scheduling.
- * @param scheduling_start_state Loaded active start scheduling state.
- * @param scheduling_id Scheduling identifier being deleted.
- * @return esp_err_t Error code indicating the success of the operation.
- */
-static esp_err_t data_app_clear_active_start_state(const pivot_scheduling_start_state *scheduling_start_state, const char *scheduling_id)
-{
-	if (scheduling_start_state == NULL || scheduling_id == NULL)
-	{
-		return ESP_ERR_INVALID_ARG;
-	}
-
-	if (!scheduling_start_state->active ||
-		strcmp(scheduling_start_state->scheduling_id, scheduling_id) != 0)
-	{
-		return ESP_OK;
-	}
-
-	pivot_scheduling_start_state scheduling_start_state_clear = {};
-	return data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state_clear, sizeof(scheduling_start_state_clear));
-}
-
-/**
  * @brief Deletes a scheduling entry from a specific persisted scheduling type.
  * @param scheduling_type Data type that stores the scheduling array.
  * @param scheduling_item_size Size of each scheduling item in the array.
- * @param clear_active_start_state True when the deleted scheduling may own the active start state.
  * @param scheduling_log_type Scheduling label used in log messages.
  * @param scheduling_id Scheduling identifier being deleted.
- * @param scheduling_start_state Persisted active start scheduling state.
  * @return esp_err_t Error code indicating the success of the operation.
  */
 static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type,
 													 size_t scheduling_item_size,
-													 bool clear_active_start_state,
 													 const char *scheduling_log_type,
-													 const char *scheduling_id,
-													 const pivot_scheduling_start_state *scheduling_start_state)
+													 const char *scheduling_id)
 {
 	typedef union
 	{
-		pivot_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
-		pivot_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pump_scheduling_date scheduling_date[CONFIG_SCHEDULING_MAX_VALUE];
+		pump_scheduling_off_date scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE];
 	} data_app_scheduling_buffer;
 
 	data_app_scheduling_buffer scheduling_buffer = {};
 	void *scheduling_data = NULL;
 	size_t scheduling_data_size = 0;
 	esp_err_t ret = ESP_FAIL;
-	esp_err_t state_ret = ESP_OK;
 
 	switch (scheduling_type)
 	{
@@ -214,18 +175,13 @@ static esp_err_t data_app_delete_scheduling_internal(data_type_t scheduling_type
 			LOG_WARNING(DATA_APP_TAG, "NVS", "deleting schedule %s id: %s", scheduling_log_type, current_scheduling_id);
 			memset((uint8_t *)scheduling_data + (position * scheduling_item_size), 0x00, scheduling_item_size);
 
-			if (clear_active_start_state)
-			{
-				state_ret = data_app_clear_active_start_state(scheduling_start_state, scheduling_id);
-			}
-
 			ret = data_app_save(scheduling_type, scheduling_data, scheduling_data_size);
 			if (ret != ESP_OK)
 			{
 				return ret;
 			}
 
-			return state_ret;
+			return ESP_OK;
 		}
 	}
 
@@ -264,20 +220,14 @@ esp_err_t data_app_init(void)
 			.wifi_pass = "soiltech",
 	};
 
-	const reboot_config default_reboot = {
-			.enable = false,
-			.reboot_timeout_sec = 3600, 	//1 hours in sec
-	};
-
 	const comm_main_mode_config default_comm_main_mode = {
 			.comm_main_mode_config = "RF",
 	};
 
 	const rush_mode_config default_rush_mode = {};
 	const rush_mode_saved_state default_rush_mode_state = {};
-	const pivot_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_scheduling_start_state default_scheduling_start_state = {};
+	const pump_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
+	const pump_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 	err = nvs_data_init();
@@ -300,24 +250,14 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_RUSH_MODE_STATE, &default_rush_mode_state, sizeof(default_rush_mode_state));
 		}
 
-		if(nvs_data_get_size(DATA_REBOOT_CONFIG) == 0)
-		{
-			data_app_save(DATA_TYPE_REBOOT_CONFIG, &default_reboot, sizeof(default_reboot));
-		}
-
-		if(nvs_data_get_size(DATA_SCHEDULING_DATE) == 0)
+		if(nvs_data_get_size(DATA_SCHEDULING_DATE) != sizeof(default_scheduling_date))
 		{
 			data_app_save(DATA_TYPE_SCHEDULING_DATE, &default_scheduling_date, sizeof(default_scheduling_date));
 		}
 
-		if(nvs_data_get_size(DATA_SCHEDULING_OFF_DATE) == 0)
+		if(nvs_data_get_size(DATA_SCHEDULING_OFF_DATE) != sizeof(default_scheduling_off_date))
 		{
 			data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &default_scheduling_off_date, sizeof(default_scheduling_off_date));
-		}
-
-		if(nvs_data_get_size(DATA_SCHEDULING_START_STATE) == 0)
-		{
-			data_app_save(DATA_TYPE_SCHEDULING_START_STATE, &default_scheduling_start_state, sizeof(default_scheduling_start_state));
 		}
 
 		if(nvs_data_get_size(DATA_HISTORY) == 0)
@@ -379,11 +319,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_RUSH_MODE_STATE, data, data_size);
 			break;
 		}
-		case DATA_TYPE_REBOOT_CONFIG:
-		{
-			ret = nvs_data_set(DATA_REBOOT_CONFIG, data, data_size);
-			break;
-		}
 		case DATA_TYPE_SCHEDULING_DATE:
 		{
 			ret = nvs_data_set(DATA_SCHEDULING_DATE, data, data_size);
@@ -392,11 +327,6 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		case DATA_TYPE_SCHEDULING_OFF_DATE:
 		{
 			ret = nvs_data_set(DATA_SCHEDULING_OFF_DATE, data, data_size);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_START_STATE:
-		{
-			ret = nvs_data_set(DATA_SCHEDULING_START_STATE, data, data_size);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -500,11 +430,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			ret = nvs_data_get_blob(DATA_RUSH_MODE_STATE, data);
 			break;
 		}
-		case DATA_TYPE_REBOOT_CONFIG:
-		{
-			ret = nvs_data_get_blob(DATA_REBOOT_CONFIG, data);
-			break;
-		}
 		case DATA_TYPE_SCHEDULING_DATE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_DATE, data);
@@ -513,11 +438,6 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_SCHEDULING_OFF_DATE:
 		{
 			ret = nvs_data_get_blob(DATA_SCHEDULING_OFF_DATE, data);
-			break;
-		}
-		case DATA_TYPE_SCHEDULING_START_STATE:
-		{
-			ret = nvs_data_get_blob(DATA_SCHEDULING_START_STATE, data);
 			break;
 		}
 		case DATA_TYPE_HISTORY:
@@ -562,21 +482,16 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 esp_err_t data_app_delete_scheduling(char* scheduling_id)
 {
 	esp_err_t ret = ESP_OK;
-	pivot_scheduling_start_state scheduling_start_state = {};
 
-	if (scheduling_id == NULL)
+	if (scheduling_id == NULL || scheduling_id[0] == '\0')
 	{
 		return ESP_ERR_INVALID_ARG;
 	}
 
-	data_app_load(DATA_TYPE_SCHEDULING_START_STATE, &scheduling_start_state);
-
 	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_DATE,
-											  sizeof(pivot_scheduling_date),
-											  true,
+											  sizeof(pump_scheduling_date),
 											  "date",
-											  scheduling_id,
-											  &scheduling_start_state);
+											  scheduling_id);
 	if (ret == ESP_OK)
 	{
 		return ret;
@@ -588,11 +503,9 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 	}
 
 	ret = data_app_delete_scheduling_internal(DATA_TYPE_SCHEDULING_OFF_DATE,
-											  sizeof(pivot_scheduling_off_date),
-											  false,
-											  "date",
-											  scheduling_id,
-											  &scheduling_start_state);
+											  sizeof(pump_scheduling_off_date),
+											  "off-date",
+											  scheduling_id);
 	if (ret == ESP_OK)
 	{
 		return ret;
@@ -603,7 +516,7 @@ esp_err_t data_app_delete_scheduling(char* scheduling_id)
 		return ret;
 	}
 
-	return ESP_OK;
+	return ESP_ERR_NOT_FOUND;
 }
 
 /**

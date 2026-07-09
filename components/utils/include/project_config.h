@@ -152,10 +152,10 @@
  */
 #define CONFIG_HTTP_OK                  ("200")
 
-/** 
- * @brief Offset for scheduling timestamps.
+/**
+ * @brief Maximum delay accepted when executing a pending start schedule.
  */
-#define TIMESTAMP_OFFSET_SCHEDULING (1800) // 30 minutes tolerance for start and end dates
+#define CONFIG_SCHEDULING_START_GRACE_SEC (1800)
 
 
 /**
@@ -168,7 +168,7 @@
  * @var IDP_0 Read actions
  * @var IDP_1 Save actions
  * @var IDP_2 Network configurations
- * @var IDP_3 Pivot configurations
+ * @var IDP_3 Pump actuation configurations
  * @var IDP_4 Rush mode configuration
  * @var IDP_5 Sector configurations
  * @var IDP_6 New modem configurations
@@ -177,15 +177,12 @@
  * @var IDP_9 Obtain Traceroute
  * @var IDP_10 Obtain Noise
  * @var IDP_11 GPRS connection status
- * @var IDP_12 Pivot history
+ * @var IDP_12 Pump history
  * @var IDP_13 Schedule delete
  * @var IDP_14 Scheduling type 1 (On by date and off by date)
- * @var IDP_15 Schedule type 2 (Turn on by date and turn off by angle)
+ * @var IDP_15 Removed angle schedule
  * @var IDP_16 Schedule type 3 (Only turns off by date)
- * @var IDP_22 Barrier configurations
- * @var IDP_23 GPS configurations via LoraMesh
- * @var IDP_24 Automatic Reboot configurations
- * @var IDP_42 Heartbeat between modem and control board
+ * @var IDP_42 Heartbeat with the connectivity ESP over GPRS UART
  * @var IDP_INVALID Invalid packet identifier
  */
 typedef enum
@@ -212,7 +209,6 @@ typedef enum
     IDP_21 = 21,
     IDP_22,
     IDP_23,
-    IDP_24,
     IDP_26 = 26,
     IDP_27,
     IDP_28,
@@ -222,7 +218,6 @@ typedef enum
     IDP_42 = 42,
     IDP_90 = 90,
     IDP_91,
-    IDP_92,
     IDP_INVALID = 255
 } idp_type;
 
@@ -364,22 +359,6 @@ typedef struct __attribute__((__packed__))
 #define ACTUATION_CONFIG_VAR_COUNT (12)
 
 /**
- * Structure defining the reboot configuration parameters.
- */
-typedef struct __attribute__((__packed__))
-{
-    bool enable;                    /*!< Enable or Disable */
-    time_t reboot_timeout_sec;     /*!< Reboot time */
-} reboot_config;
-
-/**
- * @brief Configuration parameters.
- *
- * How many configuration parameters in reboot_config struct.
- */
-#define REBOOT_CONFIG_VAR_COUNT     (2)
-
-/**
  * @brief Configuration parameters.
  *
  * Structure defining the network configuration parameters.
@@ -454,39 +433,26 @@ typedef struct __attribute__((__packed__))
 #define COMM_MAIN_MODE_CONFIG_VAR_COUNT   (1)
 
 /**
- * @brief Scheduling date parameters.
- *
- * Structure defining the scheduling parameters based on date.
+ * @brief Pump schedule that starts and later stops the complete sequence.
  */
 typedef struct __attribute__((__packed__))
 {
-    char scheduling_id[50];         /*!< Scheduling ID */
-    time_t start_date;              /*!< Start date */
-    time_t end_date;                /*!< End date */
-    pivot_actions actions;          /*!< Pivot actions */
-    char str_author[50];
-} pivot_scheduling_date;
+    char scheduling_id[50];         /*!< Generated schedule identifier. */
+    time_t start_date;              /*!< Absolute Unix timestamp for pump start. */
+    time_t end_date;                /*!< Absolute Unix timestamp for pump stop. */
+    char user[50];                  /*!< User that created the schedule. */
+    bool started;                   /*!< True after the start command has been issued. */
+} pump_scheduling_date;
 
 /**
- *
+ * @brief Pump schedule that only requests a stop.
  */
 typedef struct __attribute__((__packed__))
 {
-    char scheduling_id[50];         /*!< Scheduling ID */
-    time_t end_date;                /*!< End date */
-    char str_author[50];
-} pivot_scheduling_off_date;
-
-
-/**
- * @brief Persistent runtime state for the single active start schedule.
- */
-typedef struct __attribute__((__packed__))
-{
-    bool active;                    /*!< True when a start schedule is currently active */
-    uint8_t scheduling_idp;         /*!< IDP_14 or IDP_15 for the active start schedule */
-    char scheduling_id[50];         /*!< Active scheduling identifier */
-} pivot_scheduling_start_state;
+    char scheduling_id[50];         /*!< Generated schedule identifier. */
+    time_t end_date;                /*!< Absolute Unix timestamp for pump stop. */
+    char user[50];                  /*!< User that created the schedule. */
+} pump_scheduling_off_date;
 
 /**
  * @brief History parameters.
@@ -505,39 +471,6 @@ typedef struct __attribute__((__packed__))
 
 
 /**
- * @brief Indicates that the pivot is outside the barrier.
- *
- * This macro is used to represent the state how many manual readings were taken
- *
- */
-typedef enum
-{
-    NO_MANUAL_READING = 0,
-    READING_LIMIT_FOR_RETURN = 3,
-} manual_off_counter;
-
-/**
- * @brief Indicates the type of hangs up status.
- *
- * This macro is used to represent the type of hangs up status.
- *
- */
-typedef enum
-{
-    TYPE_HANGS_UP_MANUAL = 0,
-    TYPE_HANGS_UP_VIRTUAL_BARRIER,
-    TYPE_HANGS_UP_PIVOT_WITHOUT_WATER,
-    TYPE_HANGS_UP_BROWNOUT,
-    TYPE_HANGS_UP_SCHEDULE_14,
-    TYPE_HANGS_UP_SCHEDULE_15,
-    TYPE_HANGS_UP_SCHEDULE_16,
-    TYPE_HANGS_UP_SCHEDULE_17,
-    TYPE_HANGS_UP_SOIL_APP,
-    TYPE_HANGS_UP_IRRIGABRAS_APP,
-    TYPE_HANGS_UP_RUSH_MODE,
-} hangs_up_status;
-
-/**
  * @brief Application callback function.
  *
  * Function signature for the application callback function.
@@ -547,8 +480,6 @@ typedef enum
  */
 typedef void (*app_callback)(const char* buffer_request, comm_type communication);
 
-
-typedef void (*hangs_up_callback)(hangs_up_status shutdown_reason, idp_type idp, char *scheduling_id, char *author);
 
 /** @var system_id
  *  @brief Local variable for the system ID.

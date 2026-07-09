@@ -18,7 +18,7 @@ Contem:
 - Enumeracoes IDP e comunicacao.
 - Estruturas persistidas.
 
-Foram removidas as estruturas compartilhadas de configuracao de pivo, setor, GPS, barreiras e agendamento por angulo. Alguns tipos antigos continuam temporariamente declarados apenas porque `rush_mode.c`, `scheduling.c`, `system_monitoring.c` e os formatos reservados de historico/agendamento por data ainda aguardam decisao.
+Foram removidas as estruturas compartilhadas de configuracao de pivo, setor, GPS, barreiras, reboot automatico e agendamento por angulo. O agendamento por data usa estruturas proprias do produto de bombeamento. Tipos antigos ainda usados por `rush_mode.c` e pelo historico reservado permanecem congelados.
 
 Constantes principais do bombeamento:
 
@@ -46,9 +46,11 @@ Constantes principais do bombeamento:
 
 Define nomes, pilhas e prioridades de tasks.
 
-No firmware atual, a task relevante nova e:
+No firmware atual, as tasks relevantes sao:
 
 - `ACTUATION_APP_TASK_NAME`
+- `SCHEDULING_TASK_NAME`
+- `SYSTEM_MONITORING_HEARTBEAT_TASK_NAME`
 
 ## `log.h`
 

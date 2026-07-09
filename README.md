@@ -12,9 +12,11 @@ O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 
 - Flash configurada: 16MB.
 - Comunicacao serial: RF UART e GPRS UART ativas.
 - Modo principal de comunicacao: RF por padrao.
+- Agendamentos por data: IDPs 13, 14, 16 e eventos IDP 18 ativos.
+- Heartbeat do ESP de conectividade: IDP 42 ativo na GPRS UART.
 - HTTP/app/Wi-Fi: desabilitados nesta etapa do firmware.
 - Regras de setor, barreira, GPS, pluviometro, percentimetro e agenda por angulo: removidas do firmware.
-- `rush_mode.c`, `scheduling.c` e `system_monitoring.c`: preservados fora do build para decisao futura.
+- `rush_mode.c`: preservado fora do build para decisao futura.
 
 ## Pinagem de Acionamento
 
@@ -64,6 +66,7 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - [Hardware e pinagem](docs/functional/hardware.md)
 - [Sequencia de bombeamento](docs/functional/pump_sequence.md)
 - [Comunicacao e padrao IDP](docs/functional/communication_idp.md)
+- [Agendamentos por data](docs/functional/scheduling.md)
 - [Teste serial de bancada](docs/functional/serial_bench_test.md)
 - [Padrao de logs e cores](docs/functional/logging.md)
 - [Persistencia e boot](docs/functional/persistence_boot.md)
