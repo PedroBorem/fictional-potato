@@ -117,6 +117,14 @@
 #define CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS (1000)
 
 /**
+ * @brief Minimum interval used to publish IDP 29 progress packets during timers.
+ *
+ * Phase start/end, RUNNING, STOPPING, FAULT and STOPPED events are still sent
+ * immediately. This only limits periodic timer progress to reduce UART load.
+ */
+#define CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS (5000)
+
+/**
  * @brief Duration used to energize all OFF relays during shutdown.
  */
 #define CONFIG_PUMP_STOP_RELAY_TIME_MS (10000)

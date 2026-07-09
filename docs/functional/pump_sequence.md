@@ -67,6 +67,7 @@ Ao receber comando de partida, o monitor serial registra:
 - Validacao OK de cada etapa.
 - Falha de canal, quando alguma leitura esperada nao confirma ON.
 - Heartbeat do timer `......` a cada `CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS`, hoje `1000 ms`, somente durante a sequencia de acionamento.
+- Publicacao `#29` periodica limitada por `CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS`, hoje `5000 ms`, para reduzir carga na UART.
 
 ## Monitoramento em Operacao
 

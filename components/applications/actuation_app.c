@@ -476,6 +476,7 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
     uint32_t elapsed_ms = 0;
     uint32_t next_log_ms = CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
     uint32_t next_heartbeat_ms = CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
+    uint32_t next_progress_publish_ms = CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS;
 
     while (elapsed_ms < wait_ms)
     {
@@ -505,11 +506,23 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
             elapsed_ms < wait_ms)
         {
             actuation_app_log_timer_heartbeat(stage_name, elapsed_ms, wait_ms);
-            actuation_app_publish_progress(progress_motor, progress_phase, elapsed_ms, wait_ms);
 
             while (next_heartbeat_ms <= elapsed_ms)
             {
                 next_heartbeat_ms += CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
+            }
+        }
+
+        if (log_progress &&
+            progress_phase != NULL &&
+            elapsed_ms >= next_progress_publish_ms &&
+            elapsed_ms < wait_ms)
+        {
+            actuation_app_publish_progress(progress_motor, progress_phase, elapsed_ms, wait_ms);
+
+            while (next_progress_publish_ms <= elapsed_ms)
+            {
+                next_progress_publish_ms += CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS;
             }
         }
 
@@ -524,11 +537,6 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
                 next_log_ms += CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
             }
         }
-    }
-
-    if (log_progress && progress_phase != NULL)
-    {
-        actuation_app_publish_progress(progress_motor, progress_phase, wait_ms, wait_ms);
     }
 
     if (actuation_app_stop_command_pending())

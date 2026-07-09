@@ -160,6 +160,8 @@ Se uma falha for de leitura de motor, `MOTOR` informa o canal `1..4`.
 
 Evento espontaneo de saida. Nao deve ser enviado como comando ou consulta para o ESP32-S3.
 
+Durante rampas e intervalos, o envio periodico e limitado a `CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS`, hoje `5000 ms`, para reduzir trafego na UART.
+
 ```text
 #29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
 ```

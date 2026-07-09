@@ -205,6 +205,8 @@ Se o boot ocorrer com a ultima acao persistida ainda em ON, o pacote sai com `PH
 
 Evento espontaneo de saida usado pela interface local do ESP de conectividade. O ESP32-S3 nao aceita `#29` como comando ou consulta; se esse pacote voltar pela UART, ele e ignorado para evitar eco serial.
 
+Durante timers longos, o progresso periodico e limitado por `CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS`, hoje `5000 ms`, para reduzir carga na UART. Eventos de inicio/fim de fase, troca de motor, `RUNNING`, `STOPPING`, `FAULT` e `STOPPED` continuam imediatos.
+
 ```text
 #29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
 ```
