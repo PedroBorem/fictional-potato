@@ -43,6 +43,8 @@ static char system_manager_mqtt_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
 static size_t system_manager_mqtt_rx_len = 0;
 static uint32_t system_manager_saved_shutdown_sequence = 0;
 
+static bool system_manager_actions_request_start(const actuation_actions *actions);
+
 static void system_manager_log_status(const actuation_status *status)
 {
     if (status == NULL)
@@ -69,6 +71,15 @@ static bool system_manager_device_matches(const char *device_id)
     return (strcmp(device_id, system_id) == 0 ||
             strcmp(device_id, "broadcast") == 0 ||
             strcmp(device_id, "all") == 0);
+}
+
+static bool system_manager_start_is_busy(void)
+{
+    const char *state = actuation_app_get_state_name();
+
+    return (strcmp(state, "STARTING") == 0 ||
+            strcmp(state, "RUNNING") == 0 ||
+            strcmp(state, "STOPPING") == 0);
 }
 
 static void system_manager_send_packet(const char *packet, comm_type communication)
@@ -529,6 +540,29 @@ static void system_manager_monitoring_send_callback(const char *packet,
     system_manager_send_packet(packet, communication);
 }
 
+static void system_manager_actuation_send_callback(const char *packet,
+                                                   comm_type communication)
+{
+    if (packet == NULL)
+    {
+        return;
+    }
+
+    if (strcmp(packet, "#00$") == 0)
+    {
+        system_manager_send_status(communication);
+        return;
+    }
+
+    if (strcmp(packet, "#28$") == 0)
+    {
+        system_manager_send_shutdown_reason(communication);
+        return;
+    }
+
+    system_manager_send_packet(packet, communication);
+}
+
 static void system_manager_handle_idp_0(const char *packet, comm_type communication)
 {
     UNUSED(packet);
@@ -575,6 +609,18 @@ static void system_manager_handle_idp_1(const char *packet, comm_type communicat
             system_manager_send_error("idp_1_invalid_command", communication);
             return;
         }
+    }
+
+    if (system_manager_actions_request_start(&actions) && system_manager_start_is_busy())
+    {
+        snprintf(response,
+                 sizeof(response),
+                 "#01-%s-BUSY-%s$",
+                 system_id,
+                 actuation_app_get_state_name());
+        system_manager_send_packet(response, communication);
+        system_manager_send_status(communication);
+        return;
     }
 
     actuation_app_set_progress_mode(communication);
@@ -982,23 +1028,9 @@ static void system_manager_handle_idp_28(const char *packet, comm_type communica
 
 static void system_manager_handle_idp_29(const char *packet, comm_type communication)
 {
-    uint8_t idp = 0;
-    char device_id[50] = {};
-
-    arg_pair_t args[] = {
-        {"uint8_t", &idp},
-        {"string", device_id},
-        {NULL, NULL},
-    };
-
-    idp_parser_get_packet_data(packet, args);
-
-    if (system_manager_device_matches(device_id) == false)
-    {
-        return;
-    }
-
-    system_manager_send_packet(packet, communication);
+    UNUSED(packet);
+    UNUSED(communication);
+    LOG_WARNING(SYSTEM_MANAGER_TAG, "COMM", "Ignoring inbound IDP29: progress telemetry is output-only");
 }
 
 static void system_manager_handle_idp_31(const char *packet, comm_type communication)
@@ -1375,7 +1407,7 @@ void system_manager_init(void)
 
     ESP_ERROR_CHECK(actuation_app_set_config(config));
     actuation_app_set_progress_mode(comm_main_mode);
-    ESP_ERROR_CHECK(actuation_app_init(system_manager_comm_callback));
+    ESP_ERROR_CHECK(actuation_app_init(system_manager_actuation_send_callback));
     ESP_ERROR_CHECK(comm_app_init(system_manager_comm_callback));
     system_manager_comm_ready = true;
     ESP_ERROR_CHECK(scheduling_init(system_manager_schedule_event_callback));

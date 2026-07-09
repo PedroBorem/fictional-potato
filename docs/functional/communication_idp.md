@@ -158,6 +158,8 @@ Se uma falha for de leitura de motor, `MOTOR` informa o canal `1..4`.
 
 ### IDP 29 - Progresso de Acionamento
 
+Evento espontaneo de saida. Nao deve ser enviado como comando ou consulta para o ESP32-S3.
+
 ```text
 #29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
 ```

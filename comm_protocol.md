@@ -203,7 +203,7 @@ Se o boot ocorrer com a ultima acao persistida ainda em ON, o pacote sai com `PH
 
 ## IDP 29 - Progresso de Acionamento
 
-Evento espontaneo usado pela interface local do ESP de conectividade:
+Evento espontaneo de saida usado pela interface local do ESP de conectividade. O ESP32-S3 nao aceita `#29` como comando ou consulta; se esse pacote voltar pela UART, ele e ignorado para evitar eco serial.
 
 ```text
 #29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
