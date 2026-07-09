@@ -1146,10 +1146,33 @@ static void system_manager_handle_idp_91(comm_type communication)
     esp_restart();
 }
 
+static bool system_manager_should_log_rx_packet(const char *packet, idp_type idp)
+{
+    uint8_t parsed_idp = 0;
+    char device_id[50] = {};
+    char heartbeat_state[20] = {};
+
+    arg_pair_t args[] = {
+        {"uint8_t", &parsed_idp},
+        {"string", device_id},
+        {"string", heartbeat_state},
+        {NULL, NULL},
+    };
+
+    if (packet == NULL || idp != IDP_42)
+    {
+        return true;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    return strcmp(heartbeat_state, "PONG") != 0;
+}
+
 static void system_manager_process_packet(const char *packet_in, comm_type communication)
 {
     char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
     idp_type idp = IDP_INVALID;
+    bool should_log_rx = true;
 
     if (packet_in == NULL)
     {
@@ -1157,16 +1180,17 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
     }
 
     idp = idp_parser_get(packet_in, packet);
+    should_log_rx = system_manager_should_log_rx_packet(packet, idp);
 
-    if (communication == COMM_MQTT)
+    if (should_log_rx && communication == COMM_MQTT)
     {
         LOG_UART_GPRS(SYSTEM_MANAGER_TAG, "RX %s", packet);
     }
-    else if (communication == COMM_RF)
+    else if (should_log_rx && communication == COMM_RF)
     {
         LOG_UART_RF(SYSTEM_MANAGER_TAG, "RX %s", packet);
     }
-    else
+    else if (should_log_rx)
     {
         LOG_DEFAULT(SYSTEM_MANAGER_TAG, "COMM", "RX %s", packet);
     }
