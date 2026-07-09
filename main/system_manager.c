@@ -577,6 +577,7 @@ static void system_manager_handle_idp_1(const char *packet, comm_type communicat
         }
     }
 
+    actuation_app_set_progress_mode(communication);
     actuation_app_set_actions(actions, true);
 
     snprintf(response, sizeof(response), "#01-%s-ACCEPTED$", system_id);
@@ -979,6 +980,27 @@ static void system_manager_handle_idp_28(const char *packet, comm_type communica
     system_manager_send_shutdown_reason(communication);
 }
 
+static void system_manager_handle_idp_29(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {NULL, NULL},
+    };
+
+    idp_parser_get_packet_data(packet, args);
+
+    if (system_manager_device_matches(device_id) == false)
+    {
+        return;
+    }
+
+    system_manager_send_packet(packet, communication);
+}
+
 static void system_manager_handle_idp_31(const char *packet, comm_type communication)
 {
     uint8_t idp = 0;
@@ -1142,6 +1164,9 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
             break;
         case IDP_28:
             system_manager_handle_idp_28(packet, communication);
+            break;
+        case IDP_29:
+            system_manager_handle_idp_29(packet, communication);
             break;
         case IDP_31:
             system_manager_handle_idp_31(packet, communication);
@@ -1349,6 +1374,7 @@ void system_manager_init(void)
     }
 
     ESP_ERROR_CHECK(actuation_app_set_config(config));
+    actuation_app_set_progress_mode(comm_main_mode);
     ESP_ERROR_CHECK(actuation_app_init(system_manager_comm_callback));
     ESP_ERROR_CHECK(comm_app_init(system_manager_comm_callback));
     system_manager_comm_ready = true;

@@ -46,6 +46,7 @@ Regras:
 | `18` | Evento de agenda | Adaptado | Publica partida, parada ou expiracao de agenda. |
 | `21` | Timestamp | Reaproveitado | Sincroniza RTC. |
 | `28` | Motivo de desligamento | Adaptado | Informa o ultimo desligamento salvo em NVS e publica eventos de parada/falha/boot. |
+| `29` | Progresso de acionamento | Novo | Publica etapa, motor, fase e timer da partida/parada para UI local. |
 | `30` | Acao local/manual | Adaptado futuro | Representa comando local ou evento manual. |
 | `42` | Heartbeat de conectividade | Adaptado | Supervisiona o ESP de conectividade pela GPRS UART. |
 | `90` | Versao de firmware | Reaproveitado | Retorna versao. |
@@ -199,6 +200,31 @@ Campos:
 O firmware salva o pacote completo em NVS usando `DATA_TYPE_REASON_HANG_UP` / `reason_hangup`. O pacote e enviado em toda parada segura, toda falha e todo boot pelo modo principal configurado.
 
 Se o boot ocorrer com a ultima acao persistida ainda em ON, o pacote sai com `PHASE=was_commanded_on` e `RESET_REASON` real, mesmo quando o reset nao for classificado como brownout pelo ESP-IDF.
+
+## IDP 29 - Progresso de Acionamento
+
+Evento espontaneo usado pela interface local do ESP de conectividade:
+
+```text
+#29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
+```
+
+Campos:
+
+| Campo | Valores esperados |
+| --- | --- |
+| `PUMP_STATE` | `STARTING`, `RUNNING`, `STOPPING`, `FAULT`, `STOPPED` |
+| `MOTOR` | `0` para evento global; `1..4` para etapa de motor. |
+| `PHASE` | `START_REQUESTED`, `ON`, `RAMP`, `STAGE`, `RUNNING`, `STOPPING`, `FAULT`, `STOPPED` |
+| `ELAPSED_SEC` | Tempo decorrido da fase atual, em segundos. |
+| `TOTAL_SEC` | Tempo total configurado para a fase atual, em segundos. `0` quando nao aplicavel. |
+| `C1..C4` | Snapshot das leituras no momento do evento. |
+
+Exemplo:
+
+```text
+#29-new_product-STARTING-2-RAMP-3-5-1-1-0-0$
+```
 
 ## IDP 42 - Heartbeat de Conectividade
 

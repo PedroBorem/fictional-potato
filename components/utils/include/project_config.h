@@ -182,6 +182,7 @@
  * @var IDP_14 Scheduling type 1 (On by date and off by date)
  * @var IDP_15 Removed angle schedule
  * @var IDP_16 Schedule type 3 (Only turns off by date)
+ * @var IDP_29 Pump startup progress event
  * @var IDP_42 Heartbeat with the connectivity ESP over GPRS UART
  * @var IDP_INVALID Invalid packet identifier
  */
@@ -212,6 +213,7 @@ typedef enum
     IDP_26 = 26,
     IDP_27,
     IDP_28,
+    IDP_29,
     IDP_30 = 30,
     IDP_31,
     IDP_32,

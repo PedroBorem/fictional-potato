@@ -97,6 +97,14 @@ Apos a parada segura, o firmware monta e salva um pacote `#28` em NVS:
 
 O pacote `#28` tambem e publicado pelo modo principal configurado.
 
+Durante a partida e a parada, o firmware tambem publica `#29` com o progresso da fase atual:
+
+```text
+#29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
+```
+
+Esse pacote foi criado para a UI local do ESP de conectividade mostrar rampa, intervalo e timer sem depender de log serial.
+
 ## Falhas
 
 Qualquer falha durante partida ou monitoramento:

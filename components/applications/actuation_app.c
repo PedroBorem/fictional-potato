@@ -44,6 +44,7 @@ typedef enum
 static TaskHandle_t actuation_app_task_handle = NULL;
 static QueueHandle_t actuation_app_command_queue = NULL;
 static app_callback actuation_app_callback = NULL;
+static comm_type actuation_app_progress_mode = COMM_RF;
 static actuation_actions actuation_app_last_actions = {};
 static actuation_pump_state actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
 static uint8_t actuation_app_last_fault_channel = 0;
@@ -225,6 +226,25 @@ static const char *actuation_app_state_to_phase(actuation_pump_state state)
     }
 }
 
+static const char *actuation_app_state_to_packet_state(actuation_pump_state state)
+{
+    switch (state)
+    {
+        case ACTUATION_PUMP_STATE_STOPPED:
+            return "STOPPED";
+        case ACTUATION_PUMP_STATE_STARTING:
+            return "STARTING";
+        case ACTUATION_PUMP_STATE_RUNNING:
+            return "RUNNING";
+        case ACTUATION_PUMP_STATE_STOPPING:
+            return "STOPPING";
+        case ACTUATION_PUMP_STATE_FAULT:
+            return "FAULT";
+        default:
+            return "UNKNOWN";
+    }
+}
+
 static void actuation_app_record_shutdown_event(actuation_shutdown_reason reason,
                                                 uint8_t motor,
                                                 const char *user,
@@ -315,6 +335,38 @@ static void actuation_app_log_timer_heartbeat(const char *stage_name,
               stage_name,
               (unsigned long)actuation_app_ms_to_sec_round_up(elapsed_ms),
               (unsigned long)actuation_app_ms_to_sec_round_up(wait_ms));
+}
+
+static void actuation_app_publish_progress(uint8_t motor,
+                                           const char *phase,
+                                           uint32_t elapsed_ms,
+                                           uint32_t total_ms)
+{
+    actuation_status status = {};
+    char packet[180] = {};
+
+    if (actuation_app_callback == NULL)
+    {
+        return;
+    }
+
+    status = gpio_actuator_get();
+
+    snprintf(packet,
+             sizeof(packet),
+             "#29-%s-%s-%u-%s-%lu-%lu-%u-%u-%u-%u$",
+             system_id,
+             actuation_app_state_to_packet_state(actuation_app_state),
+             (unsigned int)motor,
+             (phase != NULL && phase[0] != '\0') ? phase : "UNKNOWN",
+             (unsigned long)actuation_app_ms_to_sec_round_up(elapsed_ms),
+             (unsigned long)actuation_app_ms_to_sec_round_up(total_ms),
+             (unsigned int)status.channels[0],
+             (unsigned int)status.channels[1],
+             (unsigned int)status.channels[2],
+             (unsigned int)status.channels[3]);
+
+    actuation_app_callback(packet, actuation_app_progress_mode);
 }
 
 static uint32_t actuation_app_get_status_publish_delay_ms(void)
@@ -417,7 +469,9 @@ static actuation_sequence_result actuation_app_validate_channels(uint8_t enabled
 static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms,
                                                                uint8_t monitored_count,
                                                                const char *stage_name,
-                                                               bool log_progress)
+                                                               bool log_progress,
+                                                               uint8_t progress_motor,
+                                                               const char *progress_phase)
 {
     uint32_t elapsed_ms = 0;
     uint32_t next_log_ms = CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
@@ -451,6 +505,7 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
             elapsed_ms < wait_ms)
         {
             actuation_app_log_timer_heartbeat(stage_name, elapsed_ms, wait_ms);
+            actuation_app_publish_progress(progress_motor, progress_phase, elapsed_ms, wait_ms);
 
             while (next_heartbeat_ms <= elapsed_ms)
             {
@@ -469,6 +524,11 @@ static actuation_sequence_result actuation_app_wait_and_monitor(uint32_t wait_ms
                 next_log_ms += CONFIG_PUMP_STAGE_LOG_INTERVAL_MS;
             }
         }
+    }
+
+    if (log_progress && progress_phase != NULL)
+    {
+        actuation_app_publish_progress(progress_motor, progress_phase, wait_ms, wait_ms);
     }
 
     if (actuation_app_stop_command_pending())
@@ -504,6 +564,7 @@ static void actuation_app_stop_pump(bool fault)
     strncpy(shutdown_phase, actuation_app_state_to_phase(previous_state), sizeof(shutdown_phase) - 1U);
 
     actuation_app_state = fault ? ACTUATION_PUMP_STATE_FAULT : ACTUATION_PUMP_STATE_STOPPING;
+    actuation_app_publish_progress(shutdown_motor, fault ? "FAULT" : "STOPPING", 0, 0);
 
     if (fault)
     {
@@ -526,11 +587,17 @@ static void actuation_app_stop_pump(bool fault)
     if (fault == false)
     {
         actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
+        actuation_app_publish_progress(0, "STOPPED", 0, 0);
     }
 
     if (actuation_app_callback != NULL)
     {
-        actuation_app_callback("#28$", comm_main_mode);
+        actuation_app_callback("#28$", actuation_app_progress_mode);
+
+        if (actuation_app_progress_mode != comm_main_mode)
+        {
+            actuation_app_callback("#28$", comm_main_mode);
+        }
     }
 }
 
@@ -548,10 +615,14 @@ static bool actuation_app_handle_sequence_result(actuation_sequence_result resul
 static bool actuation_app_wait_phase_and_validate(const char *phase_name,
                                                  uint32_t wait_ms,
                                                  uint8_t monitored_count,
-                                                 uint8_t validate_count)
+                                                 uint8_t validate_count,
+                                                 uint8_t progress_motor,
+                                                 const char *progress_phase)
 {
     if (wait_ms > 0)
     {
+        actuation_app_publish_progress(progress_motor, progress_phase, 0, wait_ms);
+
         LOG_TIMER(ACTUATION_APP_TAG,
                   "%s: waiting %lu s, monitoring first %u channel(s), then validating first %u channel(s)",
                   phase_name,
@@ -560,7 +631,12 @@ static bool actuation_app_wait_phase_and_validate(const char *phase_name,
                   (unsigned int)validate_count);
 
         if (actuation_app_handle_sequence_result(
-                actuation_app_wait_and_monitor(wait_ms, monitored_count, phase_name, true)) == false)
+                actuation_app_wait_and_monitor(wait_ms,
+                                               monitored_count,
+                                               phase_name,
+                                               true,
+                                               progress_motor,
+                                               progress_phase)) == false)
         {
             return false;
         }
@@ -572,6 +648,7 @@ static bool actuation_app_wait_phase_and_validate(const char *phase_name,
                     "%s: no wait configured, validating first %u channel(s)",
                     phase_name,
                     (unsigned int)validate_count);
+        actuation_app_publish_progress(progress_motor, progress_phase, 0, 0);
     }
 
     if (actuation_app_handle_sequence_result(actuation_app_validate_channels(validate_count)) == false)
@@ -584,6 +661,8 @@ static bool actuation_app_wait_phase_and_validate(const char *phase_name,
                 "%s: validation OK for first %u channel(s)",
                 phase_name,
                 (unsigned int)validate_count);
+
+    actuation_app_publish_progress(progress_motor, progress_phase, wait_ms, wait_ms);
 
     return true;
 }
@@ -609,14 +688,26 @@ static bool actuation_app_start_channel_and_validate(uint8_t channel,
         return false;
     }
 
+    actuation_app_publish_progress(channel + 1U, "ON", 0, 0);
+
     snprintf(ramp_name, sizeof(ramp_name), "%s ramp", stage_name);
-    if (actuation_app_wait_phase_and_validate(ramp_name, ramp_ms, previous_count, enabled_count) == false)
+    if (actuation_app_wait_phase_and_validate(ramp_name,
+                                              ramp_ms,
+                                              previous_count,
+                                              enabled_count,
+                                              channel + 1U,
+                                              "RAMP") == false)
     {
         return false;
     }
 
     snprintf(interval_name, sizeof(interval_name), "%s interval", stage_name);
-    return actuation_app_wait_phase_and_validate(interval_name, stage_ms, enabled_count, enabled_count);
+    return actuation_app_wait_phase_and_validate(interval_name,
+                                                 stage_ms,
+                                                 enabled_count,
+                                                 enabled_count,
+                                                 channel + 1U,
+                                                 "STAGE");
 }
 
 static void actuation_app_start_pump_sequence(void)
@@ -642,6 +733,7 @@ static void actuation_app_start_pump_sequence(void)
               (unsigned int)actuation_app_config.status_publish_time_min);
     actuation_app_last_fault_channel = 0;
     actuation_app_state = ACTUATION_PUMP_STATE_STARTING;
+    actuation_app_publish_progress(0, "START_REQUESTED", 0, 0);
 
     if (actuation_app_start_channel_and_validate(0,
                                                  actuation_app_sec_to_ms_u32(actuation_app_config.ramp_1_delay_sec),
@@ -684,6 +776,7 @@ static void actuation_app_start_pump_sequence(void)
     }
 
     actuation_app_state = ACTUATION_PUMP_STATE_RUNNING;
+    actuation_app_publish_progress(4, "RUNNING", 0, 0);
     LOG_SUCCESS(ACTUATION_APP_TAG, "ACTUATION", "Stage 4/4: validation OK for all channels");
     LOG_DEFAULT(ACTUATION_APP_TAG,
                 "MONITORING",
@@ -698,7 +791,9 @@ static void actuation_app_start_pump_sequence(void)
                 actuation_app_wait_and_monitor(CONFIG_PUMP_MONITOR_INTERVAL_MS,
                                                CONFIG_ACTUATION_CHANNEL_COUNT,
                                                "Running",
-                                               false)) == false)
+                                               false,
+                                               0,
+                                               "RUNNING")) == false)
         {
             return;
         }
@@ -847,6 +942,17 @@ void actuation_app_set_actions(const actuation_actions actions, bool alert_chang
             xQueueReset(actuation_app_command_queue);
             xQueueSend(actuation_app_command_queue, &command, 0);
         }
+    }
+}
+
+void actuation_app_set_progress_mode(comm_type communication)
+{
+    if (communication == COMM_RF ||
+        communication == COMM_MQTT ||
+        communication == COMM_HTTP_GET ||
+        communication == COMM_HTTP_POST)
+    {
+        actuation_app_progress_mode = communication;
     }
 }
 

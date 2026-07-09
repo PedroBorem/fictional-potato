@@ -33,6 +33,14 @@ esp_err_t actuation_app_set_config(actuation_config config);
 void actuation_app_set_actions(const actuation_actions actions, bool alert_change);
 
 /**
+ * @brief Defines where spontaneous progress packets should be published.
+ *
+ * This is updated by the command origin. Scheduled/internal commands may keep
+ * the configured main communication mode.
+ */
+void actuation_app_set_progress_mode(comm_type communication);
+
+/**
  * @brief Returns the last command payload accepted by the application.
  */
 void actuation_app_get_actions(actuation_actions *actions_out, size_t actions_size);

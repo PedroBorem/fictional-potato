@@ -96,6 +96,7 @@ static void scheduling_issue_command(const scheduling_pending_action *pending)
         LOG_PROCESSING(SCHEDULING_TAG,
                        "Executing start schedule %s",
                        pending->scheduling_id);
+        actuation_app_set_progress_mode(comm_main_mode);
         actuation_app_set_actions(actions, true);
     }
     else if (pending->type == SCHEDULING_ACTION_STOP)
@@ -109,6 +110,7 @@ static void scheduling_issue_command(const scheduling_pending_action *pending)
         LOG_PROCESSING(SCHEDULING_TAG,
                        "Executing stop schedule %s",
                        pending->scheduling_id);
+        actuation_app_set_progress_mode(comm_main_mode);
         actuation_app_set_actions(actions, true);
     }
     else

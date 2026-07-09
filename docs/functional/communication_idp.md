@@ -156,6 +156,25 @@ Motivos implementados:
 
 Se uma falha for de leitura de motor, `MOTOR` informa o canal `1..4`.
 
+### IDP 29 - Progresso de Acionamento
+
+```text
+#29-DEVICE_ID-PUMP_STATE-MOTOR-PHASE-ELAPSED_SEC-TOTAL_SEC-C1-C2-C3-C4$
+```
+
+Uso esperado:
+
+- Alimentar a UI local do ESP de conectividade durante a partida.
+- Mostrar qual motor esta em `ON`, `RAMP` ou `STAGE`.
+- Mostrar `ELAPSED_SEC/TOTAL_SEC` para barra de progresso.
+- Publicar `FAULT`/`STOPPING`/`STOPPED` nos eventos de parada.
+
+Exemplo:
+
+```text
+#29-new_product-STARTING-1-RAMP-4-5-1-0-0-0$
+```
+
 ### IDPs 13, 14, 16 e 18 - Agendamentos
 
 ```text
