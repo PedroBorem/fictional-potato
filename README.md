@@ -70,7 +70,7 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - [Teste serial de bancada](docs/functional/serial_bench_test.md)
 - [Padrao de logs e cores](docs/functional/logging.md)
 - [Persistencia e boot](docs/functional/persistence_boot.md)
-- [Levantamento de IDPs](docs/new_product_idp_migration.md)
+- [Levantamento de IDPs](docs/newproduct_1_idp_migration.md)
 - [Inventario de limpeza e pendencias](docs/legacy_cleanup.md)
 - [Documentacao por componente](docs/components/README.md)
 

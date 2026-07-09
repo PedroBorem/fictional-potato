@@ -40,61 +40,61 @@ O firmware processa pacotes completos entre `#` e `$`. Quebras de linha `CR/LF` 
 Consultar status:
 
 ```text
-#00-new_product$
+#00-newproduct_1$
 ```
 
 Iniciar bombeamento:
 
 ```text
-#01-new_product-1-0-0-0-bancada$
+#01-newproduct_1-1-0-0-0-bancada$
 ```
 
 Parar bombeamento:
 
 ```text
-#01-new_product-0-0-0-2-bancada$
+#01-newproduct_1-0-0-0-2-bancada$
 ```
 
 Consultar modo principal:
 
 ```text
-#31-new_product$
+#31-newproduct_1$
 ```
 
 Configurar RF como principal:
 
 ```text
-#31-new_product-RF$
+#31-newproduct_1-RF$
 ```
 
 Configurar GPRS/MQTT como principal:
 
 ```text
-#31-new_product-MQTT$
+#31-newproduct_1-MQTT$
 ```
 
 Consultar versao:
 
 ```text
-#90-new_product$
+#90-newproduct_1$
 ```
 
 Consultar ultimo motivo de desligamento:
 
 ```text
-#28-new_product$
+#28-newproduct_1$
 ```
 
 Consultar configuracao de atuacao:
 
 ```text
-#03-new_product$
+#03-newproduct_1$
 ```
 
 Configurar rampas de `5 s`, intervalos de partida `10-30-30-0` e envio periodico de `#00$` a cada 1 minuto:
 
 ```text
-#03-new_product-10000-10-0-5-10-5-30-5-30-5-0-1$
+#03-newproduct_1-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
 
 Formato:
@@ -110,34 +110,34 @@ Formato:
 Comando aceito:
 
 ```text
-#01-new_product-ACCEPTED$
+#01-newproduct_1-ACCEPTED$
 ```
 
 Status:
 
 ```text
-#00-new_product-STATE-C1-C2-C3-C4-LAST_FAULT-TIMESTAMP$
+#00-newproduct_1-STATE-C1-C2-C3-C4-LAST_FAULT-TIMESTAMP$
 ```
 
 Exemplo:
 
 ```text
-#00-new_product-RUNNING-1-1-1-1-0-1780000000$
+#00-newproduct_1-RUNNING-1-1-1-1-0-1780000000$
 ```
 
 Motivo de desligamento:
 
 ```text
-#28-new_product-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
+#28-newproduct_1-REASON-ORIGIN-USER-PHASE-MOTOR-RESET_REASON-TIMESTAMP$
 ```
 
 Exemplos:
 
 ```text
-#28-new_product-command_off-command-bancada-running-0-none-1780000100$
-#28-new_product-startup_fault-actuation_app-bancada-starting-2-none-1780000200$
-#28-new_product-runtime_fault-actuation_app-bancada-running-3-none-1780000300$
-#28-new_product-brownout-boot-bancada-was_commanded_on-0-brownout-1780000400$
+#28-newproduct_1-command_off-command-bancada-running-0-none-1780000100$
+#28-newproduct_1-startup_fault-actuation_app-bancada-starting-2-none-1780000200$
+#28-newproduct_1-runtime_fault-actuation_app-bancada-running-3-none-1780000300$
+#28-newproduct_1-brownout-boot-bancada-was_commanded_on-0-brownout-1780000400$
 ```
 
 ## Comportamento dos Canais

@@ -13,7 +13,7 @@ Logs categorizados seguem:
 Exemplos:
 
 ```text
-[UART_GPRS][9404 ms] RX #01-new_product-1-0-0-0-app$
+[UART_GPRS][9404 ms] RX #01-newproduct_1-1-0-0-0-app$
 [TIMER][10414 ms] Stage 1/4 ramp heartbeat ...... 1/5 s
 [NVS][19424 ms] nvs_data_set, saved successfully
 ```

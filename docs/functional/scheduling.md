@@ -125,13 +125,13 @@ Eventos espontaneos saem pelo modo principal configurado no IDP 31:
 Agenda para ligar em 10 segundos e desligar em 90 segundos:
 
 ```text
-#14-new_product-10-90-bancada$
+#14-newproduct_1-10-90-bancada$
 ```
 
 Agenda apenas para desligar em 30 segundos:
 
 ```text
-#16-new_product-30-bancada$
+#16-newproduct_1-30-bancada$
 ```
 
 Consulte as agendas e use o `SCHEDULE_ID` retornado para testar o IDP 13.

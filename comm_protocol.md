@@ -96,8 +96,8 @@ Regra do produto:
 Exemplos:
 
 ```text
-#01-new_product-1-0-0-0-operador$
-#01-new_product-0-0-0-2-operador$
+#01-newproduct_1-1-0-0-0-operador$
+#01-newproduct_1-0-0-0-2-operador$
 ```
 
 ## IDP 3 - Configuracao de Atuacao
@@ -131,7 +131,7 @@ Campos:
 Exemplo:
 
 ```text
-#03-new_product-10000-10-0-5-10-5-30-5-30-5-0-1$
+#03-newproduct_1-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
 
 `IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
@@ -223,7 +223,7 @@ Campos:
 Exemplo:
 
 ```text
-#29-new_product-STARTING-2-RAMP-3-5-1-1-0-0$
+#29-newproduct_1-STARTING-2-RAMP-3-5-1-1-0-0$
 ```
 
 ## IDP 42 - Heartbeat de Conectividade
@@ -267,23 +267,23 @@ Broker, topicos, autenticacao, QoS, ACK e retry pertencem ao firmware do ESP de 
 Consulta:
 
 ```text
-#31-new_product$
+#31-newproduct_1$
 ```
 
 Configurar RF:
 
 ```text
-#31-new_product-RF$
+#31-newproduct_1-RF$
 ```
 
 Configurar GPRS/MQTT:
 
 ```text
-#31-new_product-MQTT$
+#31-newproduct_1-MQTT$
 ```
 
 ## IDPs Removidos da Regra Principal
 
 Os IDPs ligados a pivo, angulo, barreira, setor, rush mode, GPS e agenda por angulo nao fazem parte da regra principal do produto de bombeamento.
 
-Detalhamento completo: [Levantamento de IDPs](docs/new_product_idp_migration.md).
+Detalhamento completo: [Levantamento de IDPs](docs/newproduct_1_idp_migration.md).

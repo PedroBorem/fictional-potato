@@ -34,7 +34,7 @@
 
 uint16_t global_pressure = 0;
 comm_type comm_main_mode = COMM_RF;
-char system_id[50] = "new_product";
+char system_id[50] = "newproduct_1";
 
 static bool system_manager_comm_ready = false;
 static char system_manager_rf_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
@@ -255,7 +255,7 @@ static void system_manager_build_shutdown_packet(char *packet,
         return;
     }
 
-    system_manager_sanitize_packet_field(safe_device, sizeof(safe_device), system_id, "new_product");
+    system_manager_sanitize_packet_field(safe_device, sizeof(safe_device), system_id, "newproduct_1");
     system_manager_sanitize_packet_field(safe_user, sizeof(safe_user), user, "unknown");
     system_manager_sanitize_packet_field(safe_phase, sizeof(safe_phase), phase, "unknown");
 

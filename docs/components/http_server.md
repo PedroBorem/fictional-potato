@@ -22,13 +22,13 @@ Servidor HTTP local para receber comandos, configuracoes e consultas.
 HTTP deve aceitar comandos no padrao IDP novo:
 
 ```text
-#01-new_product-1-0-0-0-app$
+#01-newproduct_1-1-0-0-0-app$
 ```
 
 E deve responder com snapshot ou ACK:
 
 ```text
-#00-new_product-STARTING-1-0-0-0-0-TS$
+#00-newproduct_1-STARTING-1-0-0-0-0-TS$
 ```
 
 ## Regra Importante
