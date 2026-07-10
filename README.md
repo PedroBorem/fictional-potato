@@ -15,6 +15,7 @@ O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 
 - Agendamentos por data: IDPs 13, 14, 16 e eventos IDP 18 ativos.
 - Historico de operacoes: IDP 12 ativo com persistencia em NVS.
 - Heartbeat do ESP de conectividade: IDP 42 ativo na GPRS UART.
+- Identidade do controlador: persistida em NVS e sincronizavel pelo IDP 6.
 - HTTP/app/Wi-Fi: desabilitados nesta etapa do firmware.
 - Regras de setor, barreira, GPS, pluviometro, percentimetro e agenda por angulo: removidas do firmware.
 - `rush_mode.c`: preservado fora do build para decisao futura.
@@ -71,7 +72,7 @@ idf.py -p /dev/cu.usbmodem1101 flash monitor
 - [Teste serial de bancada](docs/functional/serial_bench_test.md)
 - [Padrao de logs e cores](docs/functional/logging.md)
 - [Persistencia e boot](docs/functional/persistence_boot.md)
-- [Levantamento de IDPs](docs/newproductteste_1_idp_migration.md)
+- [Levantamento de IDPs](docs/DEVICE_ID_idp_migration.md)
 - [Inventario de limpeza e pendencias](docs/legacy_cleanup.md)
 - [Documentacao por componente](docs/components/README.md)
 

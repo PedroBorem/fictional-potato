@@ -75,7 +75,7 @@ Uso esperado:
 Exemplo:
 
 ```text
-#00-newproductteste_1$
+#00-DEVICE_ID$
 ```
 
 ### IDP 1 - Comando
@@ -86,8 +86,8 @@ Exemplo:
 
 Uso esperado:
 
-- `#01-newproductteste_1-1-0-0-0-app$` inicia partida sequencial.
-- `#01-newproductteste_1-0-0-0-2-app$` solicita parada segura.
+- `#01-DEVICE_ID-1-0-0-0-app$` inicia partida sequencial.
+- `#01-DEVICE_ID-0-0-0-2-app$` solicita parada segura.
 
 Mesmo existindo 4 campos de comando, a regra de negocio e global: qualquer `1` liga a bomba completa e qualquer `2` para tudo.
 
@@ -116,12 +116,21 @@ Uso esperado:
 Exemplo:
 
 ```text
-#03-newproductteste_1-10000-10-0-5-10-5-30-5-30-5-0-1$
+#03-DEVICE_ID-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
 
 Ordem dos campos temporais por motor: `RAMP1-STAGE1-RAMP2-STAGE2-RAMP3-STAGE3-RAMP4-STAGE4`.
 
 `IDLE_READ_SEC` nao e o mesmo timer de `STATUS_00_MIN`. Eles podem receber valores equivalentes por decisao de configuracao, mas possuem responsabilidades diferentes.
+
+### IDP 6 - Identidade Persistente
+
+```text
+#06-DEVICE_ID$
+#06-DEVICE_ID-NOVO_DEVICE_ID$
+```
+
+O primeiro formato consulta a identidade atual. O segundo troca o ID persistido em NVS e responde `#06-NOVO_DEVICE_ID$`. A troca exige que o primeiro campo corresponda ao ID atual e aceita apenas letras, numeros e `_` no novo valor. O ID de recuperacao de fabrica so e usado quando a NVS nao possui um valor valido.
 
 ### IDP 28 - Informacao de Desligamento
 
@@ -176,7 +185,7 @@ Uso esperado:
 Exemplo:
 
 ```text
-#29-newproductteste_1-STARTING-1-RAMP-4-5-1-0-0-0$
+#29-DEVICE_ID-STARTING-1-RAMP-4-5-1-0-0-0$
 ```
 
 ### IDPs 13, 14, 16 e 18 - Agendamentos

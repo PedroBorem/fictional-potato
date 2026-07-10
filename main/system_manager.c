@@ -35,7 +35,7 @@
 
 uint16_t global_pressure = 0;
 comm_type comm_main_mode = COMM_RF;
-char system_id[50] = "newproductteste_1";
+char system_id[50] = CONFIG_DEFAULT_DEVICE_ID;
 
 static bool system_manager_comm_ready = false;
 static char system_manager_rf_rx_buffer[SYSTEM_MANAGER_RX_BUFFER_SIZE] = {};
@@ -47,6 +47,8 @@ static uint32_t system_manager_saved_shutdown_sequence = 0;
 static bool system_manager_actions_request_start(const actuation_actions *actions);
 static bool system_manager_actions_request_stop(const actuation_actions *actions);
 static bool system_manager_load_history(pump_history *history);
+static bool system_manager_device_id_is_valid(const char *device_id);
+static void system_manager_load_device_id(void);
 
 static void system_manager_log_status(const actuation_status *status)
 {
@@ -74,6 +76,55 @@ static bool system_manager_device_matches(const char *device_id)
     return (strcmp(device_id, system_id) == 0 ||
             strcmp(device_id, "broadcast") == 0 ||
             strcmp(device_id, "all") == 0);
+}
+
+static bool system_manager_device_id_is_valid(const char *device_id)
+{
+    size_t length = 0;
+
+    if (device_id == NULL)
+    {
+        return false;
+    }
+
+    length = strnlen(device_id, sizeof(system_id));
+    if (length == 0 || length >= sizeof(system_id))
+    {
+        return false;
+    }
+
+    for (size_t index = 0; index < length; index++)
+    {
+        const char value = device_id[index];
+        if (!((value >= 'a' && value <= 'z') ||
+              (value >= 'A' && value <= 'Z') ||
+              (value >= '0' && value <= '9') ||
+              value == '_'))
+        {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+static void system_manager_load_device_id(void)
+{
+    char saved_device_id[sizeof(system_id)] = {};
+
+    if (data_app_load(DATA_TYPE_DEVICE_ID, saved_device_id) == ESP_OK &&
+        system_manager_device_id_is_valid(saved_device_id))
+    {
+        strlcpy(system_id, saved_device_id, sizeof(system_id));
+        LOG_NVS(SYSTEM_MANAGER_TAG, "DEVICE", "Using configured device id: %s", system_id);
+        return;
+    }
+
+    strlcpy(system_id, CONFIG_DEFAULT_DEVICE_ID, sizeof(system_id));
+    data_app_save(DATA_TYPE_DEVICE_ID, system_id, sizeof(system_id));
+    LOG_WARNING(SYSTEM_MANAGER_TAG,
+                "DEVICE",
+                "Invalid or missing device id in NVS; using factory recovery id");
 }
 
 static bool system_manager_start_is_busy(void)
@@ -469,7 +520,7 @@ static void system_manager_build_shutdown_packet(char *packet,
         return;
     }
 
-    system_manager_sanitize_packet_field(safe_device, sizeof(safe_device), system_id, "newproductteste_1");
+    system_manager_sanitize_packet_field(safe_device, sizeof(safe_device), system_id, CONFIG_DEFAULT_DEVICE_ID);
     system_manager_sanitize_packet_field(safe_user, sizeof(safe_user), user, "unknown");
     system_manager_sanitize_packet_field(safe_phase, sizeof(safe_phase), phase, "unknown");
 
@@ -966,6 +1017,60 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
              (unsigned int)config.ramp_4_delay_sec,
              (unsigned int)config.stage_4_delay_sec,
              (unsigned int)config.status_publish_time_min);
+    system_manager_send_packet(response, communication);
+}
+
+/**
+ * @brief Reads or updates the persistent logical device identifier.
+ *
+ * Query: #06-CURRENT_ID$
+ * Update: #06-CURRENT_ID-NEW_ID$
+ */
+static void system_manager_handle_idp_6(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char current_device_id[sizeof(system_id)] = {};
+    char new_device_id[sizeof(system_id)] = {};
+    char response[120] = {};
+    const uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", current_device_id},
+        {"string", new_device_id},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count != 1 && delimiter_count != 2)
+    {
+        system_manager_send_error("idp_6_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+    if (!system_manager_device_matches(current_device_id))
+    {
+        return;
+    }
+
+    if (delimiter_count == 2)
+    {
+        if (!system_manager_device_id_is_valid(new_device_id))
+        {
+            system_manager_send_error("idp_6_invalid_device_id", communication);
+            return;
+        }
+
+        if (data_app_save(DATA_TYPE_DEVICE_ID, new_device_id, sizeof(system_id)) != ESP_OK)
+        {
+            system_manager_send_error("idp_6_nvs_error", communication);
+            return;
+        }
+
+        strlcpy(system_id, new_device_id, sizeof(system_id));
+        LOG_NVS(SYSTEM_MANAGER_TAG, "DEVICE", "Device id updated through IDP 6: %s", system_id);
+    }
+
+    snprintf(response, sizeof(response), "#06-%s$", system_id);
     system_manager_send_packet(response, communication);
 }
 
@@ -1472,6 +1577,9 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
         case IDP_3:
             system_manager_handle_idp_3(packet, communication);
             break;
+        case IDP_6:
+            system_manager_handle_idp_6(packet, communication);
+            break;
         case IDP_12:
             system_manager_handle_idp_12(packet, communication);
             break;
@@ -1699,6 +1807,7 @@ void system_manager_init(void)
 {
     ESP_ERROR_CHECK(rtc_app_init());
     ESP_ERROR_CHECK(data_app_init());
+    system_manager_load_device_id();
     system_manager_load_comm_mode();
 
     actuation_config config = {};

@@ -37,6 +37,7 @@ typedef enum
     DATA_TYPE_ACTUATION_ACTIONS, /**< New-product actuation command data type. */
     DATA_TYPE_ACTUATION_CONFIG, /**< New-product actuation configuration data type. */
     DATA_TYPE_HISTORY_ARRAY, /**< Complete new-product history array. */
+    DATA_TYPE_DEVICE_ID, /**< Persistent logical identifier of this controller. */
 } data_type_t;
 
 

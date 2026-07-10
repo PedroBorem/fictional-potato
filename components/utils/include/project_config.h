@@ -170,6 +170,11 @@
  */
 #define CONFIG_SCHEDULING_START_GRACE_SEC (1800)
 
+/**
+ * @brief Factory recovery identifier used only when no valid NVS identity exists.
+ */
+#define CONFIG_DEFAULT_DEVICE_ID "newproductteste_1"
+
 
 /**
  * @enum idp_type

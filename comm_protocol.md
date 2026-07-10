@@ -97,8 +97,8 @@ Regra do produto:
 Exemplos:
 
 ```text
-#01-newproductteste_1-1-0-0-0-operador$
-#01-newproductteste_1-0-0-0-2-operador$
+#01-DEVICE_ID-1-0-0-0-operador$
+#01-DEVICE_ID-0-0-0-2-operador$
 ```
 
 ## IDP 3 - Configuracao de Atuacao
@@ -132,10 +132,28 @@ Campos:
 Exemplo:
 
 ```text
-#03-newproductteste_1-10000-10-0-5-10-5-30-5-30-5-0-1$
+#03-DEVICE_ID-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
 
 `IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
+
+## IDP 6 - Identidade do Controlador
+
+O ID da placa principal e persistido em NVS. O valor de fabrica e usado somente para recuperar uma NVS ausente ou invalida; ele nao participa de nenhuma decisao operacional quando existe um ID configurado.
+
+Consulta:
+
+```text
+#06-DEVICE_ID$
+```
+
+Atualizacao:
+
+```text
+#06-DEVICE_ID-NOVO_DEVICE_ID$
+```
+
+A atualizacao so e aceita quando `DEVICE_ID` corresponde ao ID atual da placa. `NOVO_DEVICE_ID` deve conter apenas letras, numeros e `_`. A resposta confirma o ID efetivo com `#06-NOVO_DEVICE_ID$`. O ESP de conectividade envia esse IDP antes de trocar sua assinatura MQTT.
 
 ## IDPs 13, 14, 16 e 18 - Agendamentos
 
@@ -262,7 +280,7 @@ Campos:
 Exemplo:
 
 ```text
-#29-newproductteste_1-STARTING-2-RAMP-3-5-1-1-0-0$
+#29-DEVICE_ID-STARTING-2-RAMP-3-5-1-1-0-0$
 ```
 
 ## IDP 42 - Heartbeat de Conectividade
@@ -306,23 +324,23 @@ Broker, topicos, autenticacao, QoS, ACK e retry pertencem ao firmware do ESP de 
 Consulta:
 
 ```text
-#31-newproductteste_1$
+#31-DEVICE_ID$
 ```
 
 Configurar RF:
 
 ```text
-#31-newproductteste_1-RF$
+#31-DEVICE_ID-RF$
 ```
 
 Configurar GPRS/MQTT:
 
 ```text
-#31-newproductteste_1-MQTT$
+#31-DEVICE_ID-MQTT$
 ```
 
 ## IDPs Removidos da Regra Principal
 
 Os IDPs ligados a pivo, angulo, barreira, setor, rush mode, GPS e agenda por angulo nao fazem parte da regra principal do produto de bombeamento.
 
-Detalhamento completo: [Levantamento de IDPs](docs/newproductteste_1_idp_migration.md).
+Detalhamento completo: [Levantamento de IDPs](docs/DEVICE_ID_idp_migration.md).

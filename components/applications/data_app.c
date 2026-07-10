@@ -83,6 +83,11 @@
  */
 #define DATA_ACTUATION_CONFIG "act_config"
 
+/**
+ * @brief NVS access space for the logical identity of this controller.
+ */
+#define DATA_DEVICE_ID "device_id"
+
 static void data_app_remove_discarded_pivot_data(void)
 {
 	static const char *const discarded_keys[] = {
@@ -229,6 +234,7 @@ esp_err_t data_app_init(void)
 	const pump_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pump_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pump_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
+	const char default_device_id[50] = CONFIG_DEFAULT_DEVICE_ID;
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -278,6 +284,11 @@ esp_err_t data_app_init(void)
 		if(nvs_data_get_size(DATA_ACTUATION_CONFIG) == 0)
 		{
 			data_app_save(DATA_TYPE_ACTUATION_CONFIG, &default_actuation_config, sizeof(default_actuation_config));
+		}
+
+		if(nvs_data_get_size(DATA_DEVICE_ID) != sizeof(default_device_id))
+		{
+			data_app_save(DATA_TYPE_DEVICE_ID, default_device_id, sizeof(default_device_id));
 		}
 
 		LOG_NVS(DATA_APP_TAG, "%s, data application started successfully", __func__);
@@ -404,6 +415,11 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 			ret = nvs_data_set(DATA_ACTUATION_CONFIG, data, data_size);
 			break;
 		}
+		case DATA_TYPE_DEVICE_ID:
+		{
+			ret = nvs_data_set(DATA_DEVICE_ID, data, data_size);
+			break;
+		}
 		default:
 		{
 			break;
@@ -474,6 +490,11 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 		case DATA_TYPE_ACTUATION_CONFIG:
 		{
 			ret = nvs_data_get_blob(DATA_ACTUATION_CONFIG, data);
+			break;
+		}
+		case DATA_TYPE_DEVICE_ID:
+		{
+			ret = nvs_data_get_blob(DATA_DEVICE_ID, data);
 			break;
 		}
 		default:
