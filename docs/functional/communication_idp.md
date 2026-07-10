@@ -75,7 +75,7 @@ Uso esperado:
 Exemplo:
 
 ```text
-#00-newproduct_1$
+#00-newproductteste_1$
 ```
 
 ### IDP 1 - Comando
@@ -86,8 +86,8 @@ Exemplo:
 
 Uso esperado:
 
-- `#01-newproduct_1-1-0-0-0-app$` inicia partida sequencial.
-- `#01-newproduct_1-0-0-0-2-app$` solicita parada segura.
+- `#01-newproductteste_1-1-0-0-0-app$` inicia partida sequencial.
+- `#01-newproductteste_1-0-0-0-2-app$` solicita parada segura.
 
 Mesmo existindo 4 campos de comando, a regra de negocio e global: qualquer `1` liga a bomba completa e qualquer `2` para tudo.
 
@@ -116,7 +116,7 @@ Uso esperado:
 Exemplo:
 
 ```text
-#03-newproduct_1-10000-10-0-5-10-5-30-5-30-5-0-1$
+#03-newproductteste_1-10000-10-0-5-10-5-30-5-30-5-0-1$
 ```
 
 Ordem dos campos temporais por motor: `RAMP1-STAGE1-RAMP2-STAGE2-RAMP3-STAGE3-RAMP4-STAGE4`.
@@ -176,7 +176,7 @@ Uso esperado:
 Exemplo:
 
 ```text
-#29-newproduct_1-STARTING-1-RAMP-4-5-1-0-0-0$
+#29-newproductteste_1-STARTING-1-RAMP-4-5-1-0-0-0$
 ```
 
 ### IDPs 13, 14, 16 e 18 - Agendamentos
