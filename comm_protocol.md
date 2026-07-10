@@ -119,10 +119,10 @@ Campos:
 
 | Campo | Descricao |
 | --- | --- |
-| `OFF_RELAY_MS` | Tempo usado para relés OFF/parada. Padrao atual: `10000`. |
+| `OFF_RELAY_MS` | Campo legado reservado para compatibilidade. Relés OFF nao sao acionados no modo one-wire. |
 | `IDLE_READ_SEC` | Cadencia interna de leitura quando parado, em segundos. Padrao atual: `10`. |
 | `STATUS_ACTIVE_LEVEL` | `0 = entrada ativa em nivel baixo`; `1 = entrada ativa em nivel alto`. Padrao atual: `0`. |
-| `RAMP1_SEC..RAMP4_SEC` | Tempo de rampa da softstarter de cada motor. Padrao atual e minimo seguro para `0`: `5`. |
+| `RAMP1_SEC..RAMP4_SEC` | Tempo de rampa de cada motor, usado tanto na partida quanto na parada sequencial. Padrao atual e minimo seguro para `0`: `5`. |
 | `STAGE1_SEC` | Intervalo apos a rampa do canal 1. Padrao atual: `10`. |
 | `STAGE2_SEC` | Intervalo apos a rampa do canal 2. Padrao atual: `30`. |
 | `STAGE3_SEC` | Intervalo apos a rampa do canal 3. Padrao atual: `30`. |
@@ -136,6 +136,8 @@ Exemplo:
 ```
 
 `IDLE_READ_SEC` e `STATUS_00_MIN` sao independentes: o primeiro controla somente a leitura local quando parado; o segundo controla a comunicacao periodica.
+
+No desligamento, o firmware desenergiza somente os relés ON, em ordem `M4 -> M3 -> M2 -> M1`. Apos remover cada relé, aguarda `RAMP4_SEC`, `RAMP3_SEC`, `RAMP2_SEC` ou `RAMP1_SEC`, respectivamente, monitorando os motores que ainda deveriam estar ligados e validando o feedback OFF do motor removido. A regra vale para comando, agenda e falha.
 
 ## IDP 6 - Identidade do Controlador
 

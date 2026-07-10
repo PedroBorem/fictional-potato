@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Controlar uma partida de bombeamento de agua em 4 etapas, usando 4 relés ON mantidos energizados e 4 relés OFF usados na parada segura.
+Controlar uma partida de bombeamento de agua em 4 etapas, usando 4 relés ON mantidos energizados. A instalacao atual e one-wire e nao utiliza os relés OFF.
 
 ## Entrada de Comando
 
@@ -79,15 +79,15 @@ Falha de leitura significa: canal que deveria estar ON retornou status diferente
 
 ## Parada Segura
 
-A parada segura executa sempre a mesma rotina:
+A parada segura executa sempre a mesma rotina one-wire:
 
-1. Desenergiza todos os relés ON.
-2. Energiza todos os relés OFF.
-3. Aguarda `CONFIG_PUMP_STOP_RELAY_TIME_MS`, hoje `10000 ms`.
-4. Desenergiza todos os relés OFF.
-5. Persiste a ultima acao como OFF.
+1. Desenergiza o relé ON do motor 4, aguarda `ramp_4_delay_sec` e valida sua leitura OFF.
+2. Desenergiza o relé ON do motor 3, aguarda `ramp_3_delay_sec` e valida sua leitura OFF.
+3. Desenergiza o relé ON do motor 2, aguarda `ramp_2_delay_sec` e valida sua leitura OFF.
+4. Desenergiza o relé ON do motor 1, aguarda `ramp_1_delay_sec` e valida sua leitura OFF.
+5. Durante cada rampa, monitora os motores que ainda deveriam permanecer ligados e publica status/progresso.
 
-Essa rotina e usada tanto para comando normal de parada quanto para falha.
+Essa rotina e usada para comando normal, agenda e falha. Numa falha durante a partida, canais ainda nao acionados sao ignorados; os canais efetivamente ligados sao desligados em ordem decrescente. Uma nova divergencia de leitura durante a parada e registrada, mas nunca interrompe a sequencia de desligamento.
 
 Apos a parada segura, o firmware monta e salva um pacote `#28` em NVS:
 
@@ -121,4 +121,4 @@ Uma nova solicitacao de partida pode ser aceita depois de uma falha, desde que v
 
 Na regra de bombeamento, os relés ON nao sao pulsados durante a operacao. Eles ficam energizados enquanto o canal deve permanecer ligado.
 
-Os relés OFF sao acionados por tempo limitado durante a parada.
+Os relés OFF permanecem desenergizados durante toda a operacao one-wire.

@@ -91,14 +91,14 @@ esp_err_t gpio_actuator_set(actuation_actions actions);
 esp_err_t gpio_actuator_enable_on_relay(uint8_t channel);
 
 /**
+ * @brief De-energizes one channel ON relay in one-wire installations.
+ */
+esp_err_t gpio_actuator_disable_on_relay(uint8_t channel);
+
+/**
  * @brief De-energizes all channel ON relays.
  */
 void gpio_actuator_disable_all_on_relays(void);
-
-/**
- * @brief De-energizes all ON relays and energizes all OFF relays for the configured time.
- */
-void gpio_actuator_stop_all(uint32_t off_time_ms);
 
 /**
  * @brief Returns the live ON/OFF status read from input GPIOs.

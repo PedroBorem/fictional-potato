@@ -28,7 +28,7 @@ esp_err_t actuation_app_set_config(actuation_config config);
  * @brief Requests pump start or stop according to the provided command payload.
  *
  * Any ON command starts the sequenced pumping logic. Any OFF command requests
- * the safety stop routine.
+ * the M4 -> M3 -> M2 -> M1 one-wire stop routine.
  */
 void actuation_app_set_actions(const actuation_actions actions, bool alert_change);
 

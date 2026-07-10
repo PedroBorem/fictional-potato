@@ -15,7 +15,7 @@ Na GPRS UART, o equipamento remoto e outro ESP32. Ele cuida da conectividade, br
 | 3 | `GPIO_NUM_9` | `GPIO_NUM_8` | `GPIO_NUM_5` |
 | 4 | `GPIO_NUM_16` | `GPIO_NUM_35` | `GPIO_NUM_4` |
 
-Cada motor possui rampa de estabilizacao e intervalo posterior configuraveis pelo IDP 3. Uma falha durante partida ou operacao desliga todos os relés ON e pulsa os relés OFF.
+Cada motor possui rampa de estabilizacao e intervalo posterior configuraveis pelo IDP 3. Uma falha durante partida ou operacao inicia a parada one-wire sequencial, desenergizando os relés ON em ordem `4 -> 3 -> 2 -> 1` e aguardando a rampa de cada motor. Relés OFF nao sao utilizados.
 
 ## IDPs Operacionais
 

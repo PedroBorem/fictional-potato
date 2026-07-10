@@ -36,8 +36,8 @@ Entradas:
 | `gpio_actuator_config()` | Aplica configuracao de leitura/atuacao. |
 | `gpio_actuator_set()` | Aplica comandos por canal; mantido como API geral de atuacao. |
 | `gpio_actuator_enable_on_relay()` | Mantem energizado o relay ON de um canal. |
+| `gpio_actuator_disable_on_relay()` | Desenergiza individualmente um relé ON durante a parada one-wire. |
 | `gpio_actuator_disable_all_on_relays()` | Desenergiza todos os relés ON. |
-| `gpio_actuator_stop_all()` | Desenergiza ON, energiza OFF por tempo definido e desenergiza OFF. |
 | `gpio_actuator_get()` | Retorna status logico dos 4 canais. |
 | `gpio_actuator_shutdown()` | Desenergiza todos os relés. |
 
@@ -45,5 +45,5 @@ Entradas:
 
 - No boot, todos os relés ficam desenergizados.
 - Durante bombeamento, relés ON ficam energizados.
-- Na parada, relés OFF sao energizados por `CONFIG_PUMP_STOP_RELAY_TIME_MS`.
+- Na parada, relés ON sao desenergizados individualmente em ordem decrescente; relés OFF permanecem inativos.
 - Status e calculado pela comparacao entre leitura GPIO e `status_active_level`.

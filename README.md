@@ -2,7 +2,7 @@
 
 Firmware ESP-IDF para a nova placa de controle de bombeamento de agua. Este projeto usa a base do antigo firmware de placa de controle, mas a regra de negocio atual nao e mais de pivo.
 
-O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 entradas digitais de status.
+O produto atual controla 4 etapas por relés ON mantidos energizados e monitora 4 entradas digitais de status. Os relés OFF permanecem desabilitados na instalacao one-wire atual.
 
 ## Estado Atual
 
@@ -41,7 +41,7 @@ Ao receber um comando de liga, a aplicacao executa:
 4. Liga o canal 4, aguarda sua rampa e intervalo configurados.
 5. Valida as 4 leituras e entra em monitoramento continuo.
 
-Se qualquer leitura esperada falhar, a rotina desliga todos os relés ON e aciona todos os relés OFF por 10 segundos.
+Se qualquer leitura esperada falhar, a rotina desenergiza sequencialmente os relés ON em ordem `4 -> 3 -> 2 -> 1`. Depois de cada motor, aguarda sua rampa configurada, acompanha as leituras e somente entao avanca para o proximo. Comando e agenda de parada usam a mesma rotina.
 
 Mais detalhes: [Sequencia de Bombeamento](docs/functional/pump_sequence.md).
 

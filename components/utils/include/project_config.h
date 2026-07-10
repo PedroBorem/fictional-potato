@@ -47,7 +47,7 @@
 #define CONFIG_PUMP_HISTORY_TEXT_SIZE (32)
 
 /**
- * @brief Default pulse duration for each ON/OFF relay command.
+ * @brief Legacy OFF pulse value retained only for IDP 3/NVS compatibility.
  */
 #define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (10000)
 
@@ -128,11 +128,6 @@
  * immediately. This only limits periodic timer progress to reduce UART load.
  */
 #define CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS (5000)
-
-/**
- * @brief Duration used to energize all OFF relays during shutdown.
- */
-#define CONFIG_PUMP_STOP_RELAY_TIME_MS (10000)
 
 /**
  * @brief Maximum number of scheduling values.
@@ -299,7 +294,7 @@ typedef enum
 {
     ACTUATION_COMMAND_NONE = 0,     /*!< No relay pulse requested. */
     ACTUATION_COMMAND_ON = 1,       /*!< Pulse the ON relay for the channel. */
-    ACTUATION_COMMAND_OFF = 2,      /*!< Pulse the OFF relay for the channel. */
+    ACTUATION_COMMAND_OFF = 2,      /*!< Requests the global sequential one-wire stop. */
 } actuation_channel_command;
 
 /**
@@ -359,7 +354,7 @@ typedef struct
  */
 typedef struct __attribute__((__packed__))
 {
-    uint16_t relay_pulse_time_ms;     /*!< Pulse duration used by OFF relays during stop. */
+    uint16_t relay_pulse_time_ms;     /*!< Legacy field retained for IDP 3/NVS compatibility; currently unused. */
     uint16_t idle_read_time_sec;      /*!< Internal status read cadence while stopped. */
     bool status_active_level;         /*!< GPIO level interpreted as ON by status inputs. */
     uint16_t ramp_1_delay_sec;        /*!< Motor ramp delay after channel 1 ON relay is enabled. */

@@ -48,6 +48,7 @@ static comm_type actuation_app_progress_mode = COMM_RF;
 static actuation_actions actuation_app_last_actions = {};
 static actuation_pump_state actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
 static uint8_t actuation_app_last_fault_channel = 0;
+static bool actuation_app_on_relay_enabled[CONFIG_ACTUATION_CHANNEL_COUNT] = {};
 static uint32_t actuation_app_shutdown_sequence = 0;
 static actuation_shutdown_info actuation_app_last_shutdown_info = {};
 static char actuation_app_phase_context[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE] = "stopped";
@@ -599,6 +600,139 @@ static void actuation_app_store_stop_actions(void)
     data_app_save(DATA_TYPE_ACTUATION_ACTIONS, &actuation_app_last_actions, sizeof(actuation_app_last_actions));
 }
 
+static uint32_t actuation_app_get_channel_ramp_ms(uint8_t channel)
+{
+    switch (channel)
+    {
+        case 0:
+            return actuation_app_sec_to_ms_u32(actuation_app_config.ramp_1_delay_sec);
+        case 1:
+            return actuation_app_sec_to_ms_u32(actuation_app_config.ramp_2_delay_sec);
+        case 2:
+            return actuation_app_sec_to_ms_u32(actuation_app_config.ramp_3_delay_sec);
+        case 3:
+            return actuation_app_sec_to_ms_u32(actuation_app_config.ramp_4_delay_sec);
+        default:
+            return 0;
+    }
+}
+
+static void actuation_app_monitor_shutdown_status(uint8_t ramp_channel,
+                                                  bool final_validation,
+                                                  uint8_t *warned_channels)
+{
+    actuation_status status = actuation_app_read_status();
+
+    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+    {
+        const uint8_t expected = actuation_app_on_relay_enabled[channel]
+            ? ACTUATION_STATUS_ON
+            : ACTUATION_STATUS_OFF;
+
+        if (status.channels[channel] == expected)
+        {
+            continue;
+        }
+
+        if (channel == ramp_channel && !final_validation)
+        {
+            continue;
+        }
+
+        const uint8_t channel_mask = (uint8_t)(1U << channel);
+        if (warned_channels != NULL && ((*warned_channels & channel_mask) != 0U))
+        {
+            continue;
+        }
+
+        LOG_WARNING(ACTUATION_APP_TAG,
+                    "ACTUATION",
+                    "Sequential stop feedback mismatch: motor %u expected %s, read %s",
+                    (unsigned int)(channel + 1U),
+                    expected == ACTUATION_STATUS_ON ? "ON" : "OFF",
+                    status.channels[channel] == ACTUATION_STATUS_ON ? "ON" : "OFF");
+
+        if (warned_channels != NULL)
+        {
+            *warned_channels |= channel_mask;
+        }
+    }
+}
+
+static void actuation_app_stop_channel_with_ramp(uint8_t channel, bool fault)
+{
+    const uint32_t ramp_ms = actuation_app_get_channel_ramp_ms(channel);
+    uint32_t elapsed_ms = 0;
+    uint32_t next_heartbeat_ms = CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
+    uint32_t next_progress_ms = CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS;
+    uint8_t warned_channels = 0;
+    char stage_name[40] = {};
+    const char *progress_phase = fault ? "FAULT_STOP_RAMP" : "STOP_RAMP";
+
+    if (!actuation_app_on_relay_enabled[channel])
+    {
+        return;
+    }
+
+    snprintf(stage_name, sizeof(stage_name), "Stop motor %u ramp", (unsigned int)(channel + 1U));
+    LOG_PROCESSING(ACTUATION_APP_TAG,
+                   "Sequential stop: disabling motor %u ON relay",
+                   (unsigned int)(channel + 1U));
+
+    gpio_actuator_disable_on_relay(channel);
+    actuation_app_on_relay_enabled[channel] = false;
+    actuation_app_publish_progress(channel + 1U, progress_phase, 0, ramp_ms);
+
+    while (elapsed_ms < ramp_ms)
+    {
+        const uint32_t step_ms = actuation_app_min_u32(CONFIG_PUMP_MONITOR_INTERVAL_MS,
+                                                       ramp_ms - elapsed_ms);
+        vTaskDelay(pdMS_TO_TICKS(step_ms));
+        elapsed_ms += step_ms;
+
+        actuation_app_monitor_shutdown_status(channel, false, &warned_channels);
+        actuation_app_publish_status(false);
+
+        if (elapsed_ms >= next_heartbeat_ms && elapsed_ms < ramp_ms)
+        {
+            actuation_app_log_timer_heartbeat(stage_name, elapsed_ms, ramp_ms);
+            while (next_heartbeat_ms <= elapsed_ms)
+            {
+                next_heartbeat_ms += CONFIG_PUMP_STAGE_HEARTBEAT_INTERVAL_MS;
+            }
+        }
+
+        if (elapsed_ms >= next_progress_ms && elapsed_ms < ramp_ms)
+        {
+            actuation_app_publish_progress(channel + 1U, progress_phase, elapsed_ms, ramp_ms);
+            while (next_progress_ms <= elapsed_ms)
+            {
+                next_progress_ms += CONFIG_PUMP_PROGRESS_PUBLISH_INTERVAL_MS;
+            }
+        }
+    }
+
+    actuation_app_monitor_shutdown_status(channel, true, &warned_channels);
+    actuation_app_publish_progress(channel + 1U, progress_phase, ramp_ms, ramp_ms);
+    LOG_PROCESSING(ACTUATION_APP_TAG,
+                   "Sequential stop: motor %u ramp completed",
+                   (unsigned int)(channel + 1U));
+}
+
+static void actuation_app_stop_pump_sequence(bool fault)
+{
+    LOG_PROCESSING(ACTUATION_APP_TAG,
+                   "Sequential stop started: M4 -> M3 -> M2 -> M1, OFF relays disabled");
+
+    for (int channel = CONFIG_ACTUATION_CHANNEL_COUNT - 1; channel >= 0; channel--)
+    {
+        actuation_app_stop_channel_with_ramp((uint8_t)channel, fault);
+    }
+
+    gpio_actuator_disable_all_on_relays();
+    memset(actuation_app_on_relay_enabled, 0, sizeof(actuation_app_on_relay_enabled));
+}
+
 static void actuation_app_stop_pump(bool fault)
 {
     actuation_pump_state previous_state = actuation_app_state;
@@ -620,7 +754,7 @@ static void actuation_app_stop_pump(bool fault)
         shutdown_reason = (previous_state == ACTUATION_PUMP_STATE_RUNNING)
             ? ACTUATION_SHUTDOWN_REASON_RUNTIME_FAULT
             : ACTUATION_SHUTDOWN_REASON_STARTUP_FAULT;
-        LOG_ERROR(ACTUATION_APP_TAG, "ACTUATION", "Pump fault detected. Stopping all channels");
+        LOG_ERROR(ACTUATION_APP_TAG, "ACTUATION", "Pump fault detected. Starting sequential stop");
     }
     else
     {
@@ -628,7 +762,7 @@ static void actuation_app_stop_pump(bool fault)
         LOG_PROCESSING(ACTUATION_APP_TAG, "Pump stop requested");
     }
 
-    gpio_actuator_stop_all(CONFIG_PUMP_STOP_RELAY_TIME_MS);
+    actuation_app_stop_pump_sequence(fault);
     actuation_app_store_stop_actions();
     actuation_app_read_status();
     actuation_app_record_shutdown_event(shutdown_reason, shutdown_motor, shutdown_user, shutdown_phase);
@@ -637,6 +771,10 @@ static void actuation_app_stop_pump(bool fault)
     {
         actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
         actuation_app_publish_progress(0, "STOPPED", 0, 0);
+    }
+    else
+    {
+        actuation_app_publish_progress(shutdown_motor, "FAULT_STOPPED", 0, 0);
     }
 
     if (actuation_app_callback != NULL)
@@ -737,6 +875,8 @@ static bool actuation_app_start_channel_and_validate(uint8_t channel,
         return false;
     }
 
+    actuation_app_on_relay_enabled[channel] = true;
+
     actuation_app_publish_progress(channel + 1U, "ON", 0, 0);
 
     snprintf(ramp_name, sizeof(ramp_name), "%s ramp", stage_name);
@@ -781,6 +921,7 @@ static void actuation_app_start_pump_sequence(void)
               (unsigned int)actuation_app_config.stage_4_delay_sec,
               (unsigned int)actuation_app_config.status_publish_time_min);
     actuation_app_last_fault_channel = 0;
+    memset(actuation_app_on_relay_enabled, 0, sizeof(actuation_app_on_relay_enabled));
     actuation_app_state = ACTUATION_PUMP_STATE_STARTING;
     actuation_app_publish_progress(0, "START_REQUESTED", 0, 0);
 

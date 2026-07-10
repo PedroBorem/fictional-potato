@@ -49,16 +49,6 @@ static actuation_config gpio_act_config = {
     .status_publish_time_min = CONFIG_ACTUATION_DEFAULT_STATUS_PUBLISH_MIN,
 };
 
-static uint16_t gpio_act_get_pulse_time_ms(void)
-{
-    if (gpio_act_config.relay_pulse_time_ms == 0)
-    {
-        return CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS;
-    }
-
-    return gpio_act_config.relay_pulse_time_ms;
-}
-
 static void gpio_act_set_all_relays(uint32_t level)
 {
     for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
@@ -74,25 +64,6 @@ static void gpio_act_set_all_on_relays(uint32_t level)
     {
         gpio_set_level(gpio_act_on_pins[channel], level);
     }
-}
-
-static void gpio_act_set_all_off_relays(uint32_t level)
-{
-    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
-    {
-        gpio_set_level(gpio_act_off_pins[channel], level);
-    }
-}
-
-static esp_err_t gpio_act_pulse_relay(gpio_num_t relay_pin)
-{
-    uint16_t pulse_time_ms = gpio_act_get_pulse_time_ms();
-
-    gpio_set_level(relay_pin, GPIO_ACT_RELAY_ENABLE);
-    vTaskDelay(pdMS_TO_TICKS(pulse_time_ms));
-    gpio_set_level(relay_pin, GPIO_ACT_RELAY_DISABLE);
-
-    return ESP_OK;
 }
 
 esp_err_t gpio_actuator_init(void)
@@ -204,8 +175,10 @@ esp_err_t gpio_actuator_set(actuation_actions actions)
             case ACTUATION_COMMAND_OFF:
             {
                 gpio_set_level(gpio_act_on_pins[channel], GPIO_ACT_RELAY_DISABLE);
-                LOG_PROCESSING(GPIO_ACT_TAG, "Channel %u OFF pulse", (unsigned int)(channel + 1));
-                gpio_act_pulse_relay(gpio_act_off_pins[channel]);
+                gpio_set_level(gpio_act_off_pins[channel], GPIO_ACT_RELAY_DISABLE);
+                LOG_PROCESSING(GPIO_ACT_TAG,
+                               "Channel %u ON relay disabled (one-wire stop)",
+                               (unsigned int)(channel + 1));
                 break;
             }
 
@@ -234,19 +207,25 @@ esp_err_t gpio_actuator_enable_on_relay(uint8_t channel)
     return ESP_OK;
 }
 
+esp_err_t gpio_actuator_disable_on_relay(uint8_t channel)
+{
+    if (channel >= CONFIG_ACTUATION_CHANNEL_COUNT)
+    {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    gpio_set_level(gpio_act_on_pins[channel], GPIO_ACT_RELAY_DISABLE);
+    gpio_set_level(gpio_act_off_pins[channel], GPIO_ACT_RELAY_DISABLE);
+
+    LOG_PROCESSING(GPIO_ACT_TAG,
+                   "Channel %u ON relay disabled (one-wire stop)",
+                   (unsigned int)(channel + 1));
+    return ESP_OK;
+}
+
 void gpio_actuator_disable_all_on_relays(void)
 {
     gpio_act_set_all_on_relays(GPIO_ACT_RELAY_DISABLE);
-}
-
-void gpio_actuator_stop_all(uint32_t off_time_ms)
-{
-    gpio_act_set_all_on_relays(GPIO_ACT_RELAY_DISABLE);
-    gpio_act_set_all_off_relays(GPIO_ACT_RELAY_ENABLE);
-
-    vTaskDelay(pdMS_TO_TICKS(off_time_ms));
-
-    gpio_act_set_all_off_relays(GPIO_ACT_RELAY_DISABLE);
 }
 
 actuation_status gpio_actuator_get(void)

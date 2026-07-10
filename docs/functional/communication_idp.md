@@ -111,7 +111,10 @@ Uso esperado:
 - Persistir `act_config` em NVS.
 - Reaplicar configuracao no `gpio_actuator`.
 - Configurar rampas da softstarter, intervalos de partida e envio periodico de `#00$`.
+- Configurar os intervalos da parada one-wire: cada `RAMPx_SEC` e reutilizado depois que o relé ON correspondente e desenergizado.
 - Manter a leitura interna ociosa em segundos e a telemetria em minutos.
+
+`OFF_RELAY_MS` permanece no pacote somente por compatibilidade. O firmware atual nao energiza relés OFF.
 
 Exemplo:
 
