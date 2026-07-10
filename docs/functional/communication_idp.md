@@ -192,6 +192,36 @@ IDP 14 agenda a partida sequencial completa e sua parada. IDP 16 agenda apenas a
 
 Datas podem ser Unix timestamp ou atraso em segundos. O contrato completo esta em [Agendamentos por Data](scheduling.md).
 
+### IDP 12 - Historico de Bombeamento
+
+Consulta:
+
+```text
+#12-DEVICE_ID$
+```
+
+Resposta por registro:
+
+```text
+#12-DEVICE_ID-INDEX-START_TS-END_TS-USER-START_REASON-STOP_REASON-STOP_PHASE-MOTOR-RESET_REASON-EVENT_TS$
+```
+
+Sem historico:
+
+```text
+#12-DEVICE_ID-NONE$
+```
+
+O historico une comando, status e desligamento:
+
+- `START_TS`, `USER` e `START_REASON` representam o comando de liga aceito.
+- `START_REASON=command` para IDP 1 manual/web/MQTT/RF.
+- `START_REASON=schedule_14_*` quando a partida veio de agenda.
+- `END_TS`, `STOP_REASON`, `STOP_PHASE`, `MOTOR`, `RESET_REASON` e `EVENT_TS` representam desligamento ou falha.
+- Falhas registram o momento (`starting_ramp`, `starting_stage`, `running`) e o motor `1..4`.
+
+O firmware salva ate 20 registros em NVS na chave `history`.
+
 ### IDP 42 - Heartbeat
 
 ```text

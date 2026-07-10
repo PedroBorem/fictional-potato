@@ -42,6 +42,11 @@
 #define CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE (32)
 
 /**
+ * @brief Maximum text length for operation history fields.
+ */
+#define CONFIG_PUMP_HISTORY_TEXT_SIZE (32)
+
+/**
  * @brief Default pulse duration for each ON/OFF relay command.
  */
 #define CONFIG_ACTUATION_DEFAULT_RELAY_PULSE_MS (10000)
@@ -465,19 +470,22 @@ typedef struct __attribute__((__packed__))
 } pump_scheduling_off_date;
 
 /**
- * @brief History parameters.
- *
- * Structure defining the history parameters.
+ * @brief Persisted operation history for the pump product.
  */
 typedef struct __attribute__((__packed__))
 {
-    bool is_running;
-    pivot_actions actions;          /*!< Pivot actions */
-    uint16_t start_angle;           /*!< Start angle */
-    uint16_t end_angle;             /*!< End angle */
-    time_t start_date;              /*!< Start date */
-    time_t end_date;                /*!< End date */
-} pivot_history;
+    bool valid;                                             /*!< True when this slot contains a history item. */
+    bool active;                                            /*!< True while the operation is running or starting. */
+    time_t start_date;                                      /*!< Timestamp when the start command was accepted. */
+    time_t end_date;                                        /*!< Timestamp when the operation ended, or 0 while active. */
+    time_t event_date;                                      /*!< Timestamp of the stop/fault event. */
+    uint8_t stop_motor;                                     /*!< Motor related to the stop/fault, or 0. */
+    char user[50];                                         /*!< User that requested the start. */
+    char start_reason[CONFIG_PUMP_HISTORY_TEXT_SIZE];       /*!< command, schedule, boot recovery, etc. */
+    char stop_reason[CONFIG_PUMP_HISTORY_TEXT_SIZE];        /*!< command_off, startup_fault, runtime_fault, etc. */
+    char stop_phase[CONFIG_PUMP_HISTORY_TEXT_SIZE];         /*!< starting_ramp, running, boot, etc. */
+    char reset_reason[CONFIG_PUMP_HISTORY_TEXT_SIZE];       /*!< brownout, panic, none, etc. */
+} pump_history;
 
 
 /**

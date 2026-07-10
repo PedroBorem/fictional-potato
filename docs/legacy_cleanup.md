@@ -37,7 +37,7 @@ O timeout do IDP 42 apenas gera warning. Nao existe controle eletrico de reset o
 | --- | --- |
 | IDPs 2 e 6 | Definir somente se a placa precisar configurar o ESP de conectividade pela UART. |
 | Contrato do ESP de conectividade | Definir no outro firmware broker, topicos, autenticacao, QoS, ACK e retry. |
-| IDP 12 | Criar historico de comandos, agendas, partidas, paradas e falhas. |
+| IDP 12 | Implementado como historico de operacoes do bombeamento salvo em NVS. |
 | IDP 30 | Definir comando/evento manual local. |
 | Rush mode | Discutir se existe regra equivalente no produto de bombeamento. |
 | Wi-Fi/HTTP local | Decidir se voltam ao produto antes de adaptar os componentes preservados. |
@@ -48,5 +48,5 @@ O timeout do IDP 42 apenas gera warning. Nao existe controle eletrico de reset o
 2. Validar persistencia e comportamento de agendas depois de reboot.
 3. Fechar no firmware de conectividade o encaminhamento transparente dos IDPs e o contrato MQTT.
 4. Decidir o contrato dos IDPs 2 e 6 entre as duas placas.
-5. Definir historico IDP 12 e comando local IDP 30.
+5. Definir comando local IDP 30.
 6. Discutir rush mode e remover o arquivo se a regra nao fizer sentido.

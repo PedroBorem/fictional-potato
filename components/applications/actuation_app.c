@@ -50,6 +50,7 @@ static actuation_pump_state actuation_app_state = ACTUATION_PUMP_STATE_STOPPED;
 static uint8_t actuation_app_last_fault_channel = 0;
 static uint32_t actuation_app_shutdown_sequence = 0;
 static actuation_shutdown_info actuation_app_last_shutdown_info = {};
+static char actuation_app_phase_context[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE] = "stopped";
 static TickType_t actuation_app_last_status_publish_tick = 0;
 static actuation_status actuation_app_last_status = {
     .channels = {
@@ -245,6 +246,42 @@ static const char *actuation_app_state_to_packet_state(actuation_pump_state stat
     }
 }
 
+static void actuation_app_set_phase_context(const char *phase)
+{
+    const char *state_prefix = actuation_app_state_to_phase(actuation_app_state);
+
+    if (phase == NULL || phase[0] == '\0')
+    {
+        phase = "unknown";
+    }
+
+    if (actuation_app_state == ACTUATION_PUMP_STATE_STARTING)
+    {
+        if (strcmp(phase, "RAMP") == 0)
+        {
+            snprintf(actuation_app_phase_context, sizeof(actuation_app_phase_context), "%s", "starting_ramp");
+            return;
+        }
+
+        if (strcmp(phase, "STAGE") == 0)
+        {
+            snprintf(actuation_app_phase_context, sizeof(actuation_app_phase_context), "%s", "starting_stage");
+            return;
+        }
+
+        if (strcmp(phase, "ON") == 0)
+        {
+            snprintf(actuation_app_phase_context, sizeof(actuation_app_phase_context), "%s", "starting_on");
+            return;
+        }
+    }
+
+    snprintf(actuation_app_phase_context,
+             sizeof(actuation_app_phase_context),
+             "%s",
+             state_prefix);
+}
+
 static void actuation_app_record_shutdown_event(actuation_shutdown_reason reason,
                                                 uint8_t motor,
                                                 const char *user,
@@ -344,6 +381,8 @@ static void actuation_app_publish_progress(uint8_t motor,
 {
     actuation_status status = {};
     char packet[180] = {};
+
+    actuation_app_set_phase_context(phase);
 
     if (actuation_app_callback == NULL)
     {
@@ -569,7 +608,9 @@ static void actuation_app_stop_pump(bool fault)
     char shutdown_phase[CONFIG_ACTUATION_SHUTDOWN_TEXT_SIZE] = {};
 
     strncpy(shutdown_user, actuation_app_last_actions.user, sizeof(shutdown_user) - 1U);
-    strncpy(shutdown_phase, actuation_app_state_to_phase(previous_state), sizeof(shutdown_phase) - 1U);
+    strncpy(shutdown_phase,
+            actuation_app_phase_context,
+            sizeof(shutdown_phase) - 1U);
 
     actuation_app_state = fault ? ACTUATION_PUMP_STATE_FAULT : ACTUATION_PUMP_STATE_STOPPING;
     actuation_app_publish_progress(shutdown_motor, fault ? "FAULT" : "STOPPING", 0, 0);

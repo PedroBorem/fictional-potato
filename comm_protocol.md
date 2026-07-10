@@ -40,6 +40,7 @@ Regras:
 | `0` | Status de bombeamento | Adaptado | Retorna snapshot dos 4 status digitais e estado logico da bomba. |
 | `1` | Comando de bombeamento | Adaptado | Solicita partida sequencial ou parada segura. |
 | `3` | Configuracao de atuacao | Adaptado | Configura parada, leitura ociosa, rampas, intervalos de partida e telemetria. |
+| `12` | Historico de bombeamento | Implementado | Retorna operacoes de partida/parada/falha salvas em NVS. |
 | `13` | Exclusao de agenda | Adaptado | Exclui uma agenda por identificador. |
 | `14` | Liga/desliga por data | Adaptado | Agenda partida e parada usando data absoluta ou atraso em segundos. |
 | `16` | Apenas desliga por data | Adaptado | Agenda somente uma parada segura. |
@@ -170,6 +171,42 @@ Evento espontaneo:
 ```
 
 Os campos de data aceitam Unix timestamp absoluto ou, para valores abaixo de `1000000000`, atraso em segundos a partir do RTC atual. Consulte [Agendamentos por Data](docs/functional/scheduling.md) para respostas e regras de boot.
+
+## IDP 12 - Historico de Bombeamento
+
+Consulta:
+
+```text
+#12-DEVICE_ID$
+```
+
+Resposta por registro, do mais recente para o mais antigo:
+
+```text
+#12-DEVICE_ID-INDEX-START_TS-END_TS-USER-START_REASON-STOP_REASON-STOP_PHASE-MOTOR-RESET_REASON-EVENT_TS$
+```
+
+Sem historico:
+
+```text
+#12-DEVICE_ID-NONE$
+```
+
+Campos:
+
+| Campo | Descricao |
+| --- | --- |
+| `START_TS` | Timestamp em que o comando de partida foi aceito. |
+| `END_TS` | Timestamp do fim da operacao; `0` enquanto ativa. |
+| `USER` | Usuario do comando de partida. |
+| `START_REASON` | `command` ou `schedule_14_*` quando a partida veio de agenda. |
+| `STOP_REASON` | Mesmo dominio do `REASON` do IDP 28. |
+| `STOP_PHASE` | Momento do desligamento/falha, como `starting_ramp`, `starting_stage` ou `running`. |
+| `MOTOR` | `0` quando nao aplicavel; `1..4` quando uma leitura de motor falhou. |
+| `RESET_REASON` | Motivo de reset quando o historico foi fechado por boot/brownout. |
+| `EVENT_TS` | Timestamp em que a parada/falha foi registrada. |
+
+O historico e persistido na chave NVS `history` e guarda ate 20 registros.
 
 ## IDP 28 - Informacao de Desligamento
 

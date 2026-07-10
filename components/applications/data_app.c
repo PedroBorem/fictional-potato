@@ -228,7 +228,7 @@ esp_err_t data_app_init(void)
 	const rush_mode_saved_state default_rush_mode_state = {};
 	const pump_scheduling_date default_scheduling_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
 	const pump_scheduling_off_date default_scheduling_off_date[CONFIG_SCHEDULING_MAX_VALUE] = {};
-	const pivot_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
+	const pump_history default_history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 	err = nvs_data_init();
 	if(err == ESP_OK)
@@ -260,7 +260,7 @@ esp_err_t data_app_init(void)
 			data_app_save(DATA_TYPE_SCHEDULING_OFF_DATE, &default_scheduling_off_date, sizeof(default_scheduling_off_date));
 		}
 
-		if(nvs_data_get_size(DATA_HISTORY) == 0)
+		if(nvs_data_get_size(DATA_HISTORY) != sizeof(default_history))
 		{
 			nvs_data_set(DATA_HISTORY, &default_history, sizeof(default_history));
 		}
@@ -331,47 +331,57 @@ esp_err_t data_app_save(data_type_t data_type, const void* data, size_t data_siz
 		}
 		case DATA_TYPE_HISTORY:
 		{
-			pivot_history history[CONFIG_HISTORY_MAX_VALUE] = {};
-			pivot_history history_tmp = {};
-			int i,j;
+			pump_history history[CONFIG_HISTORY_MAX_VALUE] = {};
 
 			data_app_load(DATA_TYPE_HISTORY, history);
-			mempcpy(&history[0], data, sizeof(pivot_history));
-
-			for( i = 1; i < CONFIG_HISTORY_MAX_VALUE; i++)
-			{
-				memcpy(&history_tmp, &history[i], sizeof(pivot_history));
-
-				for(j = i-1; j >= 0 && history_tmp.start_date < history[j].start_date; j--)
-				{
-					memcpy(&history[j+1], &history[j], sizeof(pivot_history));
-				}
-
-				memcpy(&history[j+1], &history_tmp, sizeof(pivot_history));
-			}
+			memmove(&history[1],
+					&history[0],
+					(CONFIG_HISTORY_MAX_VALUE - 1U) * sizeof(pump_history));
+			memcpy(&history[0], data, sizeof(pump_history));
+			history[0].valid = true;
 
 			ret = nvs_data_set(DATA_HISTORY, &history, sizeof(history));
 			break;
 		}
+		case DATA_TYPE_HISTORY_ARRAY:
+		{
+			ret = nvs_data_set(DATA_HISTORY, data, data_size);
+			break;
+		}
 		case DATA_TYPE_OLD_HISTORY:
 		{
-			pivot_history history[CONFIG_HISTORY_MAX_VALUE] = {};
-			pivot_history history_tmp = {};
+			pump_history history[CONFIG_HISTORY_MAX_VALUE] = {};
+			pump_history history_tmp = {};
 
 			data_app_load(DATA_TYPE_HISTORY, history);
+			memcpy(&history_tmp, data, sizeof(pump_history));
 
-			mempcpy( &history_tmp, data, sizeof(pivot_history));
-
-			history[CONFIG_HISTORY_MAX_VALUE - 1].end_date = history_tmp.end_date;
-			history[CONFIG_HISTORY_MAX_VALUE - 1].end_angle = history_tmp.end_angle;
-
-			//adjust firt interation
-			if(history[CONFIG_HISTORY_MAX_VALUE - 1].start_date != 0)
+			for (size_t index = 0; index < CONFIG_HISTORY_MAX_VALUE; index++)
 			{
-				nvs_data_set(DATA_HISTORY, &history, sizeof(history));
+				if (history[index].valid && history[index].active)
+				{
+					history[index].active = false;
+					history[index].end_date = history_tmp.end_date;
+					history[index].event_date = history_tmp.event_date;
+					history[index].stop_motor = history_tmp.stop_motor;
+					memcpy(history[index].stop_reason,
+						   history_tmp.stop_reason,
+						   sizeof(history[index].stop_reason));
+					memcpy(history[index].stop_phase,
+						   history_tmp.stop_phase,
+						   sizeof(history[index].stop_phase));
+					memcpy(history[index].reset_reason,
+						   history_tmp.reset_reason,
+						   sizeof(history[index].reset_reason));
+					ret = nvs_data_set(DATA_HISTORY, &history, sizeof(history));
+					break;
+				}
 			}
 
-			ret = ESP_OK;
+			if (ret != ESP_OK)
+			{
+				ret = ESP_ERR_NOT_FOUND;
+			}
 			break;
 		}
 		case DATA_TYPE_REASON_HANG_UP:
@@ -441,6 +451,7 @@ esp_err_t data_app_load(data_type_t data_type, void* data)
 			break;
 		}
 		case DATA_TYPE_HISTORY:
+		case DATA_TYPE_HISTORY_ARRAY:
 		{
 			ret = nvs_data_get_blob(DATA_HISTORY, data);
 			break;

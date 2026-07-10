@@ -29,6 +29,7 @@ Ordem atual:
 | `DATA_TYPE_COMM_MAIN_MODE` | `comm_main_mode` | Canal principal para eventos espontaneos: `RF` ou `MQTT`. |
 | `DATA_TYPE_SCHEDULING_DATE` | `s_date` | Ate 10 agendas de partida e parada IDP 14. |
 | `DATA_TYPE_SCHEDULING_OFF_DATE` | `s_off_date` | Ate 10 agendas somente de parada IDP 16. |
+| `DATA_TYPE_HISTORY` | `history` | Ate 20 registros de operacao usados pelo IDP 12. |
 
 ## Configuracao Padrao
 
@@ -58,7 +59,8 @@ Permanecem criados/preservados para adaptacao futura:
 
 - `net_config`: compatibilidade para um futuro contrato dos IDPs 2 e 6 com o ESP de conectividade.
 - `rush_config` e `rush_state`: codigo congelado, fora do build.
-- `history`: futuro IDP 12.
+
+O `history` antigo de pivo e descartado quando o tamanho persistido nao corresponde ao formato atual. O novo formato salva inicio, fim, usuario, motivo de partida, motivo de desligamento, fase, motor e reset.
 
 `net_config` ainda e preservado por compatibilidade, mas o ESP de conectividade e o responsavel por broker, topicos e credenciais MQTT. IDPs 2 e 6 ainda nao possuem contrato novo nesta placa.
 

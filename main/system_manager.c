@@ -29,6 +29,7 @@
 #define SYSTEM_MANAGER_RX_BUFFER_SIZE (512)
 #define SYSTEM_MANAGER_PACKET_BUFFER_SIZE (256)
 #define SYSTEM_MANAGER_ACTUATION_CONFIG_KEY "act_config"
+#define SYSTEM_MANAGER_HISTORY_KEY "history"
 #define SYSTEM_MANAGER_SHUTDOWN_REASON_KEY "reason_hangup"
 #define SYSTEM_MANAGER_UNIX_TIMESTAMP_THRESHOLD (1000000000LL)
 
@@ -44,6 +45,8 @@ static size_t system_manager_mqtt_rx_len = 0;
 static uint32_t system_manager_saved_shutdown_sequence = 0;
 
 static bool system_manager_actions_request_start(const actuation_actions *actions);
+static bool system_manager_actions_request_stop(const actuation_actions *actions);
+static bool system_manager_load_history(pump_history *history);
 
 static void system_manager_log_status(const actuation_status *status)
 {
@@ -135,6 +138,46 @@ static void system_manager_send_comm_mode(comm_type communication)
 
     snprintf(packet, sizeof(packet), "#31-%s-%s$", system_id, mode);
     system_manager_send_packet(packet, communication);
+}
+
+static void system_manager_send_history(comm_type communication)
+{
+    pump_history history[CONFIG_HISTORY_MAX_VALUE] = {};
+    char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+    bool found = false;
+
+    system_manager_load_history(history);
+
+    for (size_t index = 0; index < CONFIG_HISTORY_MAX_VALUE; index++)
+    {
+        if (!history[index].valid)
+        {
+            continue;
+        }
+
+        snprintf(packet,
+                 sizeof(packet),
+                 "#12-%s-%u-%lld-%lld-%s-%s-%s-%s-%u-%s-%lld$",
+                 system_id,
+                 (unsigned int)index,
+                 (long long)history[index].start_date,
+                 (long long)history[index].end_date,
+                 history[index].user,
+                 history[index].start_reason,
+                 history[index].stop_reason,
+                 history[index].stop_phase,
+                 (unsigned int)history[index].stop_motor,
+                 history[index].reset_reason,
+                 (long long)history[index].event_date);
+        system_manager_send_packet(packet, communication);
+        found = true;
+    }
+
+    if (!found)
+    {
+        snprintf(packet, sizeof(packet), "#12-%s-NONE$", system_id);
+        system_manager_send_packet(packet, communication);
+    }
 }
 
 static const char *system_manager_reset_reason_to_string(esp_reset_reason_t reset_reason)
@@ -237,6 +280,177 @@ static void system_manager_sanitize_packet_field(char *out,
     out[out_index] = '\0';
 }
 
+static bool system_manager_load_history(pump_history *history)
+{
+    if (history == NULL)
+    {
+        return false;
+    }
+
+    memset(history, 0, sizeof(pump_history) * CONFIG_HISTORY_MAX_VALUE);
+
+    if (data_app_get_data_size(SYSTEM_MANAGER_HISTORY_KEY) !=
+        (sizeof(pump_history) * CONFIG_HISTORY_MAX_VALUE))
+    {
+        return false;
+    }
+
+    return (data_app_load(DATA_TYPE_HISTORY, history) == ESP_OK);
+}
+
+static void system_manager_save_history_array(const pump_history *history)
+{
+    if (history == NULL)
+    {
+        return;
+    }
+
+    data_app_save(DATA_TYPE_HISTORY_ARRAY,
+                  history,
+                  sizeof(pump_history) * CONFIG_HISTORY_MAX_VALUE);
+}
+
+static void system_manager_history_copy_field(char *destination,
+                                              size_t destination_size,
+                                              const char *source,
+                                              const char *fallback)
+{
+    system_manager_sanitize_packet_field(destination,
+                                         destination_size,
+                                         source,
+                                         fallback);
+}
+
+static void system_manager_history_record_start(const char *user,
+                                                const char *start_reason)
+{
+    pump_history history = {
+        .valid = true,
+        .active = true,
+        .start_date = rtc_app_get_timestamp(false),
+    };
+
+    system_manager_history_copy_field(history.user,
+                                      sizeof(history.user),
+                                      user,
+                                      "unknown");
+    system_manager_history_copy_field(history.start_reason,
+                                      sizeof(history.start_reason),
+                                      start_reason,
+                                      "command");
+    system_manager_history_copy_field(history.stop_reason,
+                                      sizeof(history.stop_reason),
+                                      "running",
+                                      "running");
+    system_manager_history_copy_field(history.stop_phase,
+                                      sizeof(history.stop_phase),
+                                      "running",
+                                      "running");
+    system_manager_history_copy_field(history.reset_reason,
+                                      sizeof(history.reset_reason),
+                                      "none",
+                                      "none");
+
+    data_app_save(DATA_TYPE_HISTORY, &history, sizeof(history));
+
+    LOG_DEFAULT(SYSTEM_MANAGER_TAG,
+                "HISTORY",
+                "Operation history start: user=%s reason=%s timestamp=%lld",
+                history.user,
+                history.start_reason,
+                (long long)history.start_date);
+}
+
+static void system_manager_history_record_shutdown(uint8_t reason,
+                                                   const char *user,
+                                                   const char *phase,
+                                                   uint8_t motor,
+                                                   const char *reset_reason,
+                                                   time_t event_time)
+{
+    pump_history history[CONFIG_HISTORY_MAX_VALUE] = {};
+    const char *reason_text = system_manager_shutdown_reason_to_string(reason);
+    bool updated = false;
+
+    if ((actuation_shutdown_reason)reason == ACTUATION_SHUTDOWN_REASON_BOOT &&
+        phase != NULL &&
+        strcmp(phase, "boot") == 0)
+    {
+        return;
+    }
+
+    if (system_manager_load_history(history))
+    {
+        for (size_t index = 0; index < CONFIG_HISTORY_MAX_VALUE; index++)
+        {
+            if (history[index].valid && history[index].active)
+            {
+                history[index].active = false;
+                history[index].end_date = event_time;
+                history[index].event_date = event_time;
+                history[index].stop_motor = motor;
+                system_manager_history_copy_field(history[index].stop_reason,
+                                                  sizeof(history[index].stop_reason),
+                                                  reason_text,
+                                                  "unknown");
+                system_manager_history_copy_field(history[index].stop_phase,
+                                                  sizeof(history[index].stop_phase),
+                                                  phase,
+                                                  "unknown");
+                system_manager_history_copy_field(history[index].reset_reason,
+                                                  sizeof(history[index].reset_reason),
+                                                  reset_reason,
+                                                  "none");
+                system_manager_save_history_array(history);
+                updated = true;
+                break;
+            }
+        }
+    }
+
+    if (!updated)
+    {
+        pump_history standalone = {
+            .valid = true,
+            .active = false,
+            .start_date = 0,
+            .end_date = event_time,
+            .event_date = event_time,
+            .stop_motor = motor,
+        };
+
+        system_manager_history_copy_field(standalone.user,
+                                          sizeof(standalone.user),
+                                          user,
+                                          "unknown");
+        system_manager_history_copy_field(standalone.start_reason,
+                                          sizeof(standalone.start_reason),
+                                          "unknown",
+                                          "unknown");
+        system_manager_history_copy_field(standalone.stop_reason,
+                                          sizeof(standalone.stop_reason),
+                                          reason_text,
+                                          "unknown");
+        system_manager_history_copy_field(standalone.stop_phase,
+                                          sizeof(standalone.stop_phase),
+                                          phase,
+                                          "unknown");
+        system_manager_history_copy_field(standalone.reset_reason,
+                                          sizeof(standalone.reset_reason),
+                                          reset_reason,
+                                          "none");
+        data_app_save(DATA_TYPE_HISTORY, &standalone, sizeof(standalone));
+    }
+
+    LOG_DEFAULT(SYSTEM_MANAGER_TAG,
+                "HISTORY",
+                "Operation history stop: reason=%s phase=%s motor=%u timestamp=%lld",
+                reason_text,
+                (phase != NULL && phase[0] != '\0') ? phase : "unknown",
+                (unsigned int)motor,
+                (long long)event_time);
+}
+
 static void system_manager_build_shutdown_packet(char *packet,
                                                  size_t packet_size,
                                                  uint8_t reason,
@@ -313,6 +527,7 @@ static void system_manager_record_shutdown_info(const actuation_shutdown_info *i
                                                 const char *reset_reason)
 {
     char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
+    time_t event_time = rtc_app_get_timestamp(false);
 
     if (info == NULL)
     {
@@ -327,6 +542,12 @@ static void system_manager_record_shutdown_info(const actuation_shutdown_info *i
                                          info->motor,
                                          reset_reason);
     system_manager_save_shutdown_packet(packet);
+    system_manager_history_record_shutdown(info->reason,
+                                           info->user,
+                                           info->phase,
+                                           info->motor,
+                                           reset_reason,
+                                           event_time);
 }
 
 static void system_manager_record_pending_shutdown_event(void)
@@ -515,12 +736,24 @@ static void system_manager_schedule_event_callback(idp_type scheduling_idp,
 {
     char packet[SYSTEM_MANAGER_PACKET_BUFFER_SIZE] = {};
     char safe_user[50] = {};
+    char start_reason[CONFIG_PUMP_HISTORY_TEXT_SIZE] = {};
     time_t timestamp = rtc_app_get_timestamp(false);
 
     system_manager_sanitize_packet_field(safe_user,
                                          sizeof(safe_user),
                                          user,
                                          "scheduling");
+
+    if (scheduling_idp == IDP_14 &&
+        event != NULL &&
+        strcmp(event, "STARTED") == 0)
+    {
+        snprintf(start_reason,
+                 sizeof(start_reason),
+                 "schedule_14_%s",
+                 (scheduling_id != NULL && scheduling_id[0] != '\0') ? scheduling_id : "unknown");
+        system_manager_history_record_start(safe_user, start_reason);
+    }
 
     snprintf(packet,
              sizeof(packet),
@@ -624,6 +857,11 @@ static void system_manager_handle_idp_1(const char *packet, comm_type communicat
     }
 
     actuation_app_set_progress_mode(communication);
+    if (system_manager_actions_request_start(&actions) &&
+        !system_manager_actions_request_stop(&actions))
+    {
+        system_manager_history_record_start(actions.user, "command");
+    }
     actuation_app_set_actions(actions, true);
 
     snprintf(response, sizeof(response), "#01-%s-ACCEPTED$", system_id);
@@ -729,6 +967,34 @@ static void system_manager_handle_idp_3(const char *packet, comm_type communicat
              (unsigned int)config.stage_4_delay_sec,
              (unsigned int)config.status_publish_time_min);
     system_manager_send_packet(response, communication);
+}
+
+static void system_manager_handle_idp_12(const char *packet, comm_type communication)
+{
+    uint8_t idp = 0;
+    char device_id[50] = {};
+    uint8_t delimiter_count = idp_parser_get_delimiter(packet);
+
+    arg_pair_t args[] = {
+        {"uint8_t", &idp},
+        {"string", device_id},
+        {NULL, NULL},
+    };
+
+    if (delimiter_count > 1)
+    {
+        system_manager_send_error("idp_12_invalid_format", communication);
+        return;
+    }
+
+    idp_parser_get_packet_data(packet, args);
+
+    if (system_manager_device_matches(device_id) == false)
+    {
+        return;
+    }
+
+    system_manager_send_history(communication);
 }
 
 static void system_manager_handle_idp_13(const char *packet, comm_type communication)
@@ -1206,6 +1472,9 @@ static void system_manager_process_packet(const char *packet_in, comm_type commu
         case IDP_3:
             system_manager_handle_idp_3(packet, communication);
             break;
+        case IDP_12:
+            system_manager_handle_idp_12(packet, communication);
+            break;
         case IDP_13:
             system_manager_handle_idp_13(packet, communication);
             break;
@@ -1348,6 +1617,24 @@ static bool system_manager_actions_request_start(const actuation_actions *action
     for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
     {
         if (actions->channels[channel] == ACTUATION_COMMAND_ON)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+static bool system_manager_actions_request_stop(const actuation_actions *actions)
+{
+    if (actions == NULL)
+    {
+        return false;
+    }
+
+    for (uint8_t channel = 0; channel < CONFIG_ACTUATION_CHANNEL_COUNT; channel++)
+    {
+        if (actions->channels[channel] == ACTUATION_COMMAND_OFF)
         {
             return true;
         }

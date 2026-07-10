@@ -13,6 +13,7 @@ O produto atual controla 4 etapas de acionamento por relés ON/OFF e monitora 4 
 - Comunicacao serial: RF UART e GPRS UART ativas.
 - Modo principal de comunicacao: RF por padrao.
 - Agendamentos por data: IDPs 13, 14, 16 e eventos IDP 18 ativos.
+- Historico de operacoes: IDP 12 ativo com persistencia em NVS.
 - Heartbeat do ESP de conectividade: IDP 42 ativo na GPRS UART.
 - HTTP/app/Wi-Fi: desabilitados nesta etapa do firmware.
 - Regras de setor, barreira, GPS, pluviometro, percentimetro e agenda por angulo: removidas do firmware.
